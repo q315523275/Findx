@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
+		<ProjectReference Include="..\Findx.Discovery\Findx.Discovery.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Folder Include="Mvc\Middlewares\" />
+	</ItemGroup>
+
+</Project>

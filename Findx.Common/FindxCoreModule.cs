@@ -1,0 +1,71 @@
+﻿using Findx.Caching;
+using Findx.Caching.InMemory;
+using Findx.Data;
+using Findx.Email;
+using Findx.ExceptionHandling;
+using Findx.Extensions;
+using Findx.Locks;
+using Findx.Messaging;
+using Findx.Modularity;
+using Findx.Serialization;
+using Findx.Sms;
+using Findx.Storage;
+using Findx.Threading;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using System.ComponentModel;
+
+namespace Findx.Builders
+{
+    [Description("Findx-基础模块")]
+    public class FindxCoreModule : FindxModule
+    {
+        public override ModuleLevel Level => ModuleLevel.Framework;
+        public override int Order => 0;
+        public override IServiceCollection ConfigureServices(IServiceCollection services)
+        {
+            IConfiguration configuration = services.GetConfiguration();
+
+            // 缓存
+            services.TryAddSingleton<ICacheProvider, CacheProvider>();
+            services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();
+            services.AddSingleton<ICache, InMemoryCache>();
+
+            // 工作单元
+            services.AddSingleton<IUnitOfWorkManager, UnitOfWorkManager>();
+
+            // 邮件
+            services.AddSingleton<IEmailSender, DefaultEmailSender>();
+            services.Configure<EmailSenderOptions>(configuration.GetSection("Findx:Email"));
+
+            // 异常通知
+            services.AddSingleton<IExceptionNotifier, ExceptionNotifier>();
+
+            // 锁
+            services.AddSingleton<ILock, LocalLock>();
+
+            // 应用消息
+            services.AddScoped<IApplicationEventPublisher, ApplicationEventPublisher>();
+
+            // 序列化
+            services.AddSingleton<IJsonSerializer, SystemTextJsonContentSerializer>();
+            services.AddSingleton<ISerializer, BinaryFormatterSerializer>();
+
+            // 短信
+            services.AddSingleton<ISmsSender, NullSmsSender>();
+
+            // 存储
+            services.AddSingleton<IStorage, LocalStorage>();
+            services.AddSingleton<IStorageProvider, StorageProvider>();
+
+            // 线程取消通知
+            services.AddSingleton<ICancellationTokenProvider, NullCancellationTokenProvider>();
+
+            // 应用
+            services.AddSingleton<IApplicationInstanceInfo, ApplicationInstanceInfo>();
+
+            return services;
+        }
+    }
+}

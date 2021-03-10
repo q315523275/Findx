@@ -1,0 +1,16 @@
+﻿using Findx.Extensions;
+namespace Findx.Redis
+{
+    public class RedisJsonSerializer : IRedisSerializer
+    {
+        public T Deserialize<T>(string serializedObject)
+        {
+            return serializedObject.ToObject<T>();
+        }
+
+        public string Serialize<T>(T item)
+        {
+            return item.ToJson();
+        }
+    }
+}
