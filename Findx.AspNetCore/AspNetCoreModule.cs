@@ -18,6 +18,8 @@ namespace Findx.AspNetCore
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
+            services.AddMemoryCache();
+
             services.AddHttpContextAccessor();
             services.AddTransient<IPrincipal>(provider =>
             {
