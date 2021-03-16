@@ -1,4 +1,5 @@
-﻿using Findx.DependencyInjection;
+﻿using Findx.AspNetCore.Mvc;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Modularity;
 using Findx.Threading;
@@ -30,6 +31,8 @@ namespace Findx.AspNetCore
             services.TryAddSingleton<IScopedServiceResolver, HttpContextServiceScopeResolver>();
             services.Replace<ICancellationTokenProvider, HttpContextCancellationTokenProvider>(ServiceLifetime.Singleton);
             services.Replace<IHybridServiceScopeFactory, HttpContextServiceScopeFactory>(ServiceLifetime.Singleton);
+
+            services.AddSingleton<IApiInterfaceService, DefaultApiInterfaceService>();
 
             return services;
         }

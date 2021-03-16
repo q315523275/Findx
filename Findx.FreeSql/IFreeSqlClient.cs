@@ -1,8 +1,11 @@
-﻿namespace Findx.FreeSql
+﻿using System.Collections.Generic;
+
+namespace Findx.FreeSql
 {
     public interface IFreeSqlClient
     {
-        IFreeSql Acquire(string primary);
+        ICollection<IFreeSql> All();
+        IFreeSql Get(string primary = null);
         bool Add(string primary, IFreeSql freeSql);
     }
 }

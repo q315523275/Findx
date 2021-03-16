@@ -45,6 +45,7 @@ namespace Findx.EventBus.RabbitMQ
                 consumer.Unbind(eventName);
             }
         }
+
         private (string QueueName, int PrefetchCount) ConvertConsumerInfo<TH>()
         {
             var queueName = _mqOptions.QueueName;
@@ -57,6 +58,7 @@ namespace Findx.EventBus.RabbitMQ
             }
             return (queueName, prefetchCount);
         }
+
         private void DoInternalSubscription(string eventName, string queueName, int prefetchCount)
         {
             var containsKey = _subsManager.HasSubscriptionsForEvent(eventName);
@@ -128,8 +130,6 @@ namespace Findx.EventBus.RabbitMQ
 
         }
 
-
-
         public void StartConsuming()
         {
             foreach (var queueName in _consumers.Keys)
@@ -138,7 +138,7 @@ namespace Findx.EventBus.RabbitMQ
 
                 _consumer.OnMessageReceived(Consumer_Received);
 
-
+                _consumer.StartConsuming();
             }
         }
 

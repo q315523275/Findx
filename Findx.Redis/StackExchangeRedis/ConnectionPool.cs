@@ -79,6 +79,7 @@ namespace Findx.Redis.StackExchangeRedis
             {
                 _connectionLock.Release();
             }
+
             return _connectionMultiplexer;
         }
 

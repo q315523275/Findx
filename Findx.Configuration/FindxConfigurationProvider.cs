@@ -6,12 +6,15 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Timers;
+
 namespace Findx.Configuration
 {
     internal class FindxConfigurationProvider : ConfigurationProvider
     {
         private readonly string _LocalBackupPath;
         private readonly FindxConfigurationOptions _options;
+        private readonly Timer _timer;
         private Task _pollRefreshTask;
         private int _version;
         public FindxConfigurationProvider(FindxConfigurationOptions options)

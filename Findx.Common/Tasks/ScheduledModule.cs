@@ -26,6 +26,8 @@ namespace Findx.Tasks
             var section = configuration.GetSection("Findx:Scheduler");
             services.Configure<SchedulerOptions>(section);
             SchedulerOptions = section.Get<SchedulerOptions>();
+            if (!SchedulerOptions.Enable)
+                return services;
 
             // 任务调度
             services.AddSingleton<IScheduledTaskExecuter, InMemoryScheduledTaskExecuter>();
@@ -36,10 +38,7 @@ namespace Findx.Tasks
 
             // 后台任务
             services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-            if (SchedulerOptions.Enable)
-            {
-                services.AddHostedService<AsyncQueueTaskHostedService>();
-            }
+            services.AddHostedService<AsyncQueueTaskHostedService>();
 
             // 自动注册任务
             IScheduledTaskFinder scheduledTaskFinder = services.GetOrAddTypeFinder<IScheduledTaskFinder>(assemblyFinder => new ScheduledTaskFinder(assemblyFinder));
@@ -74,9 +73,9 @@ namespace Findx.Tasks
 
                 cancellationToken = new CancellationTokenSource();
                 scheduler.StartAsync(cancellationToken.Token);
-            }
 
-            base.OnApplicationInitialization(provider);
+                base.OnApplicationInitialization(provider);
+            }
         }
 
         public override void OnApplicationShutdown(IServiceProvider provider)

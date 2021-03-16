@@ -1,11 +1,11 @@
-﻿using Findx.Discovery.HttpMessageHandlers;
-using Findx.DependencyInjection;
+﻿using Findx.DependencyInjection;
+using Findx.Discovery.HttpMessageHandlers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Polly;
 using System;
-using System.Net.Http;
-using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Findx.AspNetCore.Extensions
@@ -60,6 +60,7 @@ namespace Findx.AspNetCore.Extensions
         public static IHttpClientBuilder AddTimeoutPolicy(this IHttpClientBuilder httpClientBuilder, int seconds)
         {
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
+            if (seconds < 1) return httpClientBuilder;
 
             var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(seconds);
 
@@ -76,6 +77,7 @@ namespace Findx.AspNetCore.Extensions
         public static IHttpClientBuilder AddRetryPolicy<TException>(this IHttpClientBuilder httpClientBuilder, int retryCount) where TException : Exception
         {
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
+            if (retryCount < 1) return httpClientBuilder;
 
             var retryPolicy = Policy<HttpResponseMessage>.Handle<TException>().RetryAsync(retryCount);
 
@@ -93,7 +95,7 @@ namespace Findx.AspNetCore.Extensions
         public static IHttpClientBuilder AddCircuitBreakerPolicy<TException>(this IHttpClientBuilder httpClientBuilder, int exceptionsAllowedBeforeBreaking, int durationOfBreak) where TException : Exception
         {
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
-            if (exceptionsAllowedBeforeBreaking < 0 || durationOfBreak < 0) return httpClientBuilder;
+            if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak < 1) return httpClientBuilder;
 
             var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
             var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");

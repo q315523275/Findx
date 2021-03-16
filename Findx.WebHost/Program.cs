@@ -1,16 +1,21 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Findx.WebHost
 {
-    public class Program
+    public static class Program
     {
+        public static IWebHostBuilder UseFindxStartup(this IWebHostBuilder webHostBuilder)
+        {
+            webHostBuilder.UseKestrel(options =>
+            {
+                IApplicationInstanceInfo applicationInstanceInfo = options.ApplicationServices.GetService<IApplicationInstanceInfo>();
+                options.ListenAnyIP(applicationInstanceInfo.Port);
+            });
+            return webHostBuilder;
+        }
+
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
@@ -20,7 +25,7 @@ namespace Findx.WebHost
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseStartup<Startup>().UseFindxStartup();
                 });
     }
 }
