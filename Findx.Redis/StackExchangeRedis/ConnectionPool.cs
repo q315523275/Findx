@@ -11,7 +11,7 @@ namespace Findx.Redis.StackExchangeRedis
     public class ConnectionPool : IConnectionPool, IDisposable
     {
 
-        private readonly RedisCacheOptions _options;
+        private readonly IOptionsMonitor<RedisCacheOptions> _options;
 
         private readonly ILogger<ConnectionPool> _logger;
 
@@ -21,13 +21,22 @@ namespace Findx.Redis.StackExchangeRedis
 
         private readonly ConcurrentDictionary<int, ConnectionMultiplexer> _connectionMultiplexerAsyncCache = new ConcurrentDictionary<int, ConnectionMultiplexer>();
 
-        public ConnectionPool(IOptions<RedisCacheOptions> options, ILogger<ConnectionPool> logger)
+        public ConnectionPool(IOptionsMonitor<RedisCacheOptions> options, ILogger<ConnectionPool> logger)
         {
             _logger = logger;
+            _options = options;
+        }
 
-            _options = options.Value;
-
-            Check.NotNull(_options.Configuration, nameof(_options.Configuration));
+        private RedisCacheOptions Options
+        {
+            get
+            {
+                if (_options != null)
+                {
+                    return _options.CurrentValue;
+                }
+                return default;
+            }
         }
 
         public void Dispose()
@@ -47,12 +56,13 @@ namespace Findx.Redis.StackExchangeRedis
 
         public ConnectionMultiplexer Acquire(string connection = null)
         {
-            connection = connection ?? _options.Configuration;
+            connection = connection ?? Options?.Configuration;
+
+            Check.NotNullOrWhiteSpace(connection, nameof(connection));
 
             var hashCode = connection.GetHashCode();
 
             _connectionMultiplexerCache.TryGetValue(hashCode, out var _connectionMultiplexer);
-
             if (_connectionMultiplexer != null && _connectionMultiplexer.IsConnected)
             {
                 return _connectionMultiplexer;
@@ -62,35 +72,38 @@ namespace Findx.Redis.StackExchangeRedis
             try
             {
                 _connectionMultiplexerCache.TryGetValue(hashCode, out _connectionMultiplexer);
-
-                if (_connectionMultiplexer == null || !_connectionMultiplexer.IsConnected)
+                if (_connectionMultiplexer != null && _connectionMultiplexer.IsConnected)
                 {
-                    _connectionMultiplexer.Dispose();
-                    _connectionMultiplexer = null;
-                    _connectionMultiplexer = ConnectionMultiplexer.Connect(connection);
-                    _connectionMultiplexer.ConnectionFailed += Conn_ConnectionFailed;
-                    _connectionMultiplexer.ConnectionRestored += Conn_ConnectionRestored;
-                    _connectionMultiplexer.ErrorMessage += Conn_ErrorMessage;
-
-                    _connectionMultiplexerCache[hashCode] = _connectionMultiplexer;
+                    return _connectionMultiplexer;
                 }
+
+                _connectionMultiplexer?.Dispose();
+                _connectionMultiplexer = null;
+
+                _connectionMultiplexer = ConnectionMultiplexer.Connect(connection);
+                _connectionMultiplexer.ConnectionFailed += Conn_ConnectionFailed;
+                _connectionMultiplexer.ConnectionRestored += Conn_ConnectionRestored;
+                _connectionMultiplexer.ErrorMessage += Conn_ErrorMessage;
+
+                _connectionMultiplexerCache[hashCode] = _connectionMultiplexer;
+
+                return _connectionMultiplexer;
             }
             finally
             {
                 _connectionLock.Release();
             }
-
-            return _connectionMultiplexer;
         }
 
         public async Task<ConnectionMultiplexer> AcquireAsync(string connection = null, CancellationToken cancellationToken = default)
         {
-            connection = connection ?? _options.Configuration;
+            connection = connection ?? Options?.Configuration;
+
+            Check.NotNullOrWhiteSpace(connection, nameof(connection));
 
             var hashCode = connection.GetHashCode();
 
             _connectionMultiplexerAsyncCache.TryGetValue(hashCode, out var _connectionMultiplexer);
-
             if (_connectionMultiplexer != null && _connectionMultiplexer.IsConnected)
             {
                 return _connectionMultiplexer;
@@ -100,24 +113,26 @@ namespace Findx.Redis.StackExchangeRedis
             try
             {
                 _connectionMultiplexerAsyncCache.TryGetValue(hashCode, out _connectionMultiplexer);
-
-                if (_connectionMultiplexer == null || !_connectionMultiplexer.IsConnected)
+                if (_connectionMultiplexer != null && _connectionMultiplexer.IsConnected)
                 {
-                    _connectionMultiplexer?.Dispose();
-                    _connectionMultiplexer = null;
-                    _connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connection);
-                    _connectionMultiplexer.ConnectionFailed += Conn_ConnectionFailed;
-                    _connectionMultiplexer.ConnectionRestored += Conn_ConnectionRestored;
-                    _connectionMultiplexer.ErrorMessage += Conn_ErrorMessage;
-
-                    _connectionMultiplexerAsyncCache[hashCode] = _connectionMultiplexer;
+                    return _connectionMultiplexer;
                 }
+
+                _connectionMultiplexer?.Dispose();
+                _connectionMultiplexer = null;
+                _connectionMultiplexer = await ConnectionMultiplexer.ConnectAsync(connection);
+                _connectionMultiplexer.ConnectionFailed += Conn_ConnectionFailed;
+                _connectionMultiplexer.ConnectionRestored += Conn_ConnectionRestored;
+                _connectionMultiplexer.ErrorMessage += Conn_ErrorMessage;
+
+                _connectionMultiplexerAsyncCache[hashCode] = _connectionMultiplexer;
+
+                return _connectionMultiplexer;
             }
             finally
             {
                 _connectionLock.Release();
             }
-            return _connectionMultiplexer;
         }
 
         private void Conn_ErrorMessage(object sender, RedisErrorEventArgs e)

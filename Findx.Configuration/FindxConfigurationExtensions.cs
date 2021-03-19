@@ -1,24 +1,35 @@
 ﻿using Microsoft.Extensions.Configuration;
-using System;
+using Microsoft.Extensions.Hosting;
 
 namespace Findx.Configuration
 {
     public static class FindxConfigurationExtensions
     {
-        /// <summary>
-        /// Adds an <see cref="IConfigurationProvider"/> that reads configuration values from the Mixos Configuration.
-        /// </summary>
-        /// <param name="configurationBuilder"></param>
-        /// <param name="options"></param>
-        /// <returns></returns>
         public static IConfigurationBuilder AddFindx(this IConfigurationBuilder configurationBuilder, FindxConfigurationOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            Check.NotNull(options, nameof(options));
             configurationBuilder.Add(new FindxConfigurationSource(options));
             return configurationBuilder;
+        }
+
+        public static IHostBuilder ConfigureFindxConfiguration(this IHostBuilder hostBuilder, FindxConfigurationOptions options)
+        {
+            hostBuilder.ConfigureHostConfiguration(builder =>
+            {
+                builder.AddFindx(options);
+            });
+            return hostBuilder;
+        }
+        public static IHostBuilder ConfigureFindxConfiguration(this IHostBuilder hostBuilder)
+        {
+            hostBuilder.ConfigureHostConfiguration(builder =>
+            {
+                FindxConfigurationOptions options = new FindxConfigurationOptions();
+                var configuration = builder.Build();
+                configuration.Bind(options);
+                builder.AddFindx(options);
+            });
+            return hostBuilder;
         }
     }
 }

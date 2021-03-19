@@ -1,6 +1,8 @@
-﻿namespace Findx.Security.Authentication.Jwt
+﻿using Microsoft.Extensions.Options;
+
+namespace Findx.Security.Authentication.Jwt
 {
-    public class JwtOptions
+    public class JwtOptions : IOptions<JwtOptions>
     {
         /// <summary>
         /// 获取或设置 密钥
@@ -37,5 +39,6 @@
         /// </summary>
         public bool Enabled { get; set; }
 
+        public JwtOptions Value => this;
     }
 }

@@ -76,14 +76,14 @@ namespace Findx.AspNetCore.Mvc.Filters
             var userId = string.Empty;
             if (Type == LockType.User)
                 userId = $"{currentUser.UserId}_";
-            return string.IsNullOrWhiteSpace(Key) ? $"{userId}{context.HttpContext.Request.Path}" : $"{userId}{Key}";
+            return Key.IsNullOrWhiteSpace() ? $"ADR:{userId}{context.HttpContext.Request.Path}" : $"ADR:{userId}{Key}";
         }
         private string GetLockValue(ActionExecutingContext context)
         {
-            var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
+            var currentUser = context.HttpContext.RequestServices.GetCurrentUser();
             var value = string.Empty;
-            if (Type == LockType.User)
-                value = $"{currentUser.UserId}";
+            if (Type == LockType.User && currentUser.Identity.IsAuthenticated)
+                value = $"{currentUser.Identity.GetUserId()}";
             return value.IsNullOrWhiteSpace() ? "findx_global_lock" : value;
         }
     }

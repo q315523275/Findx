@@ -1,4 +1,5 @@
-﻿using Findx.Extensions;
+﻿using Findx.AspNetCore;
+using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
@@ -7,17 +8,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 
 namespace Findx.Swagger
 {
-    public class SwaggerModule : FindxModule
+    [Description("Findx-Swagger文档模块")]
+    public class SwaggerModule : AspNetCoreModuleBase
     {
         public override ModuleLevel Level => ModuleLevel.Application;
         public override int Order => 20;
-        private SwaggerOptions _swaggerOptions;
+        private SwaggerOptions _swaggerOptions = new();
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             // 配置服务
@@ -26,6 +29,7 @@ namespace Findx.Swagger
             if (!_swaggerOptions.Enabled)
                 return services;
 
+            services.AddMvcCore().AddApiExplorer();
             services.AddSwaggerGen(options =>
             {
                 if (_swaggerOptions?.Endpoints?.Count > 0)
@@ -76,12 +80,10 @@ namespace Findx.Swagger
             return services;
         }
 
-        public override void OnApplicationInitialization(IServiceProvider provider)
+        public override void UseModule(IApplicationBuilder app)
         {
             if (!_swaggerOptions.Enabled)
                 return;
-
-            IApplicationBuilder app = provider.GetRequiredService<IApplicationBuilder>();
 
             app.UseSwagger().UseSwaggerUI(options =>
             {
@@ -94,7 +96,7 @@ namespace Findx.Swagger
                 }
             });
 
-            base.OnApplicationInitialization(provider);
+            base.UseModule(app);
         }
     }
 }

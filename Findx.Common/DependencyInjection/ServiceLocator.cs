@@ -1,5 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Security.Claims;
+using System.Security.Principal;
+
 namespace Findx.DependencyInjection
 {
     /// <summary>
@@ -19,6 +22,22 @@ namespace Findx.DependencyInjection
                 return scopedResolver.GetService<T>();
             }
             return Instance.GetService<T>() ?? default;
+        }
+
+        /// <summary>
+        /// 获取当前用户
+        /// </summary>
+        public static ClaimsPrincipal GetCurrentUser()
+        {
+            try
+            {
+                IPrincipal user = GetService<IPrincipal>();
+                return user as ClaimsPrincipal;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

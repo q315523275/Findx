@@ -4,17 +4,17 @@ using Microsoft.AspNetCore.Routing;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Findx.Authorization
+namespace Findx.Security.Authorization
 {
     /// <summary>
     /// 授权处理器
     /// </summary>
-    public class PermissionRequirementHandler : AuthorizationHandler<PermissionRequirement>
+    public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
     {
         private readonly IPermissionChecker _permissionChecker;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PermissionRequirementHandler(IPermissionChecker permissionChecker, IHttpContextAccessor httpContextAccessor)
+        public PermissionAuthorizationHandler(IPermissionChecker permissionChecker, IHttpContextAccessor httpContextAccessor)
         {
             _permissionChecker = permissionChecker;
             _httpContextAccessor = httpContextAccessor;

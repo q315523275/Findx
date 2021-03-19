@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.ComponentModel;
 using System.Security.Principal;
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
 
 namespace Findx.AspNetCore
 {
@@ -33,6 +35,12 @@ namespace Findx.AspNetCore
             services.Replace<IHybridServiceScopeFactory, HttpContextServiceScopeFactory>(ServiceLifetime.Singleton);
 
             services.AddSingleton<IApiInterfaceService, DefaultApiInterfaceService>();
+
+            services.AddControllersWithViews()
+                    .AddJsonOptions(options =>
+                    {
+                        options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+                    });
 
             return services;
         }

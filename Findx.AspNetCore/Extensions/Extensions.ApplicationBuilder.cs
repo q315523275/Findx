@@ -3,6 +3,7 @@ using Findx.Extensions;
 using Findx.Logging;
 using Findx.Modularity;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -13,8 +14,45 @@ using System.Linq;
 
 namespace Findx.AspNetCore.Extensions
 {
+    /// <summary>
+    /// AspNetCore应用扩展
+    /// </summary>
     public static partial class Extensions
     {
+        /// <summary>
+        /// 添加MVC并支持Area路由
+        /// </summary>
+        /// <param name="app">应用程序构建器</param>
+        /// <param name="area">是否支持Area路由</param>
+        public static IApplicationBuilder UseMvcWithAreaRoute(this IApplicationBuilder app, bool area = true)
+        {
+            return app.UseMvc(builder =>
+            {
+                if (area)
+                    builder.MapRoute("area", "{area:exists}/{controller}/{action=Index}/{id?}");
+                builder.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
+            });
+        }
+
+        /// <summary>
+        /// 添加Endpoint并Area路由支持
+        /// </summary>
+        public static IEndpointRouteBuilder MapControllersWithAreaRoute(this IEndpointRouteBuilder endpoints, bool area = true)
+        {
+            if (area)
+            {
+                endpoints.MapControllerRoute(
+                    name: "areas-router",
+                    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+            }
+
+            endpoints.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}");
+
+            return endpoints;
+        }
+
         /// <summary>
         /// 注册请求日志中间件
         /// </summary>
@@ -52,7 +90,10 @@ namespace Findx.AspNetCore.Extensions
             {
                 Type moduleType = module.GetType();
                 logger.LogInformation($"正在初始化模块《{moduleType.GetDescription()}》({moduleType.Name})”");
-                module.OnApplicationInitialization(provider);
+                if (module is AspNetCoreModuleBase aspNetCoreModule)
+                    aspNetCoreModule.UseModule(builder);
+                else
+                    module.UseModule(provider);
                 logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成");
             }
             // 所有模块停止委托注册
@@ -61,7 +102,7 @@ namespace Findx.AspNetCore.Extensions
             {
                 foreach (var module in findxBuilder.Modules)
                 {
-                    module.OnApplicationShutdown(provider);
+                    module.OnShutdown(provider);
                 }
             });
 

@@ -1,35 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace Findx.WebSocketCore
 {
     public static class WebSocketManagerExtensions
     {
-        //public static IServiceCollection AddWebSocketManager(this IBucketBuilder builder, Assembly assembly = null)
-        //{
-        //    return AddWebSocketManager(builder.Services, assembly);
-        //}
-        public static IServiceCollection AddWebSocketManager(this IServiceCollection services, Assembly assembly = null)
-        {
-            services.AddTransient<WebSocketConnectionManager>();
-
-            Assembly ass = assembly ?? Assembly.GetEntryAssembly();
-
-            foreach (var type in ass.ExportedTypes)
-            {
-                if (type.GetTypeInfo().BaseType == typeof(WebSocketHandler))
-                {
-                    services.AddSingleton(type);
-                }
-            }
-
-            return services;
-        }
-        public static IApplicationBuilder MapWebSocketManager(this IApplicationBuilder app,
-                                                              PathString path,
-                                                              WebSocketHandler handler)
+        public static IApplicationBuilder MapWebSocketManager(this IApplicationBuilder app, PathString path, WebSocketHandler handler)
         {
             return app.Map(path, (_app) => _app.UseMiddleware<WebSocketManagerMiddleware>(handler));
         }

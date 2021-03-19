@@ -17,13 +17,13 @@ namespace Findx.Mapster
             services.AddSingleton<IMapper, MapsterMapper>();
             return services;
         }
-        public override void OnApplicationInitialization(IServiceProvider provider)
+        public override void UseModule(IServiceProvider provider)
         {
             // 设置不区分大小写
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
             MapperExtensions.SetMapper(provider.GetRequiredService<IMapper>());
 
-            base.OnApplicationInitialization(provider);
+            base.UseModule(provider);
         }
     }
 }

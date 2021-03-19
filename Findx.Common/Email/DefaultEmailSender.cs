@@ -23,6 +23,7 @@ namespace Findx.Email
         {
             EmailSenderOptions = changeOptions;
         }
+
         protected override async Task SendEmailAsync(MailMessage mail)
         {
             using SmtpClient client = new SmtpClient(EmailSenderOptions.Host, EmailSenderOptions.Port)

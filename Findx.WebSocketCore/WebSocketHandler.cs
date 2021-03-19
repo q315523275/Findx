@@ -20,7 +20,7 @@ namespace Findx.WebSocketCore
         {
             WebSocketConnectionManager.AddSocket(socket);
 
-            await SendMessageAsync(socket, new Message()
+            await SendMessageAsync(socket, new WebSocketMessage()
             {
                 MessageType = MessageType.ConnectionEvent,
                 Data = WebSocketConnectionManager.GetId(socket)
@@ -30,7 +30,7 @@ namespace Findx.WebSocketCore
         {
             WebSocketConnectionManager.AddSocket(socketId, socket);
 
-            await SendMessageAsync(socket, new Message()
+            await SendMessageAsync(socket, new WebSocketMessage()
             {
                 MessageType = MessageType.ConnectionEvent,
                 Data = WebSocketConnectionManager.GetId(socket)
@@ -42,7 +42,7 @@ namespace Findx.WebSocketCore
             if (!string.IsNullOrWhiteSpace(socketId))
                 await WebSocketConnectionManager.RemoveSocket(socketId).ConfigureAwait(false);
         }
-        public async Task SendMessageAsync(WebSocket socket, Message message)
+        public async Task SendMessageAsync(WebSocket socket, WebSocketMessage message)
         {
             if (socket.State != WebSocketState.Open)
                 return;
@@ -65,13 +65,13 @@ namespace Findx.WebSocketCore
                 }
             }
         }
-        public async Task SendMessageAsync(string socketId, Message message)
+        public async Task SendMessageAsync(string socketId, WebSocketMessage message)
         {
             var socket = WebSocketConnectionManager.GetSocketById(socketId);
             if (socket != null)
                 await SendMessageAsync(socket, message).ConfigureAwait(false);
         }
-        public async Task SendMessageToAllAsync(Message message)
+        public async Task SendMessageToAllAsync(WebSocketMessage message)
         {
             foreach (var pair in WebSocketConnectionManager.GetAll())
             {
@@ -89,7 +89,7 @@ namespace Findx.WebSocketCore
                 }
             }
         }
-        public async Task SendMessageToGroupAsync(string groupID, Message message)
+        public async Task SendMessageToGroupAsync(string groupID, WebSocketMessage message)
         {
             var sockets = WebSocketConnectionManager.GetAllFromGroup(groupID);
             if (sockets != null)
@@ -100,7 +100,7 @@ namespace Findx.WebSocketCore
                 }
             }
         }
-        public async Task SendMessageToGroupAsync(string groupID, Message message, string except)
+        public async Task SendMessageToGroupAsync(string groupID, WebSocketMessage message, string except)
         {
             var sockets = WebSocketConnectionManager.GetAllFromGroup(groupID);
             if (sockets != null)
@@ -112,7 +112,7 @@ namespace Findx.WebSocketCore
                 }
             }
         }
-        public virtual async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, Message receivedMessage)
+        public virtual async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, WebSocketMessage receivedMessage)
         {
             try
             {
@@ -120,12 +120,12 @@ namespace Findx.WebSocketCore
             }
             catch (TargetParameterCountException)
             {
-                await SendMessageAsync(socket, new Message() { MessageType = MessageType.Error, Data = $"does not take parameters!" }).ConfigureAwait(false);
+                await SendMessageAsync(socket, new WebSocketMessage() { MessageType = MessageType.Error, Data = $"does not take parameters!" }).ConfigureAwait(false);
             }
 
             catch (ArgumentException)
             {
-                await SendMessageAsync(socket, new Message() { MessageType = MessageType.Error, Data = $"takes different arguments!" }).ConfigureAwait(false);
+                await SendMessageAsync(socket, new WebSocketMessage() { MessageType = MessageType.Error, Data = $"takes different arguments!" }).ConfigureAwait(false);
             }
         }
     }

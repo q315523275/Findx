@@ -1,11 +1,16 @@
-﻿using Findx.Logging;
+﻿using Findx.Builders;
+using Findx.Logging;
+using Findx.Modularity;
 using Findx.Reflection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace Findx.Extensions
@@ -17,6 +22,20 @@ namespace Findx.Extensions
     {
 
         #region IServiceCollection
+        /// <summary>
+        /// 添加Findx服务构建
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IFindxBuilder AddFindx(this IServiceCollection services)
+        {
+            // 框架启动异步日志
+            services.GetOrAddSingletonInstance(() => new StartupLogger());
+            services.GetOrAddSingletonInstance<IAppDomainAssemblyFinder>(() => new AppDomainAssemblyFinder());
+            // 框架构建
+            IFindxBuilder builder = services.GetOrAddSingletonInstance<IFindxBuilder>(() => new FindxBuilder(services));
+            return builder;
+        }
 
         /// <summary>
         /// 获取<see cref="IConfiguration"/>配置信息
@@ -122,6 +141,53 @@ namespace Findx.Extensions
 
         #region IServiceProvider
         /// <summary>
+        /// 获取所有模块信息
+        /// </summary>
+        public static FindxModule[] GetAllModules(this IServiceProvider provider)
+        {
+            FindxModule[] modules = provider.GetServices<FindxModule>().OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName).ToArray();
+            return modules;
+        }
+
+        /// <summary>
+        /// 获取当前用户
+        /// </summary>
+        public static ClaimsPrincipal GetCurrentUser(this IServiceProvider provider)
+        {
+            try
+            {
+                IPrincipal user = provider.GetService<IPrincipal>();
+                return user as ClaimsPrincipal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// 框架初始化，适用于非AspNetCore环境
+        /// </summary>
+        public static IServiceProvider UseFindx(this IServiceProvider provider)
+        {
+            ILogger logger = provider.GetLogger(typeof(Extensions));
+            logger.LogInformation("框架初始化开始");
+            Stopwatch watch = Stopwatch.StartNew();
+
+            FindxModule[] modules = provider.GetServices<FindxModule>().ToArray();
+            foreach (FindxModule module in modules)
+            {
+                module.UseModule(provider);
+                logger.LogInformation($"模块{module.GetType()}加载成功");
+            }
+
+            watch.Stop();
+            logger.LogInformation($"框架初始化完毕，耗时：{watch.Elapsed}");
+
+            return provider;
+        }
+
+        /// <summary>
         /// 获取指定类型的日志对象
         /// </summary>
         /// <typeparam name="T">非静态强类型</typeparam>
@@ -131,6 +197,7 @@ namespace Findx.Extensions
             ILoggerFactory factory = provider.GetService<ILoggerFactory>();
             return factory.CreateLogger<T>();
         }
+
         /// <summary>
         /// 获取指定类型的日志对象
         /// </summary>
@@ -164,6 +231,7 @@ namespace Findx.Extensions
             ILoggerFactory factory = provider.GetService<ILoggerFactory>();
             return factory.CreateLogger(name);
         }
+
         /// <summary>
         /// 执行<see cref="ServiceLifetime.Scoped"/>生命周期的业务逻辑
         /// </summary>

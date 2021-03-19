@@ -8,7 +8,7 @@ namespace Findx.Tasks.Scheduling
     /// </summary>
     public class TaskContext : ITaskContext
     {
-        public TaskContext(IServiceProvider serviceProvider, IDictionary<string, string> parameter, Guid taskId)
+        public TaskContext(IServiceProvider serviceProvider, IDictionary<string, object> parameter, Guid taskId)
         {
             ServiceProvider = serviceProvider;
             Parameter = parameter;
@@ -22,7 +22,7 @@ namespace Findx.Tasks.Scheduling
         /// <summary>
         /// 任务参数
         /// </summary>
-        public IDictionary<string, string> Parameter { get; set; }
+        public IDictionary<string, object> Parameter { get; set; }
         /// <summary>
         /// 当前分片序号，执行器集群列表中当前执行器的序号
         /// </summary>

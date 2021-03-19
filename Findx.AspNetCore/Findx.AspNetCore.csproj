@@ -15,6 +15,7 @@
 
 	<ItemGroup>
 		<Folder Include="Mvc\Middlewares\" />
+		<Folder Include="Mvc\RateLimit\" />
 	</ItemGroup>
 
 	<ItemGroup>

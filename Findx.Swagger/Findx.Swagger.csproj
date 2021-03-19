@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+	  <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Findx.AspNetCore\Findx.AspNetCore.csproj" />
     <ProjectReference Include="..\Findx.Common\Findx.csproj" />
   </ItemGroup>
 

@@ -1,6 +1,5 @@
 ﻿using Findx.Extensions;
 using Findx.Modularity;
-using Findx.Tasks.BackgroundTask;
 using Findx.Tasks.Scheduling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -37,8 +36,8 @@ namespace Findx.Tasks
             services.AddSingleton<IScheduler, InMemoryScheduler>();
 
             // 后台任务
-            services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-            services.AddHostedService<AsyncQueueTaskHostedService>();
+            //services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+            //services.AddHostedService<AsyncQueueTaskHostedService>();
 
             // 自动注册任务
             IScheduledTaskFinder scheduledTaskFinder = services.GetOrAddTypeFinder<IScheduledTaskFinder>(assemblyFinder => new ScheduledTaskFinder(assemblyFinder));
@@ -53,7 +52,7 @@ namespace Findx.Tasks
 
         protected CancellationTokenSource cancellationToken { get; private set; }
 
-        public override void OnApplicationInitialization(IServiceProvider provider)
+        public override void UseModule(IServiceProvider provider)
         {
             if (SchedulerOptions.Enable)
             {
@@ -74,11 +73,11 @@ namespace Findx.Tasks
                 cancellationToken = new CancellationTokenSource();
                 scheduler.StartAsync(cancellationToken.Token);
 
-                base.OnApplicationInitialization(provider);
+                base.UseModule(provider);
             }
         }
 
-        public override void OnApplicationShutdown(IServiceProvider provider)
+        public override void OnShutdown(IServiceProvider provider)
         {
             if (SchedulerOptions.Enable)
             {
@@ -89,7 +88,7 @@ namespace Findx.Tasks
                 scheduler?.StopAsync(cancellationToken.Token).ConfigureAwait(false).GetAwaiter();
             }
 
-            base.OnApplicationShutdown(provider);
+            base.OnShutdown(provider);
         }
     }
 }

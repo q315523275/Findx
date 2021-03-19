@@ -16,17 +16,14 @@ namespace Findx.Discovery.Consul
 
         private readonly IOptionsMonitor<DiscoveryOptions> _options;
 
-        private readonly IApplicationInstanceInfo _applicationInstanceInfo;
-
         private readonly ICacheProvider _cacheProvider;
 
         private readonly string ServiceInstancesKeyPrefix = "ServiceInstances:";
 
-        public DiscoveryClient(IServiceInstanceProvider serviceInstanceProvider, IOptionsMonitor<DiscoveryOptions> options, IApplicationInstanceInfo applicationInstanceInfo, ICacheProvider cacheProvider)
+        public DiscoveryClient(IServiceInstanceProvider serviceInstanceProvider, IOptionsMonitor<DiscoveryOptions> options, ICacheProvider cacheProvider)
         {
             _serviceInstanceProvider = serviceInstanceProvider;
             _options = options;
-            _applicationInstanceInfo = applicationInstanceInfo;
             _cacheProvider = cacheProvider;
             ProviderName = _serviceInstanceProvider.ProviderName;
         }

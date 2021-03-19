@@ -6,7 +6,6 @@ namespace Findx
 {
     public class ApplicationInstanceInfo : IApplicationInstanceInfo
     {
-        private readonly string ApplicationRoot = "Findx";
         private readonly string FindxApplicationRoot = "Findx:Application";
         private readonly Random _random = new Random();
         private readonly IConfiguration _configuration;

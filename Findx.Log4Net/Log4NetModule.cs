@@ -19,10 +19,10 @@ namespace Findx.Log4Net
             return services;
         }
 
-        public override void OnApplicationInitialization(IServiceProvider provider)
+        public override void UseModule(IServiceProvider provider)
         {
 
-            base.OnApplicationInitialization(provider);
+            base.UseModule(provider);
         }
     }
 }

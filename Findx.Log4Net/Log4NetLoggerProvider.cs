@@ -24,7 +24,7 @@ namespace Findx.Log4Net
             XmlConfigurator.ConfigureAndWatch(_loggerRepository, new FileInfo(file));
         }
 
-        public Log4NetLoggerProvider() : this(DefaultLog4NetFileName) { }
+        public Log4NetLoggerProvider() : this(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultLog4NetFileName)) { }
 
         public ILogger CreateLogger(string categoryName)
         {

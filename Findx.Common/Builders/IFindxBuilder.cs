@@ -12,6 +12,7 @@ namespace Findx.Builders
         /// 获取 服务集合
         /// </summary>
         IServiceCollection Services { get; }
+
         /// <summary>
         /// 获取 配置服务
         /// </summary>

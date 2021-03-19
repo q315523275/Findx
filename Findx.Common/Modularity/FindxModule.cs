@@ -33,7 +33,7 @@ namespace Findx.Modularity
         /// 应用模块初始化
         /// </summary>
         /// <param name="provider">服务提供者</param>
-        public virtual void OnApplicationInitialization(IServiceProvider provider)
+        public virtual void UseModule(IServiceProvider provider)
         {
             IsEnabled = true;
         }
@@ -41,7 +41,7 @@ namespace Findx.Modularity
         /// 应用模块注销
         /// </summary>
         /// <param name="provider"></param>
-        public virtual void OnApplicationShutdown(IServiceProvider provider)
+        public virtual void OnShutdown(IServiceProvider provider)
         {
             IsEnabled = false;
         }

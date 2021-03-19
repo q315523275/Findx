@@ -43,7 +43,7 @@ namespace Findx.WebSocketCore
             {
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    Message message = JsonConvert.DeserializeObject<Message>(serializedMessage);
+                    WebSocketMessage message = JsonConvert.DeserializeObject<WebSocketMessage>(serializedMessage);
                     await _webSocketHandler.ReceiveAsync(socket, result, message).ConfigureAwait(false);
                     return;
                 }

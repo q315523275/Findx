@@ -10,6 +10,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+    <ProjectReference Include="..\Findx.DinkToPdf\Findx.DinkToPdf.csproj" />
+    <ProjectReference Include="..\Findx.Discovery.Consul\Findx.Discovery.Consul.csproj" />
+    <ProjectReference Include="..\Findx.EventBus.RabbitMQ\Findx.EventBus.RabbitMQ.csproj" />
+    <ProjectReference Include="..\Findx.MailKit\Findx.MailKit.csproj" />
+    <ProjectReference Include="..\Findx.Mapster\Findx.Mapster.csproj" />
+    <ProjectReference Include="..\Findx.Redis\Findx.Redis.csproj" />
+    <ProjectReference Include="..\Findx.Security\Findx.Security.csproj" />
+    <ProjectReference Include="..\Findx.SqlSugar\Findx.SqlSugar.csproj" />
+    <ProjectReference Include="..\Findx.Swagger\Findx.Swagger.csproj" />
+    <ProjectReference Include="..\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

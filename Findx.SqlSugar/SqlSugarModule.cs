@@ -66,12 +66,12 @@ namespace Findx.SqlSugar
             return services;
         }
 
-        public override void OnApplicationInitialization(IServiceProvider provider)
+        public override void UseModule(IServiceProvider provider)
         {
             IOptionsMonitor<SqlSugarOptions> optionsMonitor = provider.GetService<IOptionsMonitor<SqlSugarOptions>>();
             optionsMonitor?.OnChange(options => SqlSugarOptions = options);
 
-            base.OnApplicationInitialization(provider);
+            base.UseModule(provider);
         }
     }
 }

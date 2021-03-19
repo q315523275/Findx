@@ -19,10 +19,10 @@ namespace Findx.NLog
             return services;
         }
 
-        public override void OnApplicationInitialization(IServiceProvider provider)
+        public override void UseModule(IServiceProvider provider)
         {
 
-            base.OnApplicationInitialization(provider);
+            base.UseModule(provider);
         }
     }
 }

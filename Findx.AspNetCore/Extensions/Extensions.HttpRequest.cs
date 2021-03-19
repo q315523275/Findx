@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using System.Net;
-
 namespace Findx.AspNetCore.Extensions
 {
     /// <summary>
@@ -21,7 +20,7 @@ namespace Findx.AspNetCore.Extensions
         /// </summary>
         public static string GetClientIp(this HttpContext context)
         {
-            string ip = context.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+            string ip = context.Request.Headers["X-Forwarded-For"].ToString().Split(',')[0];
             if (string.IsNullOrWhiteSpace(ip))
             {
                 ip = context.Request.Headers["REMOTE_ADDR"].FirstOrDefault();
@@ -39,6 +38,9 @@ namespace Findx.AspNetCore.Extensions
                     return "127.0.0.1";
                 }
             }
+
+            Check.NotNullOrWhiteSpace(ip, nameof(ip));
+
             return ip;
         }
     }

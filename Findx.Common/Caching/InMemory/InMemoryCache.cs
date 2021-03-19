@@ -18,7 +18,7 @@ namespace Findx.Caching.InMemory
         public InMemoryCache()
         {
             _cache = new ConcurrentDictionary<string, CacheItem>();
-            _taskTimer = new Timer(async x => { await RemoveNotAliveAsync(x); }, this, _period * 1000, _period * 1000);
+            _taskTimer = new Timer(async x => await RemoveNotAliveAsync(x), this, _period * 1000, _period * 1000);
         }
 
         public Task<bool> ExistsAsync(string key, CancellationToken token = default)

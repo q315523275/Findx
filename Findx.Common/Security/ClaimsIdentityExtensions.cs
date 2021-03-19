@@ -48,7 +48,7 @@ namespace Findx.Security
             {
                 return default;
             }
-            return value.To<T>();
+            return value.CastTo<T>();
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Options;
 
-namespace Findx.Authorization
+namespace Findx.Security.Authorization
 {
     public class AuthorizationOptions : IOptions<AuthorizationOptions>
     {

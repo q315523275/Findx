@@ -1,4 +1,4 @@
-﻿namespace Findx.Authorization
+﻿namespace Findx.Security.Authorization
 {
     public class AuthenticationOptions
     {

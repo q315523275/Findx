@@ -2,7 +2,7 @@
 using System.Security.Principal;
 using System.Threading.Tasks;
 
-namespace Findx.Authorization
+namespace Findx.Security.Authorization
 {
     public interface IPermissionChecker
     {

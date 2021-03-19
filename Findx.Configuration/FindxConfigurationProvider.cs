@@ -5,70 +5,61 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace Findx.Configuration
 {
-    internal class FindxConfigurationProvider : ConfigurationProvider
+    internal class FindxConfigurationProvider : ConfigurationProvider, IDisposable
     {
-        private readonly string _LocalBackupPath;
+        private readonly string _localBackupPath;
         private readonly FindxConfigurationOptions _options;
-        private readonly Timer _timer;
-        private Task _pollRefreshTask;
+        private Timer _timer;
+        private bool _polling;
         private int _version;
+        private HttpClient _httpClient;
         public FindxConfigurationProvider(FindxConfigurationOptions options)
         {
-            _options = options;
-            _LocalBackupPath = Path.Combine(Directory.GetCurrentDirectory(), $"local.cache.{options.Namespace}.setting.json");
             Data = new ConcurrentDictionary<string, string>();
+            _options = options;
+            _localBackupPath = Path.Combine(Directory.GetCurrentDirectory(), $"local.cache.{options.Namespace}.setting.json");
+            _httpClient = new HttpClient { Timeout = new TimeSpan(0, 0, 30) };
+            Console.WriteLine($"触发远端配置");
         }
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        private Task PollingRefreshTask()
+        private async Task PollingRefreshTask()
         {
-            if (_options.RefreshInteval == 0)
-            {
-                return Task.CompletedTask;
-            }
-            var pollTask = Task.Run(async () =>
-            {
-                while (true)
-                {
-                    await Task.Delay(_options.RefreshInteval);
-                    await LoadAsync();
-                }
-            });
-            return pollTask;
+            if (_polling) return;
+
+            _polling = true;
+            await LoadAsync();
+            _polling = false;
         }
         private async Task LoadAsync(bool reload = false)
         {
             try
             {
-                using var client = new HttpClient
-                {
-                    Timeout = new TimeSpan(0, 0, 30)
-                };
                 if (reload) { _version = 0; }
                 var requestUri = CreateRequestUri(_version);
-                var response = await client.GetAsync(requestUri);
+                var response = await _httpClient.GetAsync(requestUri);
                 response.EnsureSuccessStatusCode();
                 var responseBody = await response.Content.ReadAsStringAsync();
                 AddOrUpdateData(responseBody);
-                File.WriteAllText(_LocalBackupPath, responseBody);
+                File.WriteAllText(_localBackupPath, responseBody);
             }
             catch
             {
-                if (_version == 0 && File.Exists(_LocalBackupPath))
+                if (_version == 0 && File.Exists(_localBackupPath))
                 {
-                    var configText = File.ReadAllText(_LocalBackupPath);
+                    var configText = File.ReadAllText(_localBackupPath);
                     AddOrUpdateData(configText);
                 }
             }
             finally
             {
-                if (_pollRefreshTask == null)
+                if (_timer == null && _options.RefreshInteval > 0)
                 {
-                    _pollRefreshTask = PollingRefreshTask();
+                    _timer = new Timer(async x => await PollingRefreshTask(), null, _options.RefreshInteval * 1000, _options.RefreshInteval * 1000);
                 }
             };
         }
@@ -106,6 +97,16 @@ namespace Findx.Configuration
             var signString = $"/configs/{_options.AppId}/{_options.AppSercet}/{_options.Group}/{_options.Namespace}/{version}";
             var pathAndQuery = $"{queryPath}?{queryString}&sign=" + Encrypt.SHA256(signString);
             return $"{_options.Address.TrimEnd('/')}{pathAndQuery}";
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
+            _timer = null;
+            _httpClient?.Dispose();
+            _httpClient = null;
+
+            GC.SuppressFinalize(this);
         }
     }
 }

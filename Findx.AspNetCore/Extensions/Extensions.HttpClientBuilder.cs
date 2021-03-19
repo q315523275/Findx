@@ -137,7 +137,7 @@ namespace Findx.AspNetCore.Extensions
             var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
             var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
 
-            HttpResponseMessage fallbackResponse = new HttpResponseMessage() { Content = new StringContent(httpResponseMessage), StatusCode = (HttpStatusCode)httpResponseStatus };
+            HttpResponseMessage fallbackResponse = new() { Content = new StringContent(httpResponseMessage), StatusCode = (HttpStatusCode)httpResponseStatus };
 
             var fallbackPolicy = Policy<HttpResponseMessage>.HandleInner<TException>()
                                                             .FallbackAsync(fallbackResponse, b =>

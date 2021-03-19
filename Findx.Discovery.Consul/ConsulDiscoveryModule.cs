@@ -32,7 +32,7 @@ namespace Findx.Discovery.Consul
             return services;
         }
 
-        public override void OnApplicationInitialization(IServiceProvider provider)
+        public override void UseModule(IServiceProvider provider)
         {
             IOptionsMonitor<DiscoveryOptions> _optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DiscoveryOptions>>();
             if (_optionsMonitor.CurrentValue.Enabled && _optionsMonitor.CurrentValue.Register)
@@ -41,10 +41,10 @@ namespace Findx.Discovery.Consul
                 IConsulRegistration consulRegistration = provider.GetRequiredService<IConsulRegistration>();
                 consulServiceRegistry.Register(consulRegistration).ConfigureAwait(false).GetAwaiter();
             }
-            base.OnApplicationInitialization(provider);
+            base.UseModule(provider);
         }
 
-        public override void OnApplicationShutdown(IServiceProvider provider)
+        public override void OnShutdown(IServiceProvider provider)
         {
             IOptionsMonitor<DiscoveryOptions> _optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DiscoveryOptions>>();
             if (_optionsMonitor.CurrentValue.Enabled && _optionsMonitor.CurrentValue.Deregister)
@@ -53,7 +53,7 @@ namespace Findx.Discovery.Consul
                 IConsulRegistration consulRegistration = provider.GetRequiredService<IConsulRegistration>();
                 consulServiceRegistry.Deregister(consulRegistration).ConfigureAwait(false).GetAwaiter();
             }
-            base.OnApplicationShutdown(provider);
+            base.OnShutdown(provider);
         }
     }
 }

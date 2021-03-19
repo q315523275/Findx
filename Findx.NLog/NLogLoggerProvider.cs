@@ -17,7 +17,7 @@ namespace Findx.NLog
             LogManager.LoadConfiguration(file);
         }
 
-        public NLogLoggerProvider() : this(DefaultNLogFileName) { }
+        public NLogLoggerProvider() : this(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName)) { }
 
         public Microsoft.Extensions.Logging.ILogger CreateLogger(string categoryName)
         {

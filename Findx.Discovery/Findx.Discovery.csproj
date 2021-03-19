@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ConfigurationDiscovery\" />
+    <Folder Include="LocalDiscovery\" />
   </ItemGroup>
 
 </Project>

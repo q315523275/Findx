@@ -5,7 +5,6 @@ using Findx.Email;
 using Findx.ExceptionHandling;
 using Findx.Extensions;
 using Findx.Locks;
-using Findx.Logging;
 using Findx.Messaging;
 using Findx.Modularity;
 using Findx.Serialization;
@@ -27,17 +26,13 @@ namespace Findx.Builders
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             IConfiguration configuration = services.GetConfiguration();
-
-            // 框架启动异步日志
-            services.GetOrAddSingletonInstance(() => new StartupLogger());
-
             // 缓存
             services.TryAddSingleton<ICacheProvider, CacheProvider>();
             services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();
             services.AddSingleton<ICache, InMemoryCache>();
 
             // 工作单元
-            services.AddSingleton<IUnitOfWorkManager, UnitOfWorkManager>();
+            services.AddScoped<IUnitOfWorkManager, UnitOfWorkManager>();
 
             // 邮件
             services.AddSingleton<IEmailSender, DefaultEmailSender>();

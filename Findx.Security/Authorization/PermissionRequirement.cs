@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
-namespace Findx.Authorization
+namespace Findx.Security.Authorization
 {
     public class PermissionRequirement : IAuthorizationRequirement
     {

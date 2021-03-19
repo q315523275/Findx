@@ -37,8 +37,10 @@ namespace Findx.WebHost.Controllers
             .ToArray();
         }
         [HttpGet("/health")]
+        [RateLimiter(Limit = 3)]
         public string Health()
         {
+            _logger.LogInformation("测试NLog", Summaries);
             return "ok";
         }
     }

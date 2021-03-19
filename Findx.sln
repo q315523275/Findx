@@ -51,9 +51,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.RPC", "Findx.RPC\Find
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Discovery.Kubernetes", "Findx.Discovery.Kubernetes\Findx.Discovery.Kubernetes.csproj", "{330A28EC-991C-4BAD-BA17-7AEC39404D45}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.WebHost", "Findx.WebHost\Findx.WebHost.csproj", "{42D79752-8798-4118-B86A-A265425E1F61}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.WebHost", "Findx.WebHost\Findx.WebHost.csproj", "{42D79752-8798-4118-B86A-A265425E1F61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestProject1", "TestProject1\TestProject1.csproj", "{3B801AB8-92E5-4A87-902C-0DCCE7BABD6B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProject1", "TestProject1\TestProject1.csproj", "{3B801AB8-92E5-4A87-902C-0DCCE7BABD6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

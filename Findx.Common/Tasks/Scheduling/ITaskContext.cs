@@ -7,7 +7,7 @@ namespace Findx.Tasks.Scheduling
     {
         IServiceProvider ServiceProvider { get; }
         Guid TaskId { get; }
-        IDictionary<string, string> Parameter { get; }
+        IDictionary<string, object> Parameter { get; }
         int ShardIndex { get; }
         int ShardTotal { get; }
     }

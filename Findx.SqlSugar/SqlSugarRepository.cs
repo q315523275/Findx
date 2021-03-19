@@ -44,7 +44,6 @@ namespace Findx.SqlSugar
 
 
 
-
         public int Delete(dynamic key)
         {
             return _sqlSugarClient.Deleteable<TEntity>(key).ExecuteCommand();
@@ -66,7 +65,6 @@ namespace Findx.SqlSugar
             _sqlSugarClient.Ado.CancellationToken = cancellationToken;
             return _sqlSugarClient.Deleteable<TEntity>().Where(whereExpression).ExecuteCommandAsync();
         }
-
 
 
 
@@ -104,7 +102,6 @@ namespace Findx.SqlSugar
 
 
 
-
         public IUnitOfWork GetUnitOfWork()
         {
             return _unitOfWork;
@@ -131,7 +128,6 @@ namespace Findx.SqlSugar
         {
             return _sqlSugarClient.Insertable<TEntity>(entities).ExecuteCommandAsync();
         }
-
 
 
 

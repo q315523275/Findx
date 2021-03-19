@@ -15,10 +15,10 @@ namespace Findx.Modularity
         /// <returns></returns>
         protected override Type[] FindAllItems()
         {
-            // 排除被继承的Pack实类
+            // 排除被继承的Module实类
             Type[] types = base.FindAllItems();
-            Type[] basePackTypes = types.Select(m => m.BaseType).Where(m => m != null && m.IsClass && !m.IsAbstract).ToArray();
-            return types.Except(basePackTypes).ToArray();
+            Type[] baseModuleTypes = types.Select(m => m.BaseType).Where(m => m != null && m.IsClass && !m.IsAbstract).ToArray();
+            return types.Except(baseModuleTypes).ToArray();
         }
     }
 }

@@ -68,23 +68,27 @@ namespace Findx.RabbitMQ
             _connectionLock.Wait();
             try
             {
-                if (!IsConnected)
-                {
-                    _connection = _connectionFactory.CreateConnection();
+                if (IsConnected)
+                    return _connection;
 
-                    if (IsConnected)
-                    {
-                        _connection.ConnectionShutdown += OnConnectionShutdown;
-                        _connection.CallbackException += OnCallbackException;
-                        _connection.ConnectionBlocked += OnConnectionBlocked;
-                    }
+                _connection?.Dispose();
+                _connection = null;
+
+                _connection = _connectionFactory.CreateConnection();
+
+                if (IsConnected)
+                {
+                    _connection.ConnectionShutdown += OnConnectionShutdown;
+                    _connection.CallbackException += OnCallbackException;
+                    _connection.ConnectionBlocked += OnConnectionBlocked;
                 }
+
+                return _connection;
             }
             finally
             {
                 _connectionLock.Release();
             }
-            return _connection;
         }
 
         public void Dispose()

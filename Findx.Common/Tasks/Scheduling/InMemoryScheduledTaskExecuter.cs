@@ -32,7 +32,7 @@ namespace Findx.Tasks.Scheduling
             Check.NotNull(schedulerTaskWrapper, nameof(schedulerTaskWrapper));
 
             // 任务参数
-            var taskArgsInfo = jsonSerializer.Deserialize<Dictionary<string, string>>(taskInfo.TaskArgs ?? "{}");
+            var taskArgsInfo = jsonSerializer.Deserialize<Dictionary<string, object>>(taskInfo.TaskArgs ?? "{}");
             // 获取任务实例
             var scheduledTask = context.ServiceProvider.GetService(schedulerTaskWrapper.TaskHandlerType);
             // 创建任务上下文
