@@ -1,4 +1,5 @@
-﻿using Findx.Builders;
+﻿using Findx.AspNetCore.Mvc.Middlewares;
+using Findx.Builders;
 using Findx.Extensions;
 using Findx.Logging;
 using Findx.Modularity;
@@ -110,6 +111,17 @@ namespace Findx.AspNetCore.Extensions
             logger.LogInformation(0, $"框架初始化完成，耗时：{watch.Elapsed}\r\n");
 
             return builder;
+        }
+
+
+        /// <summary>
+        /// 添加Json异常处理器中间件
+        /// </summary>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseJsonExceptionHandler(this IApplicationBuilder builder)
+        {
+            return builder.UseMiddleware<JsonExceptionHandlerMiddleware>();
         }
     }
 }

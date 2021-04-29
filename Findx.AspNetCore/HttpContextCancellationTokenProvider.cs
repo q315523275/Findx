@@ -10,6 +10,6 @@ namespace Findx.AspNetCore
 
         public HttpContextCancellationTokenProvider(IHttpContextAccessor httpContextAccessor) => _httpContextAccessor = httpContextAccessor;
 
-        public CancellationToken Token => _httpContextAccessor.HttpContext?.RequestAborted ?? CancellationToken.None;
+        public CancellationToken Token => _httpContextAccessor?.HttpContext?.RequestAborted ?? CancellationToken.None;
     }
 }

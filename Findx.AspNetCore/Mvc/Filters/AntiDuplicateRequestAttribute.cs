@@ -62,7 +62,6 @@ namespace Findx.AspNetCore.Mvc.Filters
             {
                 context.Result = new JsonResult(CommonResult.Fail("4019", "重复提交,请稍后再试"));
             }
-
         }
         private ILock GetLock(ActionExecutingContext context)
         {
@@ -72,10 +71,10 @@ namespace Findx.AspNetCore.Mvc.Filters
         }
         private string GetLockKey(ActionExecutingContext context)
         {
-            var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
+            var currentUser = context.HttpContext.RequestServices.GetCurrentUser();
             var userId = string.Empty;
-            if (Type == LockType.User)
-                userId = $"{currentUser.UserId}_";
+            if (Type == LockType.User && currentUser.Identity.IsAuthenticated)
+                userId = $"{currentUser.Identity.GetUserId()}_";
             return Key.IsNullOrWhiteSpace() ? $"ADR:{userId}{context.HttpContext.Request.Path}" : $"ADR:{userId}{Key}";
         }
         private string GetLockValue(ActionExecutingContext context)

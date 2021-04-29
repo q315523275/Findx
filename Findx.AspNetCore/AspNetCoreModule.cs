@@ -4,12 +4,11 @@ using Findx.Extensions;
 using Findx.Modularity;
 using Findx.Threading;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.ComponentModel;
 using System.Security.Principal;
-using System.Text.Encodings.Web;
-using System.Text.Unicode;
 
 namespace Findx.AspNetCore
 {
@@ -36,11 +35,14 @@ namespace Findx.AspNetCore
 
             services.AddSingleton<IApiInterfaceService, DefaultApiInterfaceService>();
 
-            services.AddControllersWithViews()
-                    .AddJsonOptions(options =>
-                    {
-                        options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-                    });
+            // 关闭模型自动化验证,实现自控
+            services.Configure<ApiBehaviorOptions>(opts => opts.SuppressModelStateInvalidFilter = true);
+            // 让用户自控
+            //services.AddControllersWithViews()
+            //        .AddJsonOptions(options =>
+            //        {
+            //            options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+            //        });
 
             return services;
         }

@@ -9,11 +9,37 @@ namespace Findx.AspNetCore.Extensions
     /// </summary>
     public static partial class Extensions
     {
+        /// <summary>
+        /// 确定指定的 HTTP 请求是否为 AJAX 请求。
+        /// </summary>
+        ///
+        /// <returns>
+        /// 如果指定的 HTTP 请求是 AJAX 请求，则为 true；否则为 false。
+        /// </returns>
+        /// <param name="request">HTTP 请求。</param>
+        /// <exception cref="T:System.ArgumentNullException"><paramref name="request"/> 参数为 null（在 Visual Basic 中为 Nothing）。</exception>
         public static bool IsAjaxRequest(this HttpRequest request)
         {
             Check.NotNull(request, nameof(request));
 
-            return "XMLHttpRequest".Equals(request.Headers["X-Requested-With"], StringComparison.OrdinalIgnoreCase);
+            return string.Equals(request.Query["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal)
+                || string.Equals(request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal);
+        }
+        /// <summary>
+        /// 确定指定的 HTTP 请求的 ContextType 是否为 Json 方式
+        /// </summary>
+        public static bool IsJsonContextType(this HttpRequest request)
+        {
+            Check.NotNull(request, nameof(request));
+            bool flag = request.Headers?["Content-Type"].ToString().IndexOf("application/json", StringComparison.OrdinalIgnoreCase) > -1
+                || request.Headers?["Content-Type"].ToString().IndexOf("text/json", StringComparison.OrdinalIgnoreCase) > -1;
+            if (flag)
+            {
+                return true;
+            }
+            flag = request.Headers?["Accept"].ToString().IndexOf("application/json", StringComparison.OrdinalIgnoreCase) > -1
+                || request.Headers?["Accept"].ToString().IndexOf("text/json", StringComparison.OrdinalIgnoreCase) > -1;
+            return flag;
         }
         /// <summary>
         /// 获取客户端IP地址

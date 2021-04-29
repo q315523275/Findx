@@ -49,7 +49,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             // 如果使用分布式缓存，需做好计数器
 
             ICancellationTokenProvider cancellationTokenProvider = context.HttpContext.RequestServices.GetService<ICancellationTokenProvider>();
-            ICache cache = context.HttpContext.RequestServices.GetService<ICacheProvider>().Get(CacheType.Memory);
+            ICache cache = context.HttpContext.RequestServices.GetService<ICacheProvider>().Get(CacheType.DefaultMemory);
             string rateLimitKey = GetRateLimitKey(context);
             AtomicInteger atomic = await cache.GetAsync<AtomicInteger>(rateLimitKey, cancellationTokenProvider.Token);
             if (atomic == default)
