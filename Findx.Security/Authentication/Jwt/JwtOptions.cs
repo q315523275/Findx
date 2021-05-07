@@ -22,12 +22,12 @@ namespace Findx.Security.Authentication.Jwt
         /// <summary>
         /// 获取或设置 AccessToken有效期分钟数
         /// </summary>
-        public double AccessExpireMins { get; set; }
+        public double AccessExpireMinutes { get; set; }
 
         /// <summary>
         /// 获取或设置 RefreshToken有效期分钟数
         /// </summary>
-        public double RefreshExpireMins { get; set; }
+        public double RefreshExpireMinutes { get; set; }
 
         /// <summary>
         /// 获取或设置 RefreshToken是否绝对过期
@@ -37,7 +37,7 @@ namespace Findx.Security.Authentication.Jwt
         /// <summary>
         /// 获取或设置 是否启用
         /// </summary>
-        public bool Enabled { get; set; }
+        public bool Enabled { get; set; } = false;
 
         public JwtOptions Value => this;
     }

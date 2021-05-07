@@ -105,7 +105,7 @@ namespace Findx.Discovery
         /// <summary>
         /// 缓存策略
         /// </summary>
-        public CacheType CacheProvider { get; set; } = CacheType.Memory;
+        public string CacheProvider { get; set; } = CacheType.DefaultMemory;
         /// <summary>
         /// 服务缓存时间,单位秒
         /// </summary>

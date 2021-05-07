@@ -9,9 +9,9 @@ namespace Findx.Discovery.HttpMessageHandlers
 {
     public class DiscoveryRoundRobinHttpMessageHandler : DelegatingHandler
     {
-        private readonly ILoadBalancerManager _loadBalancerManager;
+        private readonly ILoadBalancerProvider _loadBalancerManager;
 
-        public DiscoveryRoundRobinHttpMessageHandler(ILoadBalancerManager loadBalancerManager)
+        public DiscoveryRoundRobinHttpMessageHandler(ILoadBalancerProvider loadBalancerManager)
         {
             _loadBalancerManager = loadBalancerManager;
         }

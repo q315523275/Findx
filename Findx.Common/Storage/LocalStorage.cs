@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Hosting;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.Storage
@@ -17,7 +18,7 @@ namespace Findx.Storage
 
         public string StorageName => "Local";
 
-        public async Task DeleteMediaAsync(string fileName)
+        public async Task DeleteMediaAsync(string fileName, CancellationToken token = default)
         {
             var filePath = Path.Combine(_hostEnvironment.ContentRootPath, MediaRootFoler, fileName);
             if (File.Exists(filePath))
@@ -31,7 +32,7 @@ namespace Findx.Storage
             return $"/{MediaRootFoler}/{fileName}";
         }
 
-        public async Task SaveMediaAsync(Stream mediaBinaryStream, string fileName, string mimeType = null)
+        public async Task SaveMediaAsync(Stream mediaBinaryStream, string fileName, string mimeType = null, CancellationToken token = default)
         {
             var filePath = Path.Combine(_hostEnvironment.ContentRootPath, MediaRootFoler, fileName);
             using (var output = new FileStream(filePath, FileMode.Create))

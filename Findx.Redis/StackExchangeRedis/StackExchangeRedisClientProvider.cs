@@ -4,33 +4,33 @@ namespace Findx.Redis.StackExchangeRedis
 {
     public class StackExchangeRedisClientProvider : IRedisClientProvider
     {
-        private readonly IConnectionPool _pool;
-        private readonly RedisCacheOptions _options;
+        private readonly IStackExchangeRedisDataBaseProvider _redisDataBaseProvider;
+        private readonly IOptionsMonitor<RedisOptions> _options;
 
-        public StackExchangeRedisClientProvider(IConnectionPool pool, IOptions<RedisCacheOptions> options)
+        public StackExchangeRedisClientProvider(IStackExchangeRedisDataBaseProvider redisDataBaseProvider, IOptionsMonitor<RedisOptions> options)
         {
-            _pool = pool;
-            _options = options.Value;
+            _redisDataBaseProvider = redisDataBaseProvider;
+            _options = options;
         }
 
         public IRedisClient CreateClient()
         {
-            return new StackExchangeRedisClient(_pool, _options, new RedisJsonSerializer());
+            return new StackExchangeRedisClient(_redisDataBaseProvider, _options.CurrentValue, new RedisJsonSerializer());
         }
 
-        public IRedisClient CreateClient(RedisCacheOptions options)
+        public IRedisClient CreateClient(RedisOptions options)
         {
-            return new StackExchangeRedisClient(_pool, options, new RedisJsonSerializer());
+            return new StackExchangeRedisClient(_redisDataBaseProvider, options, new RedisJsonSerializer());
         }
 
         public IRedisClient CreateClient(IRedisSerializer redisSerializer)
         {
-            return new StackExchangeRedisClient(_pool, _options, redisSerializer);
+            return new StackExchangeRedisClient(_redisDataBaseProvider, _options.CurrentValue, redisSerializer);
         }
 
-        public IRedisClient CreateClient(RedisCacheOptions options, IRedisSerializer redisSerializer)
+        public IRedisClient CreateClient(RedisOptions options, IRedisSerializer redisSerializer)
         {
-            return new StackExchangeRedisClient(_pool, options, redisSerializer);
+            return new StackExchangeRedisClient(_redisDataBaseProvider, options, redisSerializer);
         }
     }
 }

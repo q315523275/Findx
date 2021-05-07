@@ -5,6 +5,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.MailKit
@@ -24,7 +25,7 @@ namespace Findx.MailKit
             EmailSenderOptions = changeOptions;
         }
 
-        protected override async Task SendEmailAsync(System.Net.Mail.MailMessage mail)
+        protected override async Task SendEmailAsync(System.Net.Mail.MailMessage mail, CancellationToken token = default)
         {
             using (var client = new SmtpClient())
             {

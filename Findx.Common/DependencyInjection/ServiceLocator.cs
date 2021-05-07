@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
 
@@ -8,20 +9,58 @@ namespace Findx.DependencyInjection
     /// <summary>
     /// 服务提供者定位器
     /// </summary>
-    public class ServiceLocator
+    public sealed class ServiceLocator
     {
-        public static IServiceProvider Instance { get; set; }
+        public static IServiceProvider ServiceProvider { get; set; }
 
         public static T GetService<T>()
         {
-            Check.NotNull(Instance, nameof(Instance));
+            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
 
-            IScopedServiceResolver scopedResolver = Instance.GetService<IScopedServiceResolver>();
+            IScopedServiceResolver scopedResolver = ServiceProvider.GetService<IScopedServiceResolver>();
             if (scopedResolver != null && scopedResolver.ResolveEnabled)
             {
-                return scopedResolver.GetService<T>();
+                return scopedResolver.GetService<T>() ?? default;
             }
-            return Instance.GetService<T>() ?? default;
+            return ServiceProvider.GetService<T>() ?? default;
+        }
+
+        public static object GetService(Type serviceType)
+        {
+            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
+            Check.NotNull(serviceType, nameof(serviceType));
+
+            IScopedServiceResolver scopedResolver = ServiceProvider.GetService<IScopedServiceResolver>();
+            if (scopedResolver != null && scopedResolver.ResolveEnabled)
+            {
+                return scopedResolver.GetService(serviceType) ?? default;
+            }
+            return ServiceProvider.GetService(serviceType) ?? default;
+        }
+
+        public static IEnumerable<T> GetServices<T>()
+        {
+            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
+
+            IScopedServiceResolver scopedResolver = ServiceProvider.GetService<IScopedServiceResolver>();
+            if (scopedResolver != null && scopedResolver.ResolveEnabled)
+            {
+                return scopedResolver.GetServices<T>() ?? default;
+            }
+            return ServiceProvider.GetServices<T>() ?? default;
+        }
+
+        public static IEnumerable<object> GetServices(Type serviceType)
+        {
+            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
+            Check.NotNull(serviceType, nameof(serviceType));
+
+            IScopedServiceResolver scopedResolver = ServiceProvider.GetService<IScopedServiceResolver>();
+            if (scopedResolver != null && scopedResolver.ResolveEnabled)
+            {
+                return scopedResolver.GetServices(serviceType) ?? default;
+            }
+            return ServiceProvider.GetServices(serviceType) ?? default;
         }
 
         /// <summary>

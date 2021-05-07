@@ -2,7 +2,7 @@
 
 namespace Findx.WebHost.Messaging
 {
-    public class PayedOrderCommand : IAsyncApplicationEvent
+    public class PayedOrderCommand : IMessageNotify
     {
         public PayedOrderCommand()
         {

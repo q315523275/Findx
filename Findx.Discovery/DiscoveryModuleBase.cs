@@ -24,7 +24,7 @@ namespace Findx.Discovery
             services.Configure<DiscoveryOptions>(section);
 
             services.TryAddSingleton<ILoadBalancerFactory, LoadBalancerFactory>();
-            services.TryAddSingleton<ILoadBalancerManager, LoadBalancerManager>();
+            services.TryAddSingleton<ILoadBalancerProvider, LoadBalancerProvider>();
             services.TryAddSingleton<IDiscoveryClient, DiscoveryClient>();
 
             services.TryAddTransient<DiscoveryLeastConnectHttpMessageHandler>();

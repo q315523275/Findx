@@ -40,12 +40,14 @@ namespace Findx.Builders
 
             // 异常通知
             services.AddSingleton<IExceptionNotifier, ExceptionNotifier>();
+            services.AddSingleton<IExceptionSubscriber, NullExceptionSubscriber>();
 
             // 锁
             services.AddSingleton<ILock, LocalLock>();
 
-            // 应用消息
-            services.AddScoped<IApplicationEventPublisher, ApplicationEventPublisher>();
+            // 进程消息
+            services.AddScoped<IMessageSender, DefaultMessageSender>();
+            services.AddSingleton<IMessageNotifySender, DefaultMessageNotifySender>();
 
             // 序列化
             services.AddSingleton<IJsonSerializer, SystemTextJsonContentSerializer>();

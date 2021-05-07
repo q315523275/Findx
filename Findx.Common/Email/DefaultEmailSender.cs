@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Net.Mail;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.Email
@@ -24,7 +25,7 @@ namespace Findx.Email
             EmailSenderOptions = changeOptions;
         }
 
-        protected override async Task SendEmailAsync(MailMessage mail)
+        protected override async Task SendEmailAsync(MailMessage mail, CancellationToken token = default)
         {
             using SmtpClient client = new SmtpClient(EmailSenderOptions.Host, EmailSenderOptions.Port)
             {

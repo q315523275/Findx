@@ -6,7 +6,9 @@ namespace Findx.Redis
 {
     public interface IRedisClient
     {
-        #region Public
+        #region Public(公共操作)
+        string Name { get; }
+
 
         /// <summary>
         /// 清除key
@@ -28,9 +30,27 @@ namespace Findx.Redis
         /// </summary>
         Task ClearAsync();
 
+        /// <summary>
+        /// 命令操作
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="cacheKey"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        object Eval(string script, string cacheKey, List<object> args);
+
+        /// <summary>
+        /// 命令操作
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="cacheKey"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        Task<object> EvalAsync(string script, string cacheKey, List<object> args);
+
         #endregion Public
 
-        #region Keys
+        #region Keys(缓存Key操作)
 
         /// <summary>
         /// 查找当前命名前缀下共有多少个Key
@@ -132,9 +152,27 @@ namespace Findx.Redis
         /// <returns></returns>
         Task RemoveAllAsync(List<string> keys);
 
+        /// <summary>
+        /// 计算当前prefix开头的key总数
+        /// </summary>
+        /// <param name="prefix">key前缀</param>
+        /// <returns></returns>
+        int CalcuteKeyCount(string prefix);
+
+        /// <summary>
+        /// 删除以当前prefix开头的所有key缓存
+        /// </summary>
+        /// <param name="prefix">key前缀</param>
+        void DeleteKeyWithKeyPrefix(string prefix);
+
+        /// <summary>
+        /// 删除以当前prefix开头的所有key缓存
+        /// </summary>
+        /// <param name="prefix">key前缀</param>
+        Task DeleteKeyWithKeyPrefixAsync(string prefix);
         #endregion Keys
 
-        #region StringSet
+        #region String(字符串类型数据操作)
 
         /// <summary>
         /// 设置string键值
@@ -291,7 +329,7 @@ namespace Findx.Redis
 
         #endregion StringSet
 
-        #region Hash
+        #region Hash(哈希数据类型操作)
 
         /// <summary>
         /// 获取所有的Hash键
@@ -533,7 +571,7 @@ namespace Findx.Redis
 
         #endregion hash
 
-        #region Lock
+        #region Lock(分布式锁操作)
 
         /// <summary>
         /// 获取一个锁
@@ -574,5 +612,96 @@ namespace Findx.Redis
         Task<bool> LockReleaseAsync<T>(string key, T value);
 
         #endregion lock
+
+        #region List(集合操作)
+        T ListGetByIndex<T>(string cacheKey, long index);
+        long ListLength(string cacheKey);
+        T ListLeftPop<T>(string cacheKey);
+        long ListLeftPush<T>(string cacheKey, T cacheValue);
+        long ListLeftPush<T>(string cacheKey, IList<T> cacheValues);
+        T ListRightPop<T>(string cacheKey);
+        long ListRightPush<T>(string cacheKey, T cacheValue);
+        long ListRightPush<T>(string cacheKey, IList<T> cacheValues);
+        List<T> ListRange<T>(string cacheKey, long start, long stop);
+        long ListRemove<T>(string cacheKey, long count, T cacheValue);
+        bool ListSetByIndex<T>(string cacheKey, long index, T cacheValue);
+        bool ListTrim(string cacheKey, long start, long stop);
+        long ListInsertBefore<T>(string cacheKey, T pivot, T cacheValue);
+        long ListInsertAfter<T>(string cacheKey, T pivot, T cacheValue);
+        Task<T> ListGetByIndexAsync<T>(string cacheKey, long index);
+        Task<long> ListLengthAsync(string cacheKey);
+        Task<T> ListLeftPopAsync<T>(string cacheKey);
+        Task<long> ListLeftPushAsync<T>(string cacheKey, T cacheValue);
+        Task<long> ListLeftPushAsync<T>(string cacheKey, IList<T> cacheValues);
+        Task<T> ListRightPopAsync<T>(string cacheKey);
+        Task<long> ListRightPushAsync<T>(string cacheKey, T cacheValue);
+        Task<long> ListRightPushAsync<T>(string cacheKey, IList<T> cacheValues);
+        Task<List<T>> ListRangeAsync<T>(string cacheKey, long start, long stop);
+        Task<long> ListRemoveAsync<T>(string cacheKey, long count, T cacheValue);
+        Task<bool> ListSetByIndexAsync<T>(string cacheKey, long index, T cacheValue);
+        Task<bool> ListTrimAsync(string cacheKey, long start, long stop);
+        Task<long> ListInsertBeforeAsync<T>(string cacheKey, T pivot, T cacheValue);
+        Task<long> ListInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue);
+        #endregion
+
+        #region Set(数组操作)
+        long SetAdd<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null);
+        long SetLength(string cacheKey);
+        bool SetContains<T>(string cacheKey, T cacheValue);
+        List<T> SetMembers<T>(string cacheKey);
+        T SetPop<T>(string cacheKey);
+        List<T> SetRandomMembers<T>(string cacheKey, int count = 1);
+        long SetRemove<T>(string cacheKey, IList<T> cacheValues = null);
+        Task<long> SetAddAsync<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null);
+        Task<long> SetLengthAsync(string cacheKey);
+        Task<bool> SetContainsAsync<T>(string cacheKey, T cacheValue);
+        Task<List<T>> SetMembersAsync<T>(string cacheKey);
+        Task<T> SetPopAsync<T>(string cacheKey);
+        Task<List<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1);
+        Task<long> SetRemoveAsync<T>(string cacheKey, IList<T> cacheValues = null);
+        #endregion
+
+        #region Sorted Set(有序数组)
+        long SortedSetAdd<T>(string cacheKey, Dictionary<T, double> cacheValues);
+        long SortedSetLength(string cacheKey);
+        long SortedSetLengthByValue(string cacheKey, double min, double max);
+        double SortedSetIncrement(string cacheKey, string field, double val = 1);
+        long SortedSetLengthByValue(string cacheKey, string min, string max);
+        List<T> SortedSetRangeByRank<T>(string cacheKey, long start, long stop);
+        long? SortedSetRank<T>(string cacheKey, T cacheValue);
+        long SortedSetRemove<T>(string cacheKey, IList<T> cacheValues);
+        double? SortedSetScore<T>(string cacheKey, T cacheValue);
+        Task<long> SortedSetAddAsync<T>(string cacheKey, Dictionary<T, double> cacheValues);
+        Task<long> SortedSetLengthAsync(string cacheKey);
+        Task<long> SortedSetLengthByValueAsync(string cacheKey, double min, double max);
+        Task<double> SortedSetIncrementAsync(string cacheKey, string field, double val = 1);
+        Task<long> SortedSetLengthByValueAsync(string cacheKey, string min, string max);
+        Task<List<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop);
+        Task<long?> SortedSetRankAsync<T>(string cacheKey, T cacheValue);
+        Task<long> SortedSetRemoveAsync<T>(string cacheKey, IList<T> cacheValues);
+        Task<double?> SortedSetScoreAsync<T>(string cacheKey, T cacheValue);
+        #endregion
+
+        #region Geo(经纬度操作)
+        long GeoAdd(string cacheKey, List<(double longitude, double latitude, string member)> values);
+        Task<long> GeoAddAsync(string cacheKey, List<(double longitude, double latitude, string member)> values);
+        double? GeoDistance(string cacheKey, string member1, string member2, string unit = "m");
+        Task<double?> GeoDistanceAsync(string cacheKey, string member1, string member2, string unit = "m");
+        List<string> GeoHash(string cacheKey, List<string> members);
+        Task<List<string>> GeoHashAsync(string cacheKey, List<string> members);
+        List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, List<string> members);
+        Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, List<string> members);
+        List<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius, string unit = "m", int count = -1, string order = "asc");
+        Task<List<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member, double radius, string unit = "m", int count = -1, string order = "asc");
+        #endregion
+
+        #region HyperLogLog
+        bool HyperLogLogAdd<T>(string cacheKey, List<T> values);
+        Task<bool> HyperLogLogAddAsync<T>(string cacheKey, List<T> values);
+        long HyperLogLogLength(List<string> cacheKeys);
+        Task<long> HyperLogLogLengthAsync(List<string> cacheKeys);
+        bool HyperLogLogMerge(string destKey, List<string> sourceKeys);
+        Task<bool> HyperLogLogMergeAsync(string destKey, List<string> sourceKeys);
+        #endregion
     }
 }

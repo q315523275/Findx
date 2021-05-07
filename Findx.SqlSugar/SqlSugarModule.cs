@@ -1,12 +1,15 @@
 ﻿using Findx.Data;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SqlSugar;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 
@@ -15,9 +18,10 @@ namespace Findx.SqlSugar
     [Description("Findx-SqlSugar组件模块")]
     public class SqlSugarModule : FindxModule
     {
-        public override ModuleLevel Level => ModuleLevel.Framework;
+        public override ModuleLevel Level => ModuleLevel.Application;
         public override int Order => 20;
         private SqlSugarOptions SqlSugarOptions { set; get; }
+        private List<ConnectionConfig> ConnectionConfigs { set; get; }
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
@@ -27,25 +31,38 @@ namespace Findx.SqlSugar
             services.Configure<SqlSugarOptions>(section);
             SqlSugarOptions = section.Get<SqlSugarOptions>();
 
+            ConnectionConfigs = new List<ConnectionConfig>();
+
+            var primaryList = SqlSugarOptions.DataSource.Keys;
+            foreach (var primary in primaryList)
+            {
+                SqlSugarOptions.DataSource[primary].ConfigId = primary;
+                SqlSugarOptions.DataSource[primary].InitKeyType = InitKeyType.Attribute;
+                ConnectionConfigs.Add(SqlSugarOptions.DataSource[primary]);
+            }
+
             // Aop
             Action<string, SugarParameter[]> OnLogExecuting = (sql, param) =>
             {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("Creating a new SqlSession");
-                sb.AppendLine("==>   Preparing:" + sql);
-                sb.AppendLine("==>  Parameters:" + param.Length);
-                foreach (var pa in param)
+                sb.AppendLine("==>  Preparing:" + sql);
+                if (param != null && param.Length > 0)
                 {
-                    sb.AppendLine("==>     Column:" + pa.ParameterName + "  Row:" + pa.Value.ToString());
+                    sb.AppendLine("==>  Parameters:" + param?.Length);
+                    foreach (var pa in param)
+                    {
+                        sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value?.ToString());
+                    }
                 }
-                Console.WriteLine(sb.ToString());
+                ServiceLocator.GetService<ILogger<SqlSugarModule>>()?.LogInformation(sb.ToString());
             };
             Action<string, SugarParameter[]> OnLogExecuted = (sql, param) => { };
 
             // 添加SqlSugar服务
             services.TryAddScoped<SqlSugarClient>(provider =>
             {
-                var db = new SqlSugarClient(SqlSugarOptions.DataSource);
+                var db = new SqlSugarClient(ConnectionConfigs);
                 if (SqlSugarOptions.Debug)
                 {
                     db.Aop.OnLogExecuting = OnLogExecuting;
@@ -69,7 +86,16 @@ namespace Findx.SqlSugar
         public override void UseModule(IServiceProvider provider)
         {
             IOptionsMonitor<SqlSugarOptions> optionsMonitor = provider.GetService<IOptionsMonitor<SqlSugarOptions>>();
-            optionsMonitor?.OnChange(options => SqlSugarOptions = options);
+            optionsMonitor?.OnChange(options =>
+            {
+                SqlSugarOptions = options;
+                var primaryList = options.DataSource.Keys;
+                foreach (var primary in primaryList)
+                {
+                    options.DataSource[primary].ConfigId = primary;
+                    ConnectionConfigs.Add(options.DataSource[primary]);
+                }
+            });
 
             base.UseModule(provider);
         }

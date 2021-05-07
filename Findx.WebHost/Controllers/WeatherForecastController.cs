@@ -1,4 +1,7 @@
 ﻿using Findx.AspNetCore.Mvc.Filters;
+using Findx.DependencyInjection;
+using Findx.Extensions;
+using Findx.PerfMonitor;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -24,7 +27,7 @@ namespace Findx.WebHost.Controllers
         }
 
         [HttpGet]
-        [AntiDuplicateRequest]
+        // [AntiDuplicateRequest]
         public IEnumerable<WeatherForecast> Get()
         {
             var rng = new Random();
@@ -37,11 +40,10 @@ namespace Findx.WebHost.Controllers
             .ToArray();
         }
         [HttpGet("/health")]
-        [RateLimiter(Limit = 3)]
+        [RateLimiter(Limit = 30)]
         public string Health()
         {
-            _logger.LogInformation("测试NLog", Summaries);
-            return "ok";
+            return ServiceLocator.GetServices<IMetricsProvider>().Select(it => it.GetSamples()).ToJson();
         }
     }
 }

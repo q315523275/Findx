@@ -111,7 +111,7 @@ namespace Findx.SqlSugar
 
         public int Insert(TEntity entity)
         {
-            return _sqlSugarClient.Insertable(entity).ExecuteCommand();
+            return _sqlSugarClient.Insertable<TEntity>(entity).ExecuteCommand();
         }
 
         public int Insert(IEnumerable<TEntity> entities)
@@ -121,7 +121,7 @@ namespace Findx.SqlSugar
 
         public Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return _sqlSugarClient.Insertable(entity).ExecuteCommandAsync();
+            return _sqlSugarClient.Insertable<TEntity>(entity).ExecuteCommandAsync();
         }
 
         public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)

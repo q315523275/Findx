@@ -44,7 +44,7 @@ namespace Findx.Swagger
                         {
                             return false;
                         }
-
+                        // 文档分组
                         string[] versions = method.DeclaringType.GetAttributes<ApiExplorerSettingsAttribute>().Select(m => m.GroupName).ToArray();
                         if (version.ToLower() == "v1" && versions.Length == 0)
                         {

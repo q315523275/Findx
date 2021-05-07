@@ -21,7 +21,7 @@
         /// <summary>
         /// 请求地址
         /// </summary>
-        public string Address { set; get; }
+        public string Endpoint { set; get; }
         /// <summary>
         /// 轮询间隔时间
         /// 单位秒

@@ -33,7 +33,7 @@ namespace Findx.DependencyInjection
 
         public override void UseModule(IServiceProvider provider)
         {
-            ServiceLocator.Instance = provider;
+            ServiceLocator.ServiceProvider = provider;
 
             base.UseModule(provider);
         }

@@ -1,8 +1,8 @@
 ﻿namespace Findx.Caching
 {
-    public enum CacheType
+    public class CacheType
     {
-        Memory,
-        Redis
+        public const string DefaultMemory = "memory";
+        public const string DefaultRedis = "redis.default";
     }
 }

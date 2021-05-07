@@ -8,8 +8,9 @@ namespace Findx.Security.Authentication.Jwt
         /// <summary>
         /// 创建JwtToken
         /// </summary>
-        /// <param name="claims">claim array</param>
+        /// <param name="payload"></param>
+        /// <param name="jwtOption"></param>
         /// <returns></returns>
-        Task<JwtToken> CreateAsync(IDictionary<string, string> payload);
+        Task<JwtToken> CreateAsync(IDictionary<string, string> payload, JwtOptions jwtOption);
     }
 }

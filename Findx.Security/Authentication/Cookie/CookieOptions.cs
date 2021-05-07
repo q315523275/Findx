@@ -40,6 +40,6 @@
         /// <summary>
         /// 获取或设置 是否启用
         /// </summary>
-        public bool Enabled { get; set; } = true;
+        public bool Enabled { get; set; } = false;
     }
 }

@@ -2,6 +2,6 @@
 {
     public interface ICacheProvider
     {
-        ICache Get(CacheType name = CacheType.Memory);
+        ICache Get(string name = CacheType.DefaultMemory);
     }
 }

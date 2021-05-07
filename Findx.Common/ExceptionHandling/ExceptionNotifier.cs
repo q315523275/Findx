@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 namespace Findx.ExceptionHandling
 {
@@ -29,7 +30,7 @@ namespace Findx.ExceptionHandling
         /// 通知
         /// </summary>
         /// <param name="context">异常通知上下文</param>
-        public async Task NotifyAsync(ExceptionNotificationContext context)
+        public async Task NotifyAsync(ExceptionNotificationContext context, CancellationToken token = default)
         {
             Check.NotNull(context, nameof(context));
 

@@ -56,6 +56,8 @@ namespace Findx.Utils
 
                 case "h":
                     return TimeSpan.FromHours(value);
+                default:
+                    break;
             }
 
             throw new InvalidOperationException("Incorrect unit:" + unit);

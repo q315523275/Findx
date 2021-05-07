@@ -1,19 +1,51 @@
-﻿using System;
+﻿using Findx.Extensions;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
-
 namespace Findx.Security.Authentication.Jwt
 {
     public class DefaultJwtTokenBuilder : IJwtTokenBuilder
     {
-        public Task<JwtToken> CreateAsync(IDictionary<string, string> payload)
+        /// <summary>
+        /// Jwt安全令牌处理器
+        /// </summary>
+        private readonly JwtSecurityTokenHandler _tokenHandler;
+
+        public DefaultJwtTokenBuilder()
         {
-            var claims = payload.Keys.Select(key => new Claim(key, payload[key]?.ToString()));
+            _tokenHandler = new JwtSecurityTokenHandler();
+        }
+
+        public Task<JwtToken> CreateAsync(IDictionary<string, string> payload, JwtOptions jwtOption)
+        {
+            Check.NotNull(jwtOption, nameof(jwtOption));
+            Check.NotNull(jwtOption.Secret, nameof(jwtOption.Secret));
+
+            var clientId = payload.ContainsKey(ClaimTypes.ClientId) ? payload[ClaimTypes.ClientId] : Guid.NewGuid().ToString();
+            var clientType = payload.ContainsKey(ClaimTypes.ClientType) ? payload[ClaimTypes.ClientType] : "admin";
+
+            if (!payload.ContainsKey(ClaimTypes.UserId))
+                throw new ArgumentException("不存在用户标识");
+
+            var claims = Helper.ToClaims(payload);
+
+            // 生成刷新令牌
+            var (refreshToken, refreshExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.RefreshToken);
+            // 生成访问令牌
+            var (token, accessExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.AccessToken);
+            
+            var accessToken = new JwtToken()
+            {
+                AccessToken = token,
+                AccessTokenUtcExpires = accessExpires.ToJsGetTime().To<long>(),
+                RefreshToken = refreshToken,
+                RefreshUtcExpires = refreshExpires.ToJsGetTime().To<long>()
+            };
+            // 状态存储
 
 
-            throw new NotImplementedException();
+            return Task.FromResult(accessToken);
         }
     }
 }

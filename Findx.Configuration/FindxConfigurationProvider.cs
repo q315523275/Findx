@@ -24,7 +24,6 @@ namespace Findx.Configuration
             _options = options;
             _localBackupPath = Path.Combine(Directory.GetCurrentDirectory(), $"local.cache.{options.Namespace}.setting.json");
             _httpClient = new HttpClient { Timeout = new TimeSpan(0, 0, 30) };
-            Console.WriteLine($"触发远端配置");
         }
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         private async Task PollingRefreshTask()
@@ -96,7 +95,7 @@ namespace Findx.Configuration
             var queryString = $"version={version}";
             var signString = $"/configs/{_options.AppId}/{_options.AppSercet}/{_options.Group}/{_options.Namespace}/{version}";
             var pathAndQuery = $"{queryPath}?{queryString}&sign=" + Encrypt.SHA256(signString);
-            return $"{_options.Address.TrimEnd('/')}{pathAndQuery}";
+            return $"{_options.Endpoint.TrimEnd('/')}{pathAndQuery}";
         }
 
         public void Dispose()

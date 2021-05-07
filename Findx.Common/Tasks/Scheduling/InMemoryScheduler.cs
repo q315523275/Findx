@@ -75,13 +75,11 @@ namespace Findx.Tasks.Scheduling
         {
             var tasksThatShouldRun = await _taskStore.GetShouldRunTasksAsync(_options.MaxJobFetchCount);
 
-            var taskFactory = new TaskFactory(TaskScheduler.Current);
-
             foreach (var taskThatShouldRun in tasksThatShouldRun)
             {
                 taskThatShouldRun.IsRuning = true;
 
-                _ = taskFactory.StartNew(async () =>
+                _ = Task.Run(async () =>
                 {
                     using var scope = _serviceProvider.CreateScope();
                     var taskLogger = scope.ServiceProvider.GetRequiredService<ILogger<InMemoryScheduler>>();
@@ -96,8 +94,7 @@ namespace Findx.Tasks.Scheduling
                     {
                         taskLogger.LogError(ex, $"调度任务:{taskThatShouldRun.Id},执行异常");
                     }
-                }, cancellationToken)
-                    .ContinueWith(it => { taskThatShouldRun.Increment(); }, TaskContinuationOptions.ExecuteSynchronously); // 任务同线程处理
+                }, cancellationToken).ContinueWith(it => { taskThatShouldRun.Increment(); }, TaskContinuationOptions.ExecuteSynchronously); // 任务同线程处理
             }
         }
     }

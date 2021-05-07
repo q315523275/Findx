@@ -68,7 +68,7 @@ namespace Findx.Utils
         {
             if (string.IsNullOrWhiteSpace(input))
                 return new string[] { };
-            return System.Text.RegularExpressions.Regex.Split(input, pattern, options);
+            return Regex.Split(input, pattern, options);
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace Findx.Utils
         {
             if (string.IsNullOrWhiteSpace(input))
                 return string.Empty;
-            return System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement, options);
+            return Regex.Replace(input, pattern, replacement, options);
         }
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Findx.Utils
         /// <param name="options">选项</param>
         public static bool IsMatch(string input, string pattern, RegexOptions options)
         {
-            return System.Text.RegularExpressions.Regex.IsMatch(input, pattern, options);
+            return Regex.IsMatch(input, pattern, options);
         }
     }
 }

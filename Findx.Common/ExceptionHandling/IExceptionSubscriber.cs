@@ -1,4 +1,5 @@
 ﻿using Findx.DependencyInjection;
+using System.Threading;
 using System.Threading.Tasks;
 namespace Findx.ExceptionHandling
 {
@@ -16,6 +17,6 @@ namespace Findx.ExceptionHandling
         /// 处理
         /// </summary>
         /// <param name="context">异常通知上下文</param>
-        Task HandleAsync(ExceptionNotificationContext context);
+        Task HandleAsync(ExceptionNotificationContext context, CancellationToken token = default);
     }
 }

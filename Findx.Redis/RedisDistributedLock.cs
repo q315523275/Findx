@@ -1,5 +1,6 @@
 ﻿using Findx.Locks;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.Redis
@@ -35,7 +36,7 @@ namespace Findx.Redis
         /// <param name="value">当前占用值</param>
         /// <param name="span">耗时时间</param>
         /// <returns>成功返回true</returns>
-        public Task<bool> LockTakeAsync(string key, string value, TimeSpan span)
+        public Task<bool> LockTakeAsync(string key, string value, TimeSpan span, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
             Check.NotNull(value, nameof(value));
@@ -62,7 +63,7 @@ namespace Findx.Redis
         /// <param name="key">锁的键</param>
         /// <param name="value">当前占用值</param>
         /// <returns>成功返回true</returns>
-        public Task<bool> LockReleaseAsync(string key, string value)
+        public Task<bool> LockReleaseAsync(string key, string value, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
             Check.NotNull(value, nameof(value));
@@ -70,111 +71,16 @@ namespace Findx.Redis
         }
 
         /// <summary>
-        /// 使用锁执行一个方法
+        /// 续期分布式锁
         /// </summary>
-        /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
-        /// <param name="span">耗时时间</param>
-        /// <param name="executeAction">要执行的方法</param>
-        public void ExecuteWithLock(string key, string value, TimeSpan span, Action executeAction)
-        {
-            if (executeAction == null)
-                return;
-
-            if (LockTake(key, value, span))
-            {
-                try
-                {
-                    executeAction();
-                }
-                finally
-                {
-                    LockRelease(key, value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 使用锁执行一个方法
-        /// </summary>
-        /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
-        /// <param name="span">耗时时间</param>
-        /// <param name="executeAction">要执行的方法</param>
-        /// <param name="defaultValue">默认返回</param>
+        /// <param name="key"></param>
+        /// <param name="seconds"></param>
         /// <returns></returns>
-        public T ExecuteWithLock<T>(string key, string value, TimeSpan span, Func<T> executeAction, T defaultValue = default(T))
+        public Task<bool> RefreshTimeToLiveAsync(string key, int seconds)
         {
-            if (executeAction == null)
-                return defaultValue;
+            Check.NotNull(key, nameof(key));
 
-            if (LockTake(key, value, span))
-            {
-                try
-                {
-                    return executeAction();
-                }
-                finally
-                {
-                    LockRelease(key, value);
-                }
-            }
-            return defaultValue;
-        }
-
-        /// <summary>
-        /// 使用锁执行一个异步方法
-        /// </summary>
-        /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
-        /// <param name="span">耗时时间</param>
-        /// <param name="executeAction">要执行的方法</param>
-        public async Task ExecuteWithLockAsync(string key, string value, TimeSpan span, Func<Task> executeAction)
-        {
-            if (executeAction == null)
-                return;
-
-            if (await LockTakeAsync(key, value, span))
-            {
-                try
-                {
-                    await executeAction();
-                }
-                finally
-                {
-                    LockRelease(key, value);
-                }
-            }
-        }
-
-        /// <summary>
-        /// 使用锁执行一个异步方法
-        /// </summary>
-        /// <typeparam name="T">返回值类型</typeparam>
-        /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
-        /// <param name="span">耗时时间</param>
-        /// <param name="executeAction">要执行的方法</param>
-        /// <param name="defaultValue">默认返回</param>
-        /// <returns></returns>
-        public async Task<T> ExecuteWithLockAsync<T>(string key, string value, TimeSpan span, Func<Task<T>> executeAction, T defaultValue = default)
-        {
-            if (executeAction == null)
-                return defaultValue;
-
-            if (await LockTakeAsync(key, value, span))
-            {
-                try
-                {
-                    return await executeAction();
-                }
-                finally
-                {
-                    LockRelease(key, value);
-                }
-            }
-            return defaultValue;
+            return _redisClient.ExpireAsync(key, TimeSpan.FromSeconds(seconds));
         }
     }
 }

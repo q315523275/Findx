@@ -1,4 +1,5 @@
 ﻿using Findx.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.WebHost.Controllers
@@ -8,9 +9,10 @@ namespace Findx.WebHost.Controllers
     public class CommonController : ControllerBase
     {
         [HttpGet]
+        [Authorize(Roles = "community")]
         public CommonResult<object> Common()
         {
-            return null;
+            return CommonResult.Success<object>(null);
         }
     }
 }

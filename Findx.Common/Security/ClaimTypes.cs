@@ -2,6 +2,8 @@
 {
     public static class ClaimTypes
     {
+        #region User(用户)
+
         /// <summary>
         /// 用户名。默认：<see cref="System.Security.Claims.ClaimTypes.Name"/>
         /// </summary>
@@ -46,6 +48,12 @@
         /// 客户端标识。默认："client_id"
         /// </summary>
         public static string ClientId { get; set; } = "client_id";
+        /// <summary>
+        /// 客户端类型。默认："client_type"
+        /// </summary>
+        public static string ClientType { get; set; } = "client_type";
+
+        #endregion
 
         #region Application(应用程序)
 

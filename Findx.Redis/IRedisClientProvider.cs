@@ -3,8 +3,8 @@
     public interface IRedisClientProvider
     {
         IRedisClient CreateClient();
-        IRedisClient CreateClient(RedisCacheOptions options);
+        IRedisClient CreateClient(RedisOptions options);
         IRedisClient CreateClient(IRedisSerializer redisSerializer);
-        IRedisClient CreateClient(RedisCacheOptions options, IRedisSerializer redisSerializer);
+        IRedisClient CreateClient(RedisOptions options, IRedisSerializer redisSerializer);
     }
 }

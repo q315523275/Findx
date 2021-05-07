@@ -2,7 +2,7 @@
 
 namespace Findx.WebHost.Messaging
 {
-    public class CancelOrderCommand : IApplicationEvent<bool>
+    public class CancelOrderCommand : IMessageRequest<bool>
     {
         public CancelOrderCommand()
         {

@@ -5,14 +5,13 @@ using Findx.Security.Authentication.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-
 namespace Findx.Authorization.Authentication
 {
     [Description("Findex-认证模块")]
@@ -22,15 +21,18 @@ namespace Findx.Authorization.Authentication
         public override int Order => 10;
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
+            IConfiguration configuration = services.GetConfiguration();
+
             services.AddScoped<FindxCookieAuthenticationEvents>();
             services.AddScoped<FindxJwtBearerEvents>();
+            services.AddScoped<IJwtTokenBuilder, DefaultJwtTokenBuilder>();
 
-            AuthenticationBuilder builder = services.AddAuthentication(opts => { opts.DefaultScheme = IdentityConstants.ApplicationScheme; });
+            var defaultScheme = configuration.GetValue<string>("Findx:Authentication:DefaultScheme");
+
+            AuthenticationBuilder builder = services.AddAuthentication(defaultScheme ?? JwtBearerDefaults.AuthenticationScheme);
 
             AddJwtBearer(services, builder);
             AddCookie(services, builder);
-
-
 
             return services;
         }
@@ -47,19 +49,17 @@ namespace Findx.Authorization.Authentication
 
             Check.NotNull(jwt.Secret, nameof(jwt.Secret));
 
-            builder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,
-                opts =>
+            builder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opts =>
+            {
+                opts.TokenValidationParameters = new TokenValidationParameters()
                 {
-                    opts.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidIssuer = jwt.Issuer ?? "findx",
-                        ValidAudience = jwt.Audience ?? "findx",
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
-                        LifetimeValidator = (nbf, exp, token, param) => exp > DateTimeOffset.UtcNow
-                    };
-
-                    opts.Events = new FindxJwtBearerEvents();
-                });
+                    ValidIssuer = jwt.Issuer ?? "findx",
+                    ValidAudience = jwt.Audience ?? "findx",
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
+                    LifetimeValidator = (nbf, exp, token, param) => exp > DateTimeOffset.UtcNow
+                };
+                opts.Events = new FindxJwtBearerEvents();
+            });
 
             return builder;
         }

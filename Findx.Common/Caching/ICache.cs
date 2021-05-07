@@ -10,7 +10,7 @@ namespace Findx.Caching
         /// <summary>
         /// 缓存组件名
         /// </summary>
-        CacheType Name { get; }
+        string Name { get; }
 
         /// <summary>
         /// 是否存在指定键的缓存

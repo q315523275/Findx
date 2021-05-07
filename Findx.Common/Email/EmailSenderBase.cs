@@ -1,6 +1,7 @@
 ﻿using Findx.Extensions;
 using System.Net.Mail;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.Email
@@ -9,26 +10,26 @@ namespace Findx.Email
     {
         protected EmailSenderOptions EmailSenderOptions { set; get; }
 
-        public virtual async Task SendAsync(string to, string subject, string body, bool isBodyHtml = true)
+        public virtual async Task SendAsync(string to, string subject, string body, bool isBodyHtml = true, CancellationToken token = default)
         {
-            await SendAsync(new MailMessage { To = { to }, Subject = subject, Body = body, IsBodyHtml = isBodyHtml });
+            await SendAsync(new MailMessage { To = { to }, Subject = subject, Body = body, IsBodyHtml = isBodyHtml }, token: token);
         }
 
-        public virtual async Task SendAsync(string from, string to, string subject, string body, bool isBodyHtml = true)
+        public virtual async Task SendAsync(string from, string to, string subject, string body, bool isBodyHtml = true, CancellationToken token = default)
         {
-            await SendAsync(new MailMessage(from, to, subject, body) { IsBodyHtml = isBodyHtml });
+            await SendAsync(new MailMessage(from, to, subject, body) { IsBodyHtml = isBodyHtml }, token: token);
         }
 
-        public virtual async Task SendAsync(MailMessage mail, bool normalize = true)
+        public virtual async Task SendAsync(MailMessage mail, bool normalize = true, CancellationToken token = default)
         {
             if (normalize)
             {
                 NormalizeMail(mail);
             }
-            await SendEmailAsync(mail);
+            await SendEmailAsync(mail, token);
         }
 
-        protected abstract Task SendEmailAsync(MailMessage mail);
+        protected abstract Task SendEmailAsync(MailMessage mail, CancellationToken token = default);
 
         protected virtual void NormalizeMail(MailMessage mail)
         {

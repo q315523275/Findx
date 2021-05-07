@@ -13,8 +13,7 @@ namespace Findx.WebSocketCore
     {
         private readonly RequestDelegate _next;
         private WebSocketHandler _webSocketHandler { get; set; }
-        public WebSocketManagerMiddleware(RequestDelegate next,
-                                          WebSocketHandler webSocketHandler)
+        public WebSocketManagerMiddleware(RequestDelegate next, WebSocketHandler webSocketHandler)
         {
             _next = next;
             _webSocketHandler = webSocketHandler;

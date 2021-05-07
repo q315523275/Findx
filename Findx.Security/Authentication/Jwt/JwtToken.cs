@@ -1,5 +1,5 @@
-﻿using System;
-
+﻿using Findx.Extensions;
+using System;
 namespace Findx.Security.Authentication.Jwt
 {
     /// <summary>
@@ -14,7 +14,7 @@ namespace Findx.Security.Authentication.Jwt
         /// <summary>
         /// 访问令牌有效期
         /// </summary>
-        public DateTime? AccessTokenExpires { get; set; }
+        public long AccessTokenUtcExpires { get; set; }
         /// <summary>
         /// 刷新令牌
         /// </summary>
@@ -22,6 +22,10 @@ namespace Findx.Security.Authentication.Jwt
         /// <summary>
         /// 刷新令牌有效期
         /// </summary>
-        public DateTime? RefreshTokenExpires { get; set; }
+        public long RefreshUtcExpires { get; set; }
+        /// <summary>
+        /// 是否已过期
+        /// </summary>
+        public bool IsExpired() => DateTime.UtcNow.ToJsGetTime().To<long>() > AccessTokenUtcExpires;
     }
 }

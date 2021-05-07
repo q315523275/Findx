@@ -8,13 +8,14 @@ namespace Findx.Redis
 {
     public class RedisCacheProvider : ICache
     {
-        public CacheType Name => CacheType.Redis;
+        public string Name { get; }
 
         private readonly IRedisClient _redisClient;
 
         public RedisCacheProvider(IRedisClientProvider redisClientProvider)
         {
             _redisClient = redisClientProvider.CreateClient();
+            Name = _redisClient.Name;
         }
 
         public void Add<T>(string key, T value, TimeSpan? expiration = null)

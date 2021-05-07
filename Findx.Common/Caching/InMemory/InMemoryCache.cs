@@ -8,7 +8,7 @@ namespace Findx.Caching.InMemory
 {
     public class InMemoryCache : ICache, IDisposable
     {
-        public CacheType Name => CacheType.Memory;
+        public string Name => CacheType.DefaultMemory;
 
         private readonly ConcurrentDictionary<string, CacheItem> _cache;
         private int _period = 60;

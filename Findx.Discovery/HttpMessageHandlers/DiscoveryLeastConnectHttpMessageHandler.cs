@@ -9,18 +9,18 @@ namespace Findx.Discovery.HttpMessageHandlers
 {
     public class DiscoveryLeastConnectHttpMessageHandler : DelegatingHandler
     {
-        private readonly ILoadBalancerManager _loadBalancerManager;
+        private readonly ILoadBalancerProvider _loadBalancerProvider;
 
-        public DiscoveryLeastConnectHttpMessageHandler(ILoadBalancerManager loadBalancerManager)
+        public DiscoveryLeastConnectHttpMessageHandler(ILoadBalancerProvider loadBalancerManager)
         {
-            _loadBalancerManager = loadBalancerManager;
+            _loadBalancerProvider = loadBalancerManager;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var current = request.RequestUri;
 
-            var _loadBalancer = await _loadBalancerManager.GetAsync(current.Host, LoadBalancerType.RoundRobin).ConfigureAwait(false);
+            var _loadBalancer = await _loadBalancerProvider.GetAsync(current.Host, LoadBalancerType.RoundRobin).ConfigureAwait(false);
             var serviceInfo = await _loadBalancer.ResolveServiceInstanceAsync().ConfigureAwait(false);
             request.RequestUri = serviceInfo.ToUri(current.Scheme, current.PathAndQuery);
 

@@ -15,7 +15,7 @@ namespace Findx.WebSocketCore
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<WebSocketConnectionManager>();
+            services.AddTransient<WebSocketConnectionManager>();
 
             IWebSocketHandlerTypeFinder handlerTypeFinder = services.GetOrAddTypeFinder<IWebSocketHandlerTypeFinder>(assemblyFinder => new WebSocketHandlerTypeFinder(assemblyFinder));
             Type[] moduleTypes = handlerTypeFinder.FindAll();
