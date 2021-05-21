@@ -1,4 +1,5 @@
 ﻿using Findx.AspNetCore.Mvc;
+using Findx.AspNetCore.Upload;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Modularity;
@@ -35,8 +36,11 @@ namespace Findx.AspNetCore
 
             services.AddSingleton<IApiInterfaceService, DefaultApiInterfaceService>();
 
+            services.AddSingleton<IFileUploadService, DefaultFileUploadService>();
+
             // 关闭模型自动化验证,实现自控
             services.Configure<ApiBehaviorOptions>(opts => opts.SuppressModelStateInvalidFilter = true);
+
             // 让用户自控
             //services.AddControllersWithViews()
             //        .AddJsonOptions(options =>

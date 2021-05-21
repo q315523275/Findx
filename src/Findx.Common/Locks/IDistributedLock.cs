@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Findx.Locks
 {
@@ -11,8 +12,8 @@ namespace Findx.Locks
         /// 刷新缓存锁续期
         /// </summary>
         /// <param name="key"></param>
-        /// <param name="seconds"></param>
+        /// <param name="span"></param>
         /// <returns></returns>
-        Task<bool> RefreshTimeToLiveAsync(string key, int seconds);
+        Task<bool> RefreshTimeToLiveAsync(string key, TimeSpan span);
     }
 }

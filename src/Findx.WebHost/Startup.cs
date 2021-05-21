@@ -181,11 +181,13 @@ namespace Findx.WebHost
 
             var locker = provider.GetRequiredService<IDistributedLock>();
 
-            var ulock = locker.GetLock("1245", 10);
-            ulock.TryLock();
-            Thread.Sleep(10 * 1000);
+            ulock = locker.GetLock("1245", 10);
             ulock.UnLock();
+            ulock.TryLock();
+            // Thread.Sleep(20 * 1000);
+            //ulock.UnLock();
 
         }
+        private static IRedLock ulock;
     }
 }

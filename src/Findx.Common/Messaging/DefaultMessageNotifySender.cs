@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -14,16 +15,22 @@ namespace Findx.Messaging
         private static readonly ConcurrentDictionary<Type, Type> _messageHandlers = new ConcurrentDictionary<Type, Type>();
 
         private readonly IServiceProvider _serviceProvider;
+        private readonly IConfiguration _configuration;
         private readonly Channel<IMessageNotify> _channel;
         private readonly SemaphoreSlim _connectionLock;
         private readonly ILogger<DefaultMessageNotifySender> _logger;
-        public DefaultMessageNotifySender(IServiceProvider serviceProvider, ILogger<DefaultMessageNotifySender> logger)
+        public DefaultMessageNotifySender(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<DefaultMessageNotifySender> logger)
         {
             _serviceProvider = serviceProvider;
+            _configuration = configuration;
             _logger = logger;
 
             _channel = Channel.CreateUnbounded<IMessageNotify>();
-            _connectionLock = new SemaphoreSlim(Environment.ProcessorCount); // 实现qos
+
+            var maxTaskCount = _configuration.GetValue<int>("Findx:MessageHanderMaxTaskCount");
+            maxTaskCount = maxTaskCount == 0 ? Environment.ProcessorCount - 1 : maxTaskCount;
+            maxTaskCount = maxTaskCount <= 0 ? 1 : maxTaskCount;
+            _connectionLock = new SemaphoreSlim(maxTaskCount);
 
             StartConsuming();
         }

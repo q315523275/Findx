@@ -60,7 +60,7 @@ namespace Findx.Tasks.Scheduling
         /// <summary>
         /// 最后一次执行时间
         /// </summary>
-        public DateTime LastRunTime { get; set; }
+        public DateTime? LastRunTime { get; set; }
 
         /// <summary>
         /// 下次执行时间
