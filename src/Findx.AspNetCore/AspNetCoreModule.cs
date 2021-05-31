@@ -34,19 +34,13 @@ namespace Findx.AspNetCore
             services.Replace<ICancellationTokenProvider, HttpContextCancellationTokenProvider>(ServiceLifetime.Singleton);
             services.Replace<IHybridServiceScopeFactory, HttpContextServiceScopeFactory>(ServiceLifetime.Singleton);
 
+            // API资源
             services.AddSingleton<IApiInterfaceService, DefaultApiInterfaceService>();
-
+            // 文件上传
             services.AddSingleton<IFileUploadService, DefaultFileUploadService>();
 
             // 关闭模型自动化验证,实现自控
             services.Configure<ApiBehaviorOptions>(opts => opts.SuppressModelStateInvalidFilter = true);
-
-            // 让用户自控
-            //services.AddControllersWithViews()
-            //        .AddJsonOptions(options =>
-            //        {
-            //            options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-            //        });
 
             return services;
         }

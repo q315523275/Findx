@@ -1,0 +1,1573 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Findx.Module.Admin</name>
+    </assembly>
+    <members>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysPosController">
+            <summary>
+            系统-职位-管理
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysApp">
+            <summary>
+            系统应用表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.Id">
+            <summary>
+            主键id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.Active">
+            <summary>
+            是否默认激活（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.Name">
+            <summary>
+            应用名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.UpdateTime">
+            <summary>
+            修改时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysApp.UpdateUser">
+            <summary>
+            修改人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysArea">
+            <summary>
+            中国行政地区表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.AreaCode">
+            <summary>
+            行政代码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.CityCode">
+            <summary>
+            区号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.Lat">
+            <summary>
+            纬度
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.LevelCode">
+            <summary>
+            层级
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.Lng">
+            <summary>
+            经度
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.MergerName">
+            <summary>
+            组合名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.ParentCode">
+            <summary>
+            父级行政代码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.Pinyin">
+            <summary>
+            拼音
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.ShortName">
+            <summary>
+            简称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysArea.ZipCode">
+            <summary>
+            邮政编码
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysCodeGenerateConfig">
+            <summary>
+            代码生成详细配置
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.CodeGenId">
+            <summary>
+            代码生成主表ID
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.ColumnComment">
+            <summary>
+            字段描述
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.ColumnKey">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.ColumnKeyName">
+            <summary>
+            主外键名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.ColumnName">
+            <summary>
+            数据库字段名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.DataType">
+            <summary>
+            物理类型
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.DictTypeCode">
+            <summary>
+            字典code
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.EffectType">
+            <summary>
+            作用类型（字典）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.JavaName">
+            <summary>
+            java类字段名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.JavaType">
+            <summary>
+            java类型
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.QueryType">
+            <summary>
+            查询方式
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.QueryWhether">
+            <summary>
+            是否是查询条件
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.UpdateTime">
+            <summary>
+            修改时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.UpdateUser">
+            <summary>
+            修改人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.WhetherAddUpdate">
+            <summary>
+            增改
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.WhetherCommon">
+            <summary>
+            是否是通用字段
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.WhetherRequired">
+            <summary>
+            是否必填（字典）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.WhetherRetract">
+            <summary>
+            列表是否缩进（字典）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerateConfig.WhetherTable">
+            <summary>
+            列表展示
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysCodeGenerate">
+            <summary>
+            代码生成基础配置
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.AuthorName">
+            <summary>
+            作者姓名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.BusName">
+            <summary>
+            业务名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.ClassName">
+            <summary>
+            类名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.GenerateType">
+            <summary>
+            生成位置类型
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.PackageName">
+            <summary>
+            包名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.TableComment">
+            <summary>
+            功能名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.TableName">
+            <summary>
+            数据库表名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.TablePrefix">
+            <summary>
+            是否移除表前缀
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysCodeGenerate.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysConfig">
+            <summary>
+            系统参数配置表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.GroupCode">
+            <summary>
+            常量所属分类的编码，来自于“常量的分类”字典
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.SysFlag">
+            <summary>
+            是否是系统参数（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysConfig.Value">
+            <summary>
+            值
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysDictData">
+            <summary>
+            系统字典值表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.Sort">
+            <summary>
+            排序
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.TypeId">
+            <summary>
+            字典类型id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictData.Value">
+            <summary>
+            值
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysDictType">
+            <summary>
+            系统字典类型表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.Sort">
+            <summary>
+            排序
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysDictType.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysEmpExtOrgPos">
+            <summary>
+            员工附属机构岗位表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmpExtOrgPos.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmpExtOrgPos.EmpId">
+            <summary>
+            员工id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmpExtOrgPos.OrgId">
+            <summary>
+            机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmpExtOrgPos.PosId">
+            <summary>
+            岗位id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysEmp">
+            <summary>
+            员工表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmp.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmp.JobNum">
+            <summary>
+            工号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmp.OrgId">
+            <summary>
+            所属机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmp.OrgName">
+            <summary>
+            所属机构名称
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysEmpPos">
+            <summary>
+            员工职位关联表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmpPos.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmpPos.EmpId">
+            <summary>
+            员工id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysEmpPos.PosId">
+            <summary>
+            职位id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysFileInfo">
+            <summary>
+            文件信息表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.Id">
+            <summary>
+            主键id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.CreateUser">
+            <summary>
+            创建用户
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.FileBucket">
+            <summary>
+            文件仓库
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.FileLocation">
+            <summary>
+            文件存储位置（1:阿里云，2:腾讯云，3:minio，4:本地）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.FileObjectName">
+            <summary>
+            存储到bucket的名称（文件唯一标识id）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.FileOriginName">
+            <summary>
+            文件名称（上传时候的文件名）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.FilePath">
+            <summary>
+            存储路径
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.FileSizeInfo">
+            <summary>
+            文件大小信息，计算后的
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.FileSizeKb">
+            <summary>
+            文件大小kb
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.FileSuffix">
+            <summary>
+            文件后缀
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.UpdateTime">
+            <summary>
+            修改时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.UpdateUser">
+            <summary>
+            修改用户
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysMenu">
+            <summary>
+            系统菜单表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Application">
+            <summary>
+            应用分类（应用编码）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Component">
+            <summary>
+            组件地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Icon">
+            <summary>
+            图标
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Link">
+            <summary>
+            链接地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.OpenType">
+            <summary>
+            打开方式（字典 0无 1组件 2内链 3外链）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Permission">
+            <summary>
+            权限标识
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Pid">
+            <summary>
+            父id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Pids">
+            <summary>
+            父ids
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Redirect">
+            <summary>
+            重定向地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Router">
+            <summary>
+            路由地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Sort">
+            <summary>
+            排序
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Type">
+            <summary>
+            菜单类型（字典 0目录 1菜单 2按钮）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.UpdateTime">
+            <summary>
+            修改时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.UpdateUser">
+            <summary>
+            修改人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Visible">
+            <summary>
+            是否可见（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenu.Weight">
+            <summary>
+            权重（字典 1系统权重 2业务权重）
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysNotice">
+            <summary>
+            通知表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.CancelTime">
+            <summary>
+            撤回时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.Content">
+            <summary>
+            内容
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.PublicOrgId">
+            <summary>
+            发布机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.PublicOrgName">
+            <summary>
+            发布机构名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.PublicTime">
+            <summary>
+            发布时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.PublicUserId">
+            <summary>
+            发布人id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.PublicUserName">
+            <summary>
+            发布人姓名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.Status">
+            <summary>
+            状态（字典 0草稿 1发布 2撤回 3删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.Title">
+            <summary>
+            标题
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.Type">
+            <summary>
+            类型（字典 1通知 2公告）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.UpdateTime">
+            <summary>
+            修改时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNotice.UpdateUser">
+            <summary>
+            修改人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysNoticeUser">
+            <summary>
+            系统用户数据范围表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNoticeUser.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNoticeUser.NoticeId">
+            <summary>
+            通知公告id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNoticeUser.ReadTime">
+            <summary>
+            阅读时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNoticeUser.Status">
+            <summary>
+            状态（字典 0未读 1已读）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysNoticeUser.UserId">
+            <summary>
+            用户id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysOAuthUser">
+            <summary>
+            第三方认证用户信息表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.AccessToken">
+            <summary>
+            用户授权的token
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Avatar">
+            <summary>
+            头像
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Blog">
+            <summary>
+            用户网址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Company">
+            <summary>
+            所在公司
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.CreateUser">
+            <summary>
+            创建用户
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Email">
+            <summary>
+            邮箱
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Gender">
+            <summary>
+            性别
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Location">
+            <summary>
+            位置
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.NickName">
+            <summary>
+            昵称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Remark">
+            <summary>
+            用户备注（各平台中的用户个人介绍）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Source">
+            <summary>
+            用户来源
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.UpdateUser">
+            <summary>
+            更新用户
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOAuthUser.Uuid">
+            <summary>
+            第三方平台的用户唯一id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysOpLog">
+            <summary>
+            系统操作日志表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Account">
+            <summary>
+            操作账号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Browser">
+            <summary>
+            浏览器
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.ClassName">
+            <summary>
+            类名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Ip">
+            <summary>
+            ip
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Location">
+            <summary>
+            地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Message">
+            <summary>
+            具体消息
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.MethodName">
+            <summary>
+            方法名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.OpTime">
+            <summary>
+            操作时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.OpType">
+            <summary>
+            操作类型
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Os">
+            <summary>
+            操作系统
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Param">
+            <summary>
+            请求参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.ReqMethod">
+            <summary>
+            请求方式（GET POST PUT DELETE)
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Result">
+            <summary>
+            返回结果
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Success">
+            <summary>
+            是否执行成功（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOpLog.Url">
+            <summary>
+            请求地址
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysOrg">
+            <summary>
+            系统组织机构表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.Pid">
+            <summary>
+            父id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.Pids">
+            <summary>
+            父ids
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.Remark">
+            <summary>
+            描述
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.Sort">
+            <summary>
+            排序
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysOrg.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysPosInfo">
+            <summary>
+            系统职位表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.Sort">
+            <summary>
+            排序
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysPosInfo.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysRoleDataScope">
+            <summary>
+            系统角色数据范围表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRoleDataScope.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRoleDataScope.OrgId">
+            <summary>
+            机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRoleDataScope.RoleId">
+            <summary>
+            角色id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysRole">
+            <summary>
+            系统角色表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.Id">
+            <summary>
+            主键id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.DataScopeType">
+            <summary>
+            数据范围类型（字典 1全部数据 2本部门及以下数据 3本部门数据 4仅本人数据 5自定义数据）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.Sort">
+            <summary>
+            序号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRole.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysRoleMenu">
+            <summary>
+            系统角色菜单表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRoleMenu.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRoleMenu.MenuId">
+            <summary>
+            菜单id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRoleMenu.RoleId">
+            <summary>
+            角色id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysSms">
+            <summary>
+            短信信息发送表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.BizId">
+            <summary>
+            回执id，可根据该id查询具体的发送状态
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.InvalidTime">
+            <summary>
+            失效时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.PhoneNumbers">
+            <summary>
+            手机号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.Source">
+            <summary>
+            来源（字典 1 app， 2 pc， 3 其他）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.Status">
+            <summary>
+            发送状态（字典 0 未发送，1 发送成功，2 发送失败，3 失效）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.TemplateCode">
+            <summary>
+            短信模板ID
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysSms.ValidateCode">
+            <summary>
+            短信验证码
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysTimers">
+            <summary>
+            定时任务
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.Id">
+            <summary>
+            定时器id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.ActionClass">
+            <summary>
+            执行任务的class的类名（实现了TimerTaskRunner接口的类的全称）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.Cron">
+            <summary>
+            定时任务表达式
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.JobStatus">
+            <summary>
+            状态（字典 1运行  2停止）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.Remark">
+            <summary>
+            备注信息
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.TimerName">
+            <summary>
+            任务名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysTimers.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysUserDataScope">
+            <summary>
+            系统用户数据范围表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUserDataScope.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUserDataScope.OrgId">
+            <summary>
+            机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUserDataScope.UserId">
+            <summary>
+            用户id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysUser">
+            <summary>
+            系统用户表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Account">
+            <summary>
+            账号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.AdminType">
+            <summary>
+            管理员类型（0超级管理员 1非管理员）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Avatar">
+            <summary>
+            头像
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Birthday">
+            <summary>
+            生日
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.CreateUser">
+            <summary>
+            创建人
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Email">
+            <summary>
+            邮箱
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.LastLoginIp">
+            <summary>
+            最后登陆IP
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.LastLoginTime">
+            <summary>
+            最后登陆时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Name">
+            <summary>
+            姓名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.NickName">
+            <summary>
+            昵称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Password">
+            <summary>
+            密码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Phone">
+            <summary>
+            手机
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Sex">
+            <summary>
+            性别(字典 1男 2女 3未知)
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Status">
+            <summary>
+            状态（字典 0正常 1冻结 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.Tel">
+            <summary>
+            电话
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.UpdateTime">
+            <summary>
+            更新时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUser.UpdateUser">
+            <summary>
+            更新人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysUserRole">
+            <summary>
+            系统用户角色表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUserRole.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUserRole.RoleId">
+            <summary>
+            角色id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysUserRole.UserId">
+            <summary>
+            用户id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysVisLog">
+            <summary>
+            系统访问日志表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Account">
+            <summary>
+            访问账号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Browser">
+            <summary>
+            浏览器
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Ip">
+            <summary>
+            ip
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Location">
+            <summary>
+            地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Message">
+            <summary>
+            具体消息
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Os">
+            <summary>
+            操作系统
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.Success">
+            <summary>
+            是否执行成功（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.VisTime">
+            <summary>
+            访问时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysVisLog.VisType">
+            <summary>
+            操作类型（字典 1登入 2登出）
+            </summary>
+        </member>
+    </members>
+</doc>

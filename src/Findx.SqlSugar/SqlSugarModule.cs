@@ -33,7 +33,7 @@ namespace Findx.SqlSugar
 
             ConnectionConfigs = new List<ConnectionConfig>();
 
-            var primaryList = SqlSugarOptions.DataSource.Keys;
+            var primaryList = SqlSugarOptions.DataSource?.Keys;
             foreach (var primary in primaryList)
             {
                 SqlSugarOptions.DataSource[primary].ConfigId = primary;
@@ -89,14 +89,13 @@ namespace Findx.SqlSugar
             optionsMonitor?.OnChange(options =>
             {
                 SqlSugarOptions = options;
-                var primaryList = options.DataSource.Keys;
+                var primaryList = options.DataSource?.Keys;
                 foreach (var primary in primaryList)
                 {
                     options.DataSource[primary].ConfigId = primary;
                     ConnectionConfigs.Add(options.DataSource[primary]);
                 }
             });
-
             base.UseModule(provider);
         }
     }

@@ -40,7 +40,7 @@ namespace Findx.Utils.Files
         /// </summary>
         public static string Description(this FileSizeUnit? unit)
         {
-            return unit == null ? string.Empty :  unit.Value.ToDescription();
+            return unit == null ? string.Empty : unit.Value.ToDescription();
         }
 
         /// <summary>

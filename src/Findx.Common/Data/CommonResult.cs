@@ -25,6 +25,10 @@
         {
             return new CommonResult("0000", "操作成功");
         }
+        public static CommonResult Success(string msg)
+        {
+            return new CommonResult("0000", msg);
+        }
         public static CommonResult<TData> Success<TData>(TData data)
         {
             return new CommonResult<TData>("0000", "操作成功", data);

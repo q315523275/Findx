@@ -7,6 +7,7 @@ using Findx.Extensions;
 using Findx.Locks;
 using Findx.Messaging;
 using Findx.Modularity;
+using Findx.Reflection;
 using Findx.Serialization;
 using Findx.Sms;
 using Findx.Storage;
@@ -44,6 +45,9 @@ namespace Findx.Builders
 
             // 锁
             services.AddSingleton<ILock, LocalLock>();
+
+            // 反射查询器
+            services.AddSingleton<IMethodInfoFinder, PublicInstanceMethodInfoFinder>();
 
             // 进程消息
             services.AddScoped<IMessageSender, DefaultMessageSender>();

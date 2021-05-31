@@ -1,5 +1,4 @@
-﻿using Findx.AspNetCore.Extensions;
-using Findx.Data;
+﻿using Findx.Data;
 using Findx.ExceptionHandling;
 using Findx.Exceptions;
 using Findx.Extensions;
@@ -49,7 +48,7 @@ namespace Findx.AspNetCore.Mvc.Middlewares
                 context.Response.Clear();
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.ContentType = "application/json;charset=utf-8";
-                await context.Response.WriteAsync(CommonResult.Fail(ex.ErrorCode?? "500", ex.Message?? "未知异常,请稍后再试").ToJson());
+                await context.Response.WriteAsync(CommonResult.Fail(ex.ErrorCode ?? "500", ex.Message ?? "未知异常,请稍后再试").ToJson());
             }
             catch (Exception ex)
             {

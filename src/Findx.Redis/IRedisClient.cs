@@ -683,24 +683,132 @@ namespace Findx.Redis
         #endregion
 
         #region Geo(经纬度操作)
+        /// <summary>
+        /// 添加地理位置的坐标
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
         long GeoAdd(string cacheKey, List<(double longitude, double latitude, string member)> values);
+        /// <summary>
+        /// 添加地理位置的坐标
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
         Task<long> GeoAddAsync(string cacheKey, List<(double longitude, double latitude, string member)> values);
+        /// <summary>
+        /// 计算两个位置之间的距离
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="member1"></param>
+        /// <param name="member2"></param>
+        /// <param name="unit">默认单位:米</param>
+        /// <returns></returns>
         double? GeoDistance(string cacheKey, string member1, string member2, string unit = "m");
+        /// <summary>
+        /// 计算两个位置之间的距离
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="member1"></param>
+        /// <param name="member2"></param>
+        /// <param name="unit">默认单位:米</param>
+        /// <returns></returns>
         Task<double?> GeoDistanceAsync(string cacheKey, string member1, string member2, string unit = "m");
+        /// <summary>
+        /// 返回一个或多个位置对象的 geohash 值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="members"></param>
+        /// <returns></returns>
         List<string> GeoHash(string cacheKey, List<string> members);
+        /// <summary>
+        /// 返回一个或多个位置对象的 geohash 值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="members"></param>
+        /// <returns></returns>
         Task<List<string>> GeoHashAsync(string cacheKey, List<string> members);
+        /// <summary>
+        /// 获取地理位置的坐标
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="members"></param>
+        /// <returns></returns>
         List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, List<string> members);
+        /// <summary>
+        /// 获取地理位置的坐标
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="members"></param>
+        /// <returns></returns>
         Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, List<string> members);
+        /// <summary>
+        /// 根据用户给定的经纬度坐标来获取指定范围内的地理位置集合
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="member"></param>
+        /// <param name="radius">范围值</param>
+        /// <param name="unit">默认单位:米</param>
+        /// <param name="count">取数,-1全部</param>
+        /// <param name="order">排序方式</param>
+        /// <returns></returns>
         List<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius, string unit = "m", int count = -1, string order = "asc");
+        /// <summary>
+        /// 根据用户给定的经纬度坐标来获取指定范围内的地理位置集合
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="member"></param>
+        /// <param name="radius">范围值</param>
+        /// <param name="unit">默认单位:米</param>
+        /// <param name="count">取数,-1全部</param>
+        /// <param name="order">排序方式</param>
+        /// <returns></returns>
         Task<List<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member, double radius, string unit = "m", int count = -1, string order = "asc");
         #endregion
 
         #region HyperLogLog
+        /// <summary>
+        /// 添加指定元素到 HyperLogLog 中
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
         bool HyperLogLogAdd<T>(string cacheKey, List<T> values);
+        /// <summary>
+        /// 添加指定元素到 HyperLogLog 中
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheKey"></param>
+        /// <param name="values"></param>
+        /// <returns></returns>
         Task<bool> HyperLogLogAddAsync<T>(string cacheKey, List<T> values);
+        /// <summary>
+        /// 返回给定 HyperLogLog 的基数估算值
+        /// </summary>
+        /// <param name="cacheKeys"></param>
+        /// <returns></returns>
         long HyperLogLogLength(List<string> cacheKeys);
+        /// <summary>
+        /// 返回给定 HyperLogLog 的基数估算值
+        /// </summary>
+        /// <param name="cacheKeys"></param>
+        /// <returns></returns>
         Task<long> HyperLogLogLengthAsync(List<string> cacheKeys);
+        /// <summary>
+        /// 将多个 HyperLogLog 合并为一个 HyperLogLog
+        /// </summary>
+        /// <param name="destKey"></param>
+        /// <param name="sourceKeys"></param>
+        /// <returns></returns>
         bool HyperLogLogMerge(string destKey, List<string> sourceKeys);
+        /// <summary>
+        /// 将多个 HyperLogLog 合并为一个 HyperLogLog
+        /// </summary>
+        /// <param name="destKey"></param>
+        /// <param name="sourceKeys"></param>
+        /// <returns></returns>
         Task<bool> HyperLogLogMergeAsync(string destKey, List<string> sourceKeys);
         #endregion
     }

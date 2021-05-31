@@ -1,5 +1,5 @@
-﻿using System.IO;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
+using System.IO;
 
 namespace Findx.AspNetCore.Upload.Params
 {

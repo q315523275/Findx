@@ -33,7 +33,7 @@ namespace Findx.WebSocketCore
                 return _groups[GroupID];
             }
 
-            return default(List<string>);
+            return default;
         }
 
         public string GetId(WebSocket socket)

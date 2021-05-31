@@ -21,7 +21,6 @@ namespace Findx.Log4Net
 
         public override void UseModule(IServiceProvider provider)
         {
-
             base.UseModule(provider);
         }
     }

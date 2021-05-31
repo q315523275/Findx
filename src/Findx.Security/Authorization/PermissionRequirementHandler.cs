@@ -1,20 +1,18 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using System.Security.Claims;
 using System.Threading.Tasks;
-
 namespace Findx.Security.Authorization
 {
     /// <summary>
     /// 授权处理器
     /// </summary>
-    public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
+    public class PermissionRequirementHandler : AuthorizationHandler<PermissionRequirement>
     {
         private readonly IPermissionChecker _permissionChecker;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public PermissionAuthorizationHandler(IPermissionChecker permissionChecker, IHttpContextAccessor httpContextAccessor)
+        public PermissionRequirementHandler(IPermissionChecker permissionChecker, IHttpContextAccessor httpContextAccessor)
         {
             _permissionChecker = permissionChecker;
             _httpContextAccessor = httpContextAccessor;
@@ -28,22 +26,21 @@ namespace Findx.Security.Authorization
         protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
         {
             HttpContext httpContext = _httpContextAccessor.HttpContext;
+
             if (context.Resource is RouteEndpoint endpoint)
             {
-                ClaimsPrincipal principal = httpContext.User;
-                if (principal == null || !principal.Identity.IsAuthenticated)
+                PermissionAccess permissionAccess = endpoint.GetExecutePermissionAccess(httpContext);
+                if (await _permissionChecker.IsGrantedAsync(httpContext.User, permissionAccess))
                 {
-                    context.Fail();
+                    context.Succeed(requirement);
                     return;
                 }
+            }
 
-                // 单设备登录
-                if (requirement.SingleDeviceEnabled)
-                {
-
-                }
-                // 授权验证
-                if (await _permissionChecker.IsGrantedAsync(context.User, httpContext))
+            if (context.Resource is DefaultHttpContext defaultHttpContext)
+            {
+                PermissionAccess permissionAccess = defaultHttpContext.GetExecutePermissionAccess();
+                if (await _permissionChecker.IsGrantedAsync(httpContext.User, permissionAccess))
                 {
                     context.Succeed(requirement);
                     return;

@@ -1,36 +1,53 @@
 ﻿using Findx.Data;
+using Findx.Linq;
 using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
 namespace Findx.AspNetCore.Mvc
 {
-    public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQuery, TKey> : ControllerBase 
+    /// <summary>
+    /// 增删改查通用控制器基类
+    /// </summary>
+    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TDto"></typeparam>
+    /// <typeparam name="TCreateRequest"></typeparam>
+    /// <typeparam name="TUpdateRequest"></typeparam>
+    /// <typeparam name="TQueryParameter"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey>
         where TModel : class, new()
-        where TCreateRequest : EntityBase, new()
-        where TUpdateRequest : EntityBase, new()
-        where TQuery : class, new()
+        where TDto : IResponse, new()
+        where TCreateRequest : IRequest, new()
+        where TUpdateRequest : IRequest, new()
+        where TQueryParameter : IPager, new()
     {
-        private readonly IRepository<TModel> _repository;
-        private readonly IMapper _mapper;
-
         /// <summary>
         /// 创建前操作
         /// </summary>
         /// <param name="dto">创建参数</param>
         protected virtual void CreateBefore(TCreateRequest dto) { }
 
+        /// <summary>
+        /// 添加数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost]
-        public virtual CommonResult Create([FromBody] TCreateRequest request)
+        public virtual CommonResult Create([FromBody] TCreateRequest request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
         {
             Check.NotNull(request, nameof(request));
 
             CreateBefore(request);
 
-            var model = _mapper.MapTo<TModel>(request);
+            var model = mapper.MapTo<TModel>(request);
 
-            _repository.Insert(model);
-
-            return CommonResult.Success();
+            if (repository.Insert(model) > 0)
+                return CommonResult.Success();
+            else
+                return CommonResult.Fail("db.create.error", "数据创建失败");
         }
 
         /// <summary>
@@ -39,17 +56,106 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="dto">修改参数</param>
         protected virtual void UpdateBefore(TUpdateRequest dto) { }
 
+        /// <summary>
+        /// 修改数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpPost]
-        public virtual CommonResult Update(TUpdateRequest request)
+        public virtual CommonResult Update([FromBody] TUpdateRequest request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
         {
             Check.NotNull(request, nameof(request));
 
-            var model = _mapper.MapTo<TModel>(request);
+            var model = mapper.MapTo<TModel>(request);
 
             UpdateBefore(request);
 
-            _repository.Update(model);
-            return CommonResult.Success();
+            if (repository.Update(model) > 0)
+                return CommonResult.Success();
+            else
+                return CommonResult.Fail("db.update.error", "数据更新失败");
+        }
+
+        /// <summary>
+        /// 构建分页查询条件
+        /// </summary>
+        /// <param name="dto">修改参数</param>
+        protected virtual Expressionable<TModel> CreatePageWhereExpression(TQueryParameter request)
+        {
+            return ExpressionBuilder.Create<TModel>();
+        }
+
+        /// <summary>
+        /// 构建分页查询条件
+        /// </summary>
+        /// <param name="dto">修改参数</param>
+        protected virtual Expression<Func<TModel, object>> CreatePageOrderExpression(TQueryParameter request)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// 查询数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public virtual CommonResult Page([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
+        {
+            Check.NotNull(request, nameof(request));
+
+            var whereExpression = CreatePageWhereExpression(request);
+
+            var pageResult = repository.Paged(request.PageNo, request.PageSize, whereExpression: whereExpression.ToExpression());
+
+            return CommonResult.Success(pageResult);
+        }
+
+        /// <summary>
+        /// 查询单条数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public virtual CommonResult GetById(TKey id, [FromServices] IRepository<TModel> repository)
+        {
+            Check.NotNull(id, nameof(id));
+            return CommonResult.Success(repository.Get(id));
+        }
+
+        /// <summary>
+        /// 删除数据
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public virtual CommonResult DeleteById(TKey id, [FromServices] IRepository<TModel> repository)
+        {
+            Check.NotNull(id, nameof(id));
+
+            if (repository.Delete(key: id) > 0)
+                return CommonResult.Success();
+            else
+                return CommonResult.Fail("db.delete.error", "数据删除失败");
+        }
+
+        /// <summary>
+        /// 删除数据
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public virtual CommonResult DeleteMany(List<TKey> ids, [FromServices] IRepository<TModel> repository)
+        {
+            Check.NotNull(ids, nameof(ids));
+
+            int total = 0;
+            foreach (var id in ids)
+            {
+                if (repository.Delete(key: id) > 0)
+                    total++;
+            }
+            return CommonResult.Success($"共删除{total}条数据,失败{ids.Count - total}条");
         }
     }
 }

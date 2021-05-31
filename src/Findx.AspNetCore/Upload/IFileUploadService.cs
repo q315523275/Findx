@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Findx.AspNetCore.Upload.Params;
+﻿using Findx.AspNetCore.Upload.Params;
 using Findx.Utils.Files;
 using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Findx.AspNetCore.Upload
 {

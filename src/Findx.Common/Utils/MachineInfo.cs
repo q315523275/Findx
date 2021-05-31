@@ -1,11 +1,8 @@
-﻿using Findx.Extensions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-namespace Findx.Utils
+﻿namespace Findx.Utils
 {
+    /// <summary>
+    /// 机器信息
+    /// </summary>
     public class MachineInfo
     {
         #region 属性
@@ -83,52 +80,6 @@ namespace Findx.Utils
         /// 电池剩余
         /// </summary>
         public double Battery { get; set; }
-        #endregion
-
-        #region 辅助
-
-        private static bool TryRead(string fileName, out string value)
-        {
-            value = null;
-
-            if (!File.Exists(fileName)) return false;
-
-            try
-            {
-                value = File.ReadAllText(fileName)?.Trim();
-                if (value.IsNullOrEmpty()) return false;
-            }
-            catch { return false; }
-
-            return true;
-        }
-
-        private static IDictionary<string, string> ReadInfo(string file, char separate = ':')
-        {
-            if (file.IsNullOrEmpty() || !File.Exists(file)) return null;
-
-            var dic = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
-            using var reader = new StreamReader(file);
-            while (!reader.EndOfStream)
-            {
-                // 按行读取
-                var line = reader.ReadLine();
-                if (line != null)
-                {
-                    // 分割
-                    var p = line.IndexOf(separate);
-                    if (p > 0)
-                    {
-                        var key = line.Substring(0, p).Trim();
-                        var value = line.Substring(p + 1).Trim();
-                        dic[key] = value;
-                    }
-                }
-            }
-
-            return dic;
-        }
         #endregion
     }
 }

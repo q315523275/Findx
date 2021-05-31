@@ -14,7 +14,7 @@ namespace Findx.SqlSugar
         /// <summary>
         /// 数据源列表
         /// </summary>
-        public Dictionary<string, ConnectionConfig> DataSource { set; get; }
+        public Dictionary<string, ConnectionConfig> DataSource { set; get; } = new Dictionary<string, ConnectionConfig>();
         /// <summary>
         /// 是否进行Debug调试
         /// </summary>

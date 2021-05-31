@@ -19,13 +19,18 @@ namespace Findx.Messaging
         private readonly Channel<IMessageNotify> _channel;
         private readonly SemaphoreSlim _connectionLock;
         private readonly ILogger<DefaultMessageNotifySender> _logger;
+
         public DefaultMessageNotifySender(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<DefaultMessageNotifySender> logger)
         {
             _serviceProvider = serviceProvider;
             _configuration = configuration;
             _logger = logger;
 
-            _channel = Channel.CreateUnbounded<IMessageNotify>();
+            var _queueCapacity = _configuration.GetValue<int>("Findx:MessageQueueCapacity");
+            if (_queueCapacity > 0)
+                _channel = Channel.CreateBounded<IMessageNotify>(new BoundedChannelOptions(_queueCapacity) { FullMode = BoundedChannelFullMode.Wait });
+            else
+                _channel = Channel.CreateUnbounded<IMessageNotify>();
 
             var maxTaskCount = _configuration.GetValue<int>("Findx:MessageHanderMaxTaskCount");
             maxTaskCount = maxTaskCount == 0 ? Environment.ProcessorCount - 1 : maxTaskCount;

@@ -53,9 +53,9 @@ namespace Findx.Locks
         public bool TryLock()
         {
             var res = _distributedLock.LockTake(_lockKey, _lockValue, TimeSpan.FromSeconds(_seconds));
-            if (res) 
+            if (res)
                 _timer?.Change(_refreshSeconds, _refreshSeconds);
-            else 
+            else
                 _timer?.Dispose();
             return res;
         }
@@ -63,7 +63,7 @@ namespace Findx.Locks
         public async Task<bool> TryLockAsync()
         {
             var res = await _distributedLock.LockTakeAsync(_lockKey, _lockValue, TimeSpan.FromSeconds(_seconds));
-            if (res) 
+            if (res)
                 _timer?.Change(_refreshSeconds, _refreshSeconds);
             else
                 _timer?.Dispose();

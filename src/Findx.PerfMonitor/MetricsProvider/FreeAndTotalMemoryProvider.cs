@@ -1,8 +1,7 @@
-﻿using Findx.PerfMonitor.Windows;
+﻿using Findx.Extensions;
+using Findx.PerfMonitor.Windows;
 using Findx.Utils;
-using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Findx.PerfMonitor.MetricsProvider
 {
@@ -51,59 +50,17 @@ namespace Findx.PerfMonitor.MetricsProvider
             {
                 var retVal = new Dictionary<string, object>();
 
-                using (var sr = new StreamReader("/proc/meminfo"))
+                var dic = Common.ReadInfo("/proc/meminfo");
+                if (dic != null)
                 {
-                    var hasMemFree = false;
-                    var hasMemTotal = false;
+                    if (dic.TryGetValue("MemTotal", out var str))
+                        retVal.Add(TotalMemory, str.RemovePostFix(" kB").To<int>() * 1024);
 
-                    var line = sr.ReadLine();
-
-                    while (line != null || retVal.Count != 2)
-                    {
-                        //See: https://github.com/elastic/beats/issues/4202
-                        if (line != null && line.Contains("MemAvailable:") && _collectFreeMemory)
-                        {
-                            var (suc, res) = GetEntry(line, "MemAvailable:");
-                            if (suc) retVal.Add(FreeMemory, res);
-                            hasMemFree = true;
-                        }
-                        if (line != null && line.Contains("MemTotal:") && _collectTotalMemory)
-                        {
-                            var (suc, res) = GetEntry(line, "MemTotal:");
-                            if (suc) retVal.Add(TotalMemory, res);
-                            hasMemTotal = true;
-                        }
-
-                        if ((hasMemFree || !_collectFreeMemory) && (hasMemTotal || !_collectTotalMemory))
-                            break;
-
-                        line = sr.ReadLine();
-                    }
+                    if (dic.TryGetValue("MemAvailable", out str) || dic.TryGetValue("MemFree", out str))
+                        retVal.Add(FreeMemory, str.RemovePostFix(" kB").To<int>() * 1024);
                 }
-
-                ConsecutiveNumberOfFailedReads = 0;
 
                 return retVal;
-            }
-
-            (bool, ulong) GetEntry(string line, string name)
-            {
-                var nameIndex = line.IndexOf(name, StringComparison.Ordinal);
-                if (nameIndex < 0)
-                    return (false, 0);
-
-                var values = line.Substring(line.IndexOf(name, StringComparison.Ordinal) + name.Length);
-
-                if (string.IsNullOrWhiteSpace(values)) return (false, 0);
-
-                var items = values.Trim().Split(' ');
-
-                switch (items.Length)
-                {
-                    case 1 when ulong.TryParse(items[0], out var res): return (true, res);
-                    case 2 when items[1].ToLowerInvariant() == "kb" && ulong.TryParse(items[0], out var res): return (true, res * 1024);
-                    default: return (false, 0);
-                }
             }
 
             return null;

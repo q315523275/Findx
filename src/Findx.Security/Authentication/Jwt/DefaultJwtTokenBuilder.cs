@@ -34,7 +34,7 @@ namespace Findx.Security.Authentication.Jwt
             var (refreshToken, refreshExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.RefreshToken);
             // 生成访问令牌
             var (token, accessExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.AccessToken);
-            
+
             var accessToken = new JwtToken()
             {
                 AccessToken = token,

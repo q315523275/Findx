@@ -2,6 +2,9 @@
 
 namespace Findx.Utils
 {
+    /// <summary>
+    /// 时间转换工具类
+    /// </summary>
     public class DateTimeUtils
     {
         public static TimeSpan ToTimeSpan(string time)

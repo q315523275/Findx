@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Findx.AspNetCore.Upload.Params;
+using Findx.Exceptions;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using Findx.AspNetCore.Upload.Params;
-using Findx.Exceptions;
-using Microsoft.AspNetCore.Http;
 using FileInfo = Findx.Utils.Files.FileInfo;
 
 namespace Findx.AspNetCore.Upload

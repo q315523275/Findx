@@ -4,6 +4,9 @@ using System.Text;
 
 namespace Findx.Utils
 {
+    /// <summary>
+    /// 网络辅助工具类
+    /// </summary>
     public static class NetUtils
     {
         /// <summary>

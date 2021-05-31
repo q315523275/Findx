@@ -3,10 +3,20 @@
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <DocumentationFile>F:\myself\Findx\modules\Findx.Module.Admin\Findx.Module.Admin.xml</DocumentationFile>
+	</PropertyGroup>
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Areas\Admin\Controllers\" />
+	  <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+	  <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Update="Findx.Module.Admin.xml">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>

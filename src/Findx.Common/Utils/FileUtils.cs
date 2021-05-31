@@ -29,6 +29,7 @@ namespace Findx.Utils
             }
             File.Create(fileName);
         }
+
         /// <summary>
         /// 删除指定文件
         /// </summary>
@@ -41,6 +42,7 @@ namespace Findx.Utils
             }
             File.Delete(fileName);
         }
+
         /// <summary>
         /// 设置或取消文件的指定<see cref="FileAttributes"/>属性
         /// </summary>

@@ -10,15 +10,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\Findx.AspNetCore\Findx.AspNetCore.csproj" />
 		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.3" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Identity\" />
 	</ItemGroup>
 
 </Project>
