@@ -25,17 +25,26 @@ namespace Findx.SqlSugar
 
         public void BeginTran()
         {
-            _sqlSugarClient.Ado.BeginTran();
+            if (Options.MergeTrans)
+                _sqlSugarClient.BeginTran();
+            else
+                _sqlSugarClient.Ado.BeginTran();
         }
 
         public void BeginTran(IsolationLevel il)
         {
-            _sqlSugarClient.Ado.BeginTran(il);
+            if (Options.MergeTrans)
+                _sqlSugarClient.BeginTran();
+            else
+                _sqlSugarClient.Ado.BeginTran(il);
         }
 
         public void CommitTran()
         {
-            _sqlSugarClient.Ado.CommitTran();
+            if (Options.MergeTrans)
+                _sqlSugarClient.CommitTran();
+            else
+                _sqlSugarClient.Ado.CommitTran();
         }
 
         public SqlSugarClient GetInstance()
@@ -45,7 +54,10 @@ namespace Findx.SqlSugar
 
         public void RollbackTran()
         {
-            _sqlSugarClient.Ado.RollbackTran();
+            if (Options.MergeTrans)
+                _sqlSugarClient.RollbackTran();
+            else
+                _sqlSugarClient.Ado.RollbackTran();
         }
     }
 }

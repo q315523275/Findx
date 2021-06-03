@@ -19,5 +19,9 @@ namespace Findx.SqlSugar
         /// 是否进行Debug调试
         /// </summary>
         public bool Debug { set; get; }
+        /// <summary>
+        /// 是否合并事务
+        /// </summary>
+        public bool MergeTrans { set; get; }
     }
 }

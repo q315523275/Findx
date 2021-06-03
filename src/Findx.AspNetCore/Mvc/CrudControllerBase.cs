@@ -17,7 +17,7 @@ namespace Findx.AspNetCore.Mvc
     /// <typeparam name="TUpdateRequest"></typeparam>
     /// <typeparam name="TQueryParameter"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey>
+    public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey> : QueryControllerBase<TModel, TDto, TQueryParameter, TKey>
         where TModel : class, new()
         where TDto : IResponse, new()
         where TCreateRequest : IRequest, new()
@@ -77,53 +77,6 @@ namespace Findx.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// 构建分页查询条件
-        /// </summary>
-        /// <param name="dto">修改参数</param>
-        protected virtual Expressionable<TModel> CreatePageWhereExpression(TQueryParameter request)
-        {
-            return ExpressionBuilder.Create<TModel>();
-        }
-
-        /// <summary>
-        /// 构建分页查询条件
-        /// </summary>
-        /// <param name="dto">修改参数</param>
-        protected virtual Expression<Func<TModel, object>> CreatePageOrderExpression(TQueryParameter request)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// 查询数据
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpGet]
-        public virtual CommonResult Page([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
-        {
-            Check.NotNull(request, nameof(request));
-
-            var whereExpression = CreatePageWhereExpression(request);
-
-            var pageResult = repository.Paged(request.PageNo, request.PageSize, whereExpression: whereExpression.ToExpression());
-
-            return CommonResult.Success(pageResult);
-        }
-
-        /// <summary>
-        /// 查询单条数据
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpGet]
-        public virtual CommonResult GetById(TKey id, [FromServices] IRepository<TModel> repository)
-        {
-            Check.NotNull(id, nameof(id));
-            return CommonResult.Success(repository.Get(id));
-        }
-
-        /// <summary>
         /// 删除数据
         /// </summary>
         /// <param name="id"></param>
@@ -145,7 +98,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="ids"></param>
         /// <returns></returns>
         [HttpPost]
-        public virtual CommonResult DeleteMany(List<TKey> ids, [FromServices] IRepository<TModel> repository)
+        public virtual CommonResult DeleteMany([FromBody] List<TKey> ids, [FromServices] IRepository<TModel> repository)
         {
             Check.NotNull(ids, nameof(ids));
 

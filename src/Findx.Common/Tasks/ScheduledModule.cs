@@ -14,7 +14,7 @@ namespace Findx.Tasks
     {
         public override ModuleLevel Level => ModuleLevel.Framework;
 
-        public override int Order => 10;
+        public override int Order => 20;
 
         private SchedulerOptions SchedulerOptions { set; get; }
 
@@ -23,21 +23,21 @@ namespace Findx.Tasks
             // 配置服务
             IConfiguration configuration = services.GetConfiguration();
             var section = configuration.GetSection("Findx:Scheduler");
-            services.Configure<SchedulerOptions>(section);
             SchedulerOptions = section.Get<SchedulerOptions>();
-            if (!SchedulerOptions.Enable)
+            services.Configure<SchedulerOptions>(section);
+            if (SchedulerOptions == null || !SchedulerOptions.Enable)
                 return services;
 
             // 任务调度
-            services.AddSingleton<IScheduledTaskExecuter, InMemoryScheduledTaskExecuter>();
             services.AddSingleton<IScheduledTaskManager, InMemoryScheduledTaskManager>();
             services.AddSingleton<IScheduledTaskStore, InMemoryScheduledTaskStore>();
             services.AddSingleton<IScheduledTaskExecuter, InMemoryScheduledTaskExecuter>();
             services.AddSingleton<IScheduler, InMemoryScheduler>();
+            services.AddSingleton<SchedulerTaskWrapperDictionary>();
 
             // 后台任务
-            //services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
-            //services.AddHostedService<AsyncQueueTaskHostedService>();
+            // services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
+            // services.AddHostedService<AsyncQueueTaskHostedService>();
 
             // 自动注册任务
             IScheduledTaskFinder scheduledTaskFinder = services.GetOrAddTypeFinder<IScheduledTaskFinder>(assemblyFinder => new ScheduledTaskFinder(assemblyFinder));
@@ -54,11 +54,12 @@ namespace Findx.Tasks
 
         public override void UseModule(IServiceProvider provider)
         {
-            if (SchedulerOptions.Enable)
+            if (SchedulerOptions != null && SchedulerOptions.Enable)
             {
                 IScheduler scheduler = provider.GetRequiredService<IScheduler>();
                 IScheduledTaskManager scheduledTaskManager = provider.GetRequiredService<IScheduledTaskManager>();
                 IScheduledTaskFinder scheduledTaskFinder = provider.GetRequiredService<IScheduledTaskFinder>();
+                SchedulerTaskWrapperDictionary scheduledDict = provider.GetRequiredService<SchedulerTaskWrapperDictionary>();
 
                 Type[] scheduledTaskTypes = scheduledTaskFinder.FindAll();
 
@@ -66,7 +67,7 @@ namespace Findx.Tasks
                 {
                     var schedulerTaskWrapper = new SchedulerTaskWrapper(scheduledTaskType);
 
-                    SchedulerTaskWrapperDictionary.Add(schedulerTaskWrapper);
+                    scheduledDict.TryAdd(schedulerTaskWrapper.TaskFullName, schedulerTaskWrapper);
                     scheduledTaskManager.ScheduleAsync(schedulerTaskWrapper);
                 }
 
@@ -79,7 +80,7 @@ namespace Findx.Tasks
 
         public override void OnShutdown(IServiceProvider provider)
         {
-            if (SchedulerOptions.Enable)
+            if (SchedulerOptions != null && SchedulerOptions.Enable)
             {
                 cancellationToken.Cancel();
 

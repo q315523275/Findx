@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.Admin.Areas.Admin.Controllers
 {
     [Area("System")]
+    // [ApiExplorerSettings(GroupName = "common")]
     public class CommonController : AreaApiControllerBase
     {
 

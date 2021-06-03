@@ -5,7 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Findx.Mapster\Findx.Mapster.csproj" />
     <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
+    <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
     <ProjectReference Include="..\Findx.Module.Admin\Findx.Module.Admin.csproj" />
   </ItemGroup>
 

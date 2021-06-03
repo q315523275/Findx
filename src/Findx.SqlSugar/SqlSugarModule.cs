@@ -30,6 +30,8 @@ namespace Findx.SqlSugar
             var section = configuration.GetSection("Findx:SqlSugar");
             services.Configure<SqlSugarOptions>(section);
             SqlSugarOptions = section.Get<SqlSugarOptions>();
+            if (SqlSugarOptions == null)
+                return services;
 
             ConnectionConfigs = new List<ConnectionConfig>();
 
@@ -85,6 +87,9 @@ namespace Findx.SqlSugar
 
         public override void UseModule(IServiceProvider provider)
         {
+            if (SqlSugarOptions == null)
+                return;
+
             IOptionsMonitor<SqlSugarOptions> optionsMonitor = provider.GetService<IOptionsMonitor<SqlSugarOptions>>();
             optionsMonitor?.OnChange(options =>
             {

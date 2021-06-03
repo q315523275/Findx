@@ -38,8 +38,6 @@ namespace Findx.Module.WebHost
 
             app.UseFindx();
 
-            app.UseAuthentication().UseAuthorization();
-
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllersWithAreaRoute();

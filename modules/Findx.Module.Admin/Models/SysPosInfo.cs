@@ -6,7 +6,7 @@ namespace Findx.Module.Admin.Models
     /// <summary>
     /// 系统职位表
     /// </summary>
-    public partial class SysPosInfo
+    public class SysPosInfo
     {
 
         /// <summary>

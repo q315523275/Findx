@@ -12,6 +12,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+	  <ProjectReference Include="..\..\src\Findx.SqlSugar\Findx.SqlSugar.csproj" />
 	  <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
 	</ItemGroup>
 	<ItemGroup>

@@ -19,16 +19,14 @@ namespace Findx.Tasks.Scheduling
 
         public async Task ExecuteAsync(TaskExecutionContext context, CancellationToken cancellationToken = default)
         {
-            var store = context.ServiceProvider.GetService<IScheduledTaskStore>();
-            Check.NotNull(store, nameof(store));
-
-            var jsonSerializer = context.ServiceProvider.GetService<IJsonSerializer>();
-            Check.NotNull(jsonSerializer, nameof(jsonSerializer));
+            var store = context.ServiceProvider.GetRequiredService<IScheduledTaskStore>();
+            var jsonSerializer = context.ServiceProvider.GetRequiredService<IJsonSerializer>();
+            var scheduledDict = context.ServiceProvider.GetRequiredService<SchedulerTaskWrapperDictionary>();
 
             var taskInfo = await store.FindAsync(context.TaskId);
             Check.NotNull(taskInfo, nameof(taskInfo));
 
-            var schedulerTaskWrapper = SchedulerTaskWrapperDictionary.Get(taskInfo.TaskFullName);
+            scheduledDict.TryGetValue(taskInfo.TaskFullName, out var schedulerTaskWrapper);
             Check.NotNull(schedulerTaskWrapper, nameof(schedulerTaskWrapper));
 
             // 任务参数

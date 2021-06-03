@@ -30,15 +30,15 @@ namespace Findx.SqlSugar
             if (Options?.DataSource.Keys.Count <= 1)
                 return;
 
-            var entityType = typeof(TEntity);
-            var primary = DataSourceMap.GetOrAdd(entityType, () =>
+            var primary = DataSourceMap.GetOrAdd(_entityType, () =>
             {
-                var dataSourceAttribute = entityType.GetAttribute<DataSourceAttribute>();
+                var dataSourceAttribute = _entityType.GetAttribute<DataSourceAttribute>();
                 return dataSourceAttribute?.Primary ?? Options?.Primary;
             });
 
             _sqlSugarClient.ChangeDatabase(primary);
         }
+
         private SqlSugarOptions Options
         {
             get
@@ -46,6 +46,8 @@ namespace Findx.SqlSugar
                 return _options?.CurrentValue;
             }
         }
+
+        protected Type _entityType = typeof(TEntity);
 
         public IUnitOfWork GetUnitOfWork()
         {
