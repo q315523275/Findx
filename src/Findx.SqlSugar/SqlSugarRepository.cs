@@ -26,9 +26,7 @@ namespace Findx.SqlSugar
             _unitOfWork = unitOfWork;
             _options = options;
 
-            // 判断数据源数量
-            if (Options?.DataSource.Keys.Count <= 1)
-                return;
+            if (Options?.DataSource.Keys.Count <= 1) return;
 
             var primary = DataSourceMap.GetOrAdd(_entityType, () =>
             {
@@ -218,37 +216,71 @@ namespace Findx.SqlSugar
             return queryable.ToListAsync();
         }
 
-        public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> orderByExpression = null, bool ascending = false)
+        public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
             var queryable = _sqlSugarClient.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null)
+            if (selectByExpression == null)
+                return queryable.Select<TObject>().ToList();
+            else
+                return queryable.Select(selectByExpression).ToList();
+        }
+
+        public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
+        {
+            var queryable = _sqlSugarClient.Queryable<TEntity>();
+
+            if (whereExpression != null)
+                queryable.Where(whereExpression);
+
+            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+
+            if (selectByExpression == null)
+                return queryable.Select<TObject>().ToListAsync();
+            else
+                return queryable.Select(selectByExpression).ToListAsync();
+        }
+
+        public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
+        {
+            var queryable = _sqlSugarClient.Queryable<TEntity>();
+
+            if (whereExpression != null)
+                queryable.Where(whereExpression);
+
+            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
             {
-                if (ascending)
-                    queryable.OrderBy(orderByExpression, OrderByType.Asc);
-                else
-                    queryable.OrderBy(orderByExpression, OrderByType.Desc);
+                foreach (var item in orderByExpression.OrderBy)
+                {
+                    if (item.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
             }
 
             return queryable.Take(topSize).ToList();
         }
 
-        public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> orderByExpression = null, bool ascending = false, CancellationToken cancellationToken = default)
+        public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
         {
             var queryable = _sqlSugarClient.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null)
+            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
             {
-                if (ascending)
-                    queryable.OrderBy(orderByExpression, OrderByType.Asc);
-                else
-                    queryable.OrderBy(orderByExpression, OrderByType.Desc);
+                foreach (var item in orderByExpression.OrderBy)
+                {
+                    if (item.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
             }
 
             _sqlSugarClient.Ado.CancellationToken = cancellationToken;
@@ -256,41 +288,95 @@ namespace Findx.SqlSugar
             return queryable.Take(topSize).ToListAsync();
         }
 
-        public PagedResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> orderByExpression = null, bool ascending = false)
+        public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
             var queryable = _sqlSugarClient.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null)
+            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
             {
-                if (ascending)
-                    queryable.OrderBy(orderByExpression, OrderByType.Asc);
-                else
-                    queryable.OrderBy(orderByExpression, OrderByType.Desc);
+                foreach (var item in orderByExpression.OrderBy)
+                {
+                    if (item.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
+            }
+
+            if (selectByExpression == null)
+                return queryable.Take(topSize).Select<TObject>().ToList();
+            else
+                return queryable.Take(topSize).Select(selectByExpression).ToList();
+        }
+
+        public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
+        {
+            var queryable = _sqlSugarClient.Queryable<TEntity>();
+
+            if (whereExpression != null)
+                queryable.Where(whereExpression);
+
+            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            {
+                foreach (var item in orderByExpression.OrderBy)
+                {
+                    if (item.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
+            }
+
+            if (selectByExpression == null)
+                return queryable.Take(topSize).Select<TObject>().ToListAsync();
+            else
+                return queryable.Take(topSize).Select(selectByExpression).ToListAsync();
+        }
+
+        public PagedResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
+        {
+            var queryable = _sqlSugarClient.Queryable<TEntity>();
+
+            if (whereExpression != null)
+                queryable.Where(whereExpression);
+
+            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            {
+                foreach (var item in orderByExpression.OrderBy)
+                {
+                    if (item.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
             }
 
             int totalRows = 0;
 
             var result = queryable.ToPageList(pageNumber, pageSize, ref totalRows);
 
-            return new PagedResult<List<TEntity>>(pageSize, pageNumber, totalRows, result);
+            return new PagedResult<List<TEntity>>(pageNumber, pageSize, totalRows, result);
         }
 
-        public async Task<PagedResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> orderByExpression = null, bool ascending = false, CancellationToken cancellationToken = default)
+        public async Task<PagedResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
         {
             var queryable = _sqlSugarClient.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null)
+            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
             {
-                if (ascending)
-                    queryable.OrderBy(orderByExpression, OrderByType.Asc);
-                else
-                    queryable.OrderBy(orderByExpression, OrderByType.Desc);
+                foreach (var item in orderByExpression.OrderBy)
+                {
+                    if (item.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
             }
 
             _sqlSugarClient.Ado.CancellationToken = cancellationToken;
@@ -299,7 +385,73 @@ namespace Findx.SqlSugar
 
             var result = await queryable.ToPageListAsync(pageNumber, pageSize, totalRows);
 
-            return new PagedResult<List<TEntity>>(pageSize, pageNumber, totalRows.Value, result);
+            return new PagedResult<List<TEntity>>(pageNumber, pageSize, totalRows.Value, result);
+        }
+
+        public PagedResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
+        {
+            var queryable = _sqlSugarClient.Queryable<TEntity>();
+
+            if (whereExpression != null)
+                queryable.Where(whereExpression);
+
+            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            {
+                foreach (var item in orderByExpression.OrderBy)
+                {
+                    if (item.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
+            }
+
+            int totalRows = 0;
+
+            if (selectByExpression == null)
+            {
+                var result = queryable.Select<TObject>().ToPageList(pageNumber, pageSize, ref totalRows);
+                return new PagedResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
+            }
+            else
+            {
+                var result = queryable.Select(selectByExpression).ToPageList(pageNumber, pageSize, ref totalRows);
+                return new PagedResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
+            }
+        }
+
+        public async Task<PagedResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
+        {
+            var queryable = _sqlSugarClient.Queryable<TEntity>();
+
+            if (whereExpression != null)
+                queryable.Where(whereExpression);
+
+            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            {
+                foreach (var item in orderByExpression.OrderBy)
+                {
+                    if (item.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
+            }
+
+            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+
+            RefAsync<int> totalRows = 0;
+
+            if (selectByExpression == null)
+            {
+                var result = await queryable.Select<TObject>().ToPageListAsync(pageNumber, pageSize, totalRows);
+                return new PagedResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
+            }
+            else
+            {
+                var result = await queryable.Select(selectByExpression).ToPageListAsync(pageNumber, pageSize, totalRows);
+                return new PagedResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
+            }
         }
 
         public int Count(Expression<Func<TEntity, bool>> whereExpression = null)
@@ -337,5 +489,6 @@ namespace Findx.SqlSugar
 
             return _sqlSugarClient.Queryable<TEntity>().AnyAsync();
         }
+
     }
 }

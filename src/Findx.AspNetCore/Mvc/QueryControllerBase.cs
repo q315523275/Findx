@@ -29,7 +29,7 @@ namespace Findx.AspNetCore.Mvc
         /// 构建分页查询条件
         /// </summary>
         /// <param name="dto">修改参数</param>
-        protected virtual Expression<Func<TModel, object>> CreatePageOrderExpression(TQueryParameter request)
+        protected virtual MultiOrderBy<TModel> CreatePageOrderExpression(TQueryParameter request)
         {
             return null;
         }
@@ -38,25 +38,49 @@ namespace Findx.AspNetCore.Mvc
         /// 查询数据
         /// </summary>
         /// <param name="request"></param>
-        /// <returns></returns>
+        /// <returns>实体数据</returns>
         [HttpGet]
-        public virtual CommonResult PagerQuery([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
+        public virtual CommonResult PagerQuery([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
         {
             Check.NotNull(request, nameof(request));
 
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var pageResult = repository.Paged(request.PageNo, request.PageSize, whereExpression: whereExpression.ToExpression(), orderByExpression: orderByExpression, ascending: request.Asc);
+            var pageResult = repository.Paged<TDto>(request.PageNo, request.PageSize, whereExpression: whereExpression.ToExpression(), orderByExpression: orderByExpression);
 
-            return CommonResult.Success(pageResult);
+            return CommonResult.Success(ToPagerQueryResult(pageResult));
         }
 
         /// <summary>
         /// 转换分页查询结果
         /// </summary>
         /// <param name="result">分页查询结果</param>
-        protected virtual dynamic ToPagerQueryResult(PagedResult<List<TModel>> result) => result;
+        protected virtual dynamic ToPagerQueryResult(PagedResult<List<TDto>> result) => result;
+
+        /// <summary>
+        /// 查询列表数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns>实体数据</returns>
+        [HttpGet]
+        public virtual CommonResult Query([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
+        {
+            Check.NotNull(request, nameof(request));
+
+            var whereExpression = CreatePageWhereExpression(request);
+            var orderByExpression = CreatePageOrderExpression(request);
+
+            var result = repository.Top<TDto>(request.PageSize, whereExpression: whereExpression.ToExpression(), orderByExpression: orderByExpression);
+
+            return CommonResult.Success(ToQueryResult(result));
+        }
+
+        /// <summary>
+        /// 转换列表查询结果
+        /// </summary>
+        /// <param name="result">分页查询结果</param>
+        protected virtual dynamic ToQueryResult(List<TDto> result) => result;
 
         /// <summary>
         /// 查询单条数据
@@ -67,7 +91,25 @@ namespace Findx.AspNetCore.Mvc
         public virtual CommonResult GetById(TKey id, [FromServices] IRepository<TModel> repository)
         {
             Check.NotNull(id, nameof(id));
-            return CommonResult.Success(repository.Get(id));
+
+            var result = repository.Get(id);
+            AfterGetById(repository, result);
+
+            return CommonResult.Success(ToGetByIdResult(result));
         }
+
+        /// <summary>
+        /// 转换单条数据查询结果
+        /// </summary>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        protected virtual dynamic ToGetByIdResult(TModel result) => result;
+
+        /// <summary>
+        /// 单条数据查询后操作
+        /// </summary>
+        /// <param name="repository"></param>
+        /// <param name="model"></param>
+        protected virtual void AfterGetById(IRepository<TModel> repository, TModel model) { }
     }
 }
