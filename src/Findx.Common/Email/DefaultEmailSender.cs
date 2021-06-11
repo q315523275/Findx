@@ -29,8 +29,8 @@ namespace Findx.Email
         {
             using SmtpClient client = new SmtpClient(EmailSenderOptions.Host, EmailSenderOptions.Port)
             {
-                UseDefaultCredentials = true,
                 EnableSsl = EmailSenderOptions.EnableSsl,
+                UseDefaultCredentials = false,
                 Credentials = new NetworkCredential(EmailSenderOptions.UserName, EmailSenderOptions.Password)
             };
             await client.SendMailAsync(mail);

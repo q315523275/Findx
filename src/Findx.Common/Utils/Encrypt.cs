@@ -101,7 +101,7 @@ namespace Findx.Utils
             using (var cTransform = des.CreateEncryptor())
             {
                 byte[] resultArray = GetTransformFinalBlock(cTransform, toEncryptArray);
-                return System.Convert.ToBase64String(resultArray);
+                return Convert.ToBase64String(resultArray);
             }
         }
         /// <summary>
