@@ -8,6 +8,7 @@ using Findx.Locks;
 using Findx.Messaging;
 using Findx.Modularity;
 using Findx.Reflection;
+using Findx.Security;
 using Findx.Serialization;
 using Findx.Sms;
 using Findx.Storage;

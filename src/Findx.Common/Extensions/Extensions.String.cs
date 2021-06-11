@@ -435,6 +435,17 @@ namespace Findx.Extensions
             return result;
         }
 
+        /// <summary>
+        /// 判断字符串是否包含字符
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="check"></param>
+        /// <param name="comp"></param>
+        /// <returns></returns>
+        public static bool Contains(this string source, string check, StringComparison comp)
+        {
+            return source.IndexOf(check, comp) >= 0;
+        }
 
 
         /// <summary>

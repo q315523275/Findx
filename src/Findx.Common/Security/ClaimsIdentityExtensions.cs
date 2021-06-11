@@ -8,6 +8,19 @@ namespace Findx.Security
     public static class ClaimsIdentityExtensions
     {
         /// <summary>
+        /// 获取指定类型的Claim
+        /// </summary>
+        public static Claim GetClaimFirstOrDefault(this IIdentity identity, string type)
+        {
+            Check.NotNull(identity, nameof(identity));
+            if (!(identity is ClaimsIdentity claimsIdentity))
+            {
+                return null;
+            }
+            return claimsIdentity.FindFirst(type);
+        }
+
+        /// <summary>
         /// 获取指定类型的Claim值
         /// </summary>
         public static string GetClaimValueFirstOrDefault(this IIdentity identity, string type)
@@ -18,6 +31,19 @@ namespace Findx.Security
                 return null;
             }
             return claimsIdentity.FindFirst(type)?.Value;
+        }
+
+        /// <summary>
+        /// 获取指定类型的所有Claim值
+        /// </summary>
+        public static Claim[] GetClaims(this IIdentity identity, string type)
+        {
+            Check.NotNull(identity, nameof(identity));
+            if (!(identity is ClaimsIdentity claimsIdentity))
+            {
+                return new Claim[0];
+            }
+            return claimsIdentity.Claims.Where(m => m.Type == type).ToArray();
         }
 
         /// <summary>

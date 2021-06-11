@@ -1,46 +1,62 @@
-﻿using System;
+﻿using Findx.DependencyInjection;
+using System;
+using System.Linq;
 using System.Security.Claims;
+using System.Security.Principal;
 
 namespace Findx.Security
 {
-    public class CurrentUser : ICurrentUser
+    public class CurrentUser : ICurrentUser, ITransientDependency
     {
-        public bool IsAuthenticated => throw new NotImplementedException();
+        private readonly IPrincipal _principal;
 
-        public string UserId => throw new NotImplementedException();
+        public CurrentUser(IPrincipal principal)
+        {
+            _principal = principal;
+        }
 
-        public string UserName => throw new NotImplementedException();
+        public bool IsAuthenticated => _principal?.Identity?.IsAuthenticated ?? false;
 
-        public string PhoneNumber => throw new NotImplementedException();
+        public string UserId => _principal?.Identity?.GetUserId();
 
-        public bool PhoneNumberVerified => throw new NotImplementedException();
+        public string UserName => _principal?.Identity?.GetUserName();
 
-        public string Email => throw new NotImplementedException();
+        public string PhoneNumber => _principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.PhoneNumber);
 
-        public bool EmailVerified => throw new NotImplementedException();
+        public bool PhoneNumberVerified => string.Equals(_principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.PhoneNumber), "true",
+            StringComparison.InvariantCultureIgnoreCase);
 
-        public string TenantId => throw new NotImplementedException();
+        public string Email => _principal?.Identity?.GetEmail();
 
-        public string[] Roles => throw new NotImplementedException();
+        public bool EmailVerified => string.Equals(_principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.EmailVerified), "true",
+            StringComparison.InvariantCultureIgnoreCase);
+
+        public string TenantId => _principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.TenantId);
+
+        public string[] Roles => _principal?.Identity?.GetClaimValues(ClaimTypes.Role);
 
         public Claim FindClaim(string claimType)
         {
-            throw new NotImplementedException();
+            return _principal?.Identity?.GetClaimFirstOrDefault(claimType);
         }
 
         public Claim[] FindClaims(string claimType)
         {
-            throw new NotImplementedException();
+            return _principal?.Identity?.GetClaims(claimType);
         }
 
         public Claim[] GetAllClaims()
         {
-            throw new NotImplementedException();
+            if (!(_principal.Identity is ClaimsIdentity claimsIdentity))
+            {
+                return new Claim[0];
+            }
+            return claimsIdentity?.Claims?.ToArray();
         }
 
         public bool IsInRole(string roleName)
         {
-            throw new NotImplementedException();
+            return _principal?.Identity?.GetClaimValues(ClaimTypes.Role)?.Any(c => c == roleName) ?? false;
         }
     }
 }

@@ -17,6 +17,18 @@ namespace Findx.Extensions
         private const string JsonMediaType = "application/json";
 
         /// <summary>
+        /// 反序列化HttpClient返回json字符串
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="httpContent"></param>
+        /// <returns></returns>
+        public static async Task<T> ReadAsJsonAsync<T>(this HttpContent httpContent)
+        {
+            var result = await httpContent.ReadAsStringAsync();
+            return result.ToObject<T>();
+        }
+
+        /// <summary>
         /// 发起POST Json请求
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -30,10 +42,7 @@ namespace Findx.Extensions
             Check.NotNull(requestUri, nameof(requestUri));
             Check.NotNull(parameter, nameof(parameter));
 
-            IJsonSerializer jsonSerializer = ServiceLocator.GetService<IJsonSerializer>();
-            Check.NotNull(jsonSerializer, nameof(jsonSerializer));
-
-            return httpClient.PostAsync(requestUri, new StringContent(jsonSerializer.Serialize(parameter), Encoding.UTF8, JsonMediaType));
+            return httpClient.PostAsync(requestUri, new StringContent(parameter.ToJson<T>(), Encoding.UTF8, JsonMediaType));
         }
 
         /// <summary>
