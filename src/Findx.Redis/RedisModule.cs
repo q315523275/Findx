@@ -41,10 +41,8 @@ namespace Findx.Redis
             // 缓存实现
             services.AddSingleton<ICache, RedisCacheProvider>();
 
-            // redis队列
-            services.AddSingleton<IRedisMqPublisherProvider, StackExchangeRedisMqPublisherProvider>();
-            services.AddSingleton(sp => sp.GetRequiredService<IRedisMqPublisherProvider>().Create());
-            services.AddSingleton<IRedisMqConsumerProvider, StackExchangeRedisMqConsumerProvider>();
+            // redis stream队列
+            services.AddSingleton<IRedisStreamManager, StackExchangeRedisStreamManager>();
 
             return services;
         }
