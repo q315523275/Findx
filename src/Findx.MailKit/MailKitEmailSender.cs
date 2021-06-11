@@ -1,5 +1,4 @@
-﻿using Findx.DependencyInjection;
-using Findx.Email;
+﻿using Findx.Email;
 using Findx.Extensions;
 using MailKit.Net.Smtp;
 using MailKit.Security;
@@ -10,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace Findx.MailKit
 {
-    [Dependency(Microsoft.Extensions.DependencyInjection.ServiceLifetime.Singleton, ReplaceServices = true)]
     public class MailKitEmailSender : EmailSenderBase
     {
         private readonly ILogger<MailKitEmailSender> _logger;

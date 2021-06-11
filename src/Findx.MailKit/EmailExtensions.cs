@@ -258,7 +258,7 @@ namespace Findx.MailKit
         /// 转换成邮箱地址
         /// </summary>
         /// <param name="address">邮箱地址</param>
-        private static MailboxAddress ToMailboxAddress(this MailAddress address) => address == null ? null : new MailboxAddress(address.DisplayName, address.Address);
+        private static MailboxAddress ToMailboxAddress(this MailAddress address) => address == null ? null : new MailboxAddress(Encoding.UTF8, address.DisplayName, address.Address);
 
         /// <summary>
         /// 转换成Internet地址列表
