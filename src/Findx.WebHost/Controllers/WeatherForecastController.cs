@@ -27,7 +27,7 @@ namespace Findx.WebHost.Controllers
         }
 
         [HttpGet]
-        // [AntiDuplicateRequest]
+        [AntiDuplicateRequest]
         public IEnumerable<WeatherForecast> Get()
         {
             var rng = new Random();
@@ -38,12 +38,6 @@ namespace Findx.WebHost.Controllers
                 Summary = Summaries[rng.Next(Summaries.Length)]
             })
             .ToArray();
-        }
-        [HttpGet("/health")]
-        [RateLimiter(Limit = 30)]
-        public string Health()
-        {
-            return ServiceLocator.GetServices<IMetricsProvider>().Select(it => it.GetSamples()).ToJson();
         }
     }
 }

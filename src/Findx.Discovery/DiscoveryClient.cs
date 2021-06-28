@@ -59,7 +59,7 @@ namespace Findx.Discovery.Consul
         {
             if (Options.Cache)
             {
-                var _cache = _cacheProvider.Get(Options.CacheProvider);
+                var _cache = _cacheProvider.Get(Options.CacheStrategy);
 
                 var instanceData = await _cache.GetAsync<IList<IServiceInstance>>($"{ServiceInstancesKeyPrefix}{serviceName}").ConfigureAwait(false);
                 if (instanceData != null && instanceData.Count > 0)
@@ -72,7 +72,7 @@ namespace Findx.Discovery.Consul
 
             if (Options.Cache)
             {
-                var _cache = _cacheProvider.Get(Options.CacheProvider);
+                var _cache = _cacheProvider.Get(Options.CacheStrategy);
 
                 await _cache.AddAsync($"{ServiceInstancesKeyPrefix}{serviceName}", instances, TimeSpan.FromSeconds(Options.CacheTTL), cancellationToken);
             }

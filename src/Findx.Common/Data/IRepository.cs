@@ -29,7 +29,6 @@ namespace Findx.Data
         Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default);
 
 
-
         TEntity Get(dynamic key);
         Task<TEntity> GetAsync(dynamic key, CancellationToken cancellationToken = default);
 

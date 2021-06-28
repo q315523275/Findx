@@ -8,11 +8,11 @@ namespace Findx.WebHost.Messaging
         {
         }
 
-        public PayedOrderCommand(int orderId)
+        public PayedOrderCommand(long orderId)
         {
             OrderId = orderId;
         }
 
-        public int OrderId { get; private set; }
+        public long OrderId { get; private set; }
     }
 }

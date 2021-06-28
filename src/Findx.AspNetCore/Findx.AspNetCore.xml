@@ -107,6 +107,20 @@
             获取客户端IP地址
             </summary>
         </member>
+        <member name="M:Findx.AspNetCore.Extensions.Extensions.GetBrowser(Microsoft.AspNetCore.Http.HttpRequest)">
+            <summary>
+            获取请求浏览器
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.AspNetCore.Extensions.Extensions.GetSystem(Microsoft.AspNetCore.Http.HttpRequest)">
+            <summary>
+            获取请求系统
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
         <member name="M:Findx.AspNetCore.Extensions.Extensions.AddRazorPageAndRenderer(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
             <summary>
             添加Razor和读取Razor绑定后内容
@@ -156,6 +170,8 @@
             添加数据
             </summary>
             <param name="request"></param>
+            <param name="repository"></param>
+            <param name="mapper"></param>
             <returns></returns>
         </member>
         <member name="M:Findx.AspNetCore.Mvc.CrudControllerBase`6.UpdateBefore(`3)">
@@ -169,6 +185,8 @@
             修改数据
             </summary>
             <param name="request"></param>
+            <param name="repository"></param>
+            <param name="mapper"></param>
             <returns></returns>
         </member>
         <member name="M:Findx.AspNetCore.Mvc.CrudControllerBase`6.DeleteById(`5,Findx.Data.IRepository{`0})">
@@ -176,6 +194,7 @@
             删除数据
             </summary>
             <param name="id"></param>
+            <param name="repository"></param>
             <returns></returns>
         </member>
         <member name="M:Findx.AspNetCore.Mvc.CrudControllerBase`6.DeleteMany(System.Collections.Generic.List{`5},Findx.Data.IRepository{`0})">
@@ -183,6 +202,7 @@
             删除数据
             </summary>
             <param name="ids"></param>
+            <param name="repository"></param>
             <returns></returns>
         </member>
         <member name="T:Findx.AspNetCore.Mvc.DefaultApiInterfaceService">
@@ -492,20 +512,23 @@
             <summary>
             构建分页查询条件
             </summary>
-            <param name="dto">修改参数</param>
+            <param name="request"></param>
+            <returns></returns>
         </member>
         <member name="M:Findx.AspNetCore.Mvc.QueryControllerBase`4.CreatePageOrderExpression(`2)">
             <summary>
             构建分页查询条件
             </summary>
-            <param name="dto">修改参数</param>
+            <param name="request"></param>
+            <returns></returns>
         </member>
         <member name="M:Findx.AspNetCore.Mvc.QueryControllerBase`4.PagerQuery(`2,Findx.Data.IRepository{`0})">
             <summary>
             查询数据
             </summary>
             <param name="request"></param>
-            <returns>实体数据</returns>
+            <param name="repository"></param>
+            <returns></returns>
         </member>
         <member name="M:Findx.AspNetCore.Mvc.QueryControllerBase`4.ToPagerQueryResult(Findx.Data.PagedResult{System.Collections.Generic.List{`1}})">
             <summary>
@@ -518,7 +541,8 @@
             查询列表数据
             </summary>
             <param name="request"></param>
-            <returns>实体数据</returns>
+            <param name="repository"></param>
+            <returns></returns>
         </member>
         <member name="M:Findx.AspNetCore.Mvc.QueryControllerBase`4.ToQueryResult(System.Collections.Generic.List{`1})">
             <summary>
@@ -530,7 +554,8 @@
             <summary>
             查询单条数据
             </summary>
-            <param name="request"></param>
+            <param name="id"></param>
+            <param name="repository"></param>
             <returns></returns>
         </member>
         <member name="M:Findx.AspNetCore.Mvc.QueryControllerBase`4.ToGetByIdResult(`0)">

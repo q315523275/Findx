@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Net;
+using Findx.Extensions;
 namespace Findx.AspNetCore.Extensions
 {
     /// <summary>
@@ -68,6 +69,27 @@ namespace Findx.AspNetCore.Extensions
             Check.NotNullOrWhiteSpace(ip, nameof(ip));
 
             return ip;
+        }
+
+        /// <summary>
+        /// 获取请求浏览器
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static string GetBrowser(this HttpRequest request)
+        {
+            var userAgent = request.Headers?["User-Agent"].SafeString();
+            return new Findx.Utils.UserAgent(userAgent).GetBrowser();
+        }
+        /// <summary>
+        /// 获取请求系统
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        public static string GetSystem(this HttpRequest request)
+        {
+            var userAgent = request.Headers?["User-Agent"].SafeString();
+            return new Findx.Utils.UserAgent(userAgent).GetSystem();
         }
     }
 }

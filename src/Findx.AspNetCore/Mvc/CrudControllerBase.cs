@@ -34,6 +34,8 @@ namespace Findx.AspNetCore.Mvc
         /// 添加数据
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="repository"></param>
+        /// <param name="mapper"></param>
         /// <returns></returns>
         [HttpPost]
         public virtual CommonResult Create([FromBody] TCreateRequest request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
@@ -60,6 +62,8 @@ namespace Findx.AspNetCore.Mvc
         /// 修改数据
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="repository"></param>
+        /// <param name="mapper"></param>
         /// <returns></returns>
         [HttpPost]
         public virtual CommonResult Update([FromBody] TUpdateRequest request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
@@ -80,6 +84,7 @@ namespace Findx.AspNetCore.Mvc
         /// 删除数据
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="repository"></param>
         /// <returns></returns>
         [HttpGet]
         public virtual CommonResult DeleteById(TKey id, [FromServices] IRepository<TModel> repository)
@@ -96,6 +101,7 @@ namespace Findx.AspNetCore.Mvc
         /// 删除数据
         /// </summary>
         /// <param name="ids"></param>
+        /// <param name="repository"></param>
         /// <returns></returns>
         [HttpPost]
         public virtual CommonResult DeleteMany([FromBody] List<TKey> ids, [FromServices] IRepository<TModel> repository)

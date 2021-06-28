@@ -1,10 +1,7 @@
 ﻿using Findx.Data;
 using Findx.Linq;
-using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -19,7 +16,8 @@ namespace Findx.AspNetCore.Mvc
         /// <summary>
         /// 构建分页查询条件
         /// </summary>
-        /// <param name="dto">修改参数</param>
+        /// <param name="request"></param>
+        /// <returns></returns>
         protected virtual Expressionable<TModel> CreatePageWhereExpression(TQueryParameter request)
         {
             return ExpressionBuilder.Create<TModel>();
@@ -28,7 +26,8 @@ namespace Findx.AspNetCore.Mvc
         /// <summary>
         /// 构建分页查询条件
         /// </summary>
-        /// <param name="dto">修改参数</param>
+        /// <param name="request"></param>
+        /// <returns></returns>
         protected virtual MultiOrderBy<TModel> CreatePageOrderExpression(TQueryParameter request)
         {
             return null;
@@ -38,7 +37,8 @@ namespace Findx.AspNetCore.Mvc
         /// 查询数据
         /// </summary>
         /// <param name="request"></param>
-        /// <returns>实体数据</returns>
+        /// <param name="repository"></param>
+        /// <returns></returns>
         [HttpGet]
         public virtual CommonResult PagerQuery([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
         {
@@ -62,7 +62,8 @@ namespace Findx.AspNetCore.Mvc
         /// 查询列表数据
         /// </summary>
         /// <param name="request"></param>
-        /// <returns>实体数据</returns>
+        /// <param name="repository"></param>
+        /// <returns></returns>
         [HttpGet]
         public virtual CommonResult Query([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
         {
@@ -85,7 +86,8 @@ namespace Findx.AspNetCore.Mvc
         /// <summary>
         /// 查询单条数据
         /// </summary>
-        /// <param name="request"></param>
+        /// <param name="id"></param>
+        /// <param name="repository"></param>
         /// <returns></returns>
         [HttpGet]
         public virtual CommonResult GetById(TKey id, [FromServices] IRepository<TModel> repository)

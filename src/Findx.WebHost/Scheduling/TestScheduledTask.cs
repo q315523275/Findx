@@ -13,7 +13,7 @@ namespace Findx.WebHost.Scheduling
     {
         public async Task ExecuteAsync(ITaskContext context, CancellationToken cancellationToken = default)
         {
-            var unitOfWork222 = ServiceLocator.GetService<IUnitOfWork<SqlSugarClient>>();
+            // var unitOfWork222 = ServiceLocator.GetService<IUnitOfWork<SqlSugarClient>>();
 
             await Task.Delay(30);
             Console.WriteLine($"我是{context.TaskId}条测试任务========" + DateTime.Now + "==========" + Thread.CurrentThread.ManagedThreadId);
