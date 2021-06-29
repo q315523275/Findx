@@ -12,6 +12,7 @@ using Findx.WebHost.Messaging;
 using Findx.Pdf;
 using Findx.Discovery.Abstractions;
 using Findx.Discovery.LoadBalancer;
+using Microsoft.Extensions.Logging;
 
 namespace Findx.WebHost.Controllers
 {
@@ -138,6 +139,20 @@ namespace Findx.WebHost.Controllers
             var instance = await balancer.ResolveServiceInstanceAsync();
 
             return CommonResult.Success(new { AllInstances = all, Instances = list, Instance = instance, LoadBalancer = balancer.Name.ToString() });
+        }
+
+        /// <summary>
+        /// Log4Net日志示例接口
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <returns></returns>
+        [HttpGet("/Log4Net")]
+        public CommonResult Log4Net([FromServices] ILogger<CommonController> logger)
+        {
+            logger.LogInformation($"这是一条Log4Net正常日志信息{0}", DateTime.Now);
+            logger.LogError($"这是一条Log4Net异常日志信息{0}", DateTime.Now);
+
+            return CommonResult.Success();
         }
     }
 }

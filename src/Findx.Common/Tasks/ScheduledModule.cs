@@ -59,16 +59,17 @@ namespace Findx.Tasks
                 IScheduler scheduler = provider.GetRequiredService<IScheduler>();
                 IScheduledTaskManager scheduledTaskManager = provider.GetRequiredService<IScheduledTaskManager>();
                 IScheduledTaskFinder scheduledTaskFinder = provider.GetRequiredService<IScheduledTaskFinder>();
-                SchedulerTaskWrapperDictionary scheduledDict = provider.GetRequiredService<SchedulerTaskWrapperDictionary>();
 
                 Type[] scheduledTaskTypes = scheduledTaskFinder.FindAll();
 
                 foreach (Type scheduledTaskType in scheduledTaskTypes)
                 {
-                    var schedulerTaskWrapper = new SchedulerTaskWrapper(scheduledTaskType);
-
-                    scheduledDict.TryAdd(schedulerTaskWrapper.TaskFullName, schedulerTaskWrapper);
-                    scheduledTaskManager.ScheduleAsync(schedulerTaskWrapper);
+                    // 需要自带执行的任务
+                    if (scheduledTaskType.HasAttribute<ScheduledAttribute>())
+                    {
+                        var schedulerTaskWrapper = new SchedulerTaskWrapper(scheduledTaskType);
+                        scheduledTaskManager.ScheduleAsync(schedulerTaskWrapper);
+                    }
                 }
 
                 cancellationToken = new CancellationTokenSource();

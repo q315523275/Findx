@@ -16,6 +16,7 @@
 		<ProjectReference Include="..\Findx.EventBus.RabbitMQ\Findx.EventBus.RabbitMQ.csproj" />
 		<ProjectReference Include="..\Findx.MailKit\Findx.MailKit.csproj" />
 		<ProjectReference Include="..\Findx.Mapster\Findx.Mapster.csproj" />
+		<ProjectReference Include="..\Findx.NLog\Findx.NLog.csproj" />
 		<ProjectReference Include="..\Findx.PerfMonitor\Findx.PerfMonitor.csproj" />
 		<ProjectReference Include="..\Findx.Redis\Findx.Redis.csproj" />
 		<ProjectReference Include="..\Findx.Security\Findx.Security.csproj" />

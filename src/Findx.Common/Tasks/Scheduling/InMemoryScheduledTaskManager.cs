@@ -9,11 +9,13 @@ namespace Findx.Tasks.Scheduling
     {
         private readonly IScheduledTaskStore _taskStore;
         private readonly IJsonSerializer _serializer;
+        private readonly SchedulerTaskWrapperDictionary _dict;
 
-        public InMemoryScheduledTaskManager(IScheduledTaskStore taskStore, IJsonSerializer serializer)
+        public InMemoryScheduledTaskManager(IScheduledTaskStore taskStore, IJsonSerializer serializer, SchedulerTaskWrapperDictionary dict)
         {
             _taskStore = taskStore;
             _serializer = serializer;
+            _dict = dict;
         }
 
         public async Task<string> EnqueueAsync<TTaskHandler>(object taskArgs, TimeSpan? delay = null) where TTaskHandler : IScheduledTask
@@ -37,6 +39,8 @@ namespace Findx.Tasks.Scheduling
                 taskInfo.NextRunTime = DateTimeOffset.UtcNow.Add(delay.Value).LocalDateTime;
             }
 
+            AddWrapper(taskArgsType);
+
             await _taskStore.InsertAsync(taskInfo);
 
             return taskInfo.Id.ToString();
@@ -57,6 +61,8 @@ namespace Findx.Tasks.Scheduling
                 TaskFullName = taskArgsType.FullName,
                 TryCount = 0,
             };
+
+            AddWrapper(taskArgsType);
 
             await _taskStore.InsertAsync(taskInfo);
 
@@ -80,6 +86,8 @@ namespace Findx.Tasks.Scheduling
                 TryCount = 0,
             };
 
+            AddWrapper(taskArgsType);
+
             await _taskStore.InsertAsync(taskInfo);
 
             return taskInfo.Id.ToString();
@@ -102,11 +110,12 @@ namespace Findx.Tasks.Scheduling
                 TryCount = 0,
             };
 
+            AddWrapper(taskArgsType);
+
             await _taskStore.InsertAsync(taskInfo);
 
             return taskInfo.Id.ToString();
         }
-
 
         public async Task<string> ScheduleAsync(SchedulerTaskWrapper wrapper, TimeSpan delay)
         {
@@ -123,6 +132,8 @@ namespace Findx.Tasks.Scheduling
                 TaskFullName = wrapper.TaskFullName,
                 TryCount = 0,
             };
+
+            AddWrapper(wrapper);
 
             await _taskStore.InsertAsync(taskInfo);
 
@@ -145,6 +156,8 @@ namespace Findx.Tasks.Scheduling
                 TryCount = 0,
             };
 
+            AddWrapper(wrapper);
+
             await _taskStore.InsertAsync(taskInfo);
 
             return taskInfo.Id.ToString();
@@ -165,8 +178,18 @@ namespace Findx.Tasks.Scheduling
             {
                 return ScheduleAsync(wrapper, attribute.Cron);
             }
+
             return Task.FromResult("-1");
         }
 
+        private void AddWrapper(Type handerType)
+        {
+            var wrapper = new SchedulerTaskWrapper(handerType);
+            _dict.TryAdd(wrapper.TaskFullName, wrapper);
+        }
+        private void AddWrapper(SchedulerTaskWrapper wrapper)
+        {
+            _dict.TryAdd(wrapper.TaskFullName, wrapper);
+        }
     }
 }

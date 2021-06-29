@@ -1,19 +1,12 @@
 ﻿using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Extensions;
-using Findx.Locks;
-using Findx.Redis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Findx.WebHost
 {
