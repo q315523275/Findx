@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Findx.Extensions;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
 using System.Net;
-using Findx.Extensions;
 namespace Findx.AspNetCore.Extensions
 {
     /// <summary>

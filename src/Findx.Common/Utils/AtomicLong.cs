@@ -2,6 +2,9 @@
 
 namespace Findx.Utils
 {
+    /// <summary>
+    /// 原子长整型对象
+    /// </summary>
     public class AtomicLong
     {
         private long _value;

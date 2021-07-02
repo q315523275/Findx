@@ -1,4 +1,5 @@
 ﻿using Findx.EventBus.Abstractions;
+using Findx.EventBus.Attributes;
 using Findx.EventBus.Events;
 using Findx.RabbitMQ;
 using Microsoft.Extensions.Options;
@@ -24,7 +25,7 @@ namespace Findx.EventBus.RabbitMQ
 
         public void Publish(IntegrationEvent @event)
         {
-            var eventName = @event.GetType().Name;
+            var eventName = EventNameAttribute.GetNameOrDefault(@event.GetType());
             var message = _rabbitMqSerializer.Serialize(@event);
             var body = Encoding.UTF8.GetBytes(message);
 

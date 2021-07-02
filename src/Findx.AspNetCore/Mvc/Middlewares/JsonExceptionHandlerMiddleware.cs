@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 
 namespace Findx.AspNetCore.Mvc.Middlewares
 {
+    /// <summary>
+    /// 异常JSON处理中间件
+    /// </summary>
     public class JsonExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;

@@ -2,6 +2,9 @@
 
 namespace Findx.Utils
 {
+    /// <summary>
+    /// 原子布尔对象
+    /// </summary>
     public class AtomicBoolean
     {
         private volatile int _value;

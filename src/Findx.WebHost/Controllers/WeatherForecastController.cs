@@ -1,7 +1,4 @@
 ﻿using Findx.AspNetCore.Mvc.Filters;
-using Findx.DependencyInjection;
-using Findx.Extensions;
-using Findx.PerfMonitor;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;

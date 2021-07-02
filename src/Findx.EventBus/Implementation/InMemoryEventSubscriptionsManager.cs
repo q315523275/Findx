@@ -1,5 +1,6 @@
 ﻿using Findx.DependencyInjection;
 using Findx.EventBus.Abstractions;
+using Findx.EventBus.Attributes;
 using Findx.EventBus.Events;
 using System;
 using System.Collections.Generic;
@@ -10,14 +11,16 @@ namespace Findx.EventBus.Implementation
     public partial class InMemoryEventSubscriptionsManager : IEventSubscriptionsManager, ISingletonDependency
     {
         private readonly Dictionary<string, List<SubscriptionInfo>> _handlers;
-        private readonly List<Type> _eventTypes;
+        // private readonly List<Type> _eventTypes;
+        private readonly Dictionary<string, Type> _eventTypes;
 
         public event EventHandler<string> OnEventRemoved;
 
         public InMemoryEventSubscriptionsManager()
         {
             _handlers = new Dictionary<string, List<SubscriptionInfo>>();
-            _eventTypes = new List<Type>();
+            //_eventTypes = new List<Type>();
+            _eventTypes = new Dictionary<string, Type>();
         }
 
         public bool IsEmpty => !_handlers.Keys.Any();
@@ -37,9 +40,9 @@ namespace Findx.EventBus.Implementation
 
             DoAddSubscription(typeof(TH), eventName, isDynamic: false);
 
-            if (!_eventTypes.Contains(typeof(T)))
+            if (!_eventTypes.ContainsKey(eventName))
             {
-                _eventTypes.Add(typeof(T));
+                _eventTypes.Add(eventName, typeof(T));
             }
         }
 
@@ -66,14 +69,12 @@ namespace Findx.EventBus.Implementation
             }
         }
 
-
         public void RemoveDynamicSubscription<TH>(string eventName)
             where TH : IDynamicEventHandler
         {
             var handlerToRemove = FindDynamicSubscriptionToRemove<TH>(eventName);
             DoRemoveHandler(eventName, handlerToRemove);
         }
-
 
         public void RemoveSubscription<T, TH>()
             where TH : IEventHandler<T>
@@ -84,7 +85,6 @@ namespace Findx.EventBus.Implementation
             DoRemoveHandler(eventName, handlerToRemove);
         }
 
-
         private void DoRemoveHandler(string eventName, SubscriptionInfo subsToRemove)
         {
             if (subsToRemove != null)
@@ -93,10 +93,9 @@ namespace Findx.EventBus.Implementation
                 if (!_handlers[eventName].Any())
                 {
                     _handlers.Remove(eventName);
-                    var eventType = _eventTypes.SingleOrDefault(e => e.Name == eventName);
-                    if (eventType != null)
+                    if (_eventTypes.ContainsKey(eventName))
                     {
-                        _eventTypes.Remove(eventType);
+                        _eventTypes.Remove(eventName);
                     }
                     RaiseOnEventRemoved(eventName);
                 }
@@ -109,6 +108,7 @@ namespace Findx.EventBus.Implementation
             var key = GetEventKey<T>();
             return GetHandlersForEvent(key);
         }
+
         public IEnumerable<SubscriptionInfo> GetHandlersForEvent(string eventName) => _handlers[eventName];
 
         private void RaiseOnEventRemoved(string eventName)
@@ -117,13 +117,11 @@ namespace Findx.EventBus.Implementation
             handler?.Invoke(this, eventName);
         }
 
-
         private SubscriptionInfo FindDynamicSubscriptionToRemove<TH>(string eventName)
             where TH : IDynamicEventHandler
         {
             return DoFindSubscriptionToRemove(eventName, typeof(TH));
         }
-
 
         private SubscriptionInfo FindSubscriptionToRemove<T, TH>()
              where T : IntegrationEvent
@@ -149,13 +147,15 @@ namespace Findx.EventBus.Implementation
             var key = GetEventKey<T>();
             return HasSubscriptionsForEvent(key);
         }
+
         public bool HasSubscriptionsForEvent(string eventName) => _handlers.ContainsKey(eventName);
 
-        public Type GetEventTypeByName(string eventName) => _eventTypes.SingleOrDefault(t => t.Name == eventName);
+        public Type GetEventTypeByName(string eventName) => _eventTypes[eventName];
 
         public string GetEventKey<T>()
         {
-            return typeof(T).Name;
+            var eventType = typeof(T);
+            return EventNameAttribute.GetNameOrDefault(eventType);
         }
     }
 }

@@ -364,6 +364,9 @@ namespace Findx.Utils
         /// <summary>
         /// 使用指定公钥加密字节数组
         /// </summary>
+        /// <param name="source"></param>
+        /// <param name="publicKey">xml格式公钥</param>
+        /// <returns></returns>
         public static byte[] RsaEncrypt(byte[] source, string publicKey)
         {
             Check.NotNull(source, nameof(source));
@@ -377,6 +380,9 @@ namespace Findx.Utils
         /// <summary>
         /// 使用私钥解密字节数组
         /// </summary>
+        /// <param name="source"></param>
+        /// <param name="privateKey">xml格式私钥</param>
+        /// <returns></returns>
         public static byte[] RsaDecrypt(byte[] source, string privateKey)
         {
             Check.NotNull(source, nameof(source));
@@ -391,7 +397,7 @@ namespace Findx.Utils
         /// 使用指定私钥对明文进行签名，返回明文签名的字节数组
         /// </summary>
         /// <param name="source">要签名的明文字节数组</param>
-        /// <param name="privateKey">私钥</param>
+        /// <param name="privateKey">xml格式私钥</param>
         /// <returns>明文签名的字节数组</returns>
         public static byte[] RsaSignData(byte[] source, string privateKey)
         {
@@ -408,7 +414,7 @@ namespace Findx.Utils
         /// </summary>
         /// <param name="source">解密的明文字节数组</param>
         /// <param name="signData">明文签名字节数组</param>
-        /// <param name="publicKey">公钥</param>
+        /// <param name="publicKey">xml格式公钥</param>
         /// <returns>验证是否通过</returns>
         public static bool RsaVerifyData(byte[] source, byte[] signData, string publicKey)
         {

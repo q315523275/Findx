@@ -23,16 +23,19 @@ namespace Findx.EventBus.RabbitMQ
         private readonly IEventSubscriptionsManager _subsManager;
         private readonly IRabbitMqSerializer _serializer;
         private readonly IRabbitMqConsumerFactory _consumerFactory;
+        private readonly IApplicationInstanceInfo _application;
         private readonly EventBusRabbitMqOptions _mqOptions;
         private ConcurrentDictionary<string, IRabbitMqConsumer> _consumers;
 
-        public EventRabbitMqSubscriber(IServiceProvider serviceProvider, ILogger<EventRabbitMqSubscriber> logger, IEventSubscriptionsManager subsManager, IRabbitMqSerializer serializer, IRabbitMqConsumerFactory consumerFactory, IOptions<EventBusRabbitMqOptions> mqOptions)
+        public EventRabbitMqSubscriber(IServiceProvider serviceProvider, ILogger<EventRabbitMqSubscriber> logger, IEventSubscriptionsManager subsManager, IRabbitMqSerializer serializer, IRabbitMqConsumerFactory consumerFactory, IApplicationInstanceInfo application, IOptions<EventBusRabbitMqOptions> mqOptions)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
             _subsManager = subsManager;
             _serializer = serializer;
             _consumerFactory = consumerFactory;
+            _application = application;
+
             _mqOptions = mqOptions.Value;
             _consumers = new ConcurrentDictionary<string, IRabbitMqConsumer>();
             _subsManager.OnEventRemoved += SubsManager_OnEventRemoved;
@@ -48,9 +51,9 @@ namespace Findx.EventBus.RabbitMQ
 
         private (string QueueName, int PrefetchCount) ConvertConsumerInfo<TH>()
         {
-            var queueName = _mqOptions.QueueName;
+            var queueName = _mqOptions.QueueName ?? _application.ApplicationName;
             var prefetchCount = _mqOptions.PrefetchCount;
-            var consumerAttr = typeof(TH).GetAttribute<QueueConsumerAttribute>();
+            var consumerAttr = typeof(TH).GetAttribute<EventConsumerAttribute>();
             if (consumerAttr != null)
             {
                 queueName = consumerAttr.QueueName;
@@ -67,7 +70,7 @@ namespace Findx.EventBus.RabbitMQ
                 if (!_consumers.ContainsKey(queueName))
                 {
                     var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(_mqOptions.ExchangeName, _mqOptions.ExchangeType);
-                    var queueDeclareConfiguration = new QueueDeclareConfiguration(_mqOptions.QueueName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
+                    var queueDeclareConfiguration = new QueueDeclareConfiguration(queueName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
                     IRabbitMqConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration);
                     _consumers.TryAdd(queueName, rabbitMqConsumer);
                 }
@@ -127,7 +130,6 @@ namespace Findx.EventBus.RabbitMQ
             {
                 _logger.LogWarning(ex, "----- ERROR Processing message \"{Message}\"", message);
             }
-
         }
 
         public void StartConsuming()
@@ -146,7 +148,7 @@ namespace Findx.EventBus.RabbitMQ
             where T : IntegrationEvent
             where TH : IEventHandler<T>
         {
-            var eventName = _subsManager.GetEventKey<T>();
+            var eventName = EventNameAttribute.GetNameOrDefault(typeof(T));
             var (QueueName, PrefetchCount) = ConvertConsumerInfo<TH>();
 
             DoInternalSubscription(eventName, QueueName, PrefetchCount);

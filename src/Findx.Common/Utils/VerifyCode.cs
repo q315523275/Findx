@@ -19,7 +19,7 @@ namespace Findx.Utils
         /// <summary>
         /// 生成随机中文字符串
         /// </summary>
-        /// <param name="lenght"></param>
+        /// <param name="length"></param>
         /// <returns></returns>
         public static string GetRandomCnText(int length)
         {

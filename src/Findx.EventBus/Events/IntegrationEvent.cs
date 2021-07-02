@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json.Serialization;
 
 namespace Findx.EventBus.Events
 {
@@ -9,12 +10,18 @@ namespace Findx.EventBus.Events
             Id = Guid.NewGuid();
             CreationDate = DateTime.Now;
         }
+
+        [JsonConstructor]
         public IntegrationEvent(Guid id, DateTime createDate)
         {
             Id = id;
             CreationDate = createDate;
         }
+
+        [JsonInclude]
         public Guid Id { get; private set; }
+
+        [JsonInclude]
         public DateTime CreationDate { get; private set; }
     }
 }

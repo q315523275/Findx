@@ -4,7 +4,7 @@ namespace Findx.Finders
 {
     public interface IFinder<out TItem>
     {
-        // <summary>
+        /// <summary>
         /// 查找指定条件的项
         /// </summary>
         /// <param name="predicate">筛选条件</param>

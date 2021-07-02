@@ -43,7 +43,7 @@ namespace Findx.Extensions
         }
 
         /// <summary>
-        /// 使用<see cref ="Convert.ChangeType(object，System.Type)" />方法将给定的对象转换为值类型。
+        /// 使用<see cref ="Convert.ChangeType(object, System.Type)" />方法将给定的对象转换为值类型。
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>

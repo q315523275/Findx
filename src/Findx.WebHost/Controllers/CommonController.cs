@@ -1,18 +1,21 @@
 ﻿using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
-using Findx.Email;
-using Findx.Security.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
-using Findx.Messaging;
-using Findx.WebHost.Messaging;
-using Findx.Pdf;
 using Findx.Discovery.Abstractions;
 using Findx.Discovery.LoadBalancer;
+using Findx.Email;
+using Findx.EventBus.Abstractions;
+using Findx.Messaging;
+using Findx.Pdf;
+using Findx.RabbitMQ;
+using Findx.Security.Authorization;
+using Findx.WebHost.EventBus;
+using Findx.WebHost.Messaging;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
@@ -146,7 +149,7 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <param name="logger"></param>
         /// <returns></returns>
-        [HttpGet("/Log4Net")]
+        [HttpGet("/log4Net")]
         public CommonResult Log4Net([FromServices] ILogger<CommonController> logger)
         {
             logger.LogInformation($"这是一条Log4Net正常日志信息{0}", DateTime.Now);
@@ -154,5 +157,36 @@ namespace Findx.WebHost.Controllers
 
             return CommonResult.Success();
         }
+
+        /// <summary>
+        /// RabbitMQ消息推送示例接口
+        /// </summary>
+        /// <param name="publisher"></param>
+        /// <param name="message"></param>
+        /// <param name="exchangeName"></param>
+        /// <param name="exchangeType"></param>
+        /// <param name="routingKey"></param>
+        /// <returns></returns>
+        [HttpGet("/rabbitPublish")]
+        public CommonResult RabbitPublish([FromServices] IRabbitMqPublisher publisher, [Required] string message, [Required] string exchangeName, [Required] string exchangeType, [Required] string routingKey)
+        {
+            publisher.Publish(message, exchangeName, exchangeType, routingKey);
+            return CommonResult.Success();
+        }
+
+        /// <summary>
+        /// EventBus事件推送示例接口
+        /// </summary>
+        /// <param name="publisher"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        [HttpGet("/eventBusPublish")]
+        public CommonResult EventBusPublish([FromServices] IEventPublisher publisher, [Required] string message)
+        {
+            var eventInfo = new FindxTestEvent { Body = message };
+            publisher.Publish(eventInfo);
+            return CommonResult.Success(eventInfo);
+        }
+
     }
 }

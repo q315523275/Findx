@@ -1,5 +1,4 @@
-﻿using BenchmarkDotNet.Running;
-using System;
+﻿using System;
 
 namespace ConsoleApp1
 {

@@ -2,6 +2,10 @@
 
 namespace Findx.Utils
 {
+    /// <summary>
+    /// 原子对象
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class AtomicReference<T>
             where T : class
     {

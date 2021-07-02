@@ -48,7 +48,7 @@ namespace Findx.RabbitMQ
                 UserName = _options.UserName,
                 Password = _options.Password,
                 VirtualHost = _options.VirtualHost,
-                ClientProvidedName = _options.ClientProvidedName ?? $"{Environment.MachineName}-{Process.GetCurrentProcess()?.Id}"
+                ClientProvidedName = (_options.ClientProvidedName ?? Environment.MachineName) + $"-{Process.GetCurrentProcess()?.Id}"
             };
         }
 

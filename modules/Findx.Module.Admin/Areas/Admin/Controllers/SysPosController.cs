@@ -2,7 +2,6 @@
 using Findx.Data;
 using Findx.Module.Admin.Areas.Admin.DTO;
 using Findx.Module.Admin.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.Admin.Areas.Admin.Controllers

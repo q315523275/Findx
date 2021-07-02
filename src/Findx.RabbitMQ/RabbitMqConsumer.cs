@@ -14,6 +14,7 @@ namespace Findx.RabbitMQ
         private readonly IConnectionPool _connectionPool;
         private readonly SemaphoreSlim _connectionLock;
         private readonly ConcurrentBag<Func<IModel, BasicDeliverEventArgs, Task>> _callbacks;
+        private readonly ConcurrentQueue<QueueBindCommand> _queueBindCommands;
 
         private ExchangeDeclareConfiguration _exchange;
         private QueueDeclareConfiguration _queue;
@@ -33,7 +34,9 @@ namespace Findx.RabbitMQ
 
             _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
             _callbacks = new ConcurrentBag<Func<IModel, BasicDeliverEventArgs, Task>>();
+            _queueBindCommands = new ConcurrentQueue<QueueBindCommand>();
         }
+
         private bool IsConnected { get { return _channel != null && _channel.IsOpen; } }
 
         private bool TryConnect()
@@ -62,27 +65,26 @@ namespace Findx.RabbitMQ
 
         public void Bind(string routingKey)
         {
-            if (!IsConnected)
+            if (IsConnected)
             {
-                TryConnect();
+                _channel.QueueBind(queue: _queue.QueueName, exchange: _exchange.ExchangeName, routingKey: routingKey);
             }
-
-            _channel.QueueBind(queue: _queue.QueueName, exchange: _exchange.ExchangeName, routingKey: routingKey);
-        }
-
-        public void OnMessageReceived(Func<IModel, BasicDeliverEventArgs, Task> callback)
-        {
-            _callbacks.Add(callback);
+            else
+            {
+                _queueBindCommands.Enqueue(new QueueBindCommand(QueueBindType.Bind, routingKey));
+            }
         }
 
         public void Unbind(string routingKey)
         {
-            if (!IsConnected)
+            if (IsConnected)
             {
-                TryConnect();
+                _channel.QueueUnbind(queue: _queue.QueueName, exchange: _exchange.ExchangeName, routingKey: routingKey);
             }
-
-            _channel.QueueUnbind(queue: _queue.QueueName, exchange: _exchange.ExchangeName, routingKey: routingKey);
+            else
+            {
+                _queueBindCommands.Enqueue(new QueueBindCommand(QueueBindType.Unbind, routingKey));
+            }
         }
 
         public void StartConsuming()
@@ -105,6 +107,27 @@ namespace Findx.RabbitMQ
             _channel.BasicQos(0, (ushort)_queue.Qos, false);
 
             _channel.BasicConsume(queue: _queue.QueueName, autoAck: false, consumer: consumer);
+
+            // Bind命令处理
+            while (!_queueBindCommands.IsEmpty)
+            {
+                _queueBindCommands.TryDequeue(out var command);
+
+                switch (command?.Type)
+                {
+                    case QueueBindType.Bind:
+                        _channel.QueueBind(queue: _queue.QueueName, exchange: _exchange.ExchangeName, routingKey: command.RoutingKey);
+                        break;
+                    case QueueBindType.Unbind:
+                        _channel.QueueUnbind(queue: _queue.QueueName, exchange: _exchange.ExchangeName, routingKey: command.RoutingKey);
+                        break;
+                }
+            }
+        }
+
+        public void OnMessageReceived(Func<IModel, BasicDeliverEventArgs, Task> callback)
+        {
+            _callbacks.Add(callback);
         }
 
         protected virtual async Task HandleIncomingMessage(IModel channel, BasicDeliverEventArgs basicDeliverEventArgs)
@@ -131,6 +154,25 @@ namespace Findx.RabbitMQ
                 _channel?.Dispose();
             }
             catch { }
+        }
+
+        protected class QueueBindCommand
+        {
+            public QueueBindType Type { get; }
+
+            public string RoutingKey { get; }
+
+            public QueueBindCommand(QueueBindType type, string routingKey)
+            {
+                Type = type;
+                RoutingKey = routingKey;
+            }
+        }
+
+        protected enum QueueBindType
+        {
+            Bind,
+            Unbind
         }
     }
 }

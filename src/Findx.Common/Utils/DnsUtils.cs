@@ -5,8 +5,16 @@ using System.Net.Sockets;
 
 namespace Findx.Utils
 {
+    /// <summary>
+    /// DNS工具类
+    /// </summary>
     public static class DnsUtils
     {
+        /// <summary>
+        /// 解析主机地址
+        /// </summary>
+        /// <param name="hostName"></param>
+        /// <returns></returns>
         public static string ResolveHostAddress(string hostName)
         {
             try
@@ -18,6 +26,10 @@ namespace Findx.Utils
                 return null;
             }
         }
+        /// <summary>
+        /// 解析主机名
+        /// </summary>
+        /// <returns></returns>
         public static string ResolveHostName()
         {
             string result = null;

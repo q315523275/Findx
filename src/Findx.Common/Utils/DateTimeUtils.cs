@@ -7,6 +7,11 @@ namespace Findx.Utils
     /// </summary>
     public class DateTimeUtils
     {
+        /// <summary>
+        /// 字符串时间值转TimsSpan
+        /// </summary>
+        /// <param name="time">如:10s</param>
+        /// <returns></returns>
         public static TimeSpan ToTimeSpan(string time)
         {
             if (string.IsNullOrWhiteSpace(time))
@@ -39,6 +44,12 @@ namespace Findx.Utils
             throw new InvalidOperationException("Incorrect format:" + time);
         }
 
+        /// <summary>
+        /// 值转换为TimeSpan
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="unit">值单位,如:ms,s,h</param>
+        /// <returns></returns>
         public static TimeSpan ToTimeSpan(int value, string unit)
         {
             if (string.IsNullOrWhiteSpace(unit))

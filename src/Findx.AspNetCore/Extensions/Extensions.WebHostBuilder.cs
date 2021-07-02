@@ -8,6 +8,12 @@ namespace Findx.AspNetCore.Extensions
     /// </summary>
     public static partial class Extensions
     {
+        /// <summary>
+        /// 使用Findx框架启动
+        /// </summary>
+        /// <typeparam name="TStartup"></typeparam>
+        /// <param name="webHostBuilder"></param>
+        /// <returns></returns>
         public static IWebHostBuilder UseFindxStartup<TStartup>(this IWebHostBuilder webHostBuilder) where TStartup : class
         {
             webHostBuilder.UseStartup<TStartup>();

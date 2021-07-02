@@ -3,9 +3,19 @@ using System.Diagnostics;
 
 namespace Findx
 {
+    /// <summary>
+    /// 检查类
+    /// </summary>
     [DebuggerStepThrough]
     public static class Check
     {
+        /// <summary>
+        /// 不能为NULL检查
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="parameterName"></param>
+        /// <returns></returns>
         public static T NotNull<T>(T value, string parameterName)
         {
             if (value == null)
@@ -14,6 +24,14 @@ namespace Findx
             }
             return value;
         }
+        /// <summary>
+        /// 不能为NULL检查
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
         public static T NotNull<T>(T value, string parameterName, string message)
         {
             if (value == null)
@@ -22,6 +40,14 @@ namespace Findx
             }
             return value;
         }
+        /// <summary>
+        /// 不能为NULL检查
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="maxLength"></param>
+        /// <param name="minLength"></param>
+        /// <returns></returns>
         public static string NotNull(string value, string parameterName, int maxLength = int.MaxValue, int minLength = 0)
         {
             if (value == null)
@@ -38,7 +64,14 @@ namespace Findx
             }
             return value;
         }
-
+        /// <summary>
+        /// 不能为NULL和空检查
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="parameterName"></param>
+        /// <param name="maxLength"></param>
+        /// <param name="minLength"></param>
+        /// <returns></returns>
         public static string NotNullOrWhiteSpace(string value, string parameterName, int maxLength = int.MaxValue, int minLength = 0)
         {
             if (string.IsNullOrWhiteSpace(value))

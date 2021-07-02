@@ -8,7 +8,7 @@ namespace Findx.AspNetCore.Mvc
     /// <summary>
     /// 通用查询控制器基类
     /// </summary>
-    public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> : ApiControllerBase 
+    public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> : ApiControllerBase
         where TModel : class, new()
         where TDto : IResponse, new()
         where TQueryParameter : IPager, new()

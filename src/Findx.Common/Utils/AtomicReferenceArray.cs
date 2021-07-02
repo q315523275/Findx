@@ -1,5 +1,9 @@
 ﻿namespace Findx.Utils
 {
+    /// <summary>
+    /// 原子数组对象
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class AtomicReferenceArray<T>
     {
         private readonly T[] _array;

@@ -1,7 +1,4 @@
-﻿using Findx.Data;
-using Findx.DependencyInjection;
-using Findx.Tasks.Scheduling;
-using SqlSugar;
+﻿using Findx.Tasks.Scheduling;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

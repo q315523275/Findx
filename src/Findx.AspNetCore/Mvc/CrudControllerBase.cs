@@ -1,10 +1,7 @@
 ﻿using Findx.Data;
-using Findx.Linq;
 using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 
 namespace Findx.AspNetCore.Mvc
 {

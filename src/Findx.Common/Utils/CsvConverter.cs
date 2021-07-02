@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Findx.Extensions;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Findx.Extensions;
 namespace Findx.Utils
 {
     /// <summary>

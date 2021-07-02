@@ -2,6 +2,9 @@
 
 namespace Findx.Utils
 {
+    /// <summary>
+    /// 原子整型对象
+    /// </summary>
     public class AtomicInteger
     {
         protected volatile int _value;

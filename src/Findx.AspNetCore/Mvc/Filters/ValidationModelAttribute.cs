@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace Findx.AspNetCore.Mvc.Filters
 {
+    /// <summary>
+    /// 模型验证过滤器
+    /// </summary>
     public class ValidationModelAttribute : IActionFilter
     {
         public void OnActionExecuted(ActionExecutedContext context)

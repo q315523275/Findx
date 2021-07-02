@@ -1,6 +1,8 @@
 ﻿using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
+using Findx.EventBus.Abstractions;
 using Findx.Extensions;
+using Findx.WebHost.EventBus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,12 @@ namespace Findx.WebHost
             app.UseFindx();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllersWithAreaRoute(); });
+
+            var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
+            eventBus.Subscribe<FindxTestEvent, FindxTestEventHander>();
+            eventBus.Subscribe<FindxTestEvent, FindxTestEventHanderTwo>();
+            eventBus.SubscribeDynamic<FindxTestDynamicEventHandler>("FindxTestRoutingKey");
+            eventBus.StartConsuming();
         }
     }
 }

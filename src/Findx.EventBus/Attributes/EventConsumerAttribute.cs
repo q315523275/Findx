@@ -2,8 +2,8 @@
 
 namespace Findx.EventBus.Attributes
 {
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-    public class QueueConsumerAttribute : Attribute
+    [AttributeUsage(AttributeTargets.Class)]
+    public class EventConsumerAttribute : Attribute
     {
         public string QueueName
         {
@@ -16,12 +16,14 @@ namespace Findx.EventBus.Attributes
 
         private string _queueName { get; set; }
         private ushort _prefetchCount { get; set; }
-        public QueueConsumerAttribute(string queueName)
+        public EventConsumerAttribute(string queueName)
         {
+            Check.NotNullOrWhiteSpace(queueName, nameof(queueName));
             _queueName = queueName;
         }
-        public QueueConsumerAttribute(string queueName, ushort prefetchCount = 1)
+        public EventConsumerAttribute(string queueName, ushort prefetchCount = 1)
         {
+            Check.NotNullOrWhiteSpace(queueName, nameof(queueName));
             _queueName = queueName;
             _prefetchCount = prefetchCount;
         }
