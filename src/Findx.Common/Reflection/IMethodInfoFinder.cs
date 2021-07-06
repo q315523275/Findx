@@ -3,6 +3,9 @@ using System.Reflection;
 
 namespace Findx.Reflection
 {
+    /// <summary>
+    /// 方法信息查询器
+    /// </summary>
     public interface IMethodInfoFinder
     {
         /// <summary>

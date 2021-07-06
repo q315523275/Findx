@@ -18,7 +18,10 @@ namespace Findx.Reflection
         /// 是否过滤系统程序集
         /// </summary>
         private readonly bool _filterSystemAssembly;
-
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="filterSystemAssembly"></param>
         public AppDomainAssemblyFinder(bool filterSystemAssembly = true)
         {
             _filterSystemAssembly = filterSystemAssembly;
@@ -88,6 +91,7 @@ namespace Findx.Reflection
         /// <returns></returns>
         protected override Assembly[] FindAllItems()
         {
+            // 待过滤类型
             var filter = new string[]{
                 "System",
                 "Microsoft",

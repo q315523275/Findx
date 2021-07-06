@@ -1,7 +1,7 @@
 ﻿namespace Findx.RabbitMQ
 {
-    public interface IRabbitMqConsumerFactory
+    public interface IRabbitMQConsumerFactory
     {
-        IRabbitMqConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue);
+        IRabbitMQConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue);
     }
 }

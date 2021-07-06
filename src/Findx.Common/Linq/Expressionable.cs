@@ -10,6 +10,11 @@ namespace Findx.Linq
     public class Expressionable<T> where T : class, new()
     {
         private Expression<Func<T, bool>> _exp = null;
+        /// <summary>
+        /// And
+        /// </summary>
+        /// <param name="exp"></param>
+        /// <returns></returns>
         public Expressionable<T> And(Expression<Func<T, bool>> exp)
         {
             if (_exp == null)
@@ -23,14 +28,23 @@ namespace Findx.Linq
 
             return this;
         }
-
+        /// <summary>
+        /// AndIF
+        /// </summary>
+        /// <param name="isExp"></param>
+        /// <param name="exp"></param>
+        /// <returns></returns>
         public Expressionable<T> AndIF(bool isExp, Expression<Func<T, bool>> exp)
         {
             if (isExp) And(exp);
 
             return this;
         }
-
+        /// <summary>
+        /// Or
+        /// </summary>
+        /// <param name="exp"></param>
+        /// <returns></returns>
         public Expressionable<T> Or(Expression<Func<T, bool>> exp)
         {
             if (_exp == null)
@@ -44,14 +58,22 @@ namespace Findx.Linq
 
             return this;
         }
-
+        /// <summary>
+        /// OrIF
+        /// </summary>
+        /// <param name="isExp"></param>
+        /// <param name="exp"></param>
+        /// <returns></returns>
         public Expressionable<T> OrIF(bool isExp, Expression<Func<T, bool>> exp)
         {
             if (isExp) Or(exp);
 
             return this;
         }
-
+        /// <summary>
+        /// 转换为表达式
+        /// </summary>
+        /// <returns></returns>
         public Expression<Func<T, bool>> ToExpression()
         {
             if (_exp == null)

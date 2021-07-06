@@ -12,10 +12,10 @@ namespace Findx.EventBus.RabbitMQ
     public class EventRabbitMqPublisher : IEventPublisher
     {
         private readonly IConnectionPool _connectionPool;
-        private readonly IRabbitMqSerializer _rabbitMqSerializer;
+        private readonly IRabbitMQSerializer _rabbitMqSerializer;
         private EventBusRabbitMqOptions _mqOptions;
 
-        public EventRabbitMqPublisher(IConnectionPool connectionPool, IRabbitMqSerializer rabbitMqSerializer, IOptionsMonitor<EventBusRabbitMqOptions> mqOptions)
+        public EventRabbitMqPublisher(IConnectionPool connectionPool, IRabbitMQSerializer rabbitMqSerializer, IOptionsMonitor<EventBusRabbitMqOptions> mqOptions)
         {
             _connectionPool = connectionPool;
             _rabbitMqSerializer = rabbitMqSerializer;

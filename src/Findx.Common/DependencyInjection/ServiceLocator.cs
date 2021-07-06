@@ -11,8 +11,16 @@ namespace Findx.DependencyInjection
     /// </summary>
     public sealed class ServiceLocator
     {
+        /// <summary>
+        /// 服务提供器
+        /// </summary>
         public static IServiceProvider ServiceProvider { get; set; }
 
+        /// <summary>
+        /// 获取单个泛型实例
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T GetService<T>()
         {
             Check.NotNull(ServiceProvider, nameof(ServiceProvider));
@@ -24,7 +32,11 @@ namespace Findx.DependencyInjection
             }
             return ServiceProvider.GetService<T>() ?? default;
         }
-
+        /// <summary>
+        /// 获取单个实例对象
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <returns></returns>
         public static object GetService(Type serviceType)
         {
             Check.NotNull(ServiceProvider, nameof(ServiceProvider));
@@ -37,7 +49,11 @@ namespace Findx.DependencyInjection
             }
             return ServiceProvider.GetService(serviceType) ?? default;
         }
-
+        /// <summary>
+        /// 获取泛型实例集合
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static IEnumerable<T> GetServices<T>()
         {
             Check.NotNull(ServiceProvider, nameof(ServiceProvider));
@@ -49,7 +65,11 @@ namespace Findx.DependencyInjection
             }
             return ServiceProvider.GetServices<T>() ?? default;
         }
-
+        /// <summary>
+        /// 获取泛型实例对象集合
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <returns></returns>
         public static IEnumerable<object> GetServices(Type serviceType)
         {
             Check.NotNull(ServiceProvider, nameof(ServiceProvider));

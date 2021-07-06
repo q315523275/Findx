@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace Findx.RabbitMQ
 {
-    public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
+    public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
     {
-        private readonly ILogger<RabbitMqConsumer> _logger;
+        private readonly ILogger<RabbitMQConsumer> _logger;
         private readonly IConnectionPool _connectionPool;
         private readonly SemaphoreSlim _connectionLock;
         private readonly ConcurrentBag<Func<IModel, BasicDeliverEventArgs, Task>> _callbacks;
@@ -21,7 +21,7 @@ namespace Findx.RabbitMQ
 
         private IModel _channel;
 
-        public RabbitMqConsumer(ILogger<RabbitMqConsumer> logger, IConnectionPool connectionPool, ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue)
+        public RabbitMQConsumer(ILogger<RabbitMQConsumer> logger, IConnectionPool connectionPool, ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue)
         {
             Check.NotNull(exchange, nameof(exchange));
             Check.NotNull(queue, nameof(queue));
@@ -108,7 +108,6 @@ namespace Findx.RabbitMQ
 
             _channel.BasicConsume(queue: _queue.QueueName, autoAck: false, consumer: consumer);
 
-            // Bind命令处理
             while (!_queueBindCommands.IsEmpty)
             {
                 _queueBindCommands.TryDequeue(out var command);

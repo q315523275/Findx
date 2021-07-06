@@ -4,12 +4,12 @@ using System.Threading.Tasks;
 namespace Findx.Messaging
 {
     /// <summary>
-    /// 消息推送器
+    /// 通知消息推送器
     /// </summary>
     public interface IMessageNotifySender
     {
         /// <summary>
-        /// 推送消息
+        /// 推送通知消息
         /// </summary>
         /// <typeparam name="TMessage"></typeparam>
         /// <param name="message"></param>

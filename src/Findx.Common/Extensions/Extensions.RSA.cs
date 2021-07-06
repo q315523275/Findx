@@ -9,6 +9,11 @@ namespace Findx.Extensions
     /// </summary>
     public partial class Extensions
     {
+        /// <summary>
+        /// RSA载入xml格式密钥
+        /// </summary>
+        /// <param name="rsa"></param>
+        /// <param name="xmlString"></param>
         public static void FromXmlStringEx(this RSA rsa, string xmlString)
         {
             RSAParameters parameters = new RSAParameters();
@@ -40,7 +45,12 @@ namespace Findx.Extensions
 
             rsa.ImportParameters(parameters);
         }
-
+        /// <summary>
+        /// RSA导出xml格式密钥
+        /// </summary>
+        /// <param name="rsa"></param>
+        /// <param name="includePrivateParameters"></param>
+        /// <returns></returns>
         public static string ToXmlStringEx(this RSA rsa, bool includePrivateParameters)
         {
             RSAParameters parameters = rsa.ExportParameters(includePrivateParameters);

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Findx.RabbitMQ
 {
-    public interface IRabbitMqConsumer
+    public interface IRabbitMQConsumer
     {
         void Bind(string routingKey);
 

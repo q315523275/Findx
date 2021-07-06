@@ -35,6 +35,17 @@ namespace Findx.WebHost.Controllers
         }
 
         /// <summary>
+        /// 应用基础信息
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        [HttpGet("/applicationInfo")]
+        public CommonResult ApplicationInfo([FromServices] IApplicationInstanceInfo instance)
+        {
+            return CommonResult.Success(instance);
+        }
+
+        /// <summary>
         /// 权限数据查询示例接口
         /// </summary>
         /// <param name="store"></param>
@@ -168,7 +179,7 @@ namespace Findx.WebHost.Controllers
         /// <param name="routingKey"></param>
         /// <returns></returns>
         [HttpGet("/rabbitPublish")]
-        public CommonResult RabbitPublish([FromServices] IRabbitMqPublisher publisher, [Required] string message, [Required] string exchangeName, [Required] string exchangeType, [Required] string routingKey)
+        public CommonResult RabbitPublish([FromServices] IRabbitMQPublisher publisher, [Required] string message, [Required] string exchangeName, [Required] string exchangeType, [Required] string routingKey)
         {
             publisher.Publish(message, exchangeName, exchangeType, routingKey);
             return CommonResult.Success();

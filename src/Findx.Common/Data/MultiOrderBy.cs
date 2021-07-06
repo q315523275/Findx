@@ -9,6 +9,9 @@ namespace Findx.Data
     /// </summary>
     public class MultiOrderBy<TEntity>
     {
+        /// <summary>
+        /// 排序集
+        /// </summary>
         public List<OrderByParameter<TEntity>> OrderBy { set; get; } = new List<OrderByParameter<TEntity>>();
     }
     /// <summary>

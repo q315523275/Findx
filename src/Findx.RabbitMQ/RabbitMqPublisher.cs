@@ -3,12 +3,12 @@ using System.Text;
 
 namespace Findx.RabbitMQ
 {
-    public class RabbitMqPublisher : IRabbitMqPublisher
+    public class RabbitMQPublisher : IRabbitMQPublisher
     {
         private readonly IConnectionPool _connectionPool;
-        private readonly IRabbitMqSerializer _serializer;
+        private readonly IRabbitMQSerializer _serializer;
 
-        public RabbitMqPublisher(IConnectionPool connectionPool, IRabbitMqSerializer serializer)
+        public RabbitMQPublisher(IConnectionPool connectionPool, IRabbitMQSerializer serializer)
         {
             _connectionPool = connectionPool;
             _serializer = serializer;

@@ -38,7 +38,7 @@ namespace Findx.WebHost
             var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
             eventBus.Subscribe<FindxTestEvent, FindxTestEventHander>();
             eventBus.Subscribe<FindxTestEvent, FindxTestEventHanderTwo>();
-            eventBus.SubscribeDynamic<FindxTestDynamicEventHandler>("FindxTestRoutingKey");
+            //eventBus.SubscribeDynamic<FindxTestDynamicEventHandler>("FindxTestRoutingKey");
             eventBus.StartConsuming();
         }
     }

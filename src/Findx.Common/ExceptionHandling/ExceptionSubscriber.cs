@@ -17,6 +17,7 @@ namespace Findx.ExceptionHandling
         /// 处理
         /// </summary>
         /// <param name="context">异常通知上下文</param>
+        /// <param name="token"></param>
         public abstract Task HandleAsync(ExceptionNotificationContext context, CancellationToken token = default);
     }
 }

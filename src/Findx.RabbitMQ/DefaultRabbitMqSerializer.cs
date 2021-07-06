@@ -3,7 +3,7 @@ using System;
 
 namespace Findx.RabbitMQ
 {
-    public class DefaultRabbitMqSerializer : IRabbitMqSerializer
+    public class DefaultRabbitMqSerializer : IRabbitMQSerializer
     {
         private readonly IJsonSerializer _jsonSerializer;
 

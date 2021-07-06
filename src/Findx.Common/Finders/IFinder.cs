@@ -2,6 +2,10 @@
 
 namespace Findx.Finders
 {
+    /// <summary>
+    /// 反射查找器
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
     public interface IFinder<out TItem>
     {
         /// <summary>

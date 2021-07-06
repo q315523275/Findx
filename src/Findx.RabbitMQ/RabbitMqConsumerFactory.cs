@@ -2,20 +2,20 @@
 
 namespace Findx.RabbitMQ
 {
-    public class RabbitMqConsumerFactory : IRabbitMqConsumerFactory
+    public class RabbitMQConsumerFactory : IRabbitMQConsumerFactory
     {
-        private readonly ILogger<RabbitMqConsumer> _logger;
+        private readonly ILogger<RabbitMQConsumer> _logger;
         private readonly IConnectionPool _connectionPool;
 
-        public RabbitMqConsumerFactory(ILogger<RabbitMqConsumer> logger, IConnectionPool connectionPool)
+        public RabbitMQConsumerFactory(ILogger<RabbitMQConsumer> logger, IConnectionPool connectionPool)
         {
             _logger = logger;
             _connectionPool = connectionPool;
         }
 
-        public IRabbitMqConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue)
+        public IRabbitMQConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue)
         {
-            return new RabbitMqConsumer(_logger, _connectionPool, exchange, queue);
+            return new RabbitMQConsumer(_logger, _connectionPool, exchange, queue);
         }
     }
 }

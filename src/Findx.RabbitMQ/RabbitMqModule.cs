@@ -2,16 +2,18 @@
 using Findx.Modularity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace Findx.RabbitMQ
 {
     [Description("Findx-RabbitMQ模块")]
-    public class RabbitMqModule : FindxModule
+    public class RabbitMQModule : FindxModule
     {
-        public override ModuleLevel Level => ModuleLevel.Framework;
+        public override ModuleLevel Level => ModuleLevel.Application;
 
-        public override int Order => 20;
+        public override int Order => 50;
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
@@ -23,13 +25,25 @@ namespace Findx.RabbitMQ
             // MQ连接池
             services.AddSingleton<IConnectionPool, ConnectionPool>();
             // MQ消费工厂
-            services.AddSingleton<IRabbitMqConsumerFactory, RabbitMqConsumerFactory>();
+            services.AddSingleton<IRabbitMQConsumerFactory, RabbitMQConsumerFactory>();
             // MQ序列化,使用json
-            services.AddSingleton<IRabbitMqSerializer, DefaultRabbitMqSerializer>();
+            services.AddSingleton<IRabbitMQSerializer, DefaultRabbitMqSerializer>();
             // MQ推送消息
-            services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
+            services.AddSingleton<IRabbitMQPublisher, RabbitMQPublisher>();
 
+            // 注解消费者
+            services.AddSingleton<IRabbitConsumerBuilder, RabbitConsumerBuilder>();
+            services.GetOrAddTypeFinder<IRabbitConsumerFinder>(assemblyFinder => new RabbitConsumerFinder(assemblyFinder));
             return services;
+        }
+
+        public override void UseModule(IServiceProvider provider)
+        {
+            Task.Run(() => {
+                provider.GetService<IRabbitConsumerBuilder>()?.Initialize();
+                provider.GetService<IRabbitConsumerBuilder>()?.Build();
+            });
+            base.UseModule(provider);
         }
 
     }

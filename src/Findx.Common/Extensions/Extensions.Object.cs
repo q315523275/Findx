@@ -200,7 +200,7 @@ namespace Findx.Extensions
             {
                 return default;
             }
-            if (typeof(T).HasAttribute<SerializableAttribute>())
+            if (!typeof(T).HasAttribute<SerializableAttribute>())
             {
                 throw new NotSupportedException(string.Format("当前对象未标记特性“{0}”，无法进行DeepClone操作", typeof(SerializableAttribute)));
             }

@@ -5,6 +5,10 @@ using System.Threading;
 
 namespace Findx.Finders
 {
+    /// <summary>
+    /// 反射查找器基类
+    /// </summary>
+    /// <typeparam name="TItem"></typeparam>
     public abstract class FinderBase<TItem> : IFinder<TItem>
     {
         private readonly SemaphoreSlim _lockObj = new SemaphoreSlim(initialCount: 1, maxCount: 1);

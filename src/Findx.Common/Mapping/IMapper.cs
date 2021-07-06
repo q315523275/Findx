@@ -1,7 +1,7 @@
 ﻿namespace Findx.Mapping
 {
     /// <summary>
-    /// 对象映射
+    /// 对象映射器
     /// </summary>
     public interface IMapper
     {

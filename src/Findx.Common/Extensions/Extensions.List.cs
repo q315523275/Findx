@@ -223,7 +223,13 @@ namespace Findx.Extensions
                 }
             }
         }
-
+        /// <summary>
+        /// 移动集合数据对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="selector"></param>
+        /// <param name="targetIndex"></param>
         public static void MoveItem<T>(this List<T> source, Predicate<T> selector, int targetIndex)
         {
             if (!targetIndex.IsBetween(0, source.Count - 1))
@@ -241,7 +247,14 @@ namespace Findx.Extensions
             source.RemoveAt(currentIndex);
             source.Insert(targetIndex, item);
         }
-
+        /// <summary>
+        /// 获取集合指定条件数据对象
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="selector"></param>
+        /// <param name="factory"></param>
+        /// <returns></returns>
         public static T GetOrAdd<T>(this IList<T> source, Func<T, bool> selector, Func<T> factory)
         {
             Check.NotNull(source, nameof(source));

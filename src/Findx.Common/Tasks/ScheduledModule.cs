@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.ComponentModel;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Findx.Tasks
 {
@@ -41,7 +42,7 @@ namespace Findx.Tasks
 
             // 自动注册任务
             IScheduledTaskFinder scheduledTaskFinder = services.GetOrAddTypeFinder<IScheduledTaskFinder>(assemblyFinder => new ScheduledTaskFinder(assemblyFinder));
-            Type[] scheduledTaskTypes = scheduledTaskFinder.FindAll();
+            Type[] scheduledTaskTypes = scheduledTaskFinder.FindAll(true);
             foreach (Type scheduledTaskType in scheduledTaskTypes)
             {
                 services.AddTransient(scheduledTaskType);
@@ -56,25 +57,27 @@ namespace Findx.Tasks
         {
             if (SchedulerOptions != null && SchedulerOptions.Enable)
             {
-                IScheduler scheduler = provider.GetRequiredService<IScheduler>();
-                IScheduledTaskManager scheduledTaskManager = provider.GetRequiredService<IScheduledTaskManager>();
-                IScheduledTaskFinder scheduledTaskFinder = provider.GetRequiredService<IScheduledTaskFinder>();
-
-                Type[] scheduledTaskTypes = scheduledTaskFinder.FindAll();
-
-                foreach (Type scheduledTaskType in scheduledTaskTypes)
+                Task.Run(() =>
                 {
-                    // 需要自带执行的任务
-                    if (scheduledTaskType.HasAttribute<ScheduledAttribute>())
+                    IScheduler scheduler = provider.GetRequiredService<IScheduler>();
+                    IScheduledTaskManager scheduledTaskManager = provider.GetRequiredService<IScheduledTaskManager>();
+                    IScheduledTaskFinder scheduledTaskFinder = provider.GetRequiredService<IScheduledTaskFinder>();
+
+                    Type[] scheduledTaskTypes = scheduledTaskFinder.FindAll(true);
+
+                    foreach (Type scheduledTaskType in scheduledTaskTypes)
                     {
-                        var schedulerTaskWrapper = new SchedulerTaskWrapper(scheduledTaskType);
-                        scheduledTaskManager.ScheduleAsync(schedulerTaskWrapper);
+                        // 需要自带执行的任务
+                        if (scheduledTaskType.HasAttribute<ScheduledAttribute>())
+                        {
+                            var schedulerTaskWrapper = new SchedulerTaskWrapper(scheduledTaskType);
+                            scheduledTaskManager.ScheduleAsync(schedulerTaskWrapper);
+                        }
                     }
-                }
 
-                cancellationToken = new CancellationTokenSource();
-                scheduler.StartAsync(cancellationToken.Token);
-
+                    cancellationToken = new CancellationTokenSource();
+                    scheduler.StartAsync(cancellationToken.Token);
+                });
                 base.UseModule(provider);
             }
         }

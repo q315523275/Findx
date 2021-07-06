@@ -21,13 +21,13 @@ namespace Findx.EventBus.RabbitMQ
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<EventRabbitMqSubscriber> _logger;
         private readonly IEventSubscriptionsManager _subsManager;
-        private readonly IRabbitMqSerializer _serializer;
-        private readonly IRabbitMqConsumerFactory _consumerFactory;
+        private readonly IRabbitMQSerializer _serializer;
+        private readonly IRabbitMQConsumerFactory _consumerFactory;
         private readonly IApplicationInstanceInfo _application;
         private readonly EventBusRabbitMqOptions _mqOptions;
-        private ConcurrentDictionary<string, IRabbitMqConsumer> _consumers;
+        private ConcurrentDictionary<string, IRabbitMQConsumer> _consumers;
 
-        public EventRabbitMqSubscriber(IServiceProvider serviceProvider, ILogger<EventRabbitMqSubscriber> logger, IEventSubscriptionsManager subsManager, IRabbitMqSerializer serializer, IRabbitMqConsumerFactory consumerFactory, IApplicationInstanceInfo application, IOptions<EventBusRabbitMqOptions> mqOptions)
+        public EventRabbitMqSubscriber(IServiceProvider serviceProvider, ILogger<EventRabbitMqSubscriber> logger, IEventSubscriptionsManager subsManager, IRabbitMQSerializer serializer, IRabbitMQConsumerFactory consumerFactory, IApplicationInstanceInfo application, IOptions<EventBusRabbitMqOptions> mqOptions)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
@@ -37,7 +37,7 @@ namespace Findx.EventBus.RabbitMQ
             _application = application;
 
             _mqOptions = mqOptions.Value;
-            _consumers = new ConcurrentDictionary<string, IRabbitMqConsumer>();
+            _consumers = new ConcurrentDictionary<string, IRabbitMQConsumer>();
             _subsManager.OnEventRemoved += SubsManager_OnEventRemoved;
         }
 
@@ -71,7 +71,7 @@ namespace Findx.EventBus.RabbitMQ
                 {
                     var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(_mqOptions.ExchangeName, _mqOptions.ExchangeType);
                     var queueDeclareConfiguration = new QueueDeclareConfiguration(queueName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
-                    IRabbitMqConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration);
+                    IRabbitMQConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration);
                     _consumers.TryAdd(queueName, rabbitMqConsumer);
                 }
 

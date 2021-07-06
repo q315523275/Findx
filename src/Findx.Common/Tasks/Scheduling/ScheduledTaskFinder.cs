@@ -12,6 +12,10 @@ namespace Findx.Tasks.Scheduling
     public class ScheduledTaskFinder : FinderBase<Type>, IScheduledTaskFinder
     {
         private readonly IAppDomainAssemblyFinder _appDomainAssemblyFinder;
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="appDomainAssemblyFinder"></param>
         public ScheduledTaskFinder(IAppDomainAssemblyFinder appDomainAssemblyFinder)
         {
             _appDomainAssemblyFinder = appDomainAssemblyFinder;

@@ -6,6 +6,9 @@ using System.Collections.Generic;
 
 namespace Findx.Builders
 {
+    /// <summary>
+    /// Findx框架构造者
+    /// </summary>
     public interface IFindxBuilder
     {
         /// <summary>

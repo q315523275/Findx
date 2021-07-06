@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Findx.Locks
 {
+    /// <summary>
+    /// 锁
+    /// </summary>
     public interface ILock
     {
         /// <summary>

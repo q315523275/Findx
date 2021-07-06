@@ -13,6 +13,10 @@ namespace Findx.Reflection
     public abstract class AttributeTypeFinderBase<TAttributeType> : FinderBase<Type>, ITypeFinder where TAttributeType : Attribute
     {
         private readonly IAppDomainAssemblyFinder _appDomainAssemblyFinder;
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="appDomainAssemblyFinder"></param>
         public AttributeTypeFinderBase(IAppDomainAssemblyFinder appDomainAssemblyFinder)
         {
             _appDomainAssemblyFinder = appDomainAssemblyFinder;

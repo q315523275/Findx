@@ -13,6 +13,7 @@ namespace Findx.Extensions
         /// </summary>
         /// <typeparam name="T">对象类型</typeparam>
         /// <param name="obj"></param>
+        /// <param name="camelCase"></param>
         /// <returns>json格式的字符串</returns>
         public static string ToJson<T>(this T obj, bool camelCase = true)
         {
@@ -26,6 +27,7 @@ namespace Findx.Extensions
         /// </summary>
         /// <typeparam name="T">要转换的对象类型</typeparam>
         /// <param name="json">json格式字符串</param>
+        /// <param name="camelCase"></param>
         /// <returns>指定对象的实例</returns>
         public static T ToObject<T>(this string json, bool camelCase = true)
         {

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 
 namespace Findx.Discovery.Consul
 {
@@ -34,13 +35,15 @@ namespace Findx.Discovery.Consul
 
         public override void UseModule(IServiceProvider provider)
         {
-            IOptionsMonitor<DiscoveryOptions> _optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DiscoveryOptions>>();
-            if (_optionsMonitor.CurrentValue.Enabled && _optionsMonitor.CurrentValue.Register)
-            {
-                IConsulServiceRegistry consulServiceRegistry = provider.GetRequiredService<IConsulServiceRegistry>();
-                IConsulRegistration consulRegistration = provider.GetRequiredService<IConsulRegistration>();
-                consulServiceRegistry.Register(consulRegistration).ConfigureAwait(false).GetAwaiter();
-            }
+            Task.Run(() => {
+                IOptionsMonitor<DiscoveryOptions> _optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DiscoveryOptions>>();
+                if (_optionsMonitor.CurrentValue.Enabled && _optionsMonitor.CurrentValue.Register)
+                {
+                    IConsulServiceRegistry consulServiceRegistry = provider.GetRequiredService<IConsulServiceRegistry>();
+                    IConsulRegistration consulRegistration = provider.GetRequiredService<IConsulRegistration>();
+                    consulServiceRegistry.Register(consulRegistration).ConfigureAwait(false).GetAwaiter();
+                }
+            });
             base.UseModule(provider);
         }
 

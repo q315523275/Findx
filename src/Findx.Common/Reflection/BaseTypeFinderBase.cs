@@ -13,7 +13,10 @@ namespace Findx.Reflection
     public abstract class BaseTypeFinderBase<TBaseType> : FinderBase<Type>, ITypeFinder
     {
         private readonly IAppDomainAssemblyFinder _appDomainAssemblyFinder;
-
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="appDomainAssemblyFinder"></param>
         public BaseTypeFinderBase(IAppDomainAssemblyFinder appDomainAssemblyFinder)
         {
             _appDomainAssemblyFinder = appDomainAssemblyFinder;
