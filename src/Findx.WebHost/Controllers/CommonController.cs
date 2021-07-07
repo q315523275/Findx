@@ -3,6 +3,7 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Discovery.Abstractions;
 using Findx.Discovery.LoadBalancer;
+using Findx.Extensions;
 using Findx.Email;
 using Findx.EventBus.Abstractions;
 using Findx.Messaging;
@@ -145,14 +146,12 @@ namespace Findx.WebHost.Controllers
         /// <param name="serviceName"></param>
         /// <returns></returns>
         [HttpGet("/loadBalancer")]
-        public async Task<CommonResult> LoadBalancer([FromServices] IDiscoveryClient client, [FromServices] ILoadBalancerProvider loadBalancer, [Required] string serviceName)
+        public async Task<CommonResult> LoadBalancer([FromServices] IDiscoveryClient client, [FromServices] ILoadBalancerProvider loadBalancer, [Required] string serviceName, string loadBalancerType = "Random")
         {
-            var all = await client.GetAllInstancesAsync();
-            var list = await client.GetInstancesAsync(serviceName);
-            var balancer = await loadBalancer.GetAsync(serviceName);
+            var balancer = await loadBalancer.GetAsync(serviceName, loadBalancerType.To<LoadBalancerType>());
             var instance = await balancer.ResolveServiceInstanceAsync();
 
-            return CommonResult.Success(new { AllInstances = all, Instances = list, Instance = instance, LoadBalancer = balancer.Name.ToString() });
+            return CommonResult.Success(new { Instance = instance, LoadBalancer = balancer.Name.ToString() });
         }
 
         /// <summary>

@@ -5,7 +5,7 @@
         Random,
         RoundRobin,
         LeastConnection,
-        Hash,
+        // Hash,
         NoLoadBalancer
     }
 }

@@ -117,19 +117,12 @@ namespace Findx.EventBus.RabbitMQ
             var eventName = eventArgs.RoutingKey;
             var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
 
-            try
+            if (message.ToLowerInvariant().Contains("throw-fake-exception"))
             {
-                if (message.ToLowerInvariant().Contains("throw-fake-exception"))
-                {
-                    throw new InvalidOperationException($"Fake exception requested: \"{message}\"");
-                }
+                throw new InvalidOperationException($"Fake exception requested: \"{message}\"");
+            }
 
-                await ProcessEvent(eventName, message);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "----- ERROR Processing message \"{Message}\"", message);
-            }
+            await ProcessEvent(eventName, message);
         }
 
         public void StartConsuming()

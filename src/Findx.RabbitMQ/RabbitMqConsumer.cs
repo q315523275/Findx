@@ -3,6 +3,7 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Concurrent;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,6 +39,8 @@ namespace Findx.RabbitMQ
         }
 
         private bool IsConnected { get { return _channel != null && _channel.IsOpen; } }
+
+        public Func<IModel, BasicDeliverEventArgs, Task> FailedCallback { get; set; }
 
         private bool TryConnect()
         {
@@ -137,13 +140,14 @@ namespace Findx.RabbitMQ
                 {
                     await callback(channel, basicDeliverEventArgs);
                 }
-
-                channel.BasicAck(basicDeliverEventArgs.DeliveryTag, multiple: false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "RabbitMQ HandleIncomingMessage Error");
+                _logger.LogError(ex, "----- RabbitMQ Error HandleIncomingMessage");
+                await FailedCallback?.Invoke(channel, basicDeliverEventArgs);
             }
+            // 始终自动Ack,防止阻塞队列
+            channel.BasicAck(basicDeliverEventArgs.DeliveryTag, multiple: false);
         }
 
         public void Dispose()

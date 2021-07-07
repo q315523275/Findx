@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-
+using System.Net.NetworkInformation;
 namespace Findx.Utils
 {
     /// <summary>
@@ -19,6 +19,13 @@ namespace Findx.Utils
         {
             try
             {
+                if (Common.IsLinux)
+                    return NetworkInterface.GetAllNetworkInterfaces()
+                                           .Select(p => p.GetIPProperties())
+                                           .SelectMany(p => p.UnicastAddresses)
+                                           .Where(p => p.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(p.Address))
+                                           .FirstOrDefault()?.Address.ToString();
+
                 return Dns.GetHostAddresses(hostName).FirstOrDefault(ip => ip.AddressFamily.Equals(AddressFamily.InterNetwork))?.ToString();
             }
             catch (Exception)

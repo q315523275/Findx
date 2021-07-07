@@ -1,7 +1,10 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Findx.Utils;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
 namespace Findx
 {
     public class ApplicationInstanceInfo : IApplicationInstanceInfo
@@ -26,6 +29,7 @@ namespace Findx
             }
             Version = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? "1.0.1";
             Uris = _configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
+            InstanceIP = DnsUtils.ResolveHostAddress(DnsUtils.ResolveHostName());
         }
 
         public string ApplicationId { set; get; }

@@ -57,6 +57,7 @@ namespace Findx.Tasks
         {
             if (SchedulerOptions != null && SchedulerOptions.Enable)
             {
+                cancellationToken = new CancellationTokenSource();
                 Task.Run(() =>
                 {
                     IScheduler scheduler = provider.GetRequiredService<IScheduler>();
@@ -74,10 +75,8 @@ namespace Findx.Tasks
                             scheduledTaskManager.ScheduleAsync(schedulerTaskWrapper);
                         }
                     }
-
-                    cancellationToken = new CancellationTokenSource();
                     scheduler.StartAsync(cancellationToken.Token);
-                });
+                }, cancellationToken.Token);
                 base.UseModule(provider);
             }
         }
