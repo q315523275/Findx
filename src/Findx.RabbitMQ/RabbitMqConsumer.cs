@@ -3,7 +3,6 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Concurrent;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,12 +16,13 @@ namespace Findx.RabbitMQ
         private readonly ConcurrentBag<Func<IModel, BasicDeliverEventArgs, Task>> _callbacks;
         private readonly ConcurrentQueue<QueueBindCommand> _queueBindCommands;
 
-        private ExchangeDeclareConfiguration _exchange;
-        private QueueDeclareConfiguration _queue;
+        private readonly bool _autoAck;
+        private readonly ExchangeDeclareConfiguration _exchange;
+        private readonly QueueDeclareConfiguration _queue;
 
         private IModel _channel;
 
-        public RabbitMQConsumer(ILogger<RabbitMQConsumer> logger, IConnectionPool connectionPool, ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue)
+        public RabbitMQConsumer(ILogger<RabbitMQConsumer> logger, IConnectionPool connectionPool, ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue, bool autoAck)
         {
             Check.NotNull(exchange, nameof(exchange));
             Check.NotNull(queue, nameof(queue));
@@ -32,6 +32,7 @@ namespace Findx.RabbitMQ
             _connectionPool = connectionPool;
             _exchange = exchange;
             _queue = queue;
+            _autoAck = autoAck;
 
             _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
             _callbacks = new ConcurrentBag<Func<IModel, BasicDeliverEventArgs, Task>>();
@@ -146,8 +147,9 @@ namespace Findx.RabbitMQ
                 _logger.LogError(ex, "----- RabbitMQ Error HandleIncomingMessage");
                 await FailedCallback?.Invoke(channel, basicDeliverEventArgs);
             }
-            // 始终自动Ack,防止阻塞队列
-            channel.BasicAck(basicDeliverEventArgs.DeliveryTag, multiple: false);
+            // 默认值为true
+            if (_autoAck)
+                channel.BasicAck(basicDeliverEventArgs.DeliveryTag, multiple: false);
         }
 
         public void Dispose()

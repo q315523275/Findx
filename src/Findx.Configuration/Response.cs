@@ -2,18 +2,18 @@
 
 namespace Findx.Configuration
 {
-    public class Response
+    internal class Response
     {
         public int Version { set; get; }
         public List<RspConfigDTO> Data { set; get; }
     }
-    public class RspConfigDTO
+    internal class RspConfigDTO
     {
         public VaultType VaultType { set; get; }
         public string VaultKey { set; get; }
         public string Vault { set; get; }
     }
-    public enum VaultType
+    internal enum VaultType
     {
         Text = 0,
         Json = 1

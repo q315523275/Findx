@@ -1,5 +1,4 @@
-﻿using Findx.Discovery.Abstractions;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -28,13 +27,13 @@ namespace Findx.Discovery.LoadBalancer
                     loadBalancer = _loadBalancers[serviceName];
                     if (_loadBalancer != loadBalancer.Name)
                     {
-                        loadBalancer = await _factory.GetAsync(serviceName, _discoveryClient, _loadBalancer);
+                        loadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, _loadBalancer);
                         AddLoadBalancer(serviceName, loadBalancer);
                     }
                     return loadBalancer;
                 }
                 {
-                    loadBalancer = await _factory.GetAsync(serviceName, _discoveryClient, _loadBalancer);
+                    loadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, _loadBalancer);
                     AddLoadBalancer(serviceName, loadBalancer);
                     return loadBalancer;
                 }

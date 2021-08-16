@@ -1,6 +1,4 @@
-﻿using Findx.Discovery.Abstractions;
-
-namespace Findx.Discovery.LoadBalancer
+﻿namespace Findx.Discovery.LoadBalancer
 {
     public class Lease
     {

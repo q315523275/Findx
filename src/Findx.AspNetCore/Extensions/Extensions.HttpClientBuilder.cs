@@ -1,4 +1,5 @@
 ﻿using Findx.DependencyInjection;
+using Findx.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -7,7 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Findx.AspNetCore.Extensions
+namespace Findx.Extensions
 {
     /// <summary>
     /// HttpClientBuilder弹性构建扩展
@@ -52,31 +53,39 @@ namespace Findx.AspNetCore.Extensions
         /// </summary>
         /// <typeparam name="TException"></typeparam>
         /// <param name="httpClientBuilder"></param>
-        /// <param name="exceptionsAllowedBeforeBreaking"></param>
-        /// <param name="durationOfBreak"></param>
+        /// <param name="exceptionsAllowedBeforeBreaking">熔断前连续错误次数</param>
+        /// <param name="durationOfBreak">熔断时长,如:30s</param>
         /// <returns></returns>
-        public static IHttpClientBuilder AddCircuitBreakerPolicy<TException>(this IHttpClientBuilder httpClientBuilder, int exceptionsAllowedBeforeBreaking, int durationOfBreak) where TException : Exception
+        public static IHttpClientBuilder AddCircuitBreakerPolicy<TException>(this IHttpClientBuilder httpClientBuilder, int exceptionsAllowedBeforeBreaking, string durationOfBreak) where TException : Exception
         {
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
-            if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak < 1) return httpClientBuilder;
+            if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak.IsNullOrWhiteSpace()) return httpClientBuilder;
 
-            var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
-            var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
+            var BreakTimeSpan = Findx.Utils.DateTimeUtils.ToTimeSpan(durationOfBreak);
 
             var circuitBreakerPolicy = Policy<HttpResponseMessage>.Handle<TException>()
                                                                   .CircuitBreakerAsync(
                                                                     handledEventsAllowedBeforeBreaking: exceptionsAllowedBeforeBreaking,
-                                                                    durationOfBreak: TimeSpan.FromSeconds(durationOfBreak),
+                                                                    durationOfBreak: BreakTimeSpan,
                                                                     onBreak: (ex, breakDelay) =>
                                                                     {
+                                                                        var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
+                                                                        var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
+
                                                                         _logger.LogError(ex.Exception, $"断路器({DateTime.Now})即将熔断" + breakDelay.TotalSeconds + "秒");
                                                                     },
                                                                     onReset: () =>
                                                                     {
+                                                                        var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
+                                                                        var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
+
                                                                         _logger.LogDebug($"断路器({DateTime.Now})熔断恢复");
                                                                     },
                                                                     onHalfOpen: () =>
                                                                     {
+                                                                        var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
+                                                                        var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
+
                                                                         _logger.LogDebug(".Breaker logging: Half-open; next call is a trial.");
                                                                     });
 
@@ -97,14 +106,14 @@ namespace Findx.AspNetCore.Extensions
             Check.NotNull(httpResponseMessage, nameof(httpResponseMessage));
             if (httpResponseStatus < 1) return httpClientBuilder;
 
-            var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
-            var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
-
             HttpResponseMessage fallbackResponse = new() { Content = new StringContent(httpResponseMessage), StatusCode = (HttpStatusCode)httpResponseStatus };
 
             var fallbackPolicy = Policy<HttpResponseMessage>.HandleInner<TException>()
                                                             .FallbackAsync(fallbackResponse, b =>
                                                             {
+                                                                var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
+                                                                var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
+
                                                                 _logger.LogError(b.Exception, $"服务开始降级({DateTime.Now})");
                                                                 return Task.CompletedTask;
                                                             });

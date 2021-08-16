@@ -4,31 +4,52 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Findx.Extensions;
 namespace Findx.Tasks.Scheduling
 {
+    /// <summary>
+    /// 内存调度器
+    /// </summary>
     public class InMemoryScheduler : IScheduler, IDisposable
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IScheduledTaskStore _taskStore;
+        private readonly IScheduledTaskStore _storage;
+        private readonly IScheduledTaskDispatcher _dispatcher;
+        private readonly ILogger<InMemoryScheduler> _logger;
+
         private Timer _taskTimer;
         private bool _polling;
         private SchedulerOptions _options;
 
-        public InMemoryScheduler(IServiceProvider serviceProvider, IScheduledTaskStore taskStore, IOptionsMonitor<SchedulerOptions> _optionsMonitor)
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="storage"></param>
+        /// <param name="dispatcher"></param>
+        /// <param name="optionsMonitor"></param>
+        /// <param name="logger"></param>
+        public InMemoryScheduler(IScheduledTaskStore storage, IScheduledTaskDispatcher dispatcher, IOptionsMonitor<SchedulerOptions> optionsMonitor, ILogger<InMemoryScheduler> logger)
         {
-            _serviceProvider = serviceProvider;
-            _taskStore = taskStore;
+            _storage = storage;
+            _dispatcher = dispatcher;
+            _logger = logger;
 
-            _options = _optionsMonitor.CurrentValue;
-            _optionsMonitor.OnChange(ConfigurationOnChange);
+            _options = optionsMonitor.CurrentValue;
+            optionsMonitor.OnChange(ConfigurationOnChange);
 
         }
+
+        /// <summary>
+        /// 配置发生变更
+        /// </summary>
+        /// <param name="changeOptions"></param>
         private void ConfigurationOnChange(SchedulerOptions changeOptions)
         {
             if (changeOptions.ToString() != _options.ToString())
             {
                 _options = changeOptions;
+
+                _logger.LogInformation($"InMemoryScheduler调度器发生了配置变更,内容{ _options }");
+
                 // 重启任务调度器
                 StopAsync().ConfigureAwait(false).GetAwaiter();
                 Dispose();
@@ -36,6 +57,9 @@ namespace Findx.Tasks.Scheduling
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public void Dispose()
         {
             _taskTimer?.Dispose();
@@ -44,9 +68,17 @@ namespace Findx.Tasks.Scheduling
             GC.SuppressFinalize(this);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            var pollingInterval = _options.JobPollPeriod * 1000;
+            if (!_options.Enable)
+                return Task.CompletedTask;
+
+            var pollingInterval = _options.JobPollPeriod * 800;
 
             _taskTimer = new Timer(async x =>
             {
@@ -64,6 +96,11 @@ namespace Findx.Tasks.Scheduling
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task StopAsync(CancellationToken cancellationToken = default)
         {
             _taskTimer?.Change(Timeout.Infinite, 0);
@@ -71,30 +108,37 @@ namespace Findx.Tasks.Scheduling
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private async Task ExecuteOnceAsync(CancellationToken cancellationToken)
         {
-            var tasksThatShouldRun = await _taskStore.GetShouldRunTasksAsync(_options.MaxJobFetchCount);
+            var tasksThatShouldRun = await _storage.GetShouldRunTasksAsync(_options.MaxJobFetchCount);
 
             foreach (var taskThatShouldRun in tasksThatShouldRun)
             {
-                taskThatShouldRun.IsRuning = true;
-
-                _ = Task.Run(async () =>
+                var executeInfo = new SchedulerTaskExecuteInfo
                 {
-                    using var scope = _serviceProvider.CreateScope();
-                    var taskLogger = scope.ServiceProvider.GetRequiredService<ILogger<InMemoryScheduler>>();
-                    var context = new TaskExecutionContext(scope.ServiceProvider, taskThatShouldRun.Id);
-                    try
-                    {
-                        var scheduledTaskExecuter = scope.ServiceProvider.GetRequiredService<IScheduledTaskExecuter>();
+                    ExecuteId = Guid.NewGuid(),
+                    Status = 0,
+                    TaskArgs = taskThatShouldRun.TaskArgs,
+                    TaskFullName = taskThatShouldRun.TaskFullName,
+                    TaskId = taskThatShouldRun.Id,
+                    TaskName = taskThatShouldRun.TaskName,
+                    TaskTime = taskThatShouldRun.NextRunTime.Value,
+                };
 
-                        await scheduledTaskExecuter.ExecuteAsync(context, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        taskLogger.LogError(ex, $"调度任务:{taskThatShouldRun.Id},执行异常");
-                    }
-                }, cancellationToken).ContinueWith(it => { taskThatShouldRun.Increment(); }, TaskContinuationOptions.ExecuteSynchronously); // 任务同线程处理
+                // 固定时间执行任务直接计算下次执行时间
+                if (!taskThatShouldRun.CronExpress.IsNullOrWhiteSpace())
+                    taskThatShouldRun.Increment();
+
+                // 固定间隔任务，从推送开始标识执行中
+                if (taskThatShouldRun.FixedDelay > 0)
+                    taskThatShouldRun.IsRuning = true;
+
+                await _dispatcher.EnqueueToPublishAsync(executeInfo, cancellationToken);
             }
         }
     }

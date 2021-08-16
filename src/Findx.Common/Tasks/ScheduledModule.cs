@@ -1,4 +1,5 @@
 ﻿using Findx.Extensions;
+using Findx.Messaging;
 using Findx.Modularity;
 using Findx.Tasks.Scheduling;
 using Microsoft.Extensions.Configuration;
@@ -32,9 +33,11 @@ namespace Findx.Tasks
             // 任务调度
             services.AddSingleton<IScheduledTaskManager, InMemoryScheduledTaskManager>();
             services.AddSingleton<IScheduledTaskStore, InMemoryScheduledTaskStore>();
+            services.AddSingleton<IScheduledTaskDispatcher, InMemoryScheduledTaskDispatcher>();
             services.AddSingleton<IScheduledTaskExecuter, InMemoryScheduledTaskExecuter>();
             services.AddSingleton<IScheduler, InMemoryScheduler>();
             services.AddSingleton<SchedulerTaskWrapperDictionary>();
+            services.AddTransient<IMessageNotifyHandler<ScheduledTaskCommand>, ScheduledTaskCommandHandler>();
 
             // 后台任务
             // services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();

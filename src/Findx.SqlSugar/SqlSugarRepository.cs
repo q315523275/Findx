@@ -125,6 +125,50 @@ namespace Findx.SqlSugar
         }
 
 
+        public int Update(TEntity entity, bool ignoreNullColumns = false)
+        {
+            var updateable = _sqlSugarClient.Updateable(entity);
+
+            if (ignoreNullColumns)
+                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
+
+            return updateable.ExecuteCommand();
+        }
+
+        public Task<int> UpdateAsync(TEntity entity, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
+        {
+            var updateable = _sqlSugarClient.Updateable(entity);
+
+            if (ignoreNullColumns)
+                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
+
+            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+
+            return updateable.ExecuteCommandAsync();
+        }
+
+        public int Update(List<TEntity> entitys, bool ignoreNullColumns = false)
+        {
+            var updateable = _sqlSugarClient.Updateable(entitys);
+
+            if (ignoreNullColumns)
+                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
+
+            return updateable.ExecuteCommand();
+        }
+
+        public Task<int> UpdateAsync(List<TEntity> entitys, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
+        {
+            var updateable = _sqlSugarClient.Updateable(entitys);
+
+            if (ignoreNullColumns)
+                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
+
+            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+
+            return updateable.ExecuteCommandAsync();
+        }
+
         public int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
         {
             var updateable = _sqlSugarClient.Updateable(entity);
@@ -157,6 +201,20 @@ namespace Findx.SqlSugar
             _sqlSugarClient.Ado.CancellationToken = cancellationToken;
 
             return updateable.ExecuteCommandAsync();
+        }
+
+
+
+        public int UpdateColumns(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression)
+        {
+            return _sqlSugarClient.Updateable<TEntity>().SetColumns(columns).Where(whereExpression).ExecuteCommand();
+        }
+
+        public Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
+        {
+            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+
+            return _sqlSugarClient.Updateable<TEntity>().SetColumns(columns).Where(whereExpression).ExecuteCommandAsync();
         }
 
 
@@ -489,6 +547,7 @@ namespace Findx.SqlSugar
 
             return _sqlSugarClient.Queryable<TEntity>().AnyAsync();
         }
+
 
     }
 }

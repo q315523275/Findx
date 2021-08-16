@@ -103,7 +103,7 @@ namespace Findx.Tasks.Scheduling
 
         public bool ShouldRun(DateTime currentTime)
         {
-            return IsEnable && !IsRuning && NextRunTime.HasValue && NextRunTime < currentTime && LastRunTime != NextRunTime;
+            return IsEnable && !IsRuning && NextRunTime.HasValue && NextRunTime <= currentTime && LastRunTime != NextRunTime;
         }
     }
 }

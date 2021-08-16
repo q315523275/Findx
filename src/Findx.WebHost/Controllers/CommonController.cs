@@ -1,17 +1,18 @@
 ﻿using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
-using Findx.Discovery.Abstractions;
-using Findx.Discovery.LoadBalancer;
-using Findx.Extensions;
+using Findx.Discovery;
 using Findx.Email;
-using Findx.EventBus.Abstractions;
+using Findx.EventBus;
+using Findx.Extensions;
 using Findx.Messaging;
 using Findx.Pdf;
 using Findx.RabbitMQ;
 using Findx.Security.Authorization;
+using Findx.Tasks.Scheduling;
 using Findx.WebHost.EventBus;
 using Findx.WebHost.Messaging;
+using Findx.WebHost.WebApiClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -30,9 +31,9 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("/health")]
-        public string Health()
+        public JsonResult Health()
         {
-            return DateTime.Now.ToString();
+            return new JsonResult(new { status = "UP" });
         }
 
         /// <summary>
@@ -44,6 +45,17 @@ namespace Findx.WebHost.Controllers
         public CommonResult ApplicationInfo([FromServices] IApplicationInstanceInfo instance)
         {
             return CommonResult.Success(instance);
+        }
+
+        /// <summary>
+        /// 雪花ID
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        [HttpGet("/snowflakeId")]
+        public long SnowflakeId()
+        {
+            return Findx.Utils.SnowflakeId.Default().NextId();
         }
 
         /// <summary>
@@ -198,5 +210,69 @@ namespace Findx.WebHost.Controllers
             return CommonResult.Success(eventInfo);
         }
 
+        /// <summary>
+        /// 异常
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/exception")]
+        public string Exception()
+        {
+            throw new Exception("自定义异常");
+        }
+
+        /// <summary>
+        /// 异常
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/exception_timeout")]
+        public async Task<string> Exception_Timeout()
+        {
+            await Task.Delay(3000);
+            return "1";
+        }
+
+        /// <summary>
+        /// WebApiClient声明式Http请求
+        /// </summary>
+        /// <param name="api"></param>
+        /// <returns></returns>
+        [HttpGet("/WebApiClient_Discovery")]
+        public async Task<string> WebApiClientDiscovery([FromServices] IFindxApi api)
+        {
+            return await api.ApplicationInfo();
+        }
+
+        /// <summary>
+        /// WebApiClient声明式Http请求
+        /// </summary>
+        /// <param name="api"></param>
+        /// <returns></returns>
+        [HttpGet("/WebApiClient_Discovery_Exception")]
+        public async Task<string> WebApiClientDiscoveryException([FromServices] IFindxApi api)
+        {
+            return await api.Exception();
+        }
+
+        /// <summary>
+        /// WebApiClient声明式Http请求
+        /// </summary>
+        /// <param name="api"></param>
+        /// <returns></returns>
+        [HttpGet("/WebApiClient_Discovery_Timeout")]
+        public async Task<string> WebApiClientDiscoveryTimeout([FromServices] IFindxApi api)
+        {
+            return await api.Timeout();
+        }
+
+        /// <summary>
+        /// 查询调度任务列表
+        /// </summary>
+        /// <param name="storage"></param>
+        /// <returns></returns>
+        [HttpGet("/QueryJobs")]
+        public async Task<object> QueryJobs([FromServices] IScheduledTaskStore storage)
+        {
+            return await storage.GetTasksAsync();
+        }
     }
 }

@@ -55,7 +55,7 @@ namespace Findx.Builders
 
             // 序列化
             services.AddSingleton<IJsonSerializer, SystemTextJsonContentSerializer>();
-            services.AddSingleton<ISerializer, BinaryFormatterSerializer>();
+            services.AddSingleton<ISerializer, SystemTextByteSerializer>();
 
             // 短信
             services.AddSingleton<ISmsSender, NullSmsSender>();

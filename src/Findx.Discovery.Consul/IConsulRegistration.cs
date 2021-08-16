@@ -1,5 +1,4 @@
 ﻿using Consul;
-using Findx.Discovery.Abstractions;
 
 namespace Findx.Discovery.Consul
 {

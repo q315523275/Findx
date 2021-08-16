@@ -1,14 +1,12 @@
 ﻿using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
-using Findx.EventBus.Abstractions;
+using Findx.EventBus;
 using Findx.Extensions;
-using Findx.Utils;
 using Findx.WebHost.EventBus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 
@@ -21,7 +19,9 @@ namespace Findx.WebHost
             services.AddFindx().AddModules();
 
             services.AddControllers(options => options.Filters.Add(typeof(ValidationModelAttribute)))
-                    .AddJsonOptions(options => { options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All); });
+                    .AddJsonOptions(options => { 
+                        options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+                    });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -37,10 +37,10 @@ namespace Findx.WebHost
 
             app.UseEndpoints(endpoints => { endpoints.MapControllersWithAreaRoute(); });
 
-            var eventBus = app.ApplicationServices.GetRequiredService<IEventBus>();
+            var eventBus = app.ApplicationServices.GetRequiredService<IEventSubscriber>();
             eventBus.Subscribe<FindxTestEvent, FindxTestEventHander>();
             eventBus.Subscribe<FindxTestEvent, FindxTestEventHanderTwo>();
-            //eventBus.SubscribeDynamic<FindxTestDynamicEventHandler>("FindxTestRoutingKey");
+            eventBus.SubscribeDynamic<FindxTestDynamicEventHandler>("Findx.WebHost.EventBus.FindxTestEvent");
             eventBus.StartConsuming();
         }
     }

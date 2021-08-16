@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-
 namespace Findx.Module.WebHost
 {
     public class Startup
@@ -22,6 +21,7 @@ namespace Findx.Module.WebHost
                     {
                         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
                         options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
+                        options.JsonSerializerOptions.Converters.Add(new LongConverter());
                     });
         }
 
@@ -38,10 +38,7 @@ namespace Findx.Module.WebHost
 
             app.UseFindx();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllersWithAreaRoute();
-            });
+            app.UseEndpoints(endpoints => { endpoints.MapControllersWithAreaRoute(); });
         }
     }
 }

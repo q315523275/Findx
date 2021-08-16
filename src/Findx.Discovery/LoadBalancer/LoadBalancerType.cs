@@ -1,4 +1,4 @@
-﻿namespace Findx.Discovery.LoadBalancer
+﻿namespace Findx.Discovery
 {
     public enum LoadBalancerType
     {

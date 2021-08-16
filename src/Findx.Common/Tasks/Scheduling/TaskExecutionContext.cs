@@ -6,12 +6,12 @@ namespace Findx.Tasks.Scheduling
     {
         public IServiceProvider ServiceProvider { get; }
 
-        public Guid TaskId { get; }
+        public SchedulerTaskExecuteInfo ExecuteInfo { get; }
 
-        public TaskExecutionContext(IServiceProvider serviceProvider, Guid taskId)
+        public TaskExecutionContext(IServiceProvider serviceProvider, SchedulerTaskExecuteInfo executeInfo)
         {
             ServiceProvider = serviceProvider;
-            TaskId = taskId;
+            ExecuteInfo = executeInfo;
         }
     }
 }

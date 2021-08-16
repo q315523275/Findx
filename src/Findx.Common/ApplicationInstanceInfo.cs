@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace Findx
 {
@@ -30,6 +30,7 @@ namespace Findx
             Version = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? "1.0.1";
             Uris = _configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
             InstanceIP = DnsUtils.ResolveHostAddress(DnsUtils.ResolveHostName());
+            OSDescription = RuntimeInformation.OSDescription;
         }
 
         public string ApplicationId { set; get; }
@@ -45,5 +46,7 @@ namespace Findx
         public string InstanceIP { set; get; }
 
         public string InternalIP { set; get; }
+
+        public string OSDescription { set; get; }
     }
 }

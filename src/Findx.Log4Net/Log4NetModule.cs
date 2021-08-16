@@ -9,8 +9,8 @@ namespace Findx.Log4Net
     [Description("Findx-Log4Net组件模块")]
     public class Log4NetModule : FindxModule
     {
-        public override ModuleLevel Level => ModuleLevel.Application;
-        public override int Order => 20;
+        public override ModuleLevel Level => ModuleLevel.Framework;
+        public override int Order => 50;
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {

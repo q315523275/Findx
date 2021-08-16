@@ -34,7 +34,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="repository"></param>
         /// <param name="mapper"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("create")]
         public virtual CommonResult Create([FromBody] TCreateRequest request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
         {
             Check.NotNull(request, nameof(request));
@@ -62,7 +62,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="repository"></param>
         /// <param name="mapper"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("update")]
         public virtual CommonResult Update([FromBody] TUpdateRequest request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
         {
             Check.NotNull(request, nameof(request));
@@ -83,7 +83,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="id"></param>
         /// <param name="repository"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("deleteById")]
         public virtual CommonResult DeleteById(TKey id, [FromServices] IRepository<TModel> repository)
         {
             Check.NotNull(id, nameof(id));
@@ -100,7 +100,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="ids"></param>
         /// <param name="repository"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("deleteMany")]
         public virtual CommonResult DeleteMany([FromBody] List<TKey> ids, [FromServices] IRepository<TModel> repository)
         {
             Check.NotNull(ids, nameof(ids));

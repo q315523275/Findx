@@ -1,11 +1,9 @@
-﻿using Findx.Discovery.Abstractions;
-using Findx.Discovery.LoadBalancer;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Findx.Discovery.HttpMessageHandlers
+namespace Findx.Discovery
 {
     public class DiscoveryRoundRobinHttpMessageHandler : DelegatingHandler
     {

@@ -1,7 +1,7 @@
 ﻿using Findx.DependencyInjection;
+using Findx.Extensions;
 using Findx.RabbitMQ;
 using Findx.WebHost.EventBus;
-using Findx.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
@@ -16,7 +16,7 @@ namespace Findx.WebHost.RabbitMQ
         public async Task<string> ReceiveMessage(FindxTestEvent time)
         {
             Console.WriteLine("message time is:" + time.ToJson());
-            await Task.Delay(3 * 1000);
+            await Task.Delay(3);
             return "1";
         }
     }

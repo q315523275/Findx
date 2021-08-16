@@ -15,7 +15,6 @@ namespace Findx.Extensions
         /// 以<param name="c"></param>为结尾，不是则进行追加
         /// </summary>
         /// <param name="str"></param>
-        /// <param name="c"></param>
         /// <param name="comparisonType"></param>
         /// <returns></returns>
         public static string EnsureEndsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)

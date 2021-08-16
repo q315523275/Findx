@@ -1,5 +1,4 @@
-﻿using Findx.EventBus.Abstractions;
-using Findx.Extensions;
+﻿using Findx.Extensions;
 using Findx.Modularity;
 using Findx.RabbitMQ;
 using Microsoft.Extensions.Configuration;
@@ -13,7 +12,7 @@ namespace Findx.EventBus.RabbitMQ
     public class EventBusRabbitMqModule : FindxModule
     {
         public override ModuleLevel Level => ModuleLevel.Framework;
-        public override int Order => 30;
+        public override int Order => 81;
         /// <summary>
         /// 配置服务注册
         /// </summary>
@@ -26,9 +25,16 @@ namespace Findx.EventBus.RabbitMQ
             var section = configuration.GetSection("Findx:EventBus:RabbitMQ");
             services.Configure<EventBusRabbitMqOptions>(section);
 
-            services.AddSingleton<IEventBus, EventBusRabbitMQ>();
-            services.AddSingleton<IEventPublisher, EventRabbitMqPublisher>();
-            services.AddSingleton<IEventSubscriber, EventRabbitMqSubscriber>();
+            services.AddSingleton<IEventDispatcher, LocalEventDispatcher>();
+            services.AddSingleton<IEventExecuter, EventExecuter>();
+            services.AddSingleton<IEventPublisher, EventPublisher>();
+            services.AddSingleton<IEventSerializer, EventSerializer>();
+            services.AddSingleton<IEventStore, LocalEventStore>();
+            services.AddSingleton<IEventSubscribeManager, InMemoryEventSubscribeManager>();
+
+
+            services.AddSingleton<IEventSender, EventRabbitMQSender>();
+            services.AddSingleton<IEventSubscriber, EventRabbitMQSubscriber>();
 
             return services;
         }

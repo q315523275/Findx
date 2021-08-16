@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,8 +24,8 @@ namespace Findx.Messaging
 
             var messageType = message.GetType();
 
-            var handler = (MessageEventHandlerWrapper<TResponse>)_messageHandlers.GetOrAdd(messageType,
-                t => Activator.CreateInstance(typeof(MessageEventHandlerWrapperImpl<,>).MakeGenericType(messageType, typeof(TResponse))));
+            var handler = (MessageHandlerWrapper<TResponse>)_messageHandlers.GetOrAdd(messageType,
+                         t => ActivatorUtilities.CreateInstance(_serviceProvider, typeof(MessageHandlerWrapperImpl<,>).MakeGenericType(messageType, typeof(TResponse))));
 
             Check.NotNull(handler, nameof(handler));
 

@@ -1,5 +1,4 @@
 ﻿using Consul;
-using Findx.Discovery.Abstractions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;

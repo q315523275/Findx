@@ -1,6 +1,7 @@
 ﻿using Findx.Data;
 using Findx.Linq;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 
 namespace Findx.AspNetCore.Mvc
@@ -39,8 +40,28 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <param name="repository"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("pagerQuery")]
+        [Obsolete]
         public virtual CommonResult PagerQuery([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
+        {
+            Check.NotNull(request, nameof(request));
+
+            var whereExpression = CreatePageWhereExpression(request);
+            var orderByExpression = CreatePageOrderExpression(request);
+
+            var pageResult = repository.Paged<TDto>(request.PageNo, request.PageSize, whereExpression: whereExpression.ToExpression(), orderByExpression: orderByExpression);
+
+            return CommonResult.Success(ToPagerQueryResult(pageResult));
+        }
+
+        /// <summary>
+        /// 查询数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="repository"></param>
+        /// <returns></returns>
+        [HttpGet("page")]
+        public virtual CommonResult Page([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
         {
             Check.NotNull(request, nameof(request));
 
@@ -64,7 +85,8 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <param name="repository"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("query")]
+        [Obsolete]
         public virtual CommonResult Query([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
         {
             Check.NotNull(request, nameof(request));
@@ -74,7 +96,30 @@ namespace Findx.AspNetCore.Mvc
 
             var result = repository.Top<TDto>(request.PageSize, whereExpression: whereExpression.ToExpression(), orderByExpression: orderByExpression);
 
-            return CommonResult.Success(ToQueryResult(result));
+            result = ToQueryResult(result);
+
+            return CommonResult.Success(result);
+        }
+
+        /// <summary>
+        /// 查询列表数据
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="repository"></param>
+        /// <returns></returns>
+        [HttpGet("list")]
+        public virtual CommonResult List([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
+        {
+            Check.NotNull(request, nameof(request));
+
+            var whereExpression = CreatePageWhereExpression(request);
+            var orderByExpression = CreatePageOrderExpression(request);
+
+            var result = repository.Top<TDto>(request.PageSize, whereExpression: whereExpression.ToExpression(), orderByExpression: orderByExpression);
+
+            result = ToQueryResult(result);
+
+            return CommonResult.Success(result);
         }
 
         /// <summary>
@@ -89,7 +134,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="id"></param>
         /// <param name="repository"></param>
         /// <returns></returns>
-        [HttpGet]
+        [HttpGet("getById")]
         public virtual CommonResult GetById(TKey id, [FromServices] IRepository<TModel> repository)
         {
             Check.NotNull(id, nameof(id));

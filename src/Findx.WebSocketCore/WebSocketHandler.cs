@@ -1,5 +1,4 @@
-﻿
-using Newtonsoft.Json;
+﻿using Findx.Extensions;
 using System;
 using System.Net.WebSockets;
 using System.Reflection;
@@ -46,7 +45,7 @@ namespace Findx.WebSocketCore
         {
             if (socket.State != WebSocketState.Open)
                 return;
-            var serializedMessage = JsonConvert.SerializeObject(message);
+            var serializedMessage = message.ToJson();
             var encodedMessage = Encoding.UTF8.GetBytes(serializedMessage);
             try
             {

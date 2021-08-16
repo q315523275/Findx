@@ -1,5 +1,5 @@
 ﻿using Findx.DependencyInjection;
-using Findx.EventBus.Abstractions;
+using Findx.EventBus;
 using Findx.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using System;

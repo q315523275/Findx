@@ -2,8 +2,11 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Findx.Discovery.Abstractions
+namespace Findx.Discovery
 {
+    /// <summary>
+    /// 发现客户端
+    /// </summary>
     public interface IDiscoveryClient : IServiceInstanceProvider
     {
         /// <summary>

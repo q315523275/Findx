@@ -11,7 +11,7 @@ namespace Findx.Tasks.Scheduling
         /// 调度间隔时间
         /// 单位：秒
         /// </summary>
-        public int JobPollPeriod { get; set; } = 2;
+        public int JobPollPeriod { get; set; } = 1;
         /// <summary>
         /// 单次最大调度任务数
         /// </summary>

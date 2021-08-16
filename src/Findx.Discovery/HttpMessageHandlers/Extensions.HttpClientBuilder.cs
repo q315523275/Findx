@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 
-namespace Findx.Discovery.HttpMessageHandlers
+namespace Findx.Discovery
 {
     /// <summary>
     /// HttpClientBuilder负载均衡构建扩展

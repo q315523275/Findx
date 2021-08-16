@@ -13,9 +13,9 @@ namespace Findx.RabbitMQ
             _connectionPool = connectionPool;
         }
 
-        public IRabbitMQConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue)
+        public IRabbitMQConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue, bool autoAck = true)
         {
-            return new RabbitMQConsumer(_logger, _connectionPool, exchange, queue);
+            return new RabbitMQConsumer(_logger, _connectionPool, exchange, queue, autoAck);
         }
     }
 }

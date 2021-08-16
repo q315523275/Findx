@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+﻿using Findx.Extensions;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
 using System.Net.WebSockets;
@@ -42,7 +42,7 @@ namespace Findx.WebSocketCore
             {
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    WebSocketMessage message = JsonConvert.DeserializeObject<WebSocketMessage>(serializedMessage);
+                    WebSocketMessage message = serializedMessage.ToObject<WebSocketMessage>();
                     await _webSocketHandler.ReceiveAsync(socket, result, message).ConfigureAwait(false);
                     return;
                 }

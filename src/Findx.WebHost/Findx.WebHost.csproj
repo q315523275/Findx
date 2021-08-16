@@ -22,6 +22,7 @@
 		<ProjectReference Include="..\Findx.Security\Findx.Security.csproj" />
 		<ProjectReference Include="..\Findx.SqlSugar\Findx.SqlSugar.csproj" />
 		<ProjectReference Include="..\Findx.Swagger\Findx.Swagger.csproj" />
+		<ProjectReference Include="..\Findx.WebApiClient\Findx.WebApiClient.csproj" />
 		<ProjectReference Include="..\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
 	</ItemGroup>
 

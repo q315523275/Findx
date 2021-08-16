@@ -13,7 +13,7 @@ namespace Findx.AspNetCore.Extensions
         public static IServiceCollection AddRazorPageAndRenderer(this IServiceCollection services)
         {
             services.AddRazorPages();
-            services.AddTransient<IRazorViewRenderer, RazorViewRenderer>();
+            services.AddTransient<IRazorViewRender, RazorViewRender>();
 
             return services;
         }

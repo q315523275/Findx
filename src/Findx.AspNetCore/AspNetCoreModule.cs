@@ -26,21 +26,19 @@ namespace Findx.AspNetCore
             services.AddMemoryCache();
 
             services.AddHttpContextAccessor();
-            services.AddTransient<IPrincipal>(provider =>
+            services.TryAddTransient<IPrincipal>(provider =>
             {
                 IHttpContextAccessor accessor = provider.GetService<IHttpContextAccessor>();
                 return accessor?.HttpContext?.User;
             });
-            // 用户，依赖IPrincipal
-            services.AddSingleton<ICurrentUser, CurrentUser>();
+            services.TryAddSingleton<ICurrentUser, CurrentUser>();
 
             services.TryAddSingleton<IScopedServiceResolver, HttpContextServiceScopeResolver>();
+
             services.Replace<ICancellationTokenProvider, HttpContextCancellationTokenProvider>(ServiceLifetime.Singleton);
             services.Replace<IHybridServiceScopeFactory, HttpContextServiceScopeFactory>(ServiceLifetime.Singleton);
 
-            // API资源
             services.AddSingleton<IApiInterfaceService, DefaultApiInterfaceService>();
-            // 文件上传
             services.AddSingleton<IFileUploadService, DefaultFileUploadService>();
 
             // 关闭模型自动化验证,实现自控

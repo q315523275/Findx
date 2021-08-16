@@ -1,6 +1,4 @@
-﻿using Findx.Discovery.Abstractions;
-using Findx.Discovery.Consul;
-using Findx.Discovery.HttpMessageHandlers;
+﻿using Findx.Discovery.Consul;
 using Findx.Discovery.LoadBalancer;
 using Findx.Extensions;
 using Findx.Modularity;

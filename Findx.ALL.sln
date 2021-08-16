@@ -65,7 +65,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Module.ConsoleApp", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Module.WebHost", "modules\Findx.Module.WebHost\Findx.Module.WebHost.csproj", "{7D390E7B-9903-427B-85E5-4780ABDB3CA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.WebApiClient", "src\Findx.WebApiClient\Findx.WebApiClient.csproj", "{669FD454-BE9D-4F3F-9EBA-CF89E921D5BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.WebApiClient", "src\Findx.WebApiClient\Findx.WebApiClient.csproj", "{669FD454-BE9D-4F3F-9EBA-CF89E921D5BF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

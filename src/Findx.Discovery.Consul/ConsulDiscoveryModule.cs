@@ -1,5 +1,4 @@
 ﻿using Consul;
-using Findx.Discovery.Abstractions;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -35,7 +34,8 @@ namespace Findx.Discovery.Consul
 
         public override void UseModule(IServiceProvider provider)
         {
-            Task.Run(() => {
+            Task.Run(() =>
+            {
                 IOptionsMonitor<DiscoveryOptions> _optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DiscoveryOptions>>();
                 if (_optionsMonitor.CurrentValue.Enabled && _optionsMonitor.CurrentValue.Register)
                 {

@@ -1,4 +1,4 @@
-﻿using Findx.EventBus.Events;
+﻿using Findx.EventBus;
 
 namespace Findx.WebHost.EventBus
 {

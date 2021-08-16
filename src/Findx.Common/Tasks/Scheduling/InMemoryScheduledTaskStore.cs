@@ -28,7 +28,6 @@ namespace Findx.Tasks.Scheduling
 
         public Task<List<SchedulerTaskInfo>> GetShouldRunTasksAsync(int maxResultCount)
         {
-
             var referenceTime = DateTimeOffset.UtcNow.LocalDateTime;
             var tasksThatShouldRun = _tasks.Values.Where(t => t.ShouldRun(referenceTime))
                                            .OrderBy(t => t.TryCount)

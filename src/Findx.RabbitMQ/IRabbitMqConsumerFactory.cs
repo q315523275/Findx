@@ -10,7 +10,8 @@
         /// </summary>
         /// <param name="exchange"></param>
         /// <param name="queue"></param>
+        /// <param name="autoAck"></param>
         /// <returns></returns>
-        IRabbitMQConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue);
+        IRabbitMQConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue, bool autoAck = true);
     }
 }

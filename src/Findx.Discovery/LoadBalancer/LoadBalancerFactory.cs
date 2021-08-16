@@ -1,12 +1,11 @@
-﻿using Findx.Discovery.Abstractions;
-using Findx.Discovery.LoadBalancer.Selectors;
+﻿using Findx.Discovery.LoadBalancer.Selectors;
 using System.Threading.Tasks;
 
 namespace Findx.Discovery.LoadBalancer
 {
     public class LoadBalancerFactory : ILoadBalancerFactory
     {
-        public async Task<ILoadBalancer> GetAsync(string serviceName, IDiscoveryClient discoveryClient, LoadBalancerType loadBalancer = LoadBalancerType.Random)
+        public async Task<ILoadBalancer> CreateAsync(string serviceName, IDiscoveryClient discoveryClient, LoadBalancerType loadBalancer = LoadBalancerType.Random)
         {
             switch (loadBalancer)
             {

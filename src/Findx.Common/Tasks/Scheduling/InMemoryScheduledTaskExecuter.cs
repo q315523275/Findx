@@ -19,33 +19,50 @@ namespace Findx.Tasks.Scheduling
 
         public async Task ExecuteAsync(TaskExecutionContext context, CancellationToken cancellationToken = default)
         {
-            var store = context.ServiceProvider.GetRequiredService<IScheduledTaskStore>();
+            var storage = context.ServiceProvider.GetRequiredService<IScheduledTaskStore>();
             var jsonSerializer = context.ServiceProvider.GetRequiredService<IJsonSerializer>();
             var scheduledDict = context.ServiceProvider.GetRequiredService<SchedulerTaskWrapperDictionary>();
 
-            var taskInfo = await store.FindAsync(context.TaskId);
-            Check.NotNull(taskInfo, nameof(taskInfo));
+            var taskInfo = await storage.FindAsync(context.ExecuteInfo.TaskId);
 
-            scheduledDict.TryGetValue(taskInfo.TaskFullName, out var schedulerTaskWrapper);
+            scheduledDict.TryGetValue(context.ExecuteInfo.TaskFullName, out var schedulerTaskWrapper);
             Check.NotNull(schedulerTaskWrapper, nameof(schedulerTaskWrapper));
 
             // 任务参数
-            var taskArgsInfo = jsonSerializer.Deserialize<Dictionary<string, object>>(taskInfo.TaskArgs ?? "{}");
+            var taskArgsInfo = jsonSerializer.Deserialize<Dictionary<string, object>>(context.ExecuteInfo.TaskArgs ?? "{}");
             // 获取任务实例
-            var scheduledTask = context.ServiceProvider.GetService(schedulerTaskWrapper.TaskHandlerType);
+            var scheduledTask = (IScheduledTask)context.ServiceProvider.GetService(schedulerTaskWrapper.TaskHandlerType);
             // 创建任务上下文
-            var taskContext = new TaskContext(context.ServiceProvider, taskArgsInfo, context.TaskId);
+            var taskContext = new TaskContext(context.ServiceProvider, taskArgsInfo, context.ExecuteInfo.TaskId);
+
+            var executeTime = DateTime.Now;
 
             try
             {
-                await (Task)schedulerTaskWrapper.TaskHandlerType.GetMethod("ExecuteAsync").Invoke(scheduledTask, new object[] { taskContext, cancellationToken });
+                context.ExecuteInfo.ExecuteTime = executeTime;
+                context.ExecuteInfo.DelayRunTime = (executeTime - context.ExecuteInfo.TaskTime).TotalSeconds;
+                context.ExecuteInfo.Status = 1;
+
+                await scheduledTask.ExecuteAsync(taskContext, cancellationToken);
+
+                context.ExecuteInfo.Status = 2;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"调度任务:{taskInfo},执行异常");
+                _logger.LogError(ex, $"调度任务({context.ExecuteInfo.TaskName}-{context.ExecuteInfo.ExecuteId})执行异常");
+                context.ExecuteInfo.Status = 3;
             }
-            // 待需要可以增加任务执行日志
+            finally
+            {
+                // 固定间隔时间任务
+                if (taskInfo.FixedDelay > 0)
+                    taskInfo.Increment();
 
+                context.ExecuteInfo.RunTime = (DateTime.Now - executeTime).TotalSeconds;
+                
+                // 更新上报任务执行信息、任务主信息
+            }
+            // Console.WriteLine(jsonSerializer.Serialize(context.ExecuteInfo));
         }
     }
 }

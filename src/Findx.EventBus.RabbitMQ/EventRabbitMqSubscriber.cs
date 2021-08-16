@@ -1,9 +1,5 @@
-﻿using Findx.EventBus.Abstractions;
-using Findx.EventBus.Attributes;
-using Findx.EventBus.Events;
-using Findx.Extensions;
+﻿using Findx.Extensions;
 using Findx.RabbitMQ;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
@@ -16,32 +12,45 @@ using System.Threading.Tasks;
 
 namespace Findx.EventBus.RabbitMQ
 {
-    public class EventRabbitMqSubscriber : IEventSubscriber
+    public class EventRabbitMQSubscriber : EventSubscriberBase
     {
-        private readonly IServiceProvider _serviceProvider;
-        private readonly ILogger<EventRabbitMqSubscriber> _logger;
-        private readonly IEventSubscriptionsManager _subsManager;
-        private readonly IRabbitMQSerializer _serializer;
         private readonly IRabbitMQConsumerFactory _consumerFactory;
         private readonly IApplicationInstanceInfo _application;
-        private readonly EventBusRabbitMqOptions _mqOptions;
+        private readonly EventBusRabbitMqOptions _options;
         private ConcurrentDictionary<string, IRabbitMQConsumer> _consumers;
 
-        public EventRabbitMqSubscriber(IServiceProvider serviceProvider, ILogger<EventRabbitMqSubscriber> logger, IEventSubscriptionsManager subsManager, IRabbitMQSerializer serializer, IRabbitMQConsumerFactory consumerFactory, IApplicationInstanceInfo application, IOptions<EventBusRabbitMqOptions> mqOptions)
+        public EventRabbitMQSubscriber(IRabbitMQConsumerFactory consumerFactory, IEventSubscribeManager subscribeManager, IEventStore storage, IEventDispatcher dispatcher, IApplicationInstanceInfo application, IOptions<EventBusRabbitMqOptions> options, ILogger<EventSubscriberBase> logger) : base(subscribeManager, storage, logger, dispatcher)
         {
-            _serviceProvider = serviceProvider;
-            _logger = logger;
-            _subsManager = subsManager;
-            _serializer = serializer;
             _consumerFactory = consumerFactory;
+            _options = options.Value;
             _application = application;
 
-            _mqOptions = mqOptions.Value;
             _consumers = new ConcurrentDictionary<string, IRabbitMQConsumer>();
-            _subsManager.OnEventRemoved += SubsManager_OnEventRemoved;
         }
 
-        private void SubsManager_OnEventRemoved(object sender, string eventName)
+        protected override void DoInternalSubscribe(string eventName, string handlerName, int prefetchCount)
+        {
+            handlerName = handlerName ?? _application.ApplicationName;
+
+            var containsKey = SubscribeManager.HasSubscribeForEvent(eventName);
+            if (!containsKey)
+            {
+                if (!_consumers.ContainsKey(handlerName))
+                {
+                    var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(_options.ExchangeName, _options.ExchangeType);
+
+                    var queueDeclareConfiguration = new QueueDeclareConfiguration(handlerName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
+                    
+                    IRabbitMQConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration, false);
+                    
+                    _consumers.TryAdd(handlerName, rabbitMqConsumer);
+                }
+
+                _consumers.GetOrDefault(handlerName)?.Bind(eventName);
+            }
+        }
+
+        protected override void OnEventRemoved(string eventName)
         {
             foreach (var consumer in _consumers.Values)
             {
@@ -49,83 +58,47 @@ namespace Findx.EventBus.RabbitMQ
             }
         }
 
-        private (string QueueName, int PrefetchCount) ConvertConsumerInfo<TH>()
+        protected override void Commit(object eventObject)
         {
-            var queueName = _mqOptions.QueueName ?? _application.ApplicationName;
-            var prefetchCount = _mqOptions.PrefetchCount;
-            var consumerAttr = typeof(TH).GetAttribute<EventConsumerAttribute>();
-            if (consumerAttr != null)
+            Check.NotNull(eventObject, nameof(eventObject));
+            if (eventObject is RabbitMQAcknowledge acknowledge)
             {
-                queueName = consumerAttr.QueueName;
-                prefetchCount = consumerAttr.PrefetchCount <= 0 ? prefetchCount : consumerAttr.PrefetchCount;
-            }
-            return (queueName, prefetchCount);
-        }
-
-        private void DoInternalSubscription(string eventName, string queueName, int prefetchCount)
-        {
-            var containsKey = _subsManager.HasSubscriptionsForEvent(eventName);
-            if (!containsKey)
-            {
-                if (!_consumers.ContainsKey(queueName))
-                {
-                    var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(_mqOptions.ExchangeName, _mqOptions.ExchangeType);
-                    var queueDeclareConfiguration = new QueueDeclareConfiguration(queueName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
-                    IRabbitMQConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration);
-                    _consumers.TryAdd(queueName, rabbitMqConsumer);
-                }
-
-                _consumers.GetOrDefault(queueName)?.Bind(eventName);
+                acknowledge.Channel.BasicAck(acknowledge.EventArgs.DeliveryTag, false);
             }
         }
 
-        private async Task ProcessEvent(string eventName, string message)
+        protected override void Reject(object eventObject)
         {
-            if (_subsManager.HasSubscriptionsForEvent(eventName))
+            Check.NotNull(eventObject, nameof(eventObject));
+            if (eventObject is RabbitMQAcknowledge acknowledge)
             {
-                using (var scope = _serviceProvider.CreateScope())
-                {
-                    var subscriptions = _subsManager.GetHandlersForEvent(eventName);
-                    foreach (var subscription in subscriptions)
-                    {
-                        if (subscription.IsDynamic)
-                        {
-                            if (!(scope.ServiceProvider.GetRequiredService(subscription.HandlerType) is IDynamicEventHandler handler)) continue;
-
-                            await Task.Yield();
-                            await handler.HandleAsync(message);
-                        }
-                        else
-                        {
-                            var eventType = _subsManager.GetEventTypeByName(eventName);
-                            if (eventType == null) continue;
-                            var handler = scope.ServiceProvider.GetRequiredService(subscription.HandlerType);
-                            if (handler == null) continue;
-                            var integrationEvent = _serializer.Deserialize(message, eventType);
-                            var concreteType = typeof(IEventHandler<>).MakeGenericType(eventType);
-
-                            await Task.Yield();
-                            await (Task)concreteType.GetMethod("HandleAsync").Invoke(handler, new object[] { integrationEvent });
-                        }
-                    }
-                }
+                acknowledge.Channel.BasicReject(acknowledge.EventArgs.DeliveryTag, true);
             }
         }
 
-        private async Task Consumer_Received(IModel consumer, BasicDeliverEventArgs eventArgs)
+        private async Task Consumer_Received(IModel channel, BasicDeliverEventArgs eventArgs)
         {
             var eventName = eventArgs.RoutingKey;
-            var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
 
-            if (message.ToLowerInvariant().Contains("throw-fake-exception"))
+            var headers = new Dictionary<string, string>();
+            if (eventArgs.BasicProperties.Headers != null)
             {
-                throw new InvalidOperationException($"Fake exception requested: \"{message}\"");
+                foreach (var header in eventArgs.BasicProperties.Headers)
+                {
+                    headers.Add(header.Key, header.Value == null ? null : Encoding.UTF8.GetString((byte[])header.Value));
+                }
             }
 
-            await ProcessEvent(eventName, message);
+            headers[Headers.EventName] = eventName;
+
+            if (!headers.ContainsKey(Headers.MessageId)) headers[Headers.MessageId] = Guid.NewGuid().ToString();
+
+            var transportMessage = new TransportMessage(headers, eventArgs.Body.ToArray());
+
+            await ProcessAsync(new ProcessingContext(transportMessage, new RabbitMQAcknowledge(channel, eventArgs)));
         }
 
-        public void StartConsuming()
+        public override void StartConsuming()
         {
             foreach (var queueName in _consumers.Keys)
             {
@@ -135,39 +108,6 @@ namespace Findx.EventBus.RabbitMQ
 
                 _consumer.StartConsuming();
             }
-        }
-
-        public void Subscribe<T, TH>()
-            where T : IntegrationEvent
-            where TH : IEventHandler<T>
-        {
-            var eventName = EventNameAttribute.GetNameOrDefault(typeof(T));
-            var (QueueName, PrefetchCount) = ConvertConsumerInfo<TH>();
-
-            DoInternalSubscription(eventName, QueueName, PrefetchCount);
-
-            _subsManager.AddSubscription<T, TH>();
-        }
-
-        public void SubscribeDynamic<TH>(string eventName) where TH : IDynamicEventHandler
-        {
-            var (QueueName, PrefetchCount) = ConvertConsumerInfo<TH>();
-
-            DoInternalSubscription(eventName, QueueName, PrefetchCount);
-
-            _subsManager.AddDynamicSubscription<TH>(eventName);
-        }
-
-        public void Unsubscribe<T, TH>()
-            where T : IntegrationEvent
-            where TH : IEventHandler<T>
-        {
-            _subsManager.RemoveSubscription<T, TH>();
-        }
-
-        public void UnsubscribeDynamic<TH>(string eventName) where TH : IDynamicEventHandler
-        {
-            _subsManager.RemoveDynamicSubscription<TH>(eventName);
         }
     }
 }

@@ -9,8 +9,8 @@ namespace Findx.NLog
     [Description("Findx-NLog组件模块")]
     public class NLogModule : FindxModule
     {
-        public override ModuleLevel Level => ModuleLevel.Application;
-        public override int Order => 20;
+        public override ModuleLevel Level => ModuleLevel.Framework;
+        public override int Order => 50;
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
