@@ -7,6 +7,9 @@ using System.Runtime.InteropServices;
 
 namespace Findx
 {
+    /// <summary>
+    /// 应用实例信息
+    /// </summary>
     public class ApplicationInstanceInfo : IApplicationInstanceInfo
     {
         private readonly string FindxApplicationRoot = "Findx:Application";
@@ -31,6 +34,8 @@ namespace Findx
             Uris = _configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
             InstanceIP = DnsUtils.ResolveHostAddress(DnsUtils.ResolveHostName());
             OSDescription = RuntimeInformation.OSDescription;
+
+            RootPath = AppDomain.CurrentDomain.BaseDirectory;
         }
 
         public string ApplicationId { set; get; }
@@ -48,5 +53,9 @@ namespace Findx
         public string InternalIP { set; get; }
 
         public string OSDescription { set; get; }
+
+        public string RootPath { set; get; }
+
+        public string MapPath(string virtualPath) => RootPath + virtualPath.TrimStart('~');
     }
 }

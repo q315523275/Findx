@@ -46,5 +46,17 @@ namespace Findx
         /// 系统名称
         /// </summary>
         string OSDescription { get; }
+
+        /// <summary>
+        /// 应用根目录
+        /// </summary>
+        string RootPath { get; }
+
+        /// <summary>
+        /// 将虚拟路径转换为物理路径，相对路径转换为绝对路径
+        /// </summary>
+        /// <param name="virtualPath">虚拟路径</param>
+        /// <returns>虚拟路径对应的物理路径</returns>
+        string MapPath(string virtualPath);
     }
 }

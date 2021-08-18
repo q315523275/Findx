@@ -59,8 +59,6 @@ namespace Findx.SqlSugar
                 }
                 ServiceLocator.GetService<ILogger<SqlSugarModule>>()?.LogInformation(sb.ToString());
             };
-            Action<string, SugarParameter[]> OnLogExecuted = (sql, param) => { };
-
             // 添加SqlSugar服务
             services.TryAddScoped<SqlSugarClient>(provider =>
             {
@@ -68,7 +66,7 @@ namespace Findx.SqlSugar
                 if (SqlSugarOptions.Debug)
                 {
                     db.Aop.OnLogExecuting = OnLogExecuting;
-                    db.Aop.OnLogExecuted = OnLogExecuted;
+                    db.Aop.OnLogExecuted = (sql, param) => { ServiceLocator.GetService<ILogger<SqlSugarModule>>()?.LogInformation($"==>  ExecuteTime:{db.Ado.SqlExecutionTime.TotalMilliseconds.ToString("0.000")}ms"); };
                 }
                 return db;
             });

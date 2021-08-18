@@ -80,9 +80,10 @@ namespace Findx.Security.Authorization
         /// </summary>
         public void RefreshCache()
         {
+            var list = GetFromStoreAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
             ClearCache();
 
-            var list = GetFromStoreAsync().ConfigureAwait(false).GetAwaiter().GetResult();
             _permissions.AddRange(list);
 
             foreach (Permission permission in _permissions)
@@ -207,7 +208,6 @@ namespace Findx.Security.Authorization
         /// <summary>
         /// 从存储中获取最新资源权限信息
         /// </summary>
-        /// <param name="provider"></param>
         /// <returns></returns>
         protected abstract Task<List<Permission>> GetFromStoreAsync();
     }
