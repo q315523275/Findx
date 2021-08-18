@@ -71,7 +71,7 @@ namespace Findx.AspNetCore.Mvc
 
             UpdateBefore(request);
 
-            if (repository.Update(model) > 0)
+            if (repository.Update(model, true) > 0)
                 return CommonResult.Success();
             else
                 return CommonResult.Fail("db.update.error", "数据更新失败");

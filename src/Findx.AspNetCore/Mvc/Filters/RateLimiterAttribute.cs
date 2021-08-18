@@ -59,7 +59,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             }
             if (atomic.DecrementAndGet() < 0)
             {
-                context.Result = new JsonResult(CommonResult.Fail("4029", "请求频繁,请稍后再试"));
+                context.Result = new JsonResult(CommonResult.Fail("4029", "Frequent network requests"));
             }
             else
             {

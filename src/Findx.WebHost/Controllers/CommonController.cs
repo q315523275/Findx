@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
@@ -274,5 +275,61 @@ namespace Findx.WebHost.Controllers
         {
             return await storage.GetTasksAsync();
         }
+
+        /// <summary>
+        /// 防重复请求
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/AntiDuplicateRequest")]
+        [AntiDuplicateRequest]
+        public object AntiDuplicateRequest()
+        {
+            var rng = new Random();
+            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Date = DateTime.Now.AddDays(index),
+                TemperatureC = rng.Next(-20, 55),
+                Summary = Summaries[rng.Next(Summaries.Length)]
+            })
+            .ToArray();
+        }
+
+        /// <summary>
+        /// 公网访问限定
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/PrivateNetworkLimiter")]
+        [PrivateNetworkLimiter]
+        public object PrivateNetworkLimiter()
+        {
+            var rng = new Random();
+            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Date = DateTime.Now.AddDays(index),
+                TemperatureC = rng.Next(-20, 55),
+                Summary = Summaries[rng.Next(Summaries.Length)]
+            })
+            .ToArray();
+        }
+
+        /// <summary>
+        /// 请求速率限定
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/RateLimiter")]
+        [RateLimiter(Period = "10s", Limit = 10)]
+        public object RateLimiter()
+        {
+            var rng = new Random();
+            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Date = DateTime.Now.AddDays(index),
+                TemperatureC = rng.Next(-20, 55),
+                Summary = Summaries[rng.Next(Summaries.Length)]
+            })
+            .ToArray();
+        }
+
+        private static readonly string[] Summaries = new[] {  "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
     }
 }
