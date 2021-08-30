@@ -1,10 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Findx.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Findx.Extensions;
 namespace Findx.Tasks.Scheduling
 {
     /// <summary>
@@ -75,7 +74,7 @@ namespace Findx.Tasks.Scheduling
         /// <returns></returns>
         public Task StartAsync(CancellationToken cancellationToken = default)
         {
-            if (!_options.Enable)
+            if (!_options.Enabled)
                 return Task.CompletedTask;
 
             var pollingInterval = _options.JobPollPeriod * 800;

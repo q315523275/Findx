@@ -1,60 +1,93 @@
 ﻿using Findx.Data;
+using Findx.Extensions;
 using FreeSql.Internal.ObjectPool;
-using Microsoft.Extensions.Options;
 using System;
 using System.Data;
 using System.Data.Common;
 
 namespace Findx.FreeSql
 {
-    public class FreeSqlUnitOfWork : IUnitOfWork<IFreeSqlClient>
+    public class FreeSqlUnitOfWork : IUnitOfWork<IFreeSql>
     {
-        private readonly IFreeSql _freeSql;
-        private readonly IFreeSqlClient _freeSqlClient;
-        private readonly IOptionsMonitor<FreeSqlOptions> _options;
-
+        private readonly IFreeSql _fsql;
         protected Object<DbConnection> _conn;
-        protected DbTransaction _tran;
 
-        public FreeSqlUnitOfWork(IFreeSql freeSql, IFreeSqlClient freeSqlClient, IOptionsMonitor<FreeSqlOptions> options, DbTransaction tran)
+        public FreeSqlUnitOfWork(IFreeSql freeSql)
         {
-            _freeSql = freeSql;
-            _freeSqlClient = freeSqlClient;
-            _options = options;
-            _tran = tran;
+            _fsql = freeSql;
         }
-        private FreeSqlOptions Options
+
+        public DbConnection Connection { get { return _conn.Value; } }
+
+        public DbTransaction Transaction { set; get; }
+
+        void ReturnObject()
         {
-            get
+            _fsql.Ado.MasterPool.Return(_conn);
+            _conn = null;
+            Transaction = null;
+        }
+
+        public void BeginOrUseTransaction()
+        {
+            if (Transaction != null) return;
+            if (_conn != null) _fsql.Ado.MasterPool.Return(_conn);
+
+            _conn = _fsql.Ado.MasterPool.Get();
+            try
             {
-                return _options?.CurrentValue;
+                Transaction = _conn.Value.BeginTransaction();
+            }
+            catch
+            {
+                ReturnObject();
+                throw;
             }
         }
 
-
-        public void BeginTran()
+        public void Commit()
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (Transaction != null)
+                {
+                    if (Transaction.Connection != null)
+                        Transaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.ReThrow();
+            }
+            finally
+            {
+                ReturnObject();
+            }
         }
 
-        public void BeginTran(IsolationLevel il)
+        public void Rollback()
         {
-            throw new NotImplementedException();
+            try
+            {
+                if (Transaction != null)
+                {
+                    if (Transaction.Connection != null)
+                        Transaction.Rollback();
+                }
+            }
+            catch (Exception ex)
+            {
+                ex.ReThrow();
+            }
+            finally
+            {
+                ReturnObject();
+            }
         }
 
-        public void CommitTran()
+        public IFreeSql GetInstance()
         {
-            throw new NotImplementedException();
-        }
-
-        public IFreeSqlClient GetInstance()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void RollbackTran()
-        {
-            throw new NotImplementedException();
+            return _fsql;
         }
     }
 }

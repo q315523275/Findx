@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Findx.EventBus
+﻿namespace Findx.EventBus
 {
     /// <summary>
     /// 事件存储

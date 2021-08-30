@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

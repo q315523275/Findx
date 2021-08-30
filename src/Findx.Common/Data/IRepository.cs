@@ -17,6 +17,7 @@ namespace Findx.Data
         /// </summary>
         IUnitOfWork GetUnitOfWork();
 
+        #region 插入
         /// <summary>
         /// 插入
         /// </summary>
@@ -43,20 +44,22 @@ namespace Findx.Data
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+        #endregion
 
+        #region 删除
         /// <summary>
         /// 删除
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        int Delete(dynamic key);
+        int Delete(object key);
         /// <summary>
         /// 异步删除
         /// </summary>
         /// <param name="key"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> DeleteAsync(dynamic key, CancellationToken cancellationToken = default);
+        Task<int> DeleteAsync(object key, CancellationToken cancellationToken = default);
         /// <summary>
         /// 根据条件删除
         /// </summary>
@@ -70,7 +73,9 @@ namespace Findx.Data
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default);
+        #endregion
 
+        #region 更新
         /// <summary>
         /// 更新实体信息
         /// </summary>
@@ -132,22 +137,25 @@ namespace Findx.Data
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="whereExpression"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
+        #endregion
 
+        #region 查询
         /// <summary>
         /// 根据主键查询实体
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        TEntity Get(dynamic key);
+        TEntity Get(object key);
         /// <summary>
         /// 根据主键查询实体-异步
         /// </summary>
         /// <param name="key"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TEntity> GetAsync(dynamic key, CancellationToken cancellationToken = default);
+        Task<TEntity> GetAsync(object key, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 根据条件查询第一条数据
@@ -195,49 +203,6 @@ namespace Findx.Data
         Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 分页查询
-        /// </summary>
-        /// <param name="pageNumber"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="whereExpression"></param>
-        /// <param name="orderByExpression"></param>
-        /// <returns></returns>
-        PagedResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null);
-        /// <summary>
-        /// 分页查询
-        /// </summary>
-        /// <param name="pageNumber"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="whereExpression"></param>
-        /// <param name="orderByExpression"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<PagedResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default);
-        /// <summary>
-        /// 分页查询并返回指定参数
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="pageNumber"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="whereExpression"></param>
-        /// <param name="orderByExpression"></param>
-        /// <param name="selectByExpression"></param>
-        /// <returns></returns>
-        PagedResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null);
-        /// <summary>
-        /// 分页查询并返回指定参数
-        /// </summary>
-        /// <typeparam name="TObject"></typeparam>
-        /// <param name="pageNumber"></param>
-        /// <param name="pageSize"></param>
-        /// <param name="whereExpression"></param>
-        /// <param name="orderByExpression"></param>
-        /// <param name="selectByExpression"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<PagedResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// 查询指定条数列表数据
         /// </summary>
         /// <param name="topSize"></param>
@@ -276,6 +241,54 @@ namespace Findx.Data
         /// <returns></returns>
         Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default);
 
+        #endregion
+
+        #region 分页查询
+        /// <summary>
+        /// 分页查询
+        /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="whereExpression"></param>
+        /// <param name="orderByExpression"></param>
+        /// <returns></returns>
+        PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null);
+        /// <summary>
+        /// 分页查询
+        /// </summary>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="whereExpression"></param>
+        /// <param name="orderByExpression"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 分页查询并返回指定参数
+        /// </summary>
+        /// <typeparam name="TObject"></typeparam>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="whereExpression"></param>
+        /// <param name="orderByExpression"></param>
+        /// <param name="selectByExpression"></param>
+        /// <returns></returns>
+        PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null);
+        /// <summary>
+        /// 分页查询并返回指定参数
+        /// </summary>
+        /// <typeparam name="TObject"></typeparam>
+        /// <param name="pageNumber"></param>
+        /// <param name="pageSize"></param>
+        /// <param name="whereExpression"></param>
+        /// <param name="orderByExpression"></param>
+        /// <param name="selectByExpression"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default);
+        #endregion
+
+        #region 函数查询
         /// <summary>
         /// 查询指定条件记录总数
         /// </summary>
@@ -303,5 +316,19 @@ namespace Findx.Data
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default);
+        #endregion
+
+        #region 数据库表信息查询
+        /// <summary>
+        /// 获取数据库表名
+        /// </summary>
+        /// <returns></returns>
+        string GetDbTableName();
+        /// <summary>
+        /// 获取数据库表字段名集合
+        /// </summary>
+        /// <returns></returns>
+        List<string> GetDbColumnName();
+        #endregion
     }
 }

@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 namespace Findx.Messaging
 {
     internal abstract class MessageNotifyHandlerWrapper

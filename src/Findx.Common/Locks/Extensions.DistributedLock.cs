@@ -12,6 +12,7 @@ namespace Findx.Locks
         /// <summary>
         /// 使用锁执行一个方法
         /// </summary>
+        /// <param name="_lock"></param>
         /// <param name="key">锁的键</param>
         /// <param name="value">当前占用值</param>
         /// <param name="span">耗时时间</param>

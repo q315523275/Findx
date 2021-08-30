@@ -19,7 +19,7 @@ namespace Findx.AspNetCore
     {
         public override ModuleLevel Level => ModuleLevel.Application;
 
-        public override int Order => 10;
+        public override int Order => 60;
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {

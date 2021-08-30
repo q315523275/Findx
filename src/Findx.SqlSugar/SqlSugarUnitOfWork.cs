@@ -1,63 +1,53 @@
 ﻿using Findx.Data;
-using Microsoft.Extensions.Options;
 using SqlSugar;
 using System.Data;
+using System.Data.Common;
 
 namespace Findx.SqlSugar
 {
-    public class SqlSugarUnitOfWork : IUnitOfWork<SqlSugarClient>
+    public class SqlSugarUnitOfWork : IUnitOfWork<SqlSugarProvider>
     {
-        private readonly SqlSugarClient _sqlSugarClient;
-        private readonly IOptionsMonitor<SqlSugarOptions> _options;
-        public SqlSugarUnitOfWork(SqlSugarClient sqlSugarClient, IOptionsMonitor<SqlSugarOptions> options)
+        private readonly SqlSugarProvider _provider;
+
+        public SqlSugarUnitOfWork(SqlSugarProvider provider)
         {
-            Check.NotNull(sqlSugarClient, nameof(sqlSugarClient));
-            _sqlSugarClient = sqlSugarClient;
-            _options = options;
+            Check.NotNull(provider, nameof(provider));
+
+            _provider = provider;
         }
-        private SqlSugarOptions Options
+
+        public DbConnection Connection { get { return (DbConnection)_provider.Ado.Connection; } }
+
+        public DbTransaction Transaction
         {
             get
             {
-                return _options?.CurrentValue;
+                return (DbTransaction)_provider.Ado.Transaction;
+            }
+            set
+            {
+                _provider.Ado.Transaction = value;
             }
         }
 
-        public void BeginTran()
+        public void BeginOrUseTransaction()
         {
-            if (Options.MergeTrans)
-                _sqlSugarClient.BeginTran();
-            else
-                _sqlSugarClient.Ado.BeginTran();
+            _provider.Ado.BeginTran();
         }
 
-        public void BeginTran(IsolationLevel il)
+        public void Commit()
         {
-            if (Options.MergeTrans)
-                _sqlSugarClient.BeginTran();
-            else
-                _sqlSugarClient.Ado.BeginTran(il);
+            _provider.Ado.CommitTran();
         }
 
-        public void CommitTran()
+        public void Rollback()
         {
-            if (Options.MergeTrans)
-                _sqlSugarClient.CommitTran();
-            else
-                _sqlSugarClient.Ado.CommitTran();
+            _provider.Ado.RollbackTran();
         }
 
-        public SqlSugarClient GetInstance()
+        public SqlSugarProvider GetInstance()
         {
-            return _sqlSugarClient;
-        }
-
-        public void RollbackTran()
-        {
-            if (Options.MergeTrans)
-                _sqlSugarClient.RollbackTran();
-            else
-                _sqlSugarClient.Ado.RollbackTran();
+            return _provider;
         }
     }
 }

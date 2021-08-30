@@ -27,7 +27,7 @@ namespace Findx.Tasks
             var section = configuration.GetSection("Findx:Scheduler");
             SchedulerOptions = section.Get<SchedulerOptions>();
             services.Configure<SchedulerOptions>(section);
-            if (SchedulerOptions == null || !SchedulerOptions.Enable)
+            if (SchedulerOptions == null || !SchedulerOptions.Enabled)
                 return services;
 
             // 任务调度
@@ -58,7 +58,7 @@ namespace Findx.Tasks
 
         public override void UseModule(IServiceProvider provider)
         {
-            if (SchedulerOptions != null && SchedulerOptions.Enable)
+            if (SchedulerOptions != null && SchedulerOptions.Enabled)
             {
                 cancellationToken = new CancellationTokenSource();
                 Task.Run(() =>
@@ -86,7 +86,7 @@ namespace Findx.Tasks
 
         public override void OnShutdown(IServiceProvider provider)
         {
-            if (SchedulerOptions != null && SchedulerOptions.Enable)
+            if (SchedulerOptions != null && SchedulerOptions.Enabled)
             {
                 cancellationToken.Cancel();
 

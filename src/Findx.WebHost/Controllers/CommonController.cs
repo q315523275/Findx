@@ -73,17 +73,6 @@ namespace Findx.WebHost.Controllers
         }
 
         /// <summary>
-        /// 限速示例接口
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("/rateLimit")]
-        [RateLimiter(Limit = 30)]
-        public string RateLimit()
-        {
-            return DateTime.Now.ToString();
-        }
-
-        /// <summary>
         /// 邮件发送示例接口
         /// </summary>
         /// <param name="sender"></param>
@@ -237,7 +226,7 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <param name="api"></param>
         /// <returns></returns>
-        [HttpGet("/WebApiClient_Discovery")]
+        [HttpGet("/webApiClient_Discovery")]
         public async Task<string> WebApiClientDiscovery([FromServices] IFindxApi api)
         {
             return await api.ApplicationInfo();
@@ -248,7 +237,7 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <param name="api"></param>
         /// <returns></returns>
-        [HttpGet("/WebApiClient_Discovery_Exception")]
+        [HttpGet("/webApiClient_Discovery_Exception")]
         public async Task<string> WebApiClientDiscoveryException([FromServices] IFindxApi api)
         {
             return await api.Exception();
@@ -259,7 +248,7 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <param name="api"></param>
         /// <returns></returns>
-        [HttpGet("/WebApiClient_Discovery_Timeout")]
+        [HttpGet("/webApiClient_Discovery_Timeout")]
         public async Task<string> WebApiClientDiscoveryTimeout([FromServices] IFindxApi api)
         {
             return await api.Timeout();
@@ -270,7 +259,7 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <param name="storage"></param>
         /// <returns></returns>
-        [HttpGet("/QueryJobs")]
+        [HttpGet("/jobs")]
         public async Task<object> QueryJobs([FromServices] IScheduledTaskStore storage)
         {
             return await storage.GetTasksAsync();
@@ -280,7 +269,7 @@ namespace Findx.WebHost.Controllers
         /// 防重复请求
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/AntiDuplicateRequest")]
+        [HttpGet("/antiDuplicateRequest")]
         [AntiDuplicateRequest]
         public object AntiDuplicateRequest()
         {
@@ -298,7 +287,7 @@ namespace Findx.WebHost.Controllers
         /// 公网访问限定
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/PrivateNetworkLimiter")]
+        [HttpGet("/privateNetworkLimiter")]
         [PrivateNetworkLimiter]
         public object PrivateNetworkLimiter()
         {
@@ -316,7 +305,7 @@ namespace Findx.WebHost.Controllers
         /// 请求速率限定
         /// </summary>
         /// <returns></returns>
-        [HttpGet("/RateLimiter")]
+        [HttpGet("/rateLimit")]
         [RateLimiter(Period = "10s", Limit = 10)]
         public object RateLimiter()
         {
@@ -330,6 +319,6 @@ namespace Findx.WebHost.Controllers
             .ToArray();
         }
 
-        private static readonly string[] Summaries = new[] {  "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+        private static readonly string[] Summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
     }
 }

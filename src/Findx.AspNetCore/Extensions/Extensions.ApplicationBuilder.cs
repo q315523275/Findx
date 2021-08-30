@@ -61,6 +61,8 @@ namespace Findx.AspNetCore.Extensions
         public static IApplicationBuilder UseFindx(this IApplicationBuilder builder)
         {
             #region Findx图标
+            var defaultColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(@"
     #########################################################
     ##       ___________.__            .___                ##
@@ -71,6 +73,7 @@ namespace Findx.AspNetCore.Extensions
     ##            \/            \/      \/      \/         ##
     #########################################################");
             Console.WriteLine();
+            Console.ForegroundColor = defaultColor;
             #endregion
 
             IServiceProvider provider = builder.ApplicationServices;

@@ -16,6 +16,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.ComponentModel;
+using System.Text.Json;
 
 namespace Findx.Builders
 {
@@ -33,7 +34,7 @@ namespace Findx.Builders
             services.AddSingleton<ICache, InMemoryCache>();
 
             // 工作单元
-            services.AddScoped<IUnitOfWorkManager, UnitOfWorkManager>();
+            services.AddScoped<IUnitOfWorkManager, UnitOfWorkManagerBase>();
 
             // 邮件
             services.AddSingleton<IEmailSender, DefaultEmailSender>();
@@ -54,8 +55,8 @@ namespace Findx.Builders
             services.AddSingleton<IMessageNotifySender, DefaultMessageNotifySender>();
 
             // 序列化
-            services.AddSingleton<IJsonSerializer, SystemTextJsonContentSerializer>();
-            services.AddSingleton<ISerializer, SystemTextByteSerializer>();
+            services.AddSingleton<IJsonSerializer, SystemTextJsonStringSerializer>();
+            services.AddSingleton<ISerializer, SystemTextUtf8ByteSerializer>();
 
             // 短信
             services.AddSingleton<ISmsSender, NullSmsSender>();

@@ -8,6 +8,10 @@ namespace Findx.SqlSugar
     {
         public SqlSugarOptions Value => this;
         /// <summary>
+        /// 是否启用模块
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+        /// <summary>
         /// 默认数据源
         /// </summary>
         public string Primary { set; get; }

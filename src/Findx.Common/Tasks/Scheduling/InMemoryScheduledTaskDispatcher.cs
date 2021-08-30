@@ -1,6 +1,4 @@
-﻿using Findx.DependencyInjection;
-using Findx.Messaging;
-using Microsoft.Extensions.Logging;
+﻿using Findx.Messaging;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +39,7 @@ namespace Findx.Tasks.Scheduling
         }
     }
 
-    internal class ScheduledTaskCommand: IMessageNotify
+    internal class ScheduledTaskCommand : IMessageNotify
     {
         public ScheduledTaskCommand(SchedulerTaskExecuteInfo schedulerTaskExecuteInfo)
         {

@@ -40,9 +40,9 @@ namespace Findx.EventBus.RabbitMQ
                     var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(_options.ExchangeName, _options.ExchangeType);
 
                     var queueDeclareConfiguration = new QueueDeclareConfiguration(handlerName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
-                    
+
                     IRabbitMQConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration, false);
-                    
+
                     _consumers.TryAdd(handlerName, rabbitMqConsumer);
                 }
 

@@ -1,5 +1,4 @@
-﻿using Findx.Serialization;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -45,7 +44,7 @@ namespace Findx.EventBus
                             var concreteType = typeof(IEventHandler<>).MakeGenericType(eventType);
 
                             await Task.Yield();
-                            await(Task)concreteType.GetMethod("HandleAsync").Invoke(handler, new object[] { integrationEvent });
+                            await (Task)concreteType.GetMethod("HandleAsync").Invoke(handler, new object[] { integrationEvent });
                         }
                     }
                 }

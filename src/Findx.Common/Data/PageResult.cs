@@ -4,7 +4,7 @@
     /// 分页结果
     /// </summary>
     /// <typeparam name="TList"></typeparam>
-    public class PagedResult<TList>
+    public class PageResult<TList>
     {
         /// <summary>
         /// 当前分页数
@@ -25,7 +25,7 @@
         /// <summary>
         /// Ctor
         /// </summary>
-        public PagedResult() { }
+        public PageResult() { }
         /// <summary>
         /// Ctor
         /// </summary>
@@ -33,7 +33,7 @@
         /// <param name="pageSize"></param>
         /// <param name="totalRows"></param>
         /// <param name="rows"></param>
-        public PagedResult(int pageNo, int pageSize, int totalRows, TList rows)
+        public PageResult(int pageNo, int pageSize, int totalRows, TList rows)
         {
             PageNo = pageNo;
             PageSize = pageSize;

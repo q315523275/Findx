@@ -30,7 +30,7 @@ namespace Findx.SqlSugar
             var section = configuration.GetSection("Findx:SqlSugar");
             services.Configure<SqlSugarOptions>(section);
             SqlSugarOptions = section.Get<SqlSugarOptions>();
-            if (SqlSugarOptions == null)
+            if (SqlSugarOptions == null || !SqlSugarOptions.Enabled)
                 return services;
 
             ConnectionConfigs = new List<ConnectionConfig>();
@@ -43,43 +43,40 @@ namespace Findx.SqlSugar
                 ConnectionConfigs.Add(SqlSugarOptions.DataSource[primary]);
             }
 
-            // Aop
-            Action<string, SugarParameter[]> OnLogExecuting = (sql, param) =>
-            {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Creating a new SqlSession");
-                sb.AppendLine("==>  Preparing:" + sql);
-                if (param != null && param.Length > 0)
-                {
-                    sb.AppendLine("==>  Parameters:" + param?.Length);
-                    foreach (var pa in param)
-                    {
-                        sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value?.ToString());
-                    }
-                }
-                ServiceLocator.GetService<ILogger<SqlSugarModule>>()?.LogInformation(sb.ToString());
-            };
             // 添加SqlSugar服务
-            services.TryAddScoped<SqlSugarClient>(provider =>
+            services.TryAddScoped(provider =>
             {
                 var db = new SqlSugarClient(ConnectionConfigs);
                 if (SqlSugarOptions.Debug)
                 {
-                    db.Aop.OnLogExecuting = OnLogExecuting;
-                    db.Aop.OnLogExecuted = (sql, param) => { ServiceLocator.GetService<ILogger<SqlSugarModule>>()?.LogInformation($"==>  ExecuteTime:{db.Ado.SqlExecutionTime.TotalMilliseconds.ToString("0.000")}ms"); };
+                    // Deubg 开启AOP打印
+                    db.Aop.OnLogExecuted = (sql, param) =>
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.AppendLine("Creating a new SqlSession");
+                        sb.AppendLine("==>  Preparing:" + sql);
+                        //if (param != null && param.Length > 0)
+                        //{
+                        //    sb.AppendLine("==>  Parameters:" + param?.Length);
+                        //    foreach (var pa in param)
+                        //    {
+                        //        sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value?.ToString());
+                        //    }
+                        //}
+                        sb.Append($"==>  ExecuteTime:{db.Ado.SqlExecutionTime.TotalMilliseconds:0.000}ms");
+                        ServiceLocator.GetService<ILogger<SqlSugarModule>>()?.LogInformation(sb.ToString());
+                    };
                 }
                 return db;
             });
 
-            // 添加工作单元
-            services.AddScoped<IUnitOfWork<SqlSugarClient>, SqlSugarUnitOfWork>();
-            services.AddScoped<IUnitOfWork>(provider =>
-            {
-                // 共用实例
-                return provider.GetService<IUnitOfWork<SqlSugarClient>>();
-            });
             // 添加仓储实现
-            services.AddScoped(typeof(IRepository<>), typeof(SqlSugarRepository<>));
+            ServiceDescriptor descriptor = new ServiceDescriptor(typeof(IRepository<>), typeof(SqlSugarRepository<>), ServiceLifetime.Scoped);
+            services.Replace(descriptor);
+
+            ServiceDescriptor descriptor2 = new ServiceDescriptor(typeof(IUnitOfWorkManager), typeof(SugarUnitOfWorkManager), ServiceLifetime.Scoped);
+            services.Replace(descriptor2);
+
             return services;
         }
 

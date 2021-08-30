@@ -172,11 +172,11 @@ namespace Findx.Redis.StackExchangeRedis
                     if (server.ServerType == ServerType.Cluster)
                     {
                         // n.IsSlave => n.IsReplica
-                        masters.AddRange(server.ClusterConfiguration.Nodes.Where(n => !n.IsSlave).Select(n => n.EndPoint));
+                        masters.AddRange(server.ClusterConfiguration.Nodes.Where(n => !n.IsReplica).Select(n => n.EndPoint));
                         break;
                     }
                     // 单节点，主-从
-                    if (server.ServerType == ServerType.Standalone & !server.IsSlave)
+                    if (server.ServerType == ServerType.Standalone & !server.IsReplica)
                     {
                         masters.Add(endPoint);
                         break;

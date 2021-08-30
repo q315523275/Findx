@@ -4,7 +4,7 @@ namespace Findx.Data
     /// <summary>
     /// 查询请求分页基类
     /// </summary>
-    public class PagerBase : IPager
+    public class PageBase : IPager
     {
         /// <summary>
         /// 当前分页数

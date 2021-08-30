@@ -59,7 +59,7 @@ namespace Findx.Tasks.Scheduling
                     taskInfo.Increment();
 
                 context.ExecuteInfo.RunTime = (DateTime.Now - executeTime).TotalSeconds;
-                
+
                 // 更新上报任务执行信息、任务主信息
             }
             // Console.WriteLine(jsonSerializer.Serialize(context.ExecuteInfo));

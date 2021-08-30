@@ -1,4 +1,6 @@
-﻿namespace Findx.Data
+﻿using System;
+
+namespace Findx.Data
 {
     /// <summary>
     /// 工作单元管理器
@@ -6,16 +8,10 @@
     public interface IUnitOfWorkManager
     {
         /// <summary>
-        /// 开启事务
+        /// 根据数据源名获取工作单元
         /// </summary>
-        void BeginTran();
-        /// <summary>
-        /// 提交事务
-        /// </summary>
-        void CommitTran();
-        /// <summary>
-        /// 回滚事务
-        /// </summary>
-        void RollbackTran();
+        /// <param name="dbPrimary"></param>
+        /// <returns></returns>
+        IUnitOfWork GetConnUnitOfWork(string dbPrimary);
     }
 }

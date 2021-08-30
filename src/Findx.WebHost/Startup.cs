@@ -19,7 +19,8 @@ namespace Findx.WebHost
             services.AddFindx().AddModules();
 
             services.AddControllers(options => options.Filters.Add(typeof(ValidationModelAttribute)))
-                    .AddJsonOptions(options => { 
+                    .AddJsonOptions(options =>
+                    {
                         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
                     });
         }

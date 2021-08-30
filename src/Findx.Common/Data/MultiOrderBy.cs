@@ -24,6 +24,7 @@ namespace Findx.Data
         /// 排序字段控制
         /// </summary>
         public Expression<Func<TEntity, object>> Expression { set; get; }
+
         /// <summary>
         /// 正序
         /// </summary>

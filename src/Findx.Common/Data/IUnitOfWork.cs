@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿using System.Data.Common;
 
 namespace Findx.Data
 {
@@ -8,22 +8,29 @@ namespace Findx.Data
     public interface IUnitOfWork
     {
         /// <summary>
-        /// 开启事务
+		/// 数据库连接
+		/// </summary>
+		DbConnection Connection { get; }
+
+        /// <summary>
+        /// 工作单元事务
         /// </summary>
-        void BeginTran();
+        DbTransaction Transaction { get; set; }
+
         /// <summary>
         /// 开启事务
         /// </summary>
-        /// <param name="il"></param>
-        void BeginTran(IsolationLevel il);
+        void BeginOrUseTransaction();
+
         /// <summary>
-        /// 提交事务
+        /// 提交
         /// </summary>
-        void CommitTran();
+        void Commit();
+
         /// <summary>
-        /// 回滚事务
+        /// 回滚
         /// </summary>
-        void RollbackTran();
+        void Rollback();
     }
     /// <summary>
     /// 泛型工作单元

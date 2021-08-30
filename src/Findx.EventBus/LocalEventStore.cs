@@ -1,5 +1,4 @@
-﻿using Findx.Extensions;
-using System;
+﻿using System;
 
 namespace Findx.EventBus
 {

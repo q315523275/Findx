@@ -19,13 +19,13 @@ namespace Findx.Tasks.Scheduling
         /// <summary>
         /// 是否启用
         /// </summary>
-        public bool Enable { set; get; }
+        public bool Enabled { set; get; }
 
         public SchedulerOptions Value => this;
 
         public override string ToString()
         {
-            return $"{JobPollPeriod}{MaxJobFetchCount}{Enable}";
+            return $"{JobPollPeriod}{MaxJobFetchCount}{Enabled}";
         }
     }
 }

@@ -1,10 +1,10 @@
-﻿using Findx.Utils;
+﻿using Findx.Extensions;
+using Findx.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-
 namespace Findx
 {
     /// <summary>
@@ -26,13 +26,11 @@ namespace Findx
             ApplicationName = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Name") ?? _environment.ApplicationName;
             Port = _configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? _random.Next(1000, 40000);
             // 启用随机端口
-            if (Port == 0)
-            {
-                Port = _random.Next(1000, 40000);
-            }
-            Version = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? "1.0.1";
+            if (Port == 0) Port = _random.Next(1000, 40000);
+            Version = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
             Uris = _configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
             InstanceIP = DnsUtils.ResolveHostAddress(DnsUtils.ResolveHostName());
+            InternalIP = InstanceIP;
             OSDescription = RuntimeInformation.OSDescription;
 
             RootPath = AppDomain.CurrentDomain.BaseDirectory;

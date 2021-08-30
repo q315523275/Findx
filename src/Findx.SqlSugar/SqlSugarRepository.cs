@@ -14,27 +14,29 @@ namespace Findx.SqlSugar
     {
         private readonly static IDictionary<Type, string> DataSourceMap = new Dictionary<Type, string>();
 
-        private readonly SqlSugarClient _sqlSugarClient;
-        private readonly IUnitOfWork<SqlSugarClient> _unitOfWork;
+        private readonly SqlSugarProvider _sqlSugarProvider;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IOptionsMonitor<SqlSugarOptions> _options;
 
-        public SqlSugarRepository(SqlSugarClient sqlSugarClient, IUnitOfWork<SqlSugarClient> unitOfWork, IOptionsMonitor<SqlSugarOptions> options)
+        public SqlSugarRepository(SqlSugarClient sqlSugarClient, IUnitOfWorkManager uowManager, IOptionsMonitor<SqlSugarOptions> options)
         {
             Check.NotNull(sqlSugarClient, nameof(sqlSugarClient));
 
-            _sqlSugarClient = sqlSugarClient;
-            _unitOfWork = unitOfWork;
             _options = options;
 
-            if (Options?.DataSource.Keys.Count <= 1) return;
-
-            var primary = DataSourceMap.GetOrAdd(_entityType, () =>
+            var primary = Options?.Primary;
+            if (Options?.DataSource.Keys.Count > 1)
             {
-                var dataSourceAttribute = _entityType.GetAttribute<DataSourceAttribute>();
-                return dataSourceAttribute?.Primary ?? Options?.Primary;
-            });
+                primary = DataSourceMap.GetOrAdd(_entityType, () =>
+                {
+                    var dataSourceAttribute = _entityType.GetAttribute<DataSourceAttribute>();
+                    return dataSourceAttribute?.Primary ?? Options?.Primary;
+                });
+            }
 
-            _sqlSugarClient.ChangeDatabase(primary);
+            _sqlSugarProvider = sqlSugarClient.GetConnection(primary);
+
+            _unitOfWork = uowManager.GetConnUnitOfWork(primary);
         }
 
         private SqlSugarOptions Options
@@ -57,45 +59,45 @@ namespace Findx.SqlSugar
         {
             Check.NotNull(entity, nameof(entity));
 
-            return _sqlSugarClient.Insertable<TEntity>(entity).ExecuteCommand();
+            return _sqlSugarProvider.Insertable<TEntity>(entity).ExecuteCommand();
         }
 
         public int Insert(IEnumerable<TEntity> entities)
         {
             Check.NotNull(entities, nameof(entities));
 
-            return _sqlSugarClient.Insertable<TEntity>(entities).ExecuteCommand();
+            return _sqlSugarProvider.Insertable<TEntity>(entities).ExecuteCommand();
         }
 
         public Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             Check.NotNull(entity, nameof(entity));
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
-            return _sqlSugarClient.Insertable<TEntity>(entity).ExecuteCommandAsync();
+            return _sqlSugarProvider.Insertable<TEntity>(entity).ExecuteCommandAsync();
         }
 
         public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
             Check.NotNull(entities, nameof(entities));
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
-            return _sqlSugarClient.Insertable<TEntity>(entities).ExecuteCommandAsync();
+            return _sqlSugarProvider.Insertable<TEntity>(entities).ExecuteCommandAsync();
         }
 
 
-        public int Delete(dynamic key)
+        public int Delete(object key)
         {
             Check.NotNull(key, nameof(key));
 
-            return _sqlSugarClient.Deleteable<TEntity>(key).ExecuteCommand();
+            return _sqlSugarProvider.Deleteable<TEntity>(key).ExecuteCommand();
         }
 
         public int Delete(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            var deleteable = _sqlSugarClient.Deleteable<TEntity>();
+            var deleteable = _sqlSugarProvider.Deleteable<TEntity>();
 
             if (whereExpression != null)
                 deleteable.Where(whereExpression);
@@ -103,31 +105,32 @@ namespace Findx.SqlSugar
             return deleteable.ExecuteCommand();
         }
 
-        public Task<int> DeleteAsync(dynamic key, CancellationToken cancellationToken = default)
+        public Task<int> DeleteAsync(object key, CancellationToken cancellationToken = default)
         {
             Check.NotNull(key, nameof(key));
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
-            return _sqlSugarClient.Deleteable<TEntity>(key).ExecuteCommandAsync();
+            return _sqlSugarProvider.Deleteable<TEntity>(key).ExecuteCommandAsync();
         }
 
         public Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            var deleteable = _sqlSugarClient.Deleteable<TEntity>();
+            var deleteable = _sqlSugarProvider.Deleteable<TEntity>();
 
             if (whereExpression != null)
                 deleteable.Where(whereExpression);
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             return deleteable.ExecuteCommandAsync();
         }
 
 
+
         public int Update(TEntity entity, bool ignoreNullColumns = false)
         {
-            var updateable = _sqlSugarClient.Updateable(entity);
+            var updateable = _sqlSugarProvider.Updateable(entity);
 
             if (ignoreNullColumns)
                 updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
@@ -137,19 +140,19 @@ namespace Findx.SqlSugar
 
         public Task<int> UpdateAsync(TEntity entity, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
-            var updateable = _sqlSugarClient.Updateable(entity);
+            var updateable = _sqlSugarProvider.Updateable(entity);
 
             if (ignoreNullColumns)
                 updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             return updateable.ExecuteCommandAsync();
         }
 
         public int Update(List<TEntity> entitys, bool ignoreNullColumns = false)
         {
-            var updateable = _sqlSugarClient.Updateable(entitys);
+            var updateable = _sqlSugarProvider.Updateable(entitys);
 
             if (ignoreNullColumns)
                 updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
@@ -159,19 +162,19 @@ namespace Findx.SqlSugar
 
         public Task<int> UpdateAsync(List<TEntity> entitys, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
-            var updateable = _sqlSugarClient.Updateable(entitys);
+            var updateable = _sqlSugarProvider.Updateable(entitys);
 
             if (ignoreNullColumns)
                 updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             return updateable.ExecuteCommandAsync();
         }
 
         public int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
         {
-            var updateable = _sqlSugarClient.Updateable(entity);
+            var updateable = _sqlSugarProvider.Updateable(entity);
 
             if (updateColumns != null)
                 updateable.UpdateColumns(updateColumns);
@@ -187,7 +190,7 @@ namespace Findx.SqlSugar
 
         public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
         {
-            var updateable = _sqlSugarClient.Updateable(entity);
+            var updateable = _sqlSugarProvider.Updateable(entity);
 
             if (updateColumns != null)
                 updateable.UpdateColumns(updateColumns);
@@ -198,7 +201,7 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 updateable.Where(whereExpression);
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             return updateable.ExecuteCommandAsync();
         }
@@ -207,54 +210,56 @@ namespace Findx.SqlSugar
 
         public int UpdateColumns(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression)
         {
-            return _sqlSugarClient.Updateable<TEntity>().SetColumns(columns).Where(whereExpression).ExecuteCommand();
+            return _sqlSugarProvider.Updateable<TEntity>().SetColumns(columns).Where(whereExpression).ExecuteCommand();
         }
 
         public Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
         {
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
-            return _sqlSugarClient.Updateable<TEntity>().SetColumns(columns).Where(whereExpression).ExecuteCommandAsync();
+            return _sqlSugarProvider.Updateable<TEntity>().SetColumns(columns).Where(whereExpression).ExecuteCommandAsync();
         }
 
 
         public TEntity First(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (whereExpression != null)
-                return _sqlSugarClient.Queryable<TEntity>().First(whereExpression);
+                return _sqlSugarProvider.Queryable<TEntity>().First(whereExpression);
 
-            return _sqlSugarClient.Queryable<TEntity>().First();
+            return _sqlSugarProvider.Queryable<TEntity>().First();
         }
 
         public Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             if (whereExpression != null)
-                return _sqlSugarClient.Queryable<TEntity>().FirstAsync(whereExpression);
+                return _sqlSugarProvider.Queryable<TEntity>().FirstAsync(whereExpression);
 
-            return _sqlSugarClient.Queryable<TEntity>().FirstAsync();
+            return _sqlSugarProvider.Queryable<TEntity>().FirstAsync();
         }
 
-        public TEntity Get(dynamic key)
+        public TEntity Get(object key)
         {
             Check.NotNull(key, nameof(key));
 
-            return _sqlSugarClient.Queryable<TEntity>().InSingle(key);
+            return _sqlSugarProvider.Queryable<TEntity>().InSingle(key);
         }
 
-        public Task<TEntity> GetAsync(dynamic key, CancellationToken cancellationToken = default)
+        public Task<TEntity> GetAsync(object key, CancellationToken cancellationToken = default)
         {
             Check.NotNull(key, nameof(key));
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
-            return _sqlSugarClient.Queryable<TEntity>().InSingleAsync(key);
+            return _sqlSugarProvider.Queryable<TEntity>().InSingleAsync(key);
         }
+
+
 
         public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -264,19 +269,19 @@ namespace Findx.SqlSugar
 
         public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             return queryable.ToListAsync();
         }
 
         public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -289,12 +294,12 @@ namespace Findx.SqlSugar
 
         public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             if (selectByExpression == null)
                 return queryable.Select<TObject>().ToListAsync();
@@ -302,9 +307,11 @@ namespace Findx.SqlSugar
                 return queryable.Select(selectByExpression).ToListAsync();
         }
 
+
+
         public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -325,7 +332,7 @@ namespace Findx.SqlSugar
 
         public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -341,14 +348,14 @@ namespace Findx.SqlSugar
                 }
             }
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             return queryable.Take(topSize).ToListAsync();
         }
 
         public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -372,7 +379,7 @@ namespace Findx.SqlSugar
 
         public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -394,9 +401,11 @@ namespace Findx.SqlSugar
                 return queryable.Take(topSize).Select(selectByExpression).ToListAsync();
         }
 
-        public PagedResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
+
+
+        public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -416,12 +425,12 @@ namespace Findx.SqlSugar
 
             var result = queryable.ToPageList(pageNumber, pageSize, ref totalRows);
 
-            return new PagedResult<List<TEntity>>(pageNumber, pageSize, totalRows, result);
+            return new PageResult<List<TEntity>>(pageNumber, pageSize, totalRows, result);
         }
 
-        public async Task<PagedResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
+        public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -437,18 +446,18 @@ namespace Findx.SqlSugar
                 }
             }
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             RefAsync<int> totalRows = 0;
 
             var result = await queryable.ToPageListAsync(pageNumber, pageSize, totalRows);
 
-            return new PagedResult<List<TEntity>>(pageNumber, pageSize, totalRows.Value, result);
+            return new PageResult<List<TEntity>>(pageNumber, pageSize, totalRows.Value, result);
         }
 
-        public PagedResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
+        public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -469,18 +478,18 @@ namespace Findx.SqlSugar
             if (selectByExpression == null)
             {
                 var result = queryable.Select<TObject>().ToPageList(pageNumber, pageSize, ref totalRows);
-                return new PagedResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
+                return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
             }
             else
             {
                 var result = queryable.Select(selectByExpression).ToPageList(pageNumber, pageSize, ref totalRows);
-                return new PagedResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
+                return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
             }
         }
 
-        public async Task<PagedResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
+        public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sqlSugarClient.Queryable<TEntity>();
+            var queryable = _sqlSugarProvider.Queryable<TEntity>();
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -496,58 +505,78 @@ namespace Findx.SqlSugar
                 }
             }
 
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             RefAsync<int> totalRows = 0;
 
             if (selectByExpression == null)
             {
                 var result = await queryable.Select<TObject>().ToPageListAsync(pageNumber, pageSize, totalRows);
-                return new PagedResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
+                return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
             }
             else
             {
                 var result = await queryable.Select(selectByExpression).ToPageListAsync(pageNumber, pageSize, totalRows);
-                return new PagedResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
+                return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
             }
         }
+
+
 
         public int Count(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (whereExpression != null)
-                return _sqlSugarClient.Queryable<TEntity>().Count(whereExpression);
+                return _sqlSugarProvider.Queryable<TEntity>().Count(whereExpression);
 
-            return _sqlSugarClient.Queryable<TEntity>().Count();
+            return _sqlSugarProvider.Queryable<TEntity>().Count();
         }
 
         public Task<int> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             if (whereExpression != null)
-                return _sqlSugarClient.Queryable<TEntity>().CountAsync(whereExpression);
+                return _sqlSugarProvider.Queryable<TEntity>().CountAsync(whereExpression);
 
-            return _sqlSugarClient.Queryable<TEntity>().CountAsync();
+            return _sqlSugarProvider.Queryable<TEntity>().CountAsync();
         }
+
+
 
         public bool Exist(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (whereExpression != null)
-                return _sqlSugarClient.Queryable<TEntity>().Any(whereExpression);
+                return _sqlSugarProvider.Queryable<TEntity>().Any(whereExpression);
 
-            return _sqlSugarClient.Queryable<TEntity>().Any();
+            return _sqlSugarProvider.Queryable<TEntity>().Any();
         }
 
         public Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            _sqlSugarClient.Ado.CancellationToken = cancellationToken;
+            _sqlSugarProvider.Ado.CancellationToken = cancellationToken;
 
             if (whereExpression != null)
-                return _sqlSugarClient.Queryable<TEntity>().AnyAsync(whereExpression);
+                return _sqlSugarProvider.Queryable<TEntity>().AnyAsync(whereExpression);
 
-            return _sqlSugarClient.Queryable<TEntity>().AnyAsync();
+            return _sqlSugarProvider.Queryable<TEntity>().AnyAsync();
         }
 
 
+        public string GetDbTableName()
+        {
+            var entityInfo = _sqlSugarProvider.EntityMaintenance.GetEntityInfo<TEntity>();
+            return entityInfo.DbTableName;
+        }
+
+        public List<string> GetDbColumnName()
+        {
+            var list = new List<string>();
+            var entityInfo = _sqlSugarProvider.EntityMaintenance.GetEntityInfo<TEntity>();
+            foreach (var item in entityInfo.Columns)
+            {
+                list.Add(item.DbColumnName);
+            }
+            return list;
+        }
     }
 }
