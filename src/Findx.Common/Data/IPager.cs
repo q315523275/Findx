@@ -1,4 +1,6 @@
-﻿namespace Findx.Data
+﻿using System.ComponentModel;
+
+namespace Findx.Data
 {
     /// <summary>
     /// 分页器
@@ -16,10 +18,10 @@
         /// <summary>
         /// 排序字段
         /// </summary>
-        string Order { get; set; }
+        string SortField { get; set; }
         /// <summary>
-        /// 是否正序
+        /// 排序字段
         /// </summary>
-        bool Asc { get; set; }
+        ListSortDirection SortDirection { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Findx.DependencyInjection;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,15 +8,15 @@ namespace Findx.EventBus
 {
     public partial class InMemoryEventSubscribeManager : IEventSubscribeManager, ISingletonDependency
     {
-        private readonly Dictionary<string, List<SubscribeInfo>> _handlers;
-        private readonly Dictionary<string, Type> _eventTypes;
+        private readonly IDictionary<string, List<SubscribeInfo>> _handlers;
+        private readonly IDictionary<string, Type> _eventTypes;
 
         public event EventHandler<string> OnEventRemoved;
 
         public InMemoryEventSubscribeManager()
         {
-            _handlers = new Dictionary<string, List<SubscribeInfo>>();
-            _eventTypes = new Dictionary<string, Type>();
+            _handlers = new ConcurrentDictionary<string, List<SubscribeInfo>>();
+            _eventTypes = new ConcurrentDictionary<string, Type>();
         }
 
         public bool IsEmpty => !_handlers.Keys.Any();

@@ -5,7 +5,7 @@ namespace Findx.Data
     /// <summary>
     /// 实体类基类
     /// </summary>
-    public interface IEntity {}
+    public interface IEntity { }
 
     /// <summary>
     /// 实体类基类

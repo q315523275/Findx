@@ -1,10 +1,10 @@
 ﻿using Findx.Data;
-using Findx.Mapping;
 using Findx.Extensions;
+using Findx.Mapping;
+using Findx.Security;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using Findx.Security;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -39,17 +39,26 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <param name="repository"></param>
         /// <param name="mapper"></param>
+        /// <param name="currentUser"></param>
         /// <returns></returns>
         [HttpPost("create")]
         [Obsolete(message: "Please use the add method")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public virtual CommonResult Create([FromBody] TCreateRequest request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper)
+        public virtual CommonResult Create([FromBody] TCreateRequest request, [FromServices] IRepository<TModel> repository, [FromServices] IMapper mapper, [FromServices] ICurrentUser currentUser)
         {
             Check.NotNull(request, nameof(request));
 
             AddBefore(request);
 
             var model = mapper.MapTo<TModel>(request);
+
+            // 创建时间
+            if (model is ICreateTime time)
+                time.CreateTime = DateTime.Now;
+
+            // 创建人
+            if (model is ICreateUser<TUserKey> user)
+                user.CreateUser = currentUser?.UserId?.CastTo<TUserKey>();
 
             if (repository.Insert(model) > 0)
                 return CommonResult.Success();
@@ -76,15 +85,11 @@ namespace Findx.AspNetCore.Mvc
 
             // 创建时间
             if (model is ICreateTime time)
-            {
                 time.CreateTime = DateTime.Now;
-            }
 
             // 创建人
             if (model is ICreateUser<TUserKey> user)
-            {
                 user.CreateUser = currentUser?.UserId?.CastTo<TUserKey>();
-            }
 
             if (repository.Insert(model) > 0)
                 return CommonResult.Success();
@@ -117,12 +122,12 @@ namespace Findx.AspNetCore.Mvc
 
             EditBefore(request);
 
+            // 修改时间
+            if (model is IUpdateTime updateTime)
+                updateTime.UpdateTime = DateTime.Now;
             // 修改信息
             if (model is IUpdateUser<TUserKey> updateUser)
-            {
-                updateUser.UpdateTime = DateTime.Now;
                 updateUser.UpdateUser = currentUser?.UserId?.CastTo<TUserKey>();
-            }
 
             if (repository.Update(model, true) > 0)
                 return CommonResult.Success();
@@ -147,12 +152,12 @@ namespace Findx.AspNetCore.Mvc
 
             var model = mapper.MapTo<TModel>(request);
 
+            // 修改时间
+            if (model is IUpdateTime updateTime)
+                updateTime.UpdateTime = DateTime.Now;
             // 修改信息
             if (model is IUpdateUser<TUserKey> updateUser)
-            {
-                updateUser.UpdateTime = DateTime.Now;
                 updateUser.UpdateUser = currentUser?.UserId?.CastTo<TUserKey>();
-            }
 
             if (repository.Update(model, true) > 0)
                 return CommonResult.Success();

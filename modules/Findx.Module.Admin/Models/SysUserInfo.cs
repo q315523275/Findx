@@ -8,133 +8,131 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Findx.Data;
-using SqlSugar;
+using FreeSql.DataAnnotations;
 using System;
 
 namespace Findx.Module.Admin.Models
 {
-
     /// <summary>
     /// 系统用户表
     /// </summary>
-    [SugarTable("sys_user")]
-    public class SysUserInfo : IResponse
+    [Table(Name = "sys_user")]
+    public partial class SysUserInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse
     {
 
         /// <summary>
         /// 主键
         /// </summary>
-        [SugarColumn(IsPrimaryKey = true, IsIdentity = false, ColumnName = "id")]
-        public long Id { get; set; }
+        [Column(Name = "id", IsPrimary = true)]
+        public override long Id { get; set; }
 
         /// <summary>
         /// 账号
         /// </summary>
-        [SugarColumn(ColumnName = "account")]
+        [Column(Name = "account", DbType = "varchar(50)")]
         public string Account { get; set; }
 
         /// <summary>
         /// 管理员类型（0超级管理员 1非管理员）
         /// </summary>
-        [SugarColumn(ColumnName = "admin_type")]
+        [Column(Name = "admin_type", DbType = "tinyint(4)")]
         public sbyte AdminType { get; set; }
 
         /// <summary>
         /// 头像
         /// </summary>
-        [SugarColumn(ColumnName = "avatar")]
+        [Column(Name = "avatar")]
         public long? Avatar { get; set; }
 
         /// <summary>
         /// 生日
         /// </summary>
-        [SugarColumn(ColumnName = "birthday")]
+        [Column(Name = "birthday", DbType = "date")]
         public DateTime? Birthday { get; set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
-        [SugarColumn(ColumnName = "create_time")]
-        public DateTime? CreateTime { get; set; }
+        [Column(Name = "create_time", DbType = "datetime")]
+        public DateTime CreateTime { get; set; }
 
         /// <summary>
         /// 创建人
         /// </summary>
-        [SugarColumn(ColumnName = "create_user")]
+        [Column(Name = "create_user")]
         public long? CreateUser { get; set; }
 
         /// <summary>
         /// 邮箱
         /// </summary>
-        [SugarColumn(ColumnName = "email")]
+        [Column(Name = "email", DbType = "varchar(50)")]
         public string Email { get; set; }
 
         /// <summary>
         /// 最后登陆IP
         /// </summary>
-        [SugarColumn(ColumnName = "last_login_ip")]
+        [Column(Name = "last_login_ip", DbType = "varchar(100)")]
         public string LastLoginIp { get; set; }
 
         /// <summary>
         /// 最后登陆时间
         /// </summary>
-        [SugarColumn(ColumnName = "last_login_time")]
+        [Column(Name = "last_login_time", DbType = "datetime")]
         public DateTime? LastLoginTime { get; set; }
 
         /// <summary>
         /// 姓名
         /// </summary>
-        [SugarColumn(ColumnName = "name")]
+        [Column(Name = "name", DbType = "varchar(100)")]
         public string Name { get; set; }
 
         /// <summary>
         /// 昵称
         /// </summary>
-        [SugarColumn(ColumnName = "nick_name")]
+        [Column(Name = "nick_name", DbType = "varchar(50)")]
         public string NickName { get; set; }
 
         /// <summary>
         /// 密码
         /// </summary>
-        [SugarColumn(ColumnName = "password")]
+        [Column(Name = "password", DbType = "varchar(100)")]
         public string Password { get; set; }
 
         /// <summary>
         /// 手机
         /// </summary>
-        [SugarColumn(ColumnName = "phone")]
+        [Column(Name = "phone", DbType = "varchar(50)")]
         public string Phone { get; set; }
 
         /// <summary>
         /// 性别(字典 1男 2女 3未知)
         /// </summary>
-        [SugarColumn(ColumnName = "sex")]
+        [Column(Name = "sex", DbType = "tinyint(4)")]
         public sbyte Sex { get; set; }
 
         /// <summary>
         /// 状态（字典 0正常 1冻结 2删除）
         /// </summary>
-        [SugarColumn(ColumnName = "status")]
+        [Column(Name = "status", DbType = "tinyint(4)")]
         public sbyte Status { get; set; }
 
         /// <summary>
         /// 电话
         /// </summary>
-        [SugarColumn(ColumnName = "tel")]
+        [Column(Name = "tel", DbType = "varchar(50)")]
         public string Tel { get; set; }
 
         /// <summary>
         /// 更新时间
         /// </summary>
-        [SugarColumn(ColumnName = "update_time")]
+        [Column(Name = "update_time", DbType = "datetime")]
         public DateTime? UpdateTime { get; set; }
 
         /// <summary>
         /// 更新人
         /// </summary>
-        [SugarColumn(ColumnName = "update_user")]
+        [Column(Name = "update_user")]
         public long? UpdateUser { get; set; }
 
     }
-
 }

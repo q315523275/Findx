@@ -46,28 +46,42 @@ namespace Findx.SqlSugar
             // 添加SqlSugar服务
             services.TryAddScoped(provider =>
             {
-                var db = new SqlSugarClient(ConnectionConfigs);
-                if (SqlSugarOptions.Debug)
+                // Sugar构建
+                var sugar = new SqlSugarClient(ConnectionConfigs);
+                // AOP
+                sugar.Aop.OnLogExecuted = (sql, param) =>
                 {
-                    // Deubg 开启AOP打印
-                    db.Aop.OnLogExecuted = (sql, param) =>
+                    // 打印SQL日志
+                    if (SqlSugarOptions.PrintSQL)
                     {
                         StringBuilder sb = new StringBuilder();
                         sb.AppendLine("Creating a new SqlSession");
                         sb.AppendLine("==>  Preparing:" + sql);
-                        //if (param != null && param.Length > 0)
-                        //{
-                        //    sb.AppendLine("==>  Parameters:" + param?.Length);
-                        //    foreach (var pa in param)
-                        //    {
-                        //        sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value?.ToString());
-                        //    }
-                        //}
-                        sb.Append($"==>  ExecuteTime:{db.Ado.SqlExecutionTime.TotalMilliseconds:0.000}ms");
+                        if (param != null && param.Length > 0)
+                        {
+                            sb.AppendLine("==>  Parameters:" + param?.Length);
+                            foreach (var pa in param)
+                            {
+                                sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value?.ToString());
+                            }
+                        }
+                        sb.Append($"==>  ExecuteTime:{sugar.Ado.SqlExecutionTime.TotalMilliseconds:0.000}ms");
                         ServiceLocator.GetService<ILogger<SqlSugarModule>>()?.LogInformation(sb.ToString());
-                    };
+                    }
+                    // 开启慢SQL记录
+                    if (SqlSugarOptions.OutageDetection && sugar.Ado.SqlExecutionTime.TotalMilliseconds > (SqlSugarOptions.OutageDetectionInterval * 1000))
+                    {
+                        ServiceLocator.GetService<ILogger<SqlSugarModule>>()?.LogInformation($"SqlSugar触发慢日志:执行sql({sql})耗时({sugar.Ado.SqlExecutionTime.TotalMilliseconds:0.000})毫秒");
+                    }
+                };
+                // 开启逻辑删除
+                if (SqlSugarOptions.SoftDeletable)
+                {
+                    // 全局过滤器, FilterName = null,
+                    sugar.QueryFilter.Add(new SqlFilterItem { FilterName = "SoftDeletable", FilterValue = it => { return new SqlFilterResult { Sql = $" {SqlSugarOptions.SoftDeletableField} = {SqlSugarOptions.SoftNotDeletableValue} " }; }, IsJoinQuery = false });
                 }
-                return db;
+                
+                return sugar;
             });
 
             // 添加仓储实现

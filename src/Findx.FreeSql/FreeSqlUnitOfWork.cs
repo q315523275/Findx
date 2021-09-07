@@ -2,7 +2,6 @@
 using Findx.Extensions;
 using FreeSql.Internal.ObjectPool;
 using System;
-using System.Data;
 using System.Data.Common;
 
 namespace Findx.FreeSql

@@ -3,6 +3,7 @@ using Findx.Linq;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -34,7 +35,9 @@ namespace Findx.AspNetCore.Mvc
         protected virtual MultiOrderBy<TModel> CreatePageOrderExpression(TQueryParameter request)
         {
             var multiOrderBy = new MultiOrderBy<TModel>();
-            multiOrderBy.OrderBy.Add(new OrderByParameter<TModel> { Expression = it => it.Id, Ascending = false });
+            if (typeof(TModel).IsAssignableTo(typeof(ISort)))
+                multiOrderBy.OrderBy.Add(new OrderByParameter<TModel> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Descending });
+            multiOrderBy.OrderBy.Add(new OrderByParameter<TModel> { Expression = it => it.Id, SortDirection = ListSortDirection.Descending });
             return multiOrderBy;
         }
 

@@ -6,7 +6,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
     /// <summary>
     /// 系统用户DTO模型
     /// </summary>
-    public class SysUserDTO: IResponse
+    public class SysUserDTO : IResponse
     {
         /// <summary>
         /// 主键

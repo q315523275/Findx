@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq.Expressions;
 
 namespace Findx.Data
@@ -21,13 +22,13 @@ namespace Findx.Data
     public class OrderByParameter<TEntity>
     {
         /// <summary>
-        /// 排序字段控制
+        /// 排序字段表达式
         /// </summary>
         public Expression<Func<TEntity, object>> Expression { set; get; }
 
         /// <summary>
-        /// 正序
+        /// 排序方向
         /// </summary>
-        public bool Ascending = true;
+        public ListSortDirection SortDirection { set; get; } = ListSortDirection.Descending;
     }
 }

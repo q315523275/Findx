@@ -16,6 +16,11 @@ namespace Findx.Data
         /// 获取工作单元
         /// </summary>
         IUnitOfWork GetUnitOfWork();
+        /// <summary>
+        /// 切换表规则
+        /// </summary>
+        /// <param name="tableRule"></param>
+        void AsTable(Func<string, string> tableRule);
 
         #region 插入
         /// <summary>
@@ -318,7 +323,7 @@ namespace Findx.Data
         Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default);
         #endregion
 
-        #region 数据库表信息查询
+        #region 库表信息查询
         /// <summary>
         /// 获取数据库表名
         /// </summary>

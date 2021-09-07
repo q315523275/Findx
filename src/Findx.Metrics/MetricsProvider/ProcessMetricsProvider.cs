@@ -1,7 +1,5 @@
 ﻿using Findx.Utils;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Findx.PerfMonitor.MetricsProvider

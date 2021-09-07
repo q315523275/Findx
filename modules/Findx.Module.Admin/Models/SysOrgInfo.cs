@@ -7,89 +7,99 @@
 //     重新生成代码，这些更改将会丢失。
 // </auto-generated>
 //------------------------------------------------------------------------------
-using SqlSugar;
+using Findx.Data;
+using FreeSql.DataAnnotations;
 using System;
 
-namespace Findx.Module.Admin.Models {
-
-	/// <summary>
-	/// 系统组织机构表
-	/// </summary>
-	[SugarTable("sys_org")]
-	public class SysOrgInfo {
-
+namespace Findx.Module.Admin.Models
+{
+    /// <summary>
+    /// 系统组织机构表
+    /// </summary>
+    [Table(Name = "sys_org")]
+	[DataEntity(DataSource = "salve1", TableShardingType = ShardingType.Time, TableShardingExt = "yyyyMM")]
+	public partial class SysOrgInfo: EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, ISoftDeletableUser<long>, ISort, IResponse
+	{
 		/// <summary>
 		/// 主键
 		/// </summary>
-		[SugarColumn(IsPrimaryKey = true, IsIdentity = false, ColumnName = "id")]
-		public long Id { get; set; }
+		[Column(Name = "id", IsPrimary = true)]
+		public override long Id { get; set; }
 
 		/// <summary>
 		/// 编码
 		/// </summary>
-		[SugarColumn(ColumnName ="code")]
+		[Column(Name = "code", DbType = "varchar(50)")]
 		public string Code { get; set; }
 
 		/// <summary>
 		/// 创建时间
 		/// </summary>
-		[SugarColumn(ColumnName ="create_time")]
-		public DateTime? CreateTime { get; set; }
+		[Column(Name = "create_time", DbType = "datetime")]
+		public DateTime CreateTime { get; set; }
 
 		/// <summary>
 		/// 创建人
 		/// </summary>
-		[SugarColumn(ColumnName ="create_user")]
+		[Column(Name = "create_user")]
 		public long? CreateUser { get; set; }
 
 		/// <summary>
 		/// 名称
 		/// </summary>
-		[SugarColumn(ColumnName ="name")]
+		[Column(Name = "name", DbType = "varchar(100)")]
 		public string Name { get; set; }
 
 		/// <summary>
 		/// 父id
 		/// </summary>
-		[SugarColumn(ColumnName ="pid")]
+		[Column(Name = "pid")]
 		public long Pid { get; set; }
 
 		/// <summary>
 		/// 父ids
 		/// </summary>
-		[SugarColumn(ColumnName ="pids")]
+		[Column(Name = "pids", DbType = "text")]
 		public string Pids { get; set; }
 
 		/// <summary>
 		/// 描述
 		/// </summary>
-		[SugarColumn(ColumnName ="remark")]
+		[Column(Name = "remark")]
 		public string Remark { get; set; }
 
 		/// <summary>
 		/// 排序
 		/// </summary>
-		[SugarColumn(ColumnName ="sort")]
+		[Column(Name = "sort")]
 		public int Sort { get; set; }
 
 		/// <summary>
 		/// 状态（字典 0正常 1停用 2删除）
 		/// </summary>
-		[SugarColumn(ColumnName ="status")]
+		[Column(Name = "status", DbType = "tinyint(4)")]
 		public sbyte Status { get; set; }
 
 		/// <summary>
 		/// 更新时间
 		/// </summary>
-		[SugarColumn(ColumnName ="update_time")]
+		[Column(Name = "update_time", DbType = "datetime")]
 		public DateTime? UpdateTime { get; set; }
 
 		/// <summary>
 		/// 更新人
 		/// </summary>
-		[SugarColumn(ColumnName ="update_user")]
+		[Column(Name = "update_user")]
 		public long? UpdateUser { get; set; }
 
+		[Column(Name = "deleted_time")]
+		public DateTime? DeletedTime { get; set; }
+
+		[Column(Name = "deleted")]
+		public bool Deleted { get; set; }
+
+		[Column(Name = "delete_user")]
+		public long? DeleteUser { get; set; }
 	}
 
 }

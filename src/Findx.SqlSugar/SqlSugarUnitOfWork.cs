@@ -1,6 +1,5 @@
 ﻿using Findx.Data;
 using SqlSugar;
-using System.Data;
 using System.Data.Common;
 
 namespace Findx.SqlSugar

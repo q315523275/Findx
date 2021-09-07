@@ -3,12 +3,12 @@
     /// <summary>
     /// 定义实体创建者
     /// </summary>
-    /// <typeparam name="TUser"></typeparam>
-    public interface ICreateUser<TUser> : ICreateTime where TUser : struct
+    /// <typeparam name="TUserKey"></typeparam>
+    public interface ICreateUser<TUserKey> : ICreateTime where TUserKey : struct
     {
         /// <summary>
         /// 创建者
         /// </summary>
-        TUser? CreateUser {  get; set; }
+        TUserKey? CreateUser { get; set; }
     }
 }

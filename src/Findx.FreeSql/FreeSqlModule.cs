@@ -37,14 +37,20 @@ namespace Findx.FreeSql
 
             foreach (var option in FreeSqlOptions.DataSource)
             {
+                // FreeSQL构建开始
                 FreeSqlConnectionConfig DbConnection = option.Value;
                 IFreeSql freeSql = new FreeSqlBuilder().UseConnectionString(DbConnection.DataType, DbConnection.ConnectionString).Build();
-                freeSqlClient.TryAdd(option.Key, freeSql);
-                services.AddSingleton(freeSql);
-                if (FreeSqlOptions.Debug)
+                // 开启逻辑删除
+                if (FreeSqlOptions.SoftDeletable)
                 {
-                    // Deubg 开启AOP打印
-                    freeSql.Aop.CurdAfter += (s, e) => {
+                    freeSql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.Deleted == false);
+                }
+                // AOP
+                freeSql.Aop.CurdAfter += (s, e) =>
+                {
+                    // 开启SQL打印
+                    if (FreeSqlOptions.PrintSQL)
+                    {
                         StringBuilder sb = new StringBuilder();
                         sb.AppendLine("Creating a new SqlSession");
                         sb.AppendLine("==>  Preparing:" + e.Sql);
@@ -58,8 +64,16 @@ namespace Findx.FreeSql
                         }
                         sb.Append($"==>  ExecuteTime:{e.ElapsedMilliseconds:0.000}ms");
                         ServiceLocator.GetService<ILogger<FreeSqlModule>>()?.LogInformation(sb.ToString());
-                    };
-                }
+                    }
+                    // 开启慢SQL记录
+                    if (FreeSqlOptions.OutageDetection && e.ElapsedMilliseconds > (FreeSqlOptions.OutageDetectionInterval * 1000))
+                    {
+                        ServiceLocator.GetService<ILogger<FreeSqlModule>>()?.LogInformation($"FreeSql触发慢日志:执行sql({e.Sql})耗时({e.ElapsedMilliseconds:0.000})毫秒");
+                    }
+                };
+                // 注入
+                freeSqlClient.TryAdd(option.Key, freeSql);
+                services.AddSingleton(freeSql);
             }
 
             // 添加仓储实现

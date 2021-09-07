@@ -1,6 +1,5 @@
 ﻿using Findx.Data;
 using Findx.DependencyInjection;
-using Findx.Extensions;
 namespace Findx.FreeSql
 {
     public class FreeSqlUnitOfWorkManager : UnitOfWorkManagerBase

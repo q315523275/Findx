@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FreeSql.Provider.MySql" Version="2.5.200" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Findx.Mapster\Findx.Mapster.csproj" />
     <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
     <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />

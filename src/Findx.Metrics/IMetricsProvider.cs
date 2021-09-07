@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-namespace Findx.PerfMonitor
+﻿namespace Findx.PerfMonitor
 {
     public interface IMetricsProvider
     {

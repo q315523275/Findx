@@ -7,12 +7,14 @@ namespace Findx.Locks
     public class AutomaticRenewalLock : IRedLock, IDisposable
     {
         private readonly IDistributedLock _distributedLock;
-        private Timer _timer;
         private readonly string _lockKey;
         private readonly string _lockValue;
         private readonly int _seconds;
         private readonly int _refreshSeconds;
+
         private bool _polling;
+        private Timer _timer;
+
         public AutomaticRenewalLock(IDistributedLock distributedLock, string lockKey, int seconds = 60)
         {
             Check.NotNull(distributedLock, nameof(distributedLock));

@@ -1,23 +1,56 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 	  <DocumentationFile>F:\myself\Findx\modules\Findx.Module.Admin\Findx.Module.Admin.xml</DocumentationFile>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Models\SysAppInfo.cs" />
+	  <Compile Remove="Models\SysAreaInfo.cs" />
+	  <Compile Remove="Models\SysCodeGenerateConfigInfo.cs" />
+	  <Compile Remove="Models\SysCodeGenerateInfo.cs" />
+	  <Compile Remove="Models\SysConfigInfo.cs" />
+	  <Compile Remove="Models\SysDictDataInfo.cs" />
+	  <Compile Remove="Models\SysDictTypeInfo.cs" />
+	  <Compile Remove="Models\SysEmpExtOrgPosInfo.cs" />
+	  <Compile Remove="Models\SysEmpInfo.cs" />
+	  <Compile Remove="Models\SysEmpPosInfo.cs" />
+	  <Compile Remove="Models\SysFileInfo.cs" />
+	  <Compile Remove="Models\SysMenuInfo.cs" />
+	  <Compile Remove="Models\SysNoticeInfo.cs" />
+	  <Compile Remove="Models\SysNoticeUserInfo.cs" />
+	  <Compile Remove="Models\SysOauthUserInfo.cs" />
+	  <Compile Remove="Models\SysOpLogInfo.cs" />
+	  <Compile Remove="Models\SysRoleDataScopeInfo.cs" />
+	  <Compile Remove="Models\SysRoleInfo.cs" />
+	  <Compile Remove="Models\SysRoleMenuInfo.cs" />
+	  <Compile Remove="Models\SysSmsInfo.cs" />
+	  <Compile Remove="Models\SysTimersInfo.cs" />
+	  <Compile Remove="Models\SysUserDataScopeInfo.cs" />
+	  <Compile Remove="Models\SysUserRoleInfo.cs" />
+	  <Compile Remove="Models\SysVisLogInfo.cs" />
+	</ItemGroup>
+  
 	<ItemGroup>
 		<FrameworkReference Include="Microsoft.AspNetCore.App" />
 	</ItemGroup>
+  
 	<ItemGroup>
 	  <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+	  <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
 	  <ProjectReference Include="..\..\src\Findx.SqlSugar\Findx.SqlSugar.csproj" />
-	  <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
 	</ItemGroup>
+  
 	<ItemGroup>
 	  <None Update="Findx.Module.Admin.xml">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>
+  
 </Project>
