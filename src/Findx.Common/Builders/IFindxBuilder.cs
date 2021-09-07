@@ -33,9 +33,9 @@ namespace Findx.Builders
         IFindxBuilder AddModule<TModuleModule>() where TModuleModule : FindxModule;
 
         /// <summary>
-        /// 添加加载的所有Pack，并可排除指定的Pack类型
+        /// 添加加载的所有Module，并可排除指定的Module类型
         /// </summary>
-        /// <param name="exceptModuleTypes">要排除的Pack类型</param>
+        /// <param name="exceptModuleTypes">要排除的Module类型</param>
         /// <returns></returns>
         IFindxBuilder AddModules(params Type[] exceptModuleTypes);
     }

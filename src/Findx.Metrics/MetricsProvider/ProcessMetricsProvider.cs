@@ -1,8 +1,4 @@
-﻿using Findx.Utils;
-using Microsoft.Extensions.Logging;
-using System.Diagnostics;
-
-namespace Findx.PerfMonitor.MetricsProvider
+﻿namespace Findx.PerfMonitor.MetricsProvider
 {
     /// <summary>
     /// 当前进程统计提供器

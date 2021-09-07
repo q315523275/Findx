@@ -22,8 +22,8 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
         //}
 
         [HttpGet("dbinfo")]
-        public CommonResult DbInfo([FromServices] IRepository<SysOrgInfo> repository) 
-        {  
+        public CommonResult DbInfo([FromServices] IRepository<SysOrgInfo> repository)
+        {
             return CommonResult.Success(new { table = repository.GetDbTableName(), columns = repository.GetDbColumnName() });
         }
     }

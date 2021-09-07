@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace Findx.PerfMonitor.Windows
+﻿namespace Findx.PerfMonitor.Windows
 {
     [StructLayout(LayoutKind.Sequential)]
     internal struct MemoryStatusEx

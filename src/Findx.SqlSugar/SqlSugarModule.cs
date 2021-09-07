@@ -80,7 +80,7 @@ namespace Findx.SqlSugar
                     // 全局过滤器, FilterName = null,
                     sugar.QueryFilter.Add(new SqlFilterItem { FilterName = "SoftDeletable", FilterValue = it => { return new SqlFilterResult { Sql = $" {SqlSugarOptions.SoftDeletableField} = {SqlSugarOptions.SoftNotDeletableValue} " }; }, IsJoinQuery = false });
                 }
-                
+
                 return sugar;
             });
 
