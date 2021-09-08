@@ -42,6 +42,7 @@ namespace Findx.AspNetCore.Mvc.Middlewares
         /// <returns></returns>
         public async Task InvokeAsync(HttpContext context)
         {
+            var js = DateTime.Now;
             try
             {
                 await _next(context);
@@ -64,6 +65,7 @@ namespace Findx.AspNetCore.Mvc.Middlewares
                 context.Response.ContentType = "text/plain;charset=utf-8";
                 await context.Response.WriteAsync("error occurred");
             }
+            Console.WriteLine($"第一中间件接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
         }
     }
 }

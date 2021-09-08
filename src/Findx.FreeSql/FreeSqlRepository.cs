@@ -578,10 +578,12 @@ namespace Findx.FreeSql
             return columns.Keys.ToList();
         }
 
-        public void AsTable(Func<string, string> tableRule)
+        public IRepository<TEntity> AsTable(Func<string, string> tableRule)
         {
             _tableRule = tableRule;
             _queryTableRule = (type, oldName) => _tableRule.Invoke(oldName);
+
+            return this;
         }
         #endregion
     }

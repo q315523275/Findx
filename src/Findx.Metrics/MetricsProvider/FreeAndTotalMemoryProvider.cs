@@ -1,4 +1,7 @@
 ﻿using Findx.PerfMonitor.Windows;
+using Findx.Utils;
+using Findx.Extensions;
+using System.Collections.Generic;
 
 namespace Findx.PerfMonitor.MetricsProvider
 {

@@ -38,13 +38,13 @@ namespace Findx.WebApiClient
                 {
                     switch (attribute.LoadBalancerType)
                     {
-                        case Discovery.LoadBalancerType.LeastConnection:
+                        case LoadBalancerType.LeastConnection:
                             httpApiBuilder = httpApiBuilder.AddLeastConnectLoadBalancer();
                             break;
-                        case Discovery.LoadBalancerType.Random:
+                        case LoadBalancerType.Random:
                             httpApiBuilder = httpApiBuilder.AddRandomLoadBalancer();
                             break;
-                        case Discovery.LoadBalancerType.RoundRobin:
+                        case LoadBalancerType.RoundRobin:
                             httpApiBuilder = httpApiBuilder.AddRoundRobinLoadBalancer();
                             break;
                         default:

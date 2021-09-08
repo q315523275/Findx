@@ -16,11 +16,6 @@ namespace Findx.Data
         /// 获取工作单元
         /// </summary>
         IUnitOfWork GetUnitOfWork();
-        /// <summary>
-        /// 切换表规则
-        /// </summary>
-        /// <param name="tableRule"></param>
-        void AsTable(Func<string, string> tableRule);
 
         #region 插入
         /// <summary>
@@ -334,6 +329,11 @@ namespace Findx.Data
         /// </summary>
         /// <returns></returns>
         List<string> GetDbColumnName();
+        /// <summary>
+        /// 切换表规则
+        /// </summary>
+        /// <param name="tableRule"></param>
+        IRepository<TEntity> AsTable(Func<string, string> tableRule);
         #endregion
     }
 }

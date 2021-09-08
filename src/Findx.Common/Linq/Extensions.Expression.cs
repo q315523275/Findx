@@ -80,7 +80,6 @@ namespace Findx.Linq
         /// <typeparam name="T">表达式的主实体类型</typeparam>
         /// <param name="first">第一个Expression表达式</param>
         /// <param name="second">要组合的Expression表达式</param>
-        /// <param name="ifExp">判断条件表达式，当此条件为true时，才执行组合</param>
         /// <returns>组合后的表达式</returns>
         public static Expression<Func<T, bool>> Or<T>(this Expression<Func<T, bool>> first, Expression<Func<T, bool>> second)
         {

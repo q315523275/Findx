@@ -119,6 +119,8 @@ namespace Findx.AspNetCore.Mvc
         [HttpGet("list")]
         public virtual CommonResult List([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
         {
+            var js = DateTime.Now;
+
             Check.NotNull(request, nameof(request));
 
             var whereExpression = CreatePageWhereExpression(request);
@@ -127,6 +129,8 @@ namespace Findx.AspNetCore.Mvc
             var result = repository.Top<TDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
 
             result = ToListResult(result);
+
+            Console.WriteLine($"动态API查询接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
 
             return CommonResult.Success(result);
         }

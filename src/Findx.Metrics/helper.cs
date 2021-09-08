@@ -1,4 +1,6 @@
-﻿namespace Findx.PerfMonitor
+﻿using System;
+
+namespace Findx.PerfMonitor
 {
     public class helper
     {

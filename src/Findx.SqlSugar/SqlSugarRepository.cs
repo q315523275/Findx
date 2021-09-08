@@ -24,6 +24,7 @@ namespace Findx.SqlSugar
         private readonly DataEntityAttribute _attribute;
         private readonly bool _softDeletable;
         private readonly bool _customSharding;
+        private readonly string _softDeletableFilterName = "SoftDeletable";
 
         private string _oldTableName;
         private string _tableName;
@@ -306,27 +307,33 @@ namespace Findx.SqlSugar
         #region 查询
         public TEntity First(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).First(whereExpression);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).First();
+            if (whereExpression != null)
+                return queryable.First(whereExpression);
+
+            return queryable.First();
         }
 
         public Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
             _sugar.Ado.CancellationToken = cancellationToken;
 
-            if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).FirstAsync(whereExpression);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).FirstAsync();
+            if (whereExpression != null)
+                return queryable.FirstAsync(whereExpression);
+
+            return queryable.FirstAsync();
         }
 
         public TEntity Get(object key)
         {
             Check.NotNull(key, nameof(key));
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).InSingle(key);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+
+            return queryable.InSingle(key);
         }
 
         public Task<TEntity> GetAsync(object key, CancellationToken cancellationToken = default)
@@ -335,14 +342,16 @@ namespace Findx.SqlSugar
 
             _sugar.Ado.CancellationToken = cancellationToken;
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).InSingleAsync(key);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+
+            return queryable.InSingleAsync(key);
         }
 
 
 
         public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -352,7 +361,7 @@ namespace Findx.SqlSugar
 
         public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -364,7 +373,7 @@ namespace Findx.SqlSugar
 
         public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -377,7 +386,7 @@ namespace Findx.SqlSugar
 
         public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -394,7 +403,7 @@ namespace Findx.SqlSugar
 
         public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -415,7 +424,7 @@ namespace Findx.SqlSugar
 
         public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -438,7 +447,7 @@ namespace Findx.SqlSugar
 
         public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -462,7 +471,7 @@ namespace Findx.SqlSugar
 
         public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -488,7 +497,7 @@ namespace Findx.SqlSugar
 
         public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -513,7 +522,7 @@ namespace Findx.SqlSugar
 
         public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -540,7 +549,7 @@ namespace Findx.SqlSugar
 
         public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -572,7 +581,7 @@ namespace Findx.SqlSugar
 
         public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -609,9 +618,9 @@ namespace Findx.SqlSugar
         public int Count(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).Count(whereExpression);
+                return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).Count(whereExpression);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).Count();
+            return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).Count();
         }
 
         public Task<int> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
@@ -619,9 +628,9 @@ namespace Findx.SqlSugar
             _sugar.Ado.CancellationToken = cancellationToken;
 
             if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).CountAsync(whereExpression);
+                return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).CountAsync(whereExpression);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).CountAsync();
+            return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).CountAsync();
         }
 
 
@@ -629,9 +638,9 @@ namespace Findx.SqlSugar
         public bool Exist(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).Any(whereExpression);
+                return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).Any(whereExpression);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).Any();
+            return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).Any();
         }
 
         public Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
@@ -639,9 +648,9 @@ namespace Findx.SqlSugar
             _sugar.Ado.CancellationToken = cancellationToken;
 
             if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).AnyAsync(whereExpression);
+                return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).AnyAsync(whereExpression);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).AnyAsync();
+            return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).AnyAsync();
         }
         #endregion
 
@@ -663,9 +672,11 @@ namespace Findx.SqlSugar
             return list;
         }
 
-        public void AsTable(Func<string, string> tableRule)
+        public IRepository<TEntity> AsTable(Func<string, string> tableRule)
         {
             _tableName = tableRule.Invoke(_oldTableName);
+
+            return this;
         }
         #endregion
     }
