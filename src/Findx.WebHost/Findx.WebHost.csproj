@@ -14,6 +14,7 @@
 		<ProjectReference Include="..\Findx.DinkToPdf\Findx.DinkToPdf.csproj" />
 		<ProjectReference Include="..\Findx.Discovery.Consul\Findx.Discovery.Consul.csproj" />
 		<ProjectReference Include="..\Findx.EventBus.RabbitMQ\Findx.EventBus.RabbitMQ.csproj" />
+		<ProjectReference Include="..\Findx.ImageSharp\Findx.ImageSharp.csproj" />
 		<ProjectReference Include="..\Findx.MailKit\Findx.MailKit.csproj" />
 		<ProjectReference Include="..\Findx.Mapster\Findx.Mapster.csproj" />
 		<ProjectReference Include="..\Findx.NLog\Findx.NLog.csproj" />

@@ -2,6 +2,7 @@
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Discovery;
+using Findx.Drawing;
 using Findx.Email;
 using Findx.EventBus;
 using Findx.Extensions;
@@ -17,6 +18,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -320,5 +322,44 @@ namespace Findx.WebHost.Controllers
         }
 
         private static readonly string[] Summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+
+        /// <summary>
+        /// 图像处理
+        /// </summary>
+        /// <param name="imageProcessor"></param>
+        /// <returns></returns>
+        [HttpGet("/imageSharp_makeThumbnail")]
+        public IActionResult ImageSharp([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int width, int height, ImageResizeMode mode = ImageResizeMode.Crop)
+        {
+            var img = imageProcessor.MakeThumbnail(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", width, height, mode);
+
+            return File(img, "image/jpeg");
+        }
+
+        /// <summary>
+        /// 图像处理
+        /// </summary>
+        /// <param name="imageProcessor"></param>
+        /// <returns></returns>
+        [HttpGet("/imageSharp_imageWatermark")]
+        public IActionResult ImageWatermark([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, string filePath2, int location, float opacity)
+        {
+            var img = imageProcessor.ImageWatermark(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", applicationInstance.MapPath(filePath2), location, opacity);
+
+            return File(img, "image/jpeg");
+        }
+
+        /// <summary>
+        /// 图像处理
+        /// </summary>
+        /// <param name="imageProcessor"></param>
+        /// <returns></returns>
+        [HttpGet("/imageSharp_letterWatermark")]
+        public IActionResult LetterWatermark([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, string text, int location, int fontSize)
+        {
+            var img = imageProcessor.LetterWatermark(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", text, location, "FZSJ-RUGKYZYQ", fontSize);
+
+            return File(img, "image/jpeg");
+        }
     }
 }

@@ -5,12 +5,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="fonts\" />
+    <EmbeddedResource Include="fonts\*.ttf" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
     <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Findx.Common\Findx.csproj" />
   </ItemGroup>
 
 </Project>

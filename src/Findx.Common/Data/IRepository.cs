@@ -137,9 +137,24 @@ namespace Findx.Data
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="whereExpression"></param>
+        /// <returns></returns>
+        int UpdateColumns(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression);
+        /// <summary>
+        /// 更新指定字段
+        /// </summary>
+        /// <param name="columns"></param>
+        /// <param name="whereExpression"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 更新指定字段
+        /// </summary>
+        /// <param name="columns"></param>
+        /// <param name="whereExpression"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
         #endregion
 
         #region 查询

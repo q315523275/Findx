@@ -261,6 +261,37 @@ namespace Findx.FreeSql
         {
             return _fsql.Update<TEntity>().AsTable(_tableRule).Set(columns).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
         }
+
+        public int UpdateColumns(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression)
+        {
+            Check.NotNull(columns, nameof(columns));
+            Check.NotNull(whereExpression, nameof(whereExpression));
+
+            var update = _fsql.Update<TEntity>().AsTable(_tableRule);
+
+            foreach(var item in columns)
+            {
+                update.Set(item);
+            }
+
+            return update.Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+        }
+
+        public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(columns, nameof(columns));
+            Check.NotNull(whereExpression, nameof(whereExpression));
+
+            var update = _fsql.Update<TEntity>().AsTable(_tableRule);
+
+            foreach (var item in columns)
+            {
+                update.Set(item);
+            }
+
+            return update.Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
+        }
+
         #endregion
 
         #region 查询
@@ -585,6 +616,7 @@ namespace Findx.FreeSql
 
             return this;
         }
+
         #endregion
     }
 }

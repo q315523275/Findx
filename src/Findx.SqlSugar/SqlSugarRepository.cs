@@ -302,6 +302,36 @@ namespace Findx.SqlSugar
 
             return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(columns).Where(whereExpression).ExecuteCommandAsync();
         }
+
+        public int UpdateColumns(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression)
+        {
+            Check.NotNull(columns, nameof(columns));
+            Check.NotNull(whereExpression, nameof(whereExpression));
+
+            var update = _sugar.Updateable<TEntity>().AS(_tableName);
+
+            foreach (var item in columns)
+            {
+                update.SetColumns(item);
+            }
+
+            return update.Where(whereExpression).ExecuteCommand();
+        }
+
+        public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(columns, nameof(columns));
+            Check.NotNull(whereExpression, nameof(whereExpression));
+
+            var update = _sugar.Updateable<TEntity>().AS(_tableName);
+
+            foreach (var item in columns)
+            {
+                update.SetColumns(item);
+            }
+
+            return update.Where(whereExpression).ExecuteCommandAsync();
+        }
         #endregion
 
         #region 查询
