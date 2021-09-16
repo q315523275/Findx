@@ -9,11 +9,13 @@ namespace Findx.Tasks.Scheduling
     {
         /// <summary>
         /// 调度间隔时间
-        /// 单位：秒
+        /// 单位：毫秒
+        /// 支持OnChange
         /// </summary>
-        public int JobPollPeriod { get; set; } = 1;
+        public int ScheduleMillisecondsDelay { get; set; } = 500;
         /// <summary>
         /// 单次最大调度任务数
+        /// 支持OnChange
         /// </summary>
         public int MaxJobFetchCount { set; get; } = 1000;
         /// <summary>
@@ -25,7 +27,7 @@ namespace Findx.Tasks.Scheduling
 
         public override string ToString()
         {
-            return $"{JobPollPeriod}{MaxJobFetchCount}{Enabled}";
+            return $"{ScheduleMillisecondsDelay}{MaxJobFetchCount}{Enabled}";
         }
     }
 }

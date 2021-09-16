@@ -71,7 +71,7 @@ namespace Findx.Tasks
 
                     foreach (Type scheduledTaskType in scheduledTaskTypes)
                     {
-                        // 需要自带执行的任务
+                        // 需要自动载入执行的任务
                         if (scheduledTaskType.HasAttribute<ScheduledAttribute>())
                         {
                             var schedulerTaskWrapper = new SchedulerTaskWrapper(scheduledTaskType);
@@ -83,7 +83,7 @@ namespace Findx.Tasks
                 base.UseModule(provider);
             }
         }
-
+        
         public override void OnShutdown(IServiceProvider provider)
         {
             if (SchedulerOptions != null && SchedulerOptions.Enabled)

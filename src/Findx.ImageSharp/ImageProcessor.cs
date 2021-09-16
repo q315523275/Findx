@@ -100,6 +100,32 @@ namespace Findx.ImageSharp
         }
 
         /// <summary>
+        /// 生成缩略图
+        /// </summary>
+        /// <param name="byteData">文件字节数组</param>
+        /// <param name="fileExt">文件扩展名</param>
+        /// <param name="width">缩略图宽度</param>
+        /// <param name="height">缩略图高度</param>
+        /// <param name="mode">生成缩略图的方式(默认填充)</param>
+        /// <returns></returns>
+        public byte[] MakeThumbnail(byte[] byteData, string fileExt, int width, int height, ImageResizeMode mode = ImageResizeMode.Pad)
+        {
+            var originalImage = Image.Load(byteData);
+
+            var option = new ResizeOptions { Size = new Size(width, height), Mode = GetResizeMode(mode) };
+
+            originalImage.Mutate(m => { m.Resize(option); });
+
+            // 返回字节数组
+            using (var ms = new MemoryStream())
+            {
+                originalImage.Save(ms, GetFormat(fileExt));
+
+                return ms.ToArray();
+            }
+        }
+
+        /// <summary>
         /// 图片水印
         /// </summary>
         /// <param name="byteData">图片字节数组</param>
@@ -164,6 +190,7 @@ namespace Findx.ImageSharp
             using (var ms = new MemoryStream())
             {
                 originalImage.Save(ms, GetFormat(fileExt));
+
                 return ms.ToArray();
             }
         }
@@ -241,6 +268,7 @@ namespace Findx.ImageSharp
             using (var ms = new MemoryStream())
             {
                 originalImage.Save(ms, GetFormat(fileExt));
+
                 return ms.ToArray();
             }
         }
@@ -258,7 +286,6 @@ namespace Findx.ImageSharp
         /// <returns></returns>
         public byte[] MergeImage(byte[] byteData, string fileExt, string mergeImagePath, int X, int Y, int width = 0, int height = 0)
         {
-            // 装载原图
             var mergeImage = Image.Load(mergeImagePath);
 
             if (width > 0 && height > 0)
@@ -274,31 +301,40 @@ namespace Findx.ImageSharp
             using (var ms = new MemoryStream())
             {
                 originalImage.Save(ms, GetFormat(fileExt));
+
                 return ms.ToArray();
             }
         }
 
         /// <summary>
-        /// 生成缩略图
+        /// 绘制多行文本
         /// </summary>
-        /// <param name="byteData">文件字节数组</param>
-        /// <param name="fileExt">文件扩展名</param>
-        /// <param name="width">缩略图宽度</param>
-        /// <param name="height">缩略图高度</param>
-        /// <param name="mode">生成缩略图的方式(默认填充)</param>
+        /// <param name="byteData"></param>
+        /// <param name="fileExt"></param>
+        /// <param name="text"></param>
+        /// <param name="fontName"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
         /// <returns></returns>
-        public byte[] MakeThumbnail(byte[] byteData, string fileExt, int width, int height, ImageResizeMode mode = ImageResizeMode.Pad)
+        public byte[] MultilineText(byte[] byteData, string fileExt, string text, string fontName, int fontSize, int X, int Y)
         {
+            // 装载字体
+            var fontFamily = fontName.IsEmpty() ? _fontFamily.FirstOrDefault() : _fontFamily.FirstOrDefault(it => it.Name.Contains(fontName, StringComparison.OrdinalIgnoreCase));
+            Check.NotNull(fontFamily, nameof(fontFamily));
+            // 设置字体大小与样式
+            var font = new Font(fontFamily, fontSize, FontStyle.Bold);
+            // 获取文本绘制所需大小
+            var size = TextMeasurer.Measure(text, new RendererOptions(font));
+            // 装载图片
             var originalImage = Image.Load(byteData);
-
-            var option = new ResizeOptions { Size = new Size(width, height), Mode = GetResizeMode(mode) };
-
-            originalImage.Mutate(m => { m.Resize(option); });
-
+            // 绘制文字
+            originalImage.Mutate(o => { o.DrawText(text, font, Color.Black, new PointF(X, Y)); });
             // 返回字节数组
             using (var ms = new MemoryStream())
             {
                 originalImage.Save(ms, GetFormat(fileExt));
+
                 return ms.ToArray();
             }
         }

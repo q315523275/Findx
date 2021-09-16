@@ -1,4 +1,6 @@
-﻿namespace Findx.Drawing
+﻿using System.Threading.Tasks;
+
+namespace Findx.Drawing
 {
     /// <summary>
     /// 验证码处理器
@@ -8,15 +10,18 @@
         /// <summary>
         /// 获取验证码
         /// </summary>
+        /// <param name="length">验证码长度</param>
         /// <param name="verifyCodeTyoe">验证码类型</param>
         /// <returns></returns>
-        string GetCode(VerifyCodeType verifyCodeTyoe);
+        string GetCode(int length, VerifyCodeType verifyCodeTyoe);
 
         /// <summary>
         /// 创建验证码图片
         /// </summary>
         /// <param name="text"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
         /// <returns></returns>
-        byte[] CreateImage(string text);
+        Task<byte[]> CreateImageAsync(string text, int width = 120, int height = 50);
     }
 }

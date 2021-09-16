@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Scheduling
 {
-    // [Scheduled(Cron = "* * * * * ?", Name = "测试任务2")]
+    [Scheduled(Cron = "* * * * * ?", Name = "测试任务2")]
     public class TestScheduledTask2 : IScheduledTask
     {
         public async Task ExecuteAsync(ITaskContext context, CancellationToken cancellationToken = default)

@@ -361,5 +361,20 @@ namespace Findx.WebHost.Controllers
 
             return File(img, "image/jpeg");
         }
+
+        /// <summary>
+        /// 图片验证码
+        /// </summary>
+        /// <param name="verifyCoder"></param>
+        /// <returns></returns>
+        [HttpGet("/verifyCode")]
+        public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder)
+        {
+            var code = verifyCoder.GetCode(4, VerifyCodeType.NumberAndLetter);
+
+            var img = await verifyCoder.CreateImageAsync(code, width: 120);
+
+            return File(img, "image/jpeg");
+        }
     }
 }

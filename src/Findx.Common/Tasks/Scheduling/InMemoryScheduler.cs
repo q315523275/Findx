@@ -9,14 +9,12 @@ namespace Findx.Tasks.Scheduling
     /// <summary>
     /// 内存调度器
     /// </summary>
-    public class InMemoryScheduler : IScheduler, IDisposable
+    public class InMemoryScheduler : IScheduler
     {
         private readonly IScheduledTaskStore _storage;
         private readonly IScheduledTaskDispatcher _dispatcher;
         private readonly ILogger<InMemoryScheduler> _logger;
 
-        private Timer _taskTimer;
-        private bool _polling;
         private SchedulerOptions _options;
 
         /// <summary>
@@ -48,27 +46,11 @@ namespace Findx.Tasks.Scheduling
                 _options = changeOptions;
 
                 _logger.LogInformation($"InMemoryScheduler调度器发生了配置变更,内容{ _options }");
-
-                // 重启任务调度器
-                StopAsync().ConfigureAwait(false).GetAwaiter();
-                Dispose();
-                StartAsync();
             }
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        public void Dispose()
-        {
-            _taskTimer?.Dispose();
-            _taskTimer = null;
-
-            GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// 
+        /// 启动调度
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -77,38 +59,30 @@ namespace Findx.Tasks.Scheduling
             if (!_options.Enabled)
                 return Task.CompletedTask;
 
-            var pollingInterval = _options.JobPollPeriod * 800;
-
-            _taskTimer = new Timer(async x =>
+            Task.Factory.StartNew(async () =>
             {
-                if (_polling)
+                while (!cancellationToken.IsCancellationRequested && _options.Enabled)
                 {
-                    return;
+                    await Task.Delay(_options.ScheduleMillisecondsDelay);
+                    await ExecuteOnceAsync(cancellationToken);
                 }
-
-                _polling = true;
-                await ExecuteOnceAsync(cancellationToken);
-                _polling = false;
-
-            }, null, pollingInterval, pollingInterval);
+            }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
 
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// 
+        /// 停止调度
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public Task StopAsync(CancellationToken cancellationToken = default)
         {
-            _taskTimer?.Change(Timeout.Infinite, 0);
-
             return Task.CompletedTask;
         }
 
         /// <summary>
-        /// 
+        /// 调度执行
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>

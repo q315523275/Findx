@@ -100,7 +100,7 @@ namespace Findx.SqlSugar
             return _sugar.Insertable<TEntity>(entity).AS(_tableName).ExecuteCommand();
         }
 
-        public int Insert(IEnumerable<TEntity> entities)
+        public int Insert(List<TEntity> entities)
         {
             Check.NotNull(entities, nameof(entities));
 
@@ -116,7 +116,7 @@ namespace Findx.SqlSugar
             return _sugar.Insertable<TEntity>(entity).AS(_tableName).ExecuteCommandAsync();
         }
 
-        public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+        public Task<int> InsertAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
         {
             Check.NotNull(entities, nameof(entities));
 

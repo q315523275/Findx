@@ -55,9 +55,7 @@ namespace Findx.Messaging
 
         public void StartConsuming(CancellationToken cancellationToken = default)
         {
-            var taskFactory = new TaskFactory(TaskScheduler.Current);
-
-            taskFactory.StartNew(async () =>
+            Task.Factory.StartNew(async () =>
             {
                 while (await _channel.Reader.WaitToReadAsync())
                 {
@@ -86,7 +84,7 @@ namespace Findx.Messaging
                         }
                     }, cancellationToken);
                 }
-            }, cancellationToken);
+            }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
     }
 }

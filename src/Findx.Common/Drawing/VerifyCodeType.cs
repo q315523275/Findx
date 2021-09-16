@@ -14,15 +14,5 @@
         /// 数值与字母的组合
         /// </summary>
         NumberAndLetter,
-
-        /// <summary>
-        /// 汉字
-        /// </summary>
-        Hanzi,
-
-        /// <summary>
-        /// 计算
-        /// </summary>
-        Compute,
     }
 }

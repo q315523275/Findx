@@ -97,7 +97,7 @@ namespace Findx.FreeSql
             return _fsql.Insert(entity).AsTable(_tableRule).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
 
-        public int Insert(IEnumerable<TEntity> entities)
+        public int Insert(List<TEntity> entities)
         {
             return _fsql.Insert(entities).AsTable(_tableRule).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
@@ -107,7 +107,7 @@ namespace Findx.FreeSql
             return _fsql.Insert(entity).AsTable(_tableRule).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
-        public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+        public Task<int> InsertAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
         {
             return _fsql.Insert(entities).AsTable(_tableRule).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }

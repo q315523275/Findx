@@ -36,14 +36,14 @@ namespace Findx.Data
         /// </summary>
         /// <param name="entities"></param>
         /// <returns></returns>
-        int Insert(IEnumerable<TEntity> entities);
+        int Insert(List<TEntity> entities);
         /// <summary>
         /// 异步批量插入
         /// </summary>
         /// <param name="entities"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
+        Task<int> InsertAsync(List<TEntity> entities, CancellationToken cancellationToken = default);
         #endregion
 
         #region 删除

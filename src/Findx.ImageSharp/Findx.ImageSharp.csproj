@@ -2,10 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.1.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="fonts\*.ttf" />
+    <None Remove="fonts\Breo.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="fonts\Breo.ttf" />
   </ItemGroup>
 
   <ItemGroup>

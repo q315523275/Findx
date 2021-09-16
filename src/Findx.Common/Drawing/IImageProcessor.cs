@@ -51,5 +51,18 @@
         /// <param name="height">合并图片高度,0不处理</param>
         /// <returns></returns>
         byte[] MergeImage(byte[] byteData, string fileExt, string mergeImagePath, int X, int Y, int width = 0, int height = 0);
+
+        /// <summary>
+        /// 绘制多行文本
+        /// </summary>
+        /// <param name="byteData"></param>
+        /// <param name="fileExt"></param>
+        /// <param name="text"></param>
+        /// <param name="fontName"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="X"></param>
+        /// <param name="Y"></param>
+        /// <returns></returns>
+        byte[] MultilineText(byte[] byteData, string fileExt, string text, string fontName, int fontSize, int X, int Y);
     }
 }

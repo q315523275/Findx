@@ -15,6 +15,7 @@ namespace Findx.ImageSharp
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IImageProcessor, ImageProcessor>();
+            services.AddSingleton<IVerifyCoder, VerifyCoder>();
 
             return services;
         }

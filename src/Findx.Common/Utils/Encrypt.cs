@@ -78,7 +78,7 @@ namespace Findx.Utils
         /// <summary>
         /// DES密钥,24位字符串
         /// </summary>
-        public static string DesKey = "#s^un2ye21fcv%|f0XpR,+vh";
+        public static string DesKey = "3pk0y1rx";
 
         /// <summary>
         /// DES加密
@@ -110,10 +110,9 @@ namespace Findx.Utils
             string text = value.SafeString();
             if (ValidateDes(text, key) == false)
                 return string.Empty;
-            using (var transform = CreateDesProvider(key).CreateEncryptor())
-            {
-                return GetEncryptResult(text, encoding, transform);
-            }
+            using var des = CreateDesProvider(key);
+            using var transform = des.CreateDecryptor();
+            return GetEncryptResult(text, encoding, transform);
         }
 
         /// <summary>
@@ -123,15 +122,15 @@ namespace Findx.Utils
         {
             if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(key))
                 return false;
-            return key.Length == 24;
+            return key.Length == 8;
         }
 
         /// <summary>
         /// 创建Des加密服务提供程序
         /// </summary>
-        private static TripleDESCryptoServiceProvider CreateDesProvider(string key)
+        private static DESCryptoServiceProvider CreateDesProvider(string key)
         {
-            return new TripleDESCryptoServiceProvider { Key = Encoding.ASCII.GetBytes(key), Mode = CipherMode.ECB, Padding = PaddingMode.PKCS7 };
+            return new DESCryptoServiceProvider { Key = Encoding.ASCII.GetBytes(key), IV = Encoding.ASCII.GetBytes(key), Mode = CipherMode.ECB };
         }
 
         /// <summary>
@@ -141,7 +140,7 @@ namespace Findx.Utils
         {
             var bytes = encoding.GetBytes(value);
             var result = transform.TransformFinalBlock(bytes, 0, bytes.Length);
-            return System.Convert.ToBase64String(result);
+            return Convert.ToBase64String(result);
         }
 
         /// <summary>
@@ -174,10 +173,9 @@ namespace Findx.Utils
             string text = value.SafeString();
             if (!ValidateDes(text, key))
                 return string.Empty;
-            using (var transform = CreateDesProvider(key).CreateDecryptor())
-            {
-                return GetDecryptResult(text, encoding, transform);
-            }
+            using var des = CreateDesProvider(key);
+            using var transform = des.CreateDecryptor();
+            return GetDecryptResult(text, encoding, transform);
         }
 
         /// <summary>
@@ -185,7 +183,7 @@ namespace Findx.Utils
         /// </summary>
         private static string GetDecryptResult(string value, Encoding encoding, ICryptoTransform transform)
         {
-            var bytes = System.Convert.FromBase64String(value);
+            var bytes = Convert.FromBase64String(value);
             var result = transform.TransformFinalBlock(bytes, 0, bytes.Length);
             return encoding.GetString(result);
         }
