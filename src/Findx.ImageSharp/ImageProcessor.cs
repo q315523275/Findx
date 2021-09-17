@@ -2,10 +2,7 @@
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Processing;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Findx.Extensions;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Bmp;
@@ -13,47 +10,17 @@ using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp.Drawing.Processing;
-using System.Reflection;
-using System.Linq;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+
 namespace Findx.ImageSharp
 {
     public class ImageProcessor : IImageProcessor
     {
         /// <summary>
-        /// 字体池
+        /// 字体缓存
         /// </summary>
-        private FontFamily[] _fontFamily;
-
-        public ImageProcessor() => InitFontFamilys();
-
-        /// <summary>
-        /// 初始化字体池
-        /// </summary>
-        private void InitFontFamilys()
-        {
-            if (_fontFamily == null)
-            {
-                var assembly = Assembly.GetExecutingAssembly();
-                var names = assembly.GetManifestResourceNames();
-
-                if (names?.Length > 0 == true)
-                {
-                    var fontFamilyList = new List<FontFamily>();
-                    var fontCollection = new FontCollection();
-
-                    foreach (var name in names)
-                    {
-                        fontFamilyList.Add(fontCollection.Install(assembly.GetManifestResourceStream(name)));
-                    }
-
-                    _fontFamily = fontFamilyList.ToArray();
-                }
-                else
-                {
-                    throw new Exception($"绘制验证码字体文件加载失败");
-                }
-            }
-        }
+        private readonly static IDictionary<string, FontFamily> FontFamilyDict = new ConcurrentDictionary<string, FontFamily>();
 
         /// <summary>
         /// 获取图片格式
@@ -205,19 +172,29 @@ namespace Findx.ImageSharp
         /// <param name="fontName">字体</param>
         /// <param name="fontSize">字体大小</param>
         /// <returns></returns>
-        public byte[] LetterWatermark(byte[] byteData, string fileExt, string text, int location, string fontName, int fontSize)
+        public byte[] LetterWatermark(byte[] byteData, string fileExt, string text, int location, string fontFamilyPath, int fontSize)
         {
-            // 装载字体
-            var fontFamily = fontName.IsEmpty() ? _fontFamily.FirstOrDefault() : _fontFamily.FirstOrDefault(it => it.Name.Contains(fontName, StringComparison.OrdinalIgnoreCase));
-            Check.NotNull(fontFamily, nameof(fontFamily));
             // 设置字体大小与样式
-            var font = new Font(fontFamily, fontSize, FontStyle.Bold);
+            Font font;
+            if (text.IsEnglish() || fontFamilyPath.IsNullOrWhiteSpace())
+            {
+                font = SystemFonts.CreateFont("Arial", fontSize, FontStyle.Regular);
+            }
+            else
+            {
+                Check.NotNullOrWhiteSpace(fontFamilyPath, nameof(fontFamilyPath));
+                // 装载字体文件
+                var fontFamily = FontFamilyDict.GetOrAdd(fontFamilyPath, () =>
+                {
+                    var fonts = new FontCollection();
+                    return fonts.Install(fontFamilyPath);
+                });
+                font = new Font(fontFamily, fontSize, FontStyle.Regular);
+            }
             // 获取文本绘制所需大小
             var size = TextMeasurer.Measure(text, new RendererOptions(font));
-
             // 装载图片
             var originalImage = Image.Load(byteData);
-
             // 计算位置
             float xpos = 0;
             float ypos = 0;
@@ -312,18 +289,30 @@ namespace Findx.ImageSharp
         /// <param name="byteData"></param>
         /// <param name="fileExt"></param>
         /// <param name="text"></param>
-        /// <param name="fontName"></param>
+        /// <param name="fontFamilyPath">字体资源路径</param>
         /// <param name="fontSize"></param>
         /// <param name="X"></param>
         /// <param name="Y"></param>
         /// <returns></returns>
-        public byte[] MultilineText(byte[] byteData, string fileExt, string text, string fontName, int fontSize, int X, int Y)
+        public byte[] MultilineText(byte[] byteData, string fileExt, string text, string fontFamilyPath, int fontSize, int X, int Y)
         {
-            // 装载字体
-            var fontFamily = fontName.IsEmpty() ? _fontFamily.FirstOrDefault() : _fontFamily.FirstOrDefault(it => it.Name.Contains(fontName, StringComparison.OrdinalIgnoreCase));
-            Check.NotNull(fontFamily, nameof(fontFamily));
             // 设置字体大小与样式
-            var font = new Font(fontFamily, fontSize, FontStyle.Bold);
+            Font font;
+            if (text.IsEnglish() || fontFamilyPath.IsNullOrWhiteSpace())
+            {
+                font = SystemFonts.CreateFont("Arial", fontSize, FontStyle.Regular);
+            }
+            else
+            {
+                Check.NotNullOrWhiteSpace(fontFamilyPath, nameof(fontFamilyPath));
+                // 装载字体文件
+                var fontFamily = FontFamilyDict.GetOrAdd(fontFamilyPath, () =>
+                {
+                    var fonts = new FontCollection();
+                    return fonts.Install(fontFamilyPath);
+                });
+                font = new Font(fontFamily, fontSize, FontStyle.Regular);
+            }
             // 获取文本绘制所需大小
             var size = TextMeasurer.Measure(text, new RendererOptions(font));
             // 装载图片

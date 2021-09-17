@@ -355,9 +355,9 @@ namespace Findx.WebHost.Controllers
         /// <param name="imageProcessor"></param>
         /// <returns></returns>
         [HttpGet("/imageSharp_letterWatermark")]
-        public IActionResult LetterWatermark([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, string text, int location, int fontSize)
+        public IActionResult LetterWatermark([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, string text, int location, int fontSize, string fontPath)
         {
-            var img = imageProcessor.LetterWatermark(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", text, location, "FZSJ-RUGKYZYQ", fontSize);
+            var img = imageProcessor.LetterWatermark(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", text, location, fontPath, fontSize);
 
             return File(img, "image/jpeg");
         }
@@ -368,11 +368,11 @@ namespace Findx.WebHost.Controllers
         /// <param name="verifyCoder"></param>
         /// <returns></returns>
         [HttpGet("/verifyCode")]
-        public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder)
+        public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder, int width = 80, int height = 35)
         {
             var code = verifyCoder.GetCode(4, VerifyCodeType.NumberAndLetter);
 
-            var img = await verifyCoder.CreateImageAsync(code, width: 120);
+            var img = await verifyCoder.CreateImageAsync(code, width: width, height: height);
 
             return File(img, "image/jpeg");
         }

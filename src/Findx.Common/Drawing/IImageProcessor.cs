@@ -34,10 +34,10 @@
         /// <param name="fileExt">图片扩展名</param>
         /// <param name="text">水印文字</param>
         /// <param name="location">图片水印位置 0=不使用 1=左上 2=中上 3=右上 4=左中  9=右下</param>
-        /// <param name="fontName">字体</param>
+        /// <param name="fontFamilyPath">字体文件路径,文字为英文时不需要设置</param>
         /// <param name="fontSize">字体大小</param>
         /// <returns></returns>
-        byte[] LetterWatermark(byte[] byteData, string fileExt, string text, int location, string fontName, int fontSize);
+        byte[] LetterWatermark(byte[] byteData, string fileExt, string text, int location, string fontFamilyPath, int fontSize);
 
         /// <summary>
         /// 合并图片
@@ -58,11 +58,11 @@
         /// <param name="byteData"></param>
         /// <param name="fileExt"></param>
         /// <param name="text"></param>
-        /// <param name="fontName"></param>
+        /// <param name="fontFamilyPath">字体文件路径,文字为英文时不需要设置</param>
         /// <param name="fontSize"></param>
         /// <param name="X"></param>
         /// <param name="Y"></param>
         /// <returns></returns>
-        byte[] MultilineText(byte[] byteData, string fileExt, string text, string fontName, int fontSize, int X, int Y);
+        byte[] MultilineText(byte[] byteData, string fileExt, string text, string fontFamilyPath, int fontSize, int X, int Y);
     }
 }

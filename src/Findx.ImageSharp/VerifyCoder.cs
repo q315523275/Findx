@@ -61,6 +61,9 @@ namespace Findx.ImageSharp
 
         public async Task<byte[]> CreateImageAsync(string text, int imageWidth = 120, int imageHeight = 50)
         {
+            // 图片太小容易导致
+            var fontArray = _fontArr;
+
             byte[] result;
 
             using (var imgText = new Image<Rgba32>(imageWidth, imageHeight))
