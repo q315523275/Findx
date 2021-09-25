@@ -17,7 +17,7 @@ namespace Findx.Module.Admin.Models
     /// 系统用户表
     /// </summary>
     [Table(Name = "sys_user")]
-    public partial class SysUserInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse
+    public partial class SysUserInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest
     {
 
         /// <summary>

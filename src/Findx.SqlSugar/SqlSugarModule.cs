@@ -19,8 +19,11 @@ namespace Findx.SqlSugar
     public class SqlSugarModule : FindxModule
     {
         public override ModuleLevel Level => ModuleLevel.Application;
+
         public override int Order => 20;
+
         private SqlSugarOptions SqlSugarOptions { set; get; }
+
         private List<ConnectionConfig> ConnectionConfigs { set; get; }
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)

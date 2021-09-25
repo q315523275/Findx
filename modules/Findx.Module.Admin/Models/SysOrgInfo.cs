@@ -17,8 +17,8 @@ namespace Findx.Module.Admin.Models
     /// 系统组织机构表
     /// </summary>
     [Table(Name = "sys_org")]
-	[DataEntity(DataSource = "salve1", TableShardingType = ShardingType.Time, TableShardingExt = "yyyyMM")]
-	public partial class SysOrgInfo: EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, ISoftDeletableUser<long>, ISort, IResponse
+	// [DataEntity(DataSource = "salve1", TableShardingType = ShardingType.Time, TableShardingExt = "yyyyMM")]
+	public partial class SysOrgInfo: EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, ISort, IResponse, IRequest//, ISoftDeletableUser<long>
 	{
 		/// <summary>
 		/// 主键
@@ -92,14 +92,14 @@ namespace Findx.Module.Admin.Models
 		[Column(Name = "update_user")]
 		public long? UpdateUser { get; set; }
 
-		[Column(Name = "deleted_time")]
-		public DateTime? DeletedTime { get; set; }
+		//[Column(Name = "deleted_time")]
+		//public DateTime? DeletedTime { get; set; }
 
-		[Column(Name = "deleted")]
-		public bool Deleted { get; set; }
+		//[Column(Name = "deleted")]
+		//public bool Deleted { get; set; }
 
-		[Column(Name = "delete_user")]
-		public long? DeleteUser { get; set; }
+		//[Column(Name = "delete_user")]
+		//public long? DeleteUser { get; set; }
 	}
 
 }

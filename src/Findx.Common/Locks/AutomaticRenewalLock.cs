@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,7 +46,7 @@ namespace Findx.Locks
 
         public async Task<bool> RefreshTimeToLiveAsync()
         {
-            // Console.WriteLine($"分布式锁{_lockKey}进行自动续期,时长{_seconds}秒,时间{DateTime.Now}");
+            Debug.WriteLine($"分布式锁{_lockKey}进行自动续期,时长{_seconds}秒,时间{DateTime.Now}");
 
             var result = await _distributedLock.RefreshTimeToLiveAsync(_lockKey, TimeSpan.FromSeconds(_seconds));
 

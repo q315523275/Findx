@@ -3,10 +3,13 @@
 	<PropertyGroup>
 		<TargetFramework>net5.0</TargetFramework>
 		<LangVersion>8.0</LangVersion>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+		<DockerfileContext>..\..</DockerfileContext>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
+	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
 	</ItemGroup>
 
 	<ItemGroup>

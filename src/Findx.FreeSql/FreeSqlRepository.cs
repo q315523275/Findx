@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -75,7 +76,7 @@ namespace Findx.FreeSql
                 _queryTableRule = (type, oldName) => $"{oldName}_{DateTime.Now.ToString(_attribute.TableShardingExt)}";
             }
 
-            Console.WriteLine($"仓储构造函数耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
+            Debug.WriteLine($"仓储构造函数耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
         }
 
         private FreeSqlOptions Options
@@ -269,7 +270,7 @@ namespace Findx.FreeSql
 
             var update = _fsql.Update<TEntity>().AsTable(_tableRule);
 
-            foreach(var item in columns)
+            foreach (var item in columns)
             {
                 update.Set(item);
             }

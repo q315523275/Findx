@@ -2,15 +2,13 @@
 using Findx.Extensions;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Text;
-using System.Linq;
-using SixLabors.ImageSharp.Drawing.Processing;
 using System.IO;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Findx.ImageSharp

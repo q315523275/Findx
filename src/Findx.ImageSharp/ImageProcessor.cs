@@ -1,17 +1,17 @@
 ﻿using Findx.Drawing;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Processing;
-using System.IO;
 using Findx.Extensions;
-using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.Fonts;
-using SixLabors.ImageSharp.Drawing.Processing;
-using System.Collections.Generic;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Processing;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.IO;
 
 namespace Findx.ImageSharp
 {

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -130,7 +131,7 @@ namespace Findx.AspNetCore.Mvc
 
             result = ToListResult(result);
 
-            Console.WriteLine($"动态API查询接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
+            Debug.WriteLine($"动态API查询接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
 
             return CommonResult.Success(result);
         }

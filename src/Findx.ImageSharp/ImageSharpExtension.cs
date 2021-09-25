@@ -5,7 +5,6 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Findx.ImageSharp
 {
@@ -69,7 +68,7 @@ namespace Findx.ImageSharp
 
             return processingContext;
         }
-        
+
         /// <summary>
         /// 散 随机点
         /// </summary>

@@ -17,7 +17,7 @@ namespace Findx.Module.Admin.Models
 	/// 系统职位表
 	/// </summary>
 	[Table(Name = "sys_pos")]
-	public partial class SysPosInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, ISort, IResponse
+	public partial class SysPosInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, ISort, IResponse, IRequest
 	{
 
 		/// <summary>

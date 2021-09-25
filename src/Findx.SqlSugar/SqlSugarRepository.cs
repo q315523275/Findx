@@ -6,6 +6,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,7 +77,7 @@ namespace Findx.SqlSugar
                 _tableName = $"{_oldTableName}_{DateTime.Now.ToString(_attribute.TableShardingExt)}";
             }
 
-            Console.WriteLine($"仓储构造函数耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
+            Debug.WriteLine($"仓储构造函数耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
         }
 
         private SqlSugarOptions Options

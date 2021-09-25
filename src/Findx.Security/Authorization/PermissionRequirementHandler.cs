@@ -12,6 +12,11 @@ namespace Findx.Security.Authorization
         private readonly IPermissionChecker _permissionChecker;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="permissionChecker"></param>
+        /// <param name="httpContextAccessor"></param>
         public PermissionRequirementHandler(IPermissionChecker permissionChecker, IHttpContextAccessor httpContextAccessor)
         {
             _permissionChecker = permissionChecker;

@@ -83,7 +83,7 @@ namespace Findx.Tasks
                 base.UseModule(provider);
             }
         }
-        
+
         public override void OnShutdown(IServiceProvider provider)
         {
             if (SchedulerOptions != null && SchedulerOptions.Enabled)

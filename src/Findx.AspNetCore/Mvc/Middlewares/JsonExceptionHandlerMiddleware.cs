@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Diagnostics;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -65,7 +66,7 @@ namespace Findx.AspNetCore.Mvc.Middlewares
                 context.Response.ContentType = "text/plain;charset=utf-8";
                 await context.Response.WriteAsync("error occurred");
             }
-            Console.WriteLine($"第一中间件接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
+            Debug.WriteLine($"全局异常拦截器中间件接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
         }
     }
 }
