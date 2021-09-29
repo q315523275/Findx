@@ -4,9 +4,9 @@ using WebApiClientCore.Attributes;
 
 namespace Findx.WebHost.WebApiClient
 {
-    [WebApiClient("http://Findx.WebHost", UseDiscovery = true, Timeout = 1,
-        Retry = 3, FallbackMessage = "降级策略", FallbackStatus = 200,
-        DurationOfBreak = "5s", ExceptionsAllowedBeforeBreaking = 2)]
+    [WebApiClient("http://127.0.0.1:8888", UseDiscovery = false, Timeout = 1,
+        Retry = 1, FallbackMessage = "降级策略", FallbackStatus = 200,
+        DurationOfBreak = "5s", ExceptionsAllowedBeforeBreaking = 5)]
     public interface IFindxApi
     {
         [HttpGet("/applicationInfo")]

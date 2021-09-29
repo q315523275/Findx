@@ -5,6 +5,8 @@ using Findx.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 using System;
 using System.Diagnostics;
 using System.Net;
@@ -55,9 +57,24 @@ namespace Findx.AspNetCore.Mvc.Middlewares
                 context.Response.ContentType = "application/json;charset=utf-8";
                 await context.Response.WriteAsync(CommonResult.Fail(ex.ErrorCode ?? "500", ex.Message ?? "未知异常,请稍后再试").ToJson());
             }
+            catch (BrokenCircuitException)
+            {
+                context.Response.Clear();
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.ContentType = "application/json;charset=utf-8";
+                await context.Response.WriteAsync(CommonResult.Fail("500", "当前服务不可用,请稍后再试").ToJson());
+            }
+            catch (TimeoutRejectedException)
+            {
+                context.Response.Clear();
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.ContentType = "application/json;charset=utf-8";
+                await context.Response.WriteAsync(CommonResult.Fail("500", "内部服务超时,请稍后再试").ToJson());
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, $"全局异常捕获,状态码:{ context?.Response?.StatusCode},Url:{context?.Request?.GetDisplayUrl()}");
+
                 await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
 
                 // 开启异常,方便外层组件熔断等功能使用

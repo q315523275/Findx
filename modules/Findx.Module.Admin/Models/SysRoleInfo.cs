@@ -23,18 +23,6 @@ namespace Findx.Module.Admin.Models
 		public string Code { get; set; }
 
 		/// <summary>
-		/// 创建时间
-		/// </summary>
-		[Column(Name = "create_time", DbType = "datetime")]
-		public DateTime CreateTime { get; set; }
-
-		/// <summary>
-		/// 创建人
-		/// </summary>
-		[Column(Name = "create_user")]
-		public long? CreateUser { get; set; }
-
-		/// <summary>
 		/// 数据范围类型（字典 1全部数据 2本部门及以下数据 3本部门数据 4仅本人数据 5自定义数据）
 		/// </summary>
 		[Column(Name = "data_scope_type", DbType = "tinyint(4)")]
@@ -63,6 +51,18 @@ namespace Findx.Module.Admin.Models
 		/// </summary>
 		[Column(Name = "status", DbType = "tinyint(4)")]
 		public sbyte Status { get; set; }
+
+		/// <summary>
+		/// 创建时间
+		/// </summary>
+		[Column(Name = "create_time", DbType = "datetime")]
+		public DateTime CreateTime { get; set; }
+
+		/// <summary>
+		/// 创建人
+		/// </summary>
+		[Column(Name = "create_user")]
+		public long? CreateUser { get; set; }
 
 		/// <summary>
 		/// 更新时间

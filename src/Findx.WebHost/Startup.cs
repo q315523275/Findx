@@ -1,5 +1,6 @@
 ﻿using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
+using Findx.Data;
 using Findx.EventBus;
 using Findx.Extensions;
 using Findx.WebHost.EventBus;
@@ -7,8 +8,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Polly;
+using Polly.Timeout;
+using System;
+using System.Net;
+using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using System.Threading.Tasks;
 
 namespace Findx.WebHost
 {
@@ -17,6 +24,13 @@ namespace Findx.WebHost
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddFindx().AddModules();
+
+            // HttpClient Polly策略
+            services.AddHttpClient("policy")
+                    .AddFallbackPolicy(CommonResult.Fail(), 200)
+                    .AddCircuitBreakerPolicy(5, "5s")
+                    .AddRetryPolicy(1)
+                    .AddTimeoutPolicy(1);
 
             services.AddControllers(options => options.Filters.Add(typeof(ValidationModelAttribute)))
                     .AddJsonOptions(options =>
@@ -31,6 +45,7 @@ namespace Findx.WebHost
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseJsonExceptionHandler();
 
             app.UseRouting();
 

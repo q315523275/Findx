@@ -33,7 +33,7 @@ namespace Findx.Module.Admin.Models
         public string Account { get; set; }
 
         /// <summary>
-        /// 管理员类型（0超级管理员 1非管理员）
+        /// 管理员类型（1超级管理员 2非管理员）
         /// </summary>
         [Column(Name = "admin_type", DbType = "tinyint(4)")]
         public sbyte AdminType { get; set; }

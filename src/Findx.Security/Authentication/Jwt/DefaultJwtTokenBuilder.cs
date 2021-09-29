@@ -5,6 +5,9 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
 namespace Findx.Security.Authentication.Jwt
 {
+    /// <summary>
+    /// 默认token生成器
+    /// </summary>
     public class DefaultJwtTokenBuilder : IJwtTokenBuilder
     {
         /// <summary>
@@ -12,11 +15,21 @@ namespace Findx.Security.Authentication.Jwt
         /// </summary>
         private readonly JwtSecurityTokenHandler _tokenHandler;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
         public DefaultJwtTokenBuilder()
         {
             _tokenHandler = new JwtSecurityTokenHandler();
         }
 
+        /// <summary>
+        /// 创建
+        /// </summary>
+        /// <param name="payload"></param>
+        /// <param name="jwtOption"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public Task<JwtToken> CreateAsync(IDictionary<string, string> payload, JwtOptions jwtOption)
         {
             Check.NotNull(jwtOption, nameof(jwtOption));

@@ -3,9 +3,13 @@ using Findx.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.CircuitBreaker;
+using Polly.Timeout;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.Extensions
@@ -28,97 +32,152 @@ namespace Findx.Extensions
 
             var timeoutPolicy = Policy.TimeoutAsync<HttpResponseMessage>(seconds);
 
-            return httpClientBuilder.AddPolicyHandler(timeoutPolicy);
+            httpClientBuilder = httpClientBuilder.AddPolicyHandler(timeoutPolicy);
+
+            return httpClientBuilder;
         }
 
         /// <summary>
         /// 添加重试策略
         /// </summary>
-        /// <typeparam name="TException">触发异常类型</typeparam>
         /// <param name="httpClientBuilder"></param>
         /// <param name="retryCount">重试次数</param>
         /// <returns></returns>
-        public static IHttpClientBuilder AddRetryPolicy<TException>(this IHttpClientBuilder httpClientBuilder, int retryCount) where TException : Exception
+        public static IHttpClientBuilder AddRetryPolicy(this IHttpClientBuilder httpClientBuilder, int retryCount)
         {
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
+
             if (retryCount < 1) return httpClientBuilder;
 
-            var retryPolicy = Policy<HttpResponseMessage>.Handle<TException>().RetryAsync(retryCount);
+            httpClientBuilder.AddTransientHttpErrorPolicy(builder =>
+            {
+                return builder.Or<TaskCanceledException>()
+                              .Or<OperationCanceledException>()
+                              .Or<HttpRequestException>()
+                              .Or<TimeoutException>()
+                              .Or<TimeoutRejectedException>()
+                              .OrResult(res => res.StatusCode == HttpStatusCode.TooManyRequests)
+                              .RetryAsync(retryCount);
+            });
 
-            return httpClientBuilder.AddPolicyHandler(retryPolicy);
+            return httpClientBuilder;
+
         }
 
         /// <summary>
         /// 添加熔断策略
         /// </summary>
-        /// <typeparam name="TException"></typeparam>
         /// <param name="httpClientBuilder"></param>
         /// <param name="exceptionsAllowedBeforeBreaking">熔断前连续错误次数</param>
         /// <param name="durationOfBreak">熔断时长,如:30s</param>
         /// <returns></returns>
-        public static IHttpClientBuilder AddCircuitBreakerPolicy<TException>(this IHttpClientBuilder httpClientBuilder, int exceptionsAllowedBeforeBreaking, string durationOfBreak) where TException : Exception
+        public static IHttpClientBuilder AddCircuitBreakerPolicy(this IHttpClientBuilder httpClientBuilder, int exceptionsAllowedBeforeBreaking, string durationOfBreak)
         {
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
             if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak.IsNullOrWhiteSpace()) return httpClientBuilder;
 
             var BreakTimeSpan = Findx.Utils.DateTimeUtils.ToTimeSpan(durationOfBreak);
 
-            var circuitBreakerPolicy = Policy<HttpResponseMessage>.Handle<TException>()
-                                                                  .CircuitBreakerAsync(
-                                                                    handledEventsAllowedBeforeBreaking: exceptionsAllowedBeforeBreaking,
-                                                                    durationOfBreak: BreakTimeSpan,
-                                                                    onBreak: (ex, breakDelay) =>
-                                                                    {
-                                                                        var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
-                                                                        var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
+            httpClientBuilder.AddTransientHttpErrorPolicy(build =>
+            {
+                return build.Or<HttpRequestException>()
+                            .Or<TimeoutException>()
+                            .Or<TimeoutRejectedException>()
+                            .OrResult(rsp => rsp.StatusCode == HttpStatusCode.InternalServerError || rsp.StatusCode == HttpStatusCode.RequestTimeout)
+                            .CircuitBreakerAsync(
+                                  handledEventsAllowedBeforeBreaking: exceptionsAllowedBeforeBreaking,
+                                  durationOfBreak: BreakTimeSpan,
+                                  onBreak: (res, ts) =>
+                                  {
+                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      _logger?.LogInformation($"{DateTime.Now}-断路器即将熔断{ts.TotalSeconds}秒,原因:{res?.Exception?.Message}");
+                                  },
+                                  onReset: () =>
+                                  {
+                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      _logger?.LogInformation($"{DateTime.Now}-断路器熔断重置");
+                                  },
+                                  onHalfOpen: () =>
+                                  {
+                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      _logger?.LogInformation($"{DateTime.Now}-断路器半开启");
+                                  });
+            });
 
-                                                                        _logger.LogError(ex.Exception, $"断路器({DateTime.Now})即将熔断" + breakDelay.TotalSeconds + "秒");
-                                                                    },
-                                                                    onReset: () =>
-                                                                    {
-                                                                        var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
-                                                                        var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
-
-                                                                        _logger.LogDebug($"断路器({DateTime.Now})熔断恢复");
-                                                                    },
-                                                                    onHalfOpen: () =>
-                                                                    {
-                                                                        var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
-                                                                        var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
-
-                                                                        _logger.LogDebug(".Breaker logging: Half-open; next call is a trial.");
-                                                                    });
-
-            return httpClientBuilder.AddPolicyHandler(circuitBreakerPolicy);
+            return httpClientBuilder;
         }
 
         /// <summary>
         /// 添加降级策略
         /// </summary>
-        /// <typeparam name="TException"></typeparam>
         /// <param name="httpClientBuilder"></param>
-        /// <param name="httpResponseMessage"></param>
-        /// <param name="httpResponseStatus"></param>
+        /// <param name="fallbackRspObj"></param>
+        /// <param name="fallbackRspStatus"></param>
         /// <returns></returns>
-        public static IHttpClientBuilder AddFallbackPolicy<TException>(this IHttpClientBuilder httpClientBuilder, string httpResponseMessage, int httpResponseStatus) where TException : Exception
+        public static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder, object fallbackRspObj, int fallbackRspStatus)
         {
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
-            Check.NotNull(httpResponseMessage, nameof(httpResponseMessage));
-            if (httpResponseStatus < 1) return httpClientBuilder;
+            Check.NotNull(fallbackRspObj, nameof(fallbackRspObj));
+            if (fallbackRspStatus < 1) return httpClientBuilder;
 
-            HttpResponseMessage fallbackResponse = new() { Content = new StringContent(httpResponseMessage), StatusCode = (HttpStatusCode)httpResponseStatus };
+            var fallbackRspResult = JsonSerializer.Serialize(fallbackRspObj);
 
-            var fallbackPolicy = Policy<HttpResponseMessage>.HandleInner<TException>()
-                                                            .FallbackAsync(fallbackResponse, b =>
-                                                            {
-                                                                var _loggerFactory = ServiceLocator.GetService<ILoggerFactory>();
-                                                                var _logger = _loggerFactory.CreateLogger("Microsoft.Extensions.Http.Polly");
+            httpClientBuilder.AddTransientHttpErrorPolicy(build =>
+            {
+                return build.Or<HttpRequestException>()
+                            .Or<TimeoutException>()
+                            .Or<TimeoutRejectedException>()
+                            .Or<BrokenCircuitException>()
+                            .OrResult(rsp => rsp.StatusCode == HttpStatusCode.InternalServerError || rsp.StatusCode == HttpStatusCode.RequestTimeout)
+                            .FallbackAsync(
+                                  fallbackAction: (cancellationToken) =>
+                                  {
+                                      return Task.FromResult(new HttpResponseMessage { Content = new StringContent(fallbackRspResult), StatusCode = (HttpStatusCode)fallbackRspStatus });
+                                  },
+                                  onFallbackAsync: (res) =>
+                                  {
+                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      _logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
+                                      _logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{fallbackRspResult}");
+                                      return Task.CompletedTask;
+                                  });
+            });
 
-                                                                _logger.LogError(b.Exception, $"服务开始降级({DateTime.Now})");
-                                                                return Task.CompletedTask;
-                                                            });
+            return httpClientBuilder;
+        }
 
-            return httpClientBuilder.AddPolicyHandler(fallbackPolicy);
+        /// <summary>
+        /// 添加降级策略
+        /// </summary>
+        /// <param name="httpClientBuilder"></param>
+        /// <param name="fallbackAction"></param>
+        /// <returns></returns>
+        public static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder, Func<CancellationToken, Task<HttpResponseMessage>> fallbackAction)
+        {
+            Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
+            Check.NotNull(fallbackAction, nameof(fallbackAction));
+
+            httpClientBuilder.AddTransientHttpErrorPolicy(build =>
+            {
+                return build.Or<HttpRequestException>()
+                            .Or<TimeoutException>()
+                            .Or<TimeoutRejectedException>()
+                            .Or<BrokenCircuitException>()
+                            .OrResult(rsp => rsp.StatusCode == HttpStatusCode.InternalServerError || rsp.StatusCode == HttpStatusCode.RequestTimeout)
+                            .FallbackAsync(
+                                  fallbackAction: async (cancellationToken) =>
+                                  {
+                                      return await fallbackAction.Invoke(cancellationToken);
+                                  },
+                                  onFallbackAsync: async (res) =>
+                                  {
+                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      _logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
+                                      _logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{await res?.Result?.Content?.ReadAsStringAsync()}");
+                                  });
+            });
+
+            return httpClientBuilder;
         }
     }
 }

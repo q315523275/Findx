@@ -73,7 +73,8 @@ namespace Findx.FreeSql
                 };
                 // 注入
                 freeSqlClient.TryAdd(option.Key, freeSql);
-                services.AddSingleton(freeSql);
+                if (option.Key == FreeSqlOptions.Primary)
+                    services.AddSingleton(freeSql);
             }
 
             // 添加仓储实现

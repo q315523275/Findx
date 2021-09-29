@@ -4,6 +4,34 @@
         <name>Findx.Module.Admin</name>
     </assembly>
     <members>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.AccountController">
+            <summary>
+            账户服务
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.AccountController.#ctor(Microsoft.Extensions.Options.IOptionsMonitor{Findx.Security.Authentication.Jwt.JwtOptions})">
+            <summary>
+            Ctor
+            </summary>
+            <param name="_optionsMonitor"></param>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.AccountController.Login(Findx.Module.Admin.Areas.Admin.DTO.LoginRequest,Findx.Data.IRepository{Findx.Module.Admin.Models.SysUserInfo},Findx.Security.Authentication.Jwt.IJwtTokenBuilder)">
+            <summary>
+            账号密码登录
+            </summary>
+            <param name="request"></param>
+            <param name="userRepo"></param>
+            <param name="tokenBuilder"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.AccountController.GetLoginUser(IFreeSql,System.Security.Principal.IPrincipal,Findx.Mapping.IMapper)">
+            <summary>
+            查询登录用户信息
+            </summary>
+            <param name="fsql"></param>
+            <param name="principal"></param>
+            <returns></returns>
+        </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.CommonController">
             <summary>
             系统组织机构
@@ -22,6 +50,181 @@
         <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysUserController">
             <summary>
             系统用户
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.LoginRequest">
+            <summary>
+            系统登录入参
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginRequest.Account">
+            <summary>
+            账户
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginRequest.Password">
+            <summary>
+            密码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginRequest.Code">
+            <summary>
+            验证码
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO">
+            <summary>
+            登录用户信息DTO模型
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Account">
+            <summary>
+            账号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.AdminType">
+            <summary>
+            管理员类型（0超级管理员 1非管理员）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Avatar">
+            <summary>
+            头像
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Birthday">
+            <summary>
+            生日
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Email">
+            <summary>
+            邮箱
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.LastLoginIp">
+            <summary>
+            最后登陆IP
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.LastLoginTime">
+            <summary>
+            最后登陆时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.LastLoginAddress">
+            <summary>
+            最后登录地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.LastLoginBrowser">
+            <summary>
+            最后登录浏览器
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.LastLoginOs">
+            <summary>
+            最后登录系统
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Name">
+            <summary>
+            姓名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.NickName">
+            <summary>
+            昵称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Phone">
+            <summary>
+            手机
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Sex">
+            <summary>
+            性别(字典 1男 2女 3未知)
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Enabled">
+            <summary>
+            状态正常
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Tel">
+            <summary>
+            电话
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Roles">
+            <summary>
+            角色范围
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Apps">
+            <summary>
+            系统范围
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.DataScopes">
+            <summary>
+            数据范围
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Menus">
+            <summary>
+            菜单范围
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.Permissions">
+            <summary>
+            权限范围
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginUserDTO.LoginEmpInfo">
+            <summary>
+            员工信息
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.LoginEmpDTO">
+            <summary>
+            登录用户员工信息
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginEmpDTO.ExtOrgPos">
+            <summary>
+            附属职位
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginEmpDTO.JobNum">
+            <summary>
+            工号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginEmpDTO.OrgId">
+            <summary>
+            组织ID
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginEmpDTO.OrgName">
+            <summary>
+            组织名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.LoginEmpDTO.Positions">
+            <summary>
+            职位信息
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.LoginUserMenuDTO">
+            <summary>
+            登录用户菜单
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.LoginUserMenuMetaDTO">
+            <summary>
+            登录用户菜单元数据
             </summary>
         </member>
         <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysOrgRequest.Id">
@@ -117,6 +320,66 @@
         <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.UpdateTime">
             <summary>
             更新时间
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.CommonStatusEnum.ENABLE">
+            <summary>
+            正常
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.CommonStatusEnum.DISABLE">
+            <summary>
+            停用
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.CommonStatusEnum.DELETED">
+            <summary>
+            删除
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.DataScopeTypeEnum.ALL">
+            <summary>
+            全部数据
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.DataScopeTypeEnum.DEPT_WITH_CHILD">
+            <summary>
+            本部门及以下数据
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.DataScopeTypeEnum.DEPT">
+            <summary>
+            本部门数据
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.DataScopeTypeEnum.SELF">
+            <summary>
+            仅本人数据
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.DataScopeTypeEnum.DEFINE">
+            <summary>
+            自定义数据
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.MenuOpenTypeEnum.NONE">
+            <summary>
+            无
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.MenuOpenTypeEnum.COMPONENT">
+            <summary>
+            组件
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.MenuOpenTypeEnum.INNER">
+            <summary>
+            内链
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.MenuOpenTypeEnum.OUTER">
+            <summary>
+            外链
             </summary>
         </member>
         <member name="T:Findx.Module.Admin.Models.SysAppInfo">
@@ -1049,16 +1312,6 @@
             编码
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Models.SysRoleInfo.CreateTime">
-            <summary>
-            创建时间
-            </summary>
-        </member>
-        <member name="P:Findx.Module.Admin.Models.SysRoleInfo.CreateUser">
-            <summary>
-            创建人
-            </summary>
-        </member>
         <member name="P:Findx.Module.Admin.Models.SysRoleInfo.DataScopeType">
             <summary>
             数据范围类型（字典 1全部数据 2本部门及以下数据 3本部门数据 4仅本人数据 5自定义数据）
@@ -1082,6 +1335,16 @@
         <member name="P:Findx.Module.Admin.Models.SysRoleInfo.Status">
             <summary>
             状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRoleInfo.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysRoleInfo.CreateUser">
+            <summary>
+            创建人
             </summary>
         </member>
         <member name="P:Findx.Module.Admin.Models.SysRoleInfo.UpdateTime">
@@ -1216,7 +1479,7 @@
         </member>
         <member name="P:Findx.Module.Admin.Models.SysUserInfo.AdminType">
             <summary>
-            管理员类型（0超级管理员 1非管理员）
+            管理员类型（1超级管理员 2非管理员）
             </summary>
         </member>
         <member name="P:Findx.Module.Admin.Models.SysUserInfo.Avatar">

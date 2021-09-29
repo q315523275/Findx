@@ -53,8 +53,9 @@ namespace Findx.Authorization.Authentication
         protected virtual AuthenticationBuilder AddJwtBearer(IServiceCollection services, AuthenticationBuilder builder)
         {
             IConfiguration configuration = services.GetConfiguration();
-            JwtOptions jwt = new JwtOptions();
-            configuration.Bind("Findx:Authentication:Jwt", jwt);
+            var section = configuration.GetSection("Findx:Authentication:Jwt");
+            JwtOptions jwt = section.Get<JwtOptions>();
+            services.Configure<JwtOptions>(section);
             if (!jwt.Enabled)
             {
                 return builder;
@@ -86,8 +87,7 @@ namespace Findx.Authorization.Authentication
                 return builder;
             }
 
-            builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
-                opts =>
+            builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opts =>
                 {
                     if (cookie.CookieName != null)
                     {

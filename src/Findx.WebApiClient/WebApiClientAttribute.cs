@@ -20,7 +20,7 @@ namespace Findx.WebApiClient
         /// <summary>
         /// 超时时间
         /// </summary>
-        public int Timeout { set; get; }
+        public int Timeout { set; get; } = 60;
 
         /// <summary>
         /// 重试次数
@@ -35,7 +35,7 @@ namespace Findx.WebApiClient
         /// <summary>
         /// 降级描述
         /// </summary>
-        public string FallbackMessage { set; get; }
+        public object FallbackMessage { set; get; }
 
         /// <summary>
         /// 熔断前连续错误次数

@@ -2,6 +2,7 @@
 using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
 using System.ComponentModel;
 
 namespace Findx.WebApiClient
@@ -29,7 +30,7 @@ namespace Findx.WebApiClient
                     httpApiBuilder = httpApiBuilder.AddCircuitBreakerPolicy(attribute.ExceptionsAllowedBeforeBreaking, attribute.DurationOfBreak);
 
                 if (attribute.Retry > 0)
-                    httpApiBuilder = httpApiBuilder.AddRetryPolicy(attribute.Timeout);
+                    httpApiBuilder = httpApiBuilder.AddRetryPolicy(attribute.Retry);
 
                 if (attribute.Timeout > 0)
                     httpApiBuilder = httpApiBuilder.AddTimeoutPolicy(attribute.Timeout);

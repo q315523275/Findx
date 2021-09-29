@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
@@ -206,8 +207,11 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("/exception")]
-        public string Exception()
+        public async Task<string> Exception()
         {
+            await Task.Delay(2000);
+            return "1";
+            Console.WriteLine($"{DateTime.Now} - 自定义异常");
             throw new Exception("自定义异常");
         }
 
@@ -218,6 +222,7 @@ namespace Findx.WebHost.Controllers
         [HttpGet("/exception_timeout")]
         public async Task<string> Exception_Timeout()
         {
+            Console.WriteLine($"{DateTime.Now} - 耗时接口");
             await Task.Delay(3000);
             return "1";
         }
@@ -253,6 +258,18 @@ namespace Findx.WebHost.Controllers
         public async Task<string> WebApiClientDiscoveryTimeout([FromServices] IFindxApi api)
         {
             return await api.Timeout();
+        }
+
+        /// <summary>
+        /// Policy策略Http请求
+        /// </summary>
+        /// <param name="api"></param>
+        /// <returns></returns>
+        [HttpGet("/policy_http")]
+        public async Task<string> HttpClientPolicy([FromServices] IHttpClientFactory api)
+        {
+            var client = api.CreateClient("policy");
+            return await client.GetStringAsync("http://127.0.0.1:8888/exception");
         }
 
         /// <summary>
