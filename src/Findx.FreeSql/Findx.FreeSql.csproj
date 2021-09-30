@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Description>FreeSql ORM实现</Description>
-    <Version>1.1.1</Version>
+    <Version>1.1.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <Version>1.1.3</Version>
-    <Description>SqlSugar ORM组件,当前版本mysql使用MySqlConnector</Description>
+    <Version>1.1.4</Version>
+    <Description>SqlSugar ORM组件</Description>
   </PropertyGroup>
 
   <ItemGroup>

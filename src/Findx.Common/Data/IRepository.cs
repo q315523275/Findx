@@ -95,17 +95,15 @@ namespace Findx.Data
         /// 更新实体信息
         /// </summary>
         /// <param name="entitys"></param>
-        /// <param name="ignoreNullColumns">过滤为NULL字段</param>
         /// <returns></returns>
-        int Update(List<TEntity> entitys, bool ignoreNullColumns = false);
+        int Update(List<TEntity> entitys);
         /// <summary>
         /// 更新实体信息
         /// </summary>
         /// <param name="entitys"></param>
-        /// <param name="ignoreNullColumns">过滤为NULL字段</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> UpdateAsync(List<TEntity> entitys, bool ignoreNullColumns = false, CancellationToken cancellationToken = default);
+        Task<int> UpdateAsync(List<TEntity> entitys, CancellationToken cancellationToken = default);
         /// <summary>
         /// 实体更新
         /// </summary>

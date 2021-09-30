@@ -236,23 +236,15 @@ namespace Findx.SqlSugar
             return updateable.ExecuteCommandAsync();
         }
 
-        public int Update(List<TEntity> entitys, bool ignoreNullColumns = false)
+        public int Update(List<TEntity> entitys)
         {
             var updateable = _sugar.Updateable(entitys).AS(_tableName);
-
-            if (ignoreNullColumns)
-                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
-
             return updateable.ExecuteCommand();
         }
 
-        public Task<int> UpdateAsync(List<TEntity> entitys, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
+        public Task<int> UpdateAsync(List<TEntity> entitys, CancellationToken cancellationToken = default)
         {
             var updateable = _sugar.Updateable(entitys).AS(_tableName);
-
-            if (ignoreNullColumns)
-                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
-
             _sugar.Ado.CancellationToken = cancellationToken;
 
             return updateable.ExecuteCommandAsync();

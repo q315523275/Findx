@@ -229,26 +229,16 @@ namespace Findx.FreeSql
             return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
         }
 
-        public int Update(List<TEntity> entitys, bool ignoreNullColumns = false)
+        public int Update(List<TEntity> entitys)
         {
-            var update = _fsql.Update<TEntity>().AsTable(_tableRule);
-
-            if (ignoreNullColumns)
-                update.SetSource(entitys);
-            else
-                update.SetSource(entitys);
+            var update = _fsql.Update<TEntity>().AsTable(_tableRule).SetSource(entitys);
 
             return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
 
-        public Task<int> UpdateAsync(List<TEntity> entitys, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
+        public Task<int> UpdateAsync(List<TEntity> entitys, CancellationToken cancellationToken = default)
         {
-            var update = _fsql.Update<TEntity>().AsTable(_tableRule);
-
-            if (ignoreNullColumns)
-                update.SetSource(entitys);
-            else
-                update.SetSource(entitys);
+            var update = _fsql.Update<TEntity>().AsTable(_tableRule).SetSource(entitys);
 
             return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
         }
