@@ -30,6 +30,7 @@
             </summary>
             <param name="fsql"></param>
             <param name="principal"></param>
+            <param name="mapper"></param>
             <returns></returns>
         </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.CommonController">

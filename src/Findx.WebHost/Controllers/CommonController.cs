@@ -9,6 +9,7 @@ using Findx.Extensions;
 using Findx.Messaging;
 using Findx.Pdf;
 using Findx.RabbitMQ;
+using Findx.Redis;
 using Findx.Security.Authorization;
 using Findx.Tasks.Scheduling;
 using Findx.WebHost.EventBus;
@@ -17,6 +18,7 @@ using Findx.WebHost.WebApiClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
@@ -392,5 +394,18 @@ namespace Findx.WebHost.Controllers
 
             return File(img, "image/jpeg");
         }
+
+        [HttpGet("/redis")]
+        public async Task<string> Redis([FromServices] IRedisClientProvider redisClientProvider)
+        {
+            var redisClient = redisClientProvider.CreateClient();
+
+            await redisClient.GeoAddAsync($"cin.oms_geo", new List<(double longitude, double latitude, string member)> { (118.763709, 32.106839, "1") });
+
+            await redisClient.SortedSetRemoveAsync($"cin.oms_geo", new List<string> { "1" });
+
+            return DateTime.Now.ToString();
+        }
+
     }
 }

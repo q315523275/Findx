@@ -4,6 +4,7 @@ using StackExchange.Redis;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -65,6 +66,8 @@ namespace Findx.Redis.StackExchangeRedis
                 _connectionMultiplexer?.Dispose();
                 _connectionMultiplexer = null;
 
+                Debug.WriteLine($"redis连接初始化:{options.Configuration}");
+
                 _connectionMultiplexer = ConnectionMultiplexer.Connect(options.Configuration);
                 _connectionMultiplexer.ConnectionFailed += Conn_ConnectionFailed;
                 _connectionMultiplexer.ConnectionRestored += Conn_ConnectionRestored;
@@ -98,6 +101,8 @@ namespace Findx.Redis.StackExchangeRedis
                 {
                     return _connectionMultiplexer;
                 }
+
+                Debug.WriteLine($"redis连接初始化:{options.Configuration}");
 
                 _connectionMultiplexer?.Dispose();
                 _connectionMultiplexer = null;
