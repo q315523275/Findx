@@ -330,7 +330,10 @@ namespace Findx.SqlSugar
         #region 查询
         public TEntity First(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 return queryable.First(whereExpression);
@@ -342,7 +345,10 @@ namespace Findx.SqlSugar
         {
             _sugar.Ado.CancellationToken = cancellationToken;
 
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 return queryable.FirstAsync(whereExpression);
@@ -354,7 +360,10 @@ namespace Findx.SqlSugar
         {
             Check.NotNull(key, nameof(key));
 
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             return queryable.InSingle(key);
         }
@@ -365,7 +374,10 @@ namespace Findx.SqlSugar
 
             _sugar.Ado.CancellationToken = cancellationToken;
 
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             return queryable.InSingleAsync(key);
         }
@@ -374,7 +386,10 @@ namespace Findx.SqlSugar
 
         public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -384,7 +399,10 @@ namespace Findx.SqlSugar
 
         public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -396,7 +414,10 @@ namespace Findx.SqlSugar
 
         public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -409,7 +430,10 @@ namespace Findx.SqlSugar
 
         public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -426,7 +450,10 @@ namespace Findx.SqlSugar
 
         public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -447,7 +474,10 @@ namespace Findx.SqlSugar
 
         public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -470,7 +500,10 @@ namespace Findx.SqlSugar
 
         public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -494,7 +527,10 @@ namespace Findx.SqlSugar
 
         public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -520,7 +556,10 @@ namespace Findx.SqlSugar
 
         public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -545,7 +584,10 @@ namespace Findx.SqlSugar
 
         public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -572,7 +614,10 @@ namespace Findx.SqlSugar
 
         public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -604,7 +649,10 @@ namespace Findx.SqlSugar
 
         public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
         {
-            var queryable = _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
+
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
@@ -640,40 +688,60 @@ namespace Findx.SqlSugar
         #region 函数查询
         public int Count(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).Count(whereExpression);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).Count();
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
+
+            if (whereExpression != null)
+                return queryable.Count(whereExpression);
+
+            return queryable.Count();
         }
 
         public Task<int> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
             _sugar.Ado.CancellationToken = cancellationToken;
 
-            if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).CountAsync(whereExpression);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).CountAsync();
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
+
+            if (whereExpression != null)
+                return queryable.CountAsync(whereExpression);
+
+            return queryable.CountAsync();
         }
 
 
 
         public bool Exist(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).Any(whereExpression);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).Any();
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
+
+            if (whereExpression != null)
+                return queryable.Any(whereExpression);
+
+            return queryable.Any();
         }
 
         public Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
             _sugar.Ado.CancellationToken = cancellationToken;
 
-            if (whereExpression != null)
-                return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).AnyAsync(whereExpression);
+            var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
-            return _sugar.Queryable<TEntity>().AS(_tableName).Filter(_softDeletableFilterName, _softDeletable).AnyAsync();
+            if (_softDeletable)
+                queryable.Filter(_softDeletableFilterName);
+
+            if (whereExpression != null)
+                return queryable.AnyAsync(whereExpression);
+
+            return queryable.AnyAsync();
         }
         #endregion
 

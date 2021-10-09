@@ -14,6 +14,7 @@ using Findx.Security.Authorization;
 using Findx.Tasks.Scheduling;
 using Findx.WebHost.EventBus;
 using Findx.WebHost.Messaging;
+using Findx.WebHost.Model;
 using Findx.WebHost.WebApiClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -404,6 +405,14 @@ namespace Findx.WebHost.Controllers
 
             await redisClient.SortedSetRemoveAsync($"cin.oms_geo", new List<string> { "1" });
 
+            return DateTime.Now.ToString();
+        }
+
+        [HttpGet("/sugar")]
+        public async Task<string> Sugar([FromServices] IRepository<TestNewsInfo> repo1, [FromServices] IRepository<TestUserInfo> repo2)
+        {
+            await repo1.SelectAsync();
+            await repo2.SelectAsync();
             return DateTime.Now.ToString();
         }
 
