@@ -1,4 +1,5 @@
 ﻿using Findx.Data;
+using Findx.Exceptions;
 using Findx.Extensions;
 using Microsoft.Extensions.Options;
 using SqlSugar;
@@ -67,7 +68,7 @@ namespace Findx.SqlSugar
                 var customSharding = _entityType.IsBaseOn(typeof(ITableSharding));
                 return (softDeletable, customSharding);
             });
-            _softDeletable = baseOns.softDeletable && Options.SoftDeletable; // 全局和
+            _softDeletable = baseOns.softDeletable && Options.SoftDeletable && !Options.SoftDeletableField.IsNullOrWhiteSpace() && !Options.SoftDeletableTimeField.IsNullOrWhiteSpace(); // 全局和
             _customSharding = baseOns.customSharding;
 
             // 初始化分表计算
@@ -141,24 +142,31 @@ namespace Findx.SqlSugar
                     softDeletable.Deleted = true;
                     softDeletable.DeletedTime = DateTime.Now;
 
-                    _sugar.Updateable(model).AS(_tableName).UpdateColumns(it => new { (it as ISoftDeletable).Deleted, (it as ISoftDeletable).DeletedTime }).ExecuteCommand();
+                    return _sugar.Updateable(model).AS(_tableName)
+                                 .UpdateColumns(Options.SoftDeletableField, Options.SoftDeletableTimeField)
+                                 .ExecuteCommand();
                 }
             }
 
-            return _sugar.Deleteable<TEntity>(key).AS(_tableName).ExecuteCommand();
+            return _sugar.Deleteable<TEntity>().AS(_tableName).In(key).ExecuteCommand();
         }
 
         public int Delete(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            if (_softDeletable && whereExpression == null)
-            {
-                return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(it => (it as ISoftDeletable).Deleted == true).SetColumns(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).ExecuteCommand();
-            }
+            if (_softDeletable)
+                throw new FindxException("suagr.delete.error", "当前SuagrORM不支持批量软删除,请使用Update进行软删除");
 
-            if (_softDeletable && whereExpression != null)
-            {
-                return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(it => (it as ISoftDeletable).Deleted == true).SetColumns(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).Where(whereExpression).ExecuteCommand();
-            }
+            //if (_softDeletable && whereExpression == null)
+            //{
+            //    var col_sql = $" {Options.SoftDeletableField} = {Options.SoftDeletableValue} ";
+
+            //    return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(it => (it as ISoftDeletable).Deleted == true).SetColumns(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).ExecuteCommand();
+            //}
+
+            //if (_softDeletable && whereExpression != null)
+            //{
+            //    return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(it => (it as ISoftDeletable).Deleted == true).SetColumns(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).Where(whereExpression).ExecuteCommand();
+            //}
 
             var deleteable = _sugar.Deleteable<TEntity>().AS(_tableName);
 
@@ -183,24 +191,29 @@ namespace Findx.SqlSugar
                     softDeletable.Deleted = true;
                     softDeletable.DeletedTime = DateTime.Now;
 
-                    _sugar.Updateable(model).AS(_tableName).UpdateColumns(it => new { (it as ISoftDeletable).Deleted, (it as ISoftDeletable).DeletedTime }).ExecuteCommand();
+                    return _sugar.Updateable(model).AS(_tableName)
+                                 .UpdateColumns(Options.SoftDeletableField, Options.SoftDeletableTimeField)
+                                 .ExecuteCommandAsync();
                 }
             }
 
-            return _sugar.Deleteable<TEntity>(key).AS(_tableName).ExecuteCommandAsync();
+            return _sugar.Deleteable<TEntity>().AS(_tableName).In(key).ExecuteCommandAsync();
         }
 
         public Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            if (_softDeletable && whereExpression == null)
-            {
-                return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(it => (it as ISoftDeletable).Deleted == true).SetColumns(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).ExecuteCommandAsync();
-            }
+            if (_softDeletable) 
+                throw new FindxException("suagr.delete.error", "当前SuagrORM不支持批量软删除,请使用Update进行软删除");
 
-            if (_softDeletable && whereExpression != null)
-            {
-                return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(it => (it as ISoftDeletable).Deleted == true).SetColumns(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).Where(whereExpression).ExecuteCommandAsync();
-            }
+            //if (_softDeletable && whereExpression == null)
+            //{
+            //    return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(it => (it as ISoftDeletable).Deleted == true).SetColumns(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).ExecuteCommandAsync();
+            //}
+
+            //if (_softDeletable && whereExpression != null)
+            //{
+            //    return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(it => (it as ISoftDeletable).Deleted == true).SetColumns(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).Where(whereExpression).ExecuteCommandAsync();
+            //}
 
             var deleteable = _sugar.Deleteable<TEntity>().AS(_tableName);
 

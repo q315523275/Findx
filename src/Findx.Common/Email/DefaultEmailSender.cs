@@ -1,6 +1,7 @@
 ﻿using Findx.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Mail;
 using System.Threading;

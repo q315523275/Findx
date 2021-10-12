@@ -50,6 +50,10 @@ namespace Findx.SqlSugar
         /// </summary>
         public string SoftDeletableField { set; get; }
         /// <summary>
+        /// 逻辑删除时间字段
+        /// </summary>
+        public string SoftDeletableTimeField { set; get; }
+        /// <summary>
         /// 逻辑已删除值(默认为 1)
         /// </summary>
         public int SoftDeletableValue { set; get; } = 1;

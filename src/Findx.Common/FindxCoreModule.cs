@@ -27,6 +27,7 @@ namespace Findx.Builders
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             IConfiguration configuration = services.GetConfiguration();
+
             // 缓存
             services.TryAddSingleton<ICacheProvider, CacheProvider>();
             services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();

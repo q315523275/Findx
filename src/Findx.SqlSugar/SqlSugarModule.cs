@@ -78,9 +78,8 @@ namespace Findx.SqlSugar
                     }
                 };
                 // 开启逻辑删除
-                if (SqlSugarOptions.SoftDeletable)
+                if (SqlSugarOptions.SoftDeletable && !SqlSugarOptions.SoftDeletableField.IsNullOrWhiteSpace() && !SqlSugarOptions.SoftDeletableTimeField.IsNullOrWhiteSpace())
                 {
-                    // 全局过滤器, FilterName = null,
                     sugar.QueryFilter.Add(new SqlFilterItem { FilterName = "SoftDeletable", FilterValue = it => { return new SqlFilterResult { Sql = $" {SqlSugarOptions.SoftDeletableField} = {SqlSugarOptions.SoftNotDeletableValue} " }; }, IsJoinQuery = false });
                 }
 

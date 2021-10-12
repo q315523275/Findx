@@ -18,12 +18,14 @@ using Findx.WebHost.Model;
 using Findx.WebHost.WebApiClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace Findx.WebHost.Controllers
 {
@@ -41,6 +43,18 @@ namespace Findx.WebHost.Controllers
         {
             return new JsonResult(new { status = "UP" });
         }
+
+        /// <summary>
+        /// 配置信息
+        /// </summary>
+        /// <param name="instance"></param>
+        /// <returns></returns>
+        [HttpGet("/configuration")]
+        public CommonResult Configuration([FromServices] IConfiguration configuration, [FromServices] IOptionsMonitor<SchedulerOptions> optionsMonitor)
+        {
+            return CommonResult.Success<object>(optionsMonitor.CurrentValue.ToString());
+        }
+
 
         /// <summary>
         /// 应用基础信息
@@ -413,6 +427,10 @@ namespace Findx.WebHost.Controllers
         {
             await repo1.SelectAsync();
             await repo2.SelectAsync();
+
+            await repo1.DeleteAsync();
+            await repo2.DeleteAsync();
+
             return DateTime.Now.ToString();
         }
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 namespace Findx.Tasks.Scheduling
@@ -30,9 +31,8 @@ namespace Findx.Tasks.Scheduling
             _dispatcher = dispatcher;
             _logger = logger;
 
-            _options = optionsMonitor.CurrentValue;
             optionsMonitor.OnChange(ConfigurationOnChange);
-
+            _options = optionsMonitor.CurrentValue;
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Findx.Tasks.Scheduling
             {
                 _options = changeOptions;
 
-                _logger.LogInformation($"InMemoryScheduler调度器发生了配置变更,内容{ _options }");
+                _logger.LogInformation($"InMemoryScheduler调度器发生了配置变更,内容{_options}");
             }
         }
 
