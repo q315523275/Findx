@@ -27,12 +27,12 @@ namespace Findx.Locks
             _lockValue = Guid.NewGuid().ToString();
             _refreshSeconds = _seconds / 2 * 1000;
 
-            _timer = new Timer(async x =>
+            _timer = new Timer(x =>
             {
                 if (_polling) return;
 
                 _polling = true;
-                await RefreshTimeToLiveAsync();
+                RefreshTimeToLive();
                 _polling = false;
 
             }, null, Timeout.Infinite, Timeout.Infinite);
@@ -42,6 +42,16 @@ namespace Findx.Locks
         {
             _timer?.Dispose();
             _timer = null;
+            Console.WriteLine($"分布式锁{_lockKey}进行自动续期锁释放,时间{DateTime.Now}");
+        }
+
+        public bool RefreshTimeToLive()
+        {
+            Console.WriteLine($"分布式锁{_lockKey}进行自动续期,时长{_seconds}秒,时间{DateTime.Now}");
+
+            var result = _distributedLock.RefreshTimeToLive(_lockKey, TimeSpan.FromSeconds(_seconds));
+
+            return result;
         }
 
         public async Task<bool> RefreshTimeToLiveAsync()

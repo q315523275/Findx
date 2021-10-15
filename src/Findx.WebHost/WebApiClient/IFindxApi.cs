@@ -15,7 +15,7 @@ namespace Findx.WebHost.WebApiClient
         [HttpGet("/exception")]
         Task<string> Exception();
 
-        [HttpGet("/exception_timeout")]
+        [HttpGet("/exception/timeout")]
         Task<string> Timeout();
     }
 }

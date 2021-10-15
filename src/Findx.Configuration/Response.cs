@@ -5,9 +5,9 @@ namespace Findx.Configuration
     internal class Response
     {
         public int Version { set; get; }
-        public List<RspConfigDTO> Data { set; get; }
+        public List<KeyValueDTO> Data { set; get; }
     }
-    internal class RspConfigDTO
+    internal class KeyValueDTO
     {
         public VaultType VaultType { set; get; }
         public string VaultKey { set; get; }

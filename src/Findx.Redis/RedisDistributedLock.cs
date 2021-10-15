@@ -82,5 +82,18 @@ namespace Findx.Redis
 
             return _redisClient.ExpireAsync(key, span);
         }
+
+        /// <summary>
+        /// 续期分布式锁
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="span"></param>
+        /// <returns></returns>
+        public bool RefreshTimeToLive(string key, TimeSpan span)
+        {
+            Check.NotNull(key, nameof(key));
+
+            return _redisClient.Expire(key, span);
+        }
     }
 }

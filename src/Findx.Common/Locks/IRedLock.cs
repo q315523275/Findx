@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
-
+using System;
 namespace Findx.Locks
 {
     /// <summary>
     /// 分布式锁对象
     /// </summary>
-    public interface IRedLock
+    public interface IRedLock: IDisposable
     {
         /// <summary>
         /// 锁

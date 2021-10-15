@@ -18,7 +18,7 @@ namespace Findx.Caching.InMemory
         public InMemoryCache()
         {
             _cache = new ConcurrentDictionary<string, CacheItem>();
-            _taskTimer = new Timer(async x => await RemoveNotAliveAsync(x), this, _period * 1000, _period * 1000);
+            _taskTimer = new Timer(x => RemoveNotAlive(x), this, _period * 1000, _period * 1000);
         }
 
         public Task<bool> ExistsAsync(string key, CancellationToken token = default)
@@ -183,11 +183,11 @@ namespace Findx.Caching.InMemory
             _taskTimer = null;
         }
 
-        public Task RemoveNotAliveAsync(object state)
+        public void RemoveNotAlive(object state)
         {
             if (_polling)
             {
-                return Task.CompletedTask;
+                return;
             }
             _polling = true;
 
@@ -199,8 +199,6 @@ namespace Findx.Caching.InMemory
                     Remove(item.Key);
             }
             _polling = false;
-
-            return Task.CompletedTask;
         }
     }
     internal class CacheItem

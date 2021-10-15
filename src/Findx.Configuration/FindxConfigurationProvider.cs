@@ -48,6 +48,8 @@ namespace Findx.Configuration
             }
             catch
             {
+                // 如果是初始化配置报错
+                // 从缓存文件中读取最后一次成功数据进行恢复
                 if (_version == 0 && File.Exists(_localBackupPath))
                 {
                     var configText = File.ReadAllText(_localBackupPath);
@@ -56,6 +58,7 @@ namespace Findx.Configuration
             }
             finally
             {
+                // 第一次成功后,开启定时获取最新变更配置
                 if (_timer == null && _options.RefreshInteval > 0)
                 {
                     _timer = new Timer(async x => await PollingRefreshTask(), null, _options.RefreshInteval * 1000, _options.RefreshInteval * 1000);

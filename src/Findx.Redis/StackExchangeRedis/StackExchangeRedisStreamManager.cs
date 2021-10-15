@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Findx.Redis.StackExchangeRedis
 {
-    public class StackExchangeRedisStreamManager : IRedisStreamManager
+    internal class StackExchangeRedisStreamManager : IRedisStreamManager
     {
         private readonly IStackExchangeRedisDataBaseProvider _redisDataBaseProvider;
         private readonly RedisOptions _options;

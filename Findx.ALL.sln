@@ -63,6 +63,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.WebApiClient", "src\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Metrics", "src\Findx.Metrics\Findx.Metrics.csproj", "{5C94050C-0CEF-474C-98D3-91A4EF6A8A60}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findex.Module.Configuration", "modules\Findex.Module.Configuration\Findex.Module.Configuration.csproj", "{BF3D7D64-58E4-43C5-8D0C-EB4995B00FD1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -181,6 +183,10 @@ Global
 		{5C94050C-0CEF-474C-98D3-91A4EF6A8A60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5C94050C-0CEF-474C-98D3-91A4EF6A8A60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5C94050C-0CEF-474C-98D3-91A4EF6A8A60}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BF3D7D64-58E4-43C5-8D0C-EB4995B00FD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF3D7D64-58E4-43C5-8D0C-EB4995B00FD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF3D7D64-58E4-43C5-8D0C-EB4995B00FD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF3D7D64-58E4-43C5-8D0C-EB4995B00FD1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -214,6 +220,7 @@ Global
 		{7D390E7B-9903-427B-85E5-4780ABDB3CA2} = {8F3EC254-3200-46DB-9193-030B91CB04F5}
 		{669FD454-BE9D-4F3F-9EBA-CF89E921D5BF} = {B66E551E-1813-4080-BC15-E2D9888B8308}
 		{5C94050C-0CEF-474C-98D3-91A4EF6A8A60} = {B66E551E-1813-4080-BC15-E2D9888B8308}
+		{BF3D7D64-58E4-43C5-8D0C-EB4995B00FD1} = {8F3EC254-3200-46DB-9193-030B91CB04F5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7630DAB2-2CEC-407B-81D8-220E7EF09F33}
