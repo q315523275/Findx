@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Findx.Locks
 {
-    public class AutomaticRenewalLock : IRedLock, IDisposable
+    public class AutomaticRenewalLock : IRedLock
     {
         private readonly IDistributedLock _distributedLock;
         private readonly string _lockKey;
@@ -27,12 +27,12 @@ namespace Findx.Locks
             _lockValue = Guid.NewGuid().ToString();
             _refreshSeconds = _seconds / 2 * 1000;
 
-            _timer = new Timer(x =>
+            _timer = new Timer(async x =>
             {
                 if (_polling) return;
 
                 _polling = true;
-                RefreshTimeToLive();
+                await RefreshTimeToLiveAsync();
                 _polling = false;
 
             }, null, Timeout.Infinite, Timeout.Infinite);

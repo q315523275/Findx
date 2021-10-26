@@ -21,7 +21,6 @@ namespace Findx.Messaging
         {
             Check.NotNull(message, nameof(message));
 
-
             var messageType = message.GetType();
 
             var handler = (MessageHandlerWrapper<TResponse>)_messageHandlers.GetOrAdd(messageType,
