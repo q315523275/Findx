@@ -57,7 +57,7 @@ namespace Findx.Module.Admin.Models
         /// 状态（字典 0正常 1停用 2删除）
         /// </summary>
         [Column(Name = "status", DbType = "tinyint(4)")]
-        public sbyte Status { get; set; }
+        public int Status { get; set; }
 
         /// <summary>
         /// 更新时间

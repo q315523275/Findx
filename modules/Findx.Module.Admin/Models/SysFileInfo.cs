@@ -38,7 +38,7 @@ namespace Findx.Module.Admin.Models
 		/// 文件存储位置（1:阿里云，2:腾讯云，3:minio，4:本地）
 		/// </summary>
 		[Column(Name = "file_location", DbType = "tinyint(4)")]
-		public sbyte FileLocation { get; set; }
+		public int FileLocation { get; set; }
 
 		/// <summary>
 		/// 存储到bucket的名称（文件唯一标识id）

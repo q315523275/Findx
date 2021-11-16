@@ -2,6 +2,7 @@
 using Findx.Modularity;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.ComponentModel;
 
@@ -19,8 +20,16 @@ namespace Findx.Mapster
         }
         public override void UseModule(IServiceProvider provider)
         {
+            var option = provider.GetService<IOptions<MappingOptions>>();
+
             // 设置不区分大小写
-            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
+            if (option.Value.IgnoreCase)
+                TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
+
+            // 设置忽略Null值映射
+            if (option.Value.IgnoreNullValues)
+                TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
+
             MapperExtensions.SetMapper(provider.GetRequiredService<IMapper>());
 
             base.UseModule(provider);

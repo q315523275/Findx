@@ -1,5 +1,8 @@
 ﻿namespace Findx.Security
 {
+    /// <summary>
+    /// 身份声明类型
+    /// </summary>
     public static class ClaimTypes
     {
         #region User(用户)

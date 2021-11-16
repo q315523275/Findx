@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
@@ -26,6 +26,10 @@
 		<ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
 		<ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
 		<ProjectReference Include="..\..\src\Findx.SqlSugar\Findx.SqlSugar.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Utils\" />
 	</ItemGroup>
 
 </Project>

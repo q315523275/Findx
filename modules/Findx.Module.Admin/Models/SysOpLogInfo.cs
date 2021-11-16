@@ -74,7 +74,7 @@ namespace Findx.Module.Admin.Models
 		/// 操作类型
 		/// </summary>
 		[Column(Name = "op_type", DbType = "tinyint(4)")]
-		public sbyte? OpType { get; set; }
+		public int? OpType { get; set; }
 
 		/// <summary>
 		/// 操作系统

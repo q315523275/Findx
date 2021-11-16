@@ -16,10 +16,10 @@ namespace Findx.Module.Admin.Internals
         [Description("停用")]
         DISABLE = 1,
 
-        /// <summary>
-        /// 删除
-        /// </summary>
-        [Description("删除")]
-        DELETED = 2,
+        ///// <summary>
+        ///// 删除
+        ///// </summary>
+        //[Description("删除")]
+        //DELETED = 2,
     }
 }

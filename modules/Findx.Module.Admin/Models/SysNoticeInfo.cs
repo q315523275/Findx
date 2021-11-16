@@ -74,7 +74,7 @@ namespace Findx.Module.Admin.Models
 		/// 状态（字典 0草稿 1发布 2撤回 3删除）
 		/// </summary>
 		[Column(Name = "status", DbType = "tinyint(4)")]
-		public sbyte Status { get; set; }
+		public int Status { get; set; }
 
 		/// <summary>
 		/// 标题
@@ -86,7 +86,7 @@ namespace Findx.Module.Admin.Models
 		/// 类型（字典 1通知 2公告）
 		/// </summary>
 		[Column(Name = "type", DbType = "tinyint(4)")]
-		public sbyte Type { get; set; }
+		public int Type { get; set; }
 
 		/// <summary>
 		/// 修改时间

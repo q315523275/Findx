@@ -11,7 +11,7 @@ namespace Findx.WebHost.Scheduling
         public async Task ExecuteAsync(ITaskContext context, CancellationToken cancellationToken = default)
         {
             await Task.Delay(5);
-            Console.WriteLine($"我是{context.TaskId}条测试任务========" + DateTime.Now + "==========" + Thread.CurrentThread.ManagedThreadId);
+            //Console.WriteLine($"我是{context.TaskId}条测试任务========" + DateTime.Now + "==========" + Thread.CurrentThread.ManagedThreadId);
         }
     }
 }

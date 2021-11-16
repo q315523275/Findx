@@ -36,7 +36,7 @@ namespace Findx.Module.Admin.Models
         /// 管理员类型（1超级管理员 2非管理员）
         /// </summary>
         [Column(Name = "admin_type", DbType = "tinyint(4)")]
-        public sbyte AdminType { get; set; }
+        public int AdminType { get; set; }
 
         /// <summary>
         /// 头像
@@ -108,13 +108,13 @@ namespace Findx.Module.Admin.Models
         /// 性别(字典 1男 2女 3未知)
         /// </summary>
         [Column(Name = "sex", DbType = "tinyint(4)")]
-        public sbyte Sex { get; set; }
+        public int Sex { get; set; }
 
         /// <summary>
         /// 状态（字典 0正常 1冻结 2删除）
         /// </summary>
         [Column(Name = "status", DbType = "tinyint(4)")]
-        public sbyte Status { get; set; }
+        public int Status { get; set; }
 
         /// <summary>
         /// 电话
@@ -134,5 +134,12 @@ namespace Findx.Module.Admin.Models
         [Column(Name = "update_user")]
         public long? UpdateUser { get; set; }
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public override void Init()
+        {
+            Id = Findx.Utils.SnowflakeId.Default().NextId();
+        }
     }
 }

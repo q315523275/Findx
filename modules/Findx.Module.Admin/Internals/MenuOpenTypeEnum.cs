@@ -1,6 +1,9 @@
 ﻿namespace Findx.Module.Admin.Internals
 {
-    internal enum MenuOpenTypeEnum
+    /// <summary>
+    /// 菜单打开类型枚举
+    /// </summary>
+    public enum MenuOpenTypeEnum
     {
         /// <summary>
         /// 无

@@ -54,13 +54,13 @@ namespace Findx.Module.Admin.Models
 		/// 来源（字典 1 app， 2 pc， 3 其他）
 		/// </summary>
 		[Column(Name = "source", DbType = "tinyint(4)")]
-		public sbyte Source { get; set; }
+		public int Source { get; set; }
 
 		/// <summary>
 		/// 发送状态（字典 0 未发送，1 发送成功，2 发送失败，3 失效）
 		/// </summary>
 		[Column(Name = "status", DbType = "tinyint(4)")]
-		public sbyte Status { get; set; }
+		public int Status { get; set; }
 
 		/// <summary>
 		/// 短信模板ID

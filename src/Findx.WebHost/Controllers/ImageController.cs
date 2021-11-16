@@ -12,9 +12,9 @@ namespace Findx.WebHost.Controllers
         /// <param name="imageProcessor"></param>
         /// <returns></returns>
         [HttpGet("/image/makeThumbnail")]
-        public IActionResult ImageSharp([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int width, int height, ImageResizeMode mode = ImageResizeMode.Crop)
+        public IActionResult ImageSharp([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int width, int height, int quality = 100, ImageResizeMode mode = ImageResizeMode.Crop)
         {
-            var img = imageProcessor.MakeThumbnail(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", width, height, mode);
+            var img = imageProcessor.MakeThumbnail(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", width, height, quality, mode);
 
             return File(img, "image/jpeg");
         }

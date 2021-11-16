@@ -253,7 +253,7 @@ namespace Findx.FreeSql
             return _fsql.Update<TEntity>().AsTable(_tableRule).Set(columns).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
         }
 
-        public int UpdateColumns(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression)
+        public int UpdateColumns(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression)
         {
             Check.NotNull(columns, nameof(columns));
             Check.NotNull(whereExpression, nameof(whereExpression));
@@ -268,7 +268,7 @@ namespace Findx.FreeSql
             return update.Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
 
-        public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
+        public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
         {
             Check.NotNull(columns, nameof(columns));
             Check.NotNull(whereExpression, nameof(whereExpression));
@@ -603,7 +603,7 @@ namespace Findx.FreeSql
         public IRepository<TEntity> AsTable(Func<string, string> tableRule)
         {
             _tableRule = tableRule;
-            _queryTableRule = (type, oldName) => _tableRule.Invoke(oldName);
+            _queryTableRule = (type, oldName) => _tableRule(oldName);
 
             return this;
         }

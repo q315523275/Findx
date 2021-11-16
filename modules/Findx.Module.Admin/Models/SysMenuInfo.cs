@@ -68,7 +68,7 @@ namespace Findx.Module.Admin.Models
 		/// 打开方式（字典 0无 1组件 2内链 3外链）
 		/// </summary>
 		[Column(Name = "open_type", DbType = "tinyint(4)")]
-		public sbyte OpenType { get; set; }
+		public int OpenType { get; set; }
 
 		/// <summary>
 		/// 权限标识
@@ -116,13 +116,13 @@ namespace Findx.Module.Admin.Models
 		/// 状态（字典 0正常 1停用 2删除）
 		/// </summary>
 		[Column(Name = "status", DbType = "tinyint(4)")]
-		public sbyte Status { get; set; }
+		public int Status { get; set; }
 
 		/// <summary>
 		/// 菜单类型（字典 0目录 1菜单 2按钮）
 		/// </summary>
 		[Column(Name = "type", DbType = "tinyint(4)")]
-		public sbyte Type { get; set; }
+		public int Type { get; set; }
 
 		/// <summary>
 		/// 修改时间
@@ -146,7 +146,7 @@ namespace Findx.Module.Admin.Models
 		/// 权重（字典 1系统权重 2业务权重）
 		/// </summary>
 		[Column(Name = "weight", DbType = "tinyint(4)")]
-		public sbyte? Weight { get; set; }
+		public int? Weight { get; set; }
 
 	}
 }

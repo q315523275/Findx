@@ -24,6 +24,12 @@
             <param name="tokenBuilder"></param>
             <returns></returns>
         </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.AccountController.LoginOut">
+            <summary>
+            退出
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.AccountController.GetLoginUser(IFreeSql,System.Security.Principal.IPrincipal,Findx.Mapping.IMapper)">
             <summary>
             查询登录用户信息
@@ -38,10 +44,55 @@
             系统组织机构
             </summary>
         </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysAppController.SetAsDefault(Findx.Module.Admin.Areas.Admin.DTO.SysAppRequest)">
+            <summary>
+            设置默认
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysDictTypeController.DropDown(System.String,Findx.Data.IRepository{Findx.Module.Admin.Models.SysDictTypeInfo},Findx.Data.IRepository{Findx.Module.Admin.Models.SysDictDataInfo})">
+            <summary>
+            查询字典值
+            </summary>
+            <param name="code"></param>
+            <param name="repo"></param>
+            <param name="repo_data"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysMenuController">
+            <summary>
+            系统菜单
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysMenuController.Change(Findx.Module.Admin.Areas.Admin.DTO.ChangeAppMenuInput,IFreeSql,System.Security.Principal.IPrincipal)">
+            <summary>
+            切换应用菜单
+            </summary>
+            <param name="input"></param>
+            <param name="fsql"></param>
+            <param name="principal"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysMenuController.ListAsync(Findx.Module.Admin.Areas.Admin.DTO.SysMenuQuery)">
+            <summary>
+            
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysOrgController">
             <summary>
             系统组织机构
             </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysOrgController.Tree(IFreeSql,System.Security.Principal.IPrincipal)">
+            <summary>
+            树形数据查询
+            </summary>
+            <param name="fsql"></param>
+            <param name="principal"></param>
+            <returns></returns>
         </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysPosController">
             <summary>
@@ -52,6 +103,46 @@
             <summary>
             系统用户
             </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysUserController.#ctor(IFreeSql,System.Security.Principal.IPrincipal)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="fsql"></param>
+            <param name="principal"></param>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysUserController.PageAsync(Findx.Module.Admin.Areas.Admin.DTO.SysUserQuery)">
+            <summary>
+            查询数据
+            </summary>
+            <param name="request"></param>
+            <param name="repositor"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysUserController.ToDto(Findx.Module.Admin.Models.SysUserInfo)">
+            <summary>
+            详情结果转换
+            </summary>
+            <param name="result"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysUserController.ChangeStatus(Findx.Module.Admin.Areas.Admin.DTO.SysUserStatusUpdateRequest,Findx.Data.IRepository{Findx.Module.Admin.Models.SysUserInfo})">
+            <summary>
+            更新状态
+            </summary>
+            <param name="request"></param>
+            <param name="repo"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.ChangeAppMenuInput">
+            <summary>
+            切换应用菜单
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.ChangeAppMenuInput.Application">
+            <summary>
+            应用编码
+            </summary>DeleteMenuInput
         </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.DTO.LoginRequest">
             <summary>
@@ -228,6 +319,211 @@
             登录用户菜单元数据
             </summary>
         </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.OrgTreeNode">
+            <summary>
+            组织机构节点
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.OrgTreeNode.Id">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.OrgTreeNode.ParentId">
+            <summary>
+            父Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.OrgTreeNode.Title">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.OrgTreeNode.Value">
+            <summary>
+            值
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.OrgTreeNode.Weight">
+            <summary>
+            排序，越小优先级越高
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.OrgTreeNode.Children">
+            <summary>
+            子节点
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.OrgTreeNode.Pid">
+            <summary>
+            上一级Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysAppQuery.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysAppQuery.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysAppRequest.Id">
+            <summary>
+            主键id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysAppRequest.Active">
+            <summary>
+            是否默认激活（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysAppRequest.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysAppRequest.Name">
+            <summary>
+            应用名称
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosDTO">
+            <summary>
+            附属机构和职位参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosDTO.OrgId">
+            <summary>
+            附属机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosDTO.OrgCode">
+            <summary>
+            附属机构编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosDTO.OrgName">
+            <summary>
+            附属机构名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosDTO.PosId">
+            <summary>
+            附属职位id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosDTO.PosCode">
+            <summary>
+            附属职位编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosDTO.PosName">
+            <summary>
+            附属职位名称
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosOutput">
+            <summary>
+            附属机构和职位参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosOutput.OrgId">
+            <summary>
+            附属机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosOutput.OrgCode">
+            <summary>
+            附属机构编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosOutput.OrgName">
+            <summary>
+            附属机构名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosOutput.PosId">
+            <summary>
+            附属职位id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosOutput.PosCode">
+            <summary>
+            附属职位编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpExtOrgPosOutput.PosName">
+            <summary>
+            附属职位名称
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysEmpOutput">
+            <summary>
+            员工信息参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpOutput.JobNum">
+            <summary>
+            工号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpOutput.OrgId">
+            <summary>
+            机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpOutput.OrgName">
+            <summary>
+            机构名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpOutput.ExtOrgPos">
+            <summary>
+            机构与职位信息
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpOutput.Positions">
+            <summary>
+            职位信息
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysEmpPosOutput">
+            <summary>
+            员工职位参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpPosOutput.PosId">
+            <summary>
+            职位Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpPosOutput.PosCode">
+            <summary>
+            职位编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysEmpPosOutput.PosName">
+            <summary>
+            职位名称
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysMenuQuery">
+            <summary>
+            菜单查询入参
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysMenuQuery.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysMenuQuery.Application">
+            <summary>
+            应用分类（应用编码）
+            </summary>
+        </member>
         <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysOrgRequest.Id">
             <summary>
             主键
@@ -268,60 +564,347 @@
             状态（字典 0正常 1停用 2删除）
             </summary>
         </member>
-        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO">
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysPosOutput">
             <summary>
-            系统用户DTO模型
+            职位出参
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.Id">
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosOutput.Id">
             <summary>
             主键
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.Account">
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosOutput.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosOutput.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosOutput.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosOutput.Sort">
+            <summary>
+            排序
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysPosQuery">
+            <summary>
+            职位查询入参
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosQuery.Name">
+            <summary>
+            职位名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosQuery.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosRequest.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosRequest.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosRequest.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosRequest.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysPosRequest.Sort">
+            <summary>
+            排序
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest">
+            <summary>
+            更新用户信息
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Account">
             <summary>
             账号
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.AdminType">
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Password">
             <summary>
-            管理员类型（0超级管理员 1非管理员）
+            密码
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.Name">
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Confirm">
             <summary>
-            姓名
+            确认密码
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.NickName">
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.NickName">
             <summary>
             昵称
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.Phone">
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Name">
+            <summary>
+            姓名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Avatar">
+            <summary>
+            头像
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Birthday">
+            <summary>
+            生日
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Sex">
+            <summary>
+            性别-男_1、女_2
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Email">
+            <summary>
+            邮箱
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Phone">
             <summary>
             手机
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.Sex">
-            <summary>
-            性别(字典 1男 2女 3未知)
-            </summary>
-        </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.Status">
-            <summary>
-            状态（字典 0正常 1冻结 2删除）
-            </summary>
-        </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.Tel">
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Tel">
             <summary>
             电话
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserDTO.UpdateTime">
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.Status">
             <summary>
-            更新时间
+            状态-正常_0、停用_1、删除_2
             </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserCreateRequest.SysEmpParam">
+            <summary>
+            员工信息
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysUserEmpRequest">
+            <summary>
+            员工信息参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserEmpRequest.Id">
+            <summary>
+            员工Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserEmpRequest.JobNum">
+            <summary>
+            工号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserEmpRequest.OrgId">
+            <summary>
+            机构Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserEmpRequest.OrgName">
+            <summary>
+            机构名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserEmpRequest.ExtIds">
+            <summary>
+            附属机构
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserEmpRequest.PosIdList">
+            <summary>
+            职位集合
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput">
+            <summary>
+            用户参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Id">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Account">
+            <summary>
+            账号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.NickName">
+            <summary>
+            昵称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Name">
+            <summary>
+            姓名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Avatar">
+            <summary>
+            头像
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Birthday">
+            <summary>
+            生日
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Sex">
+            <summary>
+            性别-男_1、女_2
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Email">
+            <summary>
+            邮箱
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Phone">
+            <summary>
+            手机
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Tel">
+            <summary>
+            电话
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.Status">
+            <summary>
+            状态-正常_0、停用_1、删除_2
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserOutput.SysEmpInfo">
+            <summary>
+            员工信息
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysUserQuery">
+            <summary>
+            用户查询入参
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserQuery.SearchValue">
+            <summary>
+            查询关键词
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserQuery.SearchStatus">
+            <summary>
+            查询状态
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserQuery.SysEmpParam">
+            <summary>
+            机构信息
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysUserStatusUpdateRequest">
+            <summary>
+            更新用户状态入参
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserStatusUpdateRequest.Id">
+            <summary>
+            主键Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserStatusUpdateRequest.Status">
+            <summary>
+            状态-正常_0、停用_1、删除_2
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest">
+            <summary>
+            更新用户信息参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.Id">
+            <summary>
+            主键Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.Account">
+            <summary>
+            账号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.NickName">
+            <summary>
+            昵称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.Name">
+            <summary>
+            姓名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.Birthday">
+            <summary>
+            生日
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.Sex">
+            <summary>
+            性别-男_1、女_2
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.Email">
+            <summary>
+            邮箱
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.Phone">
+            <summary>
+            手机
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.Tel">
+            <summary>
+            电话
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysUserUpdateRequest.SysEmpParam">
+            <summary>
+            员工信息
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Internals.AdminExtensions">
+            <summary>
+            管理员扩展
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Internals.AdminExtensions.IsSuperAdmin(Findx.Module.Admin.Models.SysUserInfo)">
+            <summary>
+            是否超级管理员
+            </summary>
+            <param name="userInfo"></param>
+            <returns></returns>
         </member>
         <member name="F:Findx.Module.Admin.Internals.CommonStatusEnum.ENABLE">
             <summary>
@@ -331,11 +914,6 @@
         <member name="F:Findx.Module.Admin.Internals.CommonStatusEnum.DISABLE">
             <summary>
             停用
-            </summary>
-        </member>
-        <member name="F:Findx.Module.Admin.Internals.CommonStatusEnum.DELETED">
-            <summary>
-            删除
             </summary>
         </member>
         <member name="F:Findx.Module.Admin.Internals.DataScopeTypeEnum.ALL">
@@ -363,6 +941,11 @@
             自定义数据
             </summary>
         </member>
+        <member name="T:Findx.Module.Admin.Internals.MenuOpenTypeEnum">
+            <summary>
+            菜单打开类型枚举
+            </summary>
+        </member>
         <member name="F:Findx.Module.Admin.Internals.MenuOpenTypeEnum.NONE">
             <summary>
             无
@@ -381,6 +964,46 @@
         <member name="F:Findx.Module.Admin.Internals.MenuOpenTypeEnum.OUTER">
             <summary>
             外链
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Internals.MenuTypeEnum">
+            <summary>
+            菜单类型枚举
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.MenuTypeEnum.DIR">
+            <summary>
+            目录
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.MenuTypeEnum.MENU">
+            <summary>
+            菜单
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.MenuTypeEnum.BTN">
+            <summary>
+            按钮
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Internals.YesOrNotEnum">
+            <summary>
+            菜单激活类型
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.YesOrNotEnum.Y">
+            <summary>
+            是
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.YesOrNotEnum.N">
+            <summary>
+            否
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.ISysOrgService">
+            <summary>
+            系统组织服务
             </summary>
         </member>
         <member name="T:Findx.Module.Admin.Models.SysAppInfo">
@@ -871,6 +1494,111 @@
         <member name="P:Findx.Module.Admin.Models.SysMenuInfo.Weight">
             <summary>
             权重（字典 1系统权重 2业务权重）
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysMenuOutput">
+            <summary>
+            系统菜单表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Application">
+            <summary>
+            应用分类（应用编码）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Code">
+            <summary>
+            编码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Component">
+            <summary>
+            组件地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Icon">
+            <summary>
+            图标
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Link">
+            <summary>
+            链接地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.OpenType">
+            <summary>
+            打开方式（字典 0无 1组件 2内链 3外链）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Permission">
+            <summary>
+            权限标识
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Pid">
+            <summary>
+            父id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Pids">
+            <summary>
+            父ids
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Redirect">
+            <summary>
+            重定向地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Remark">
+            <summary>
+            备注
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Router">
+            <summary>
+            路由地址
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Sort">
+            <summary>
+            排序
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Status">
+            <summary>
+            状态（字典 0正常 1停用 2删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Type">
+            <summary>
+            菜单类型（字典 0目录 1菜单 2按钮）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Visible">
+            <summary>
+            是否可见（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Weight">
+            <summary>
+            权重（字典 1系统权重 2业务权重）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysMenuOutput.Children">
+            <summary>
+            子节点
             </summary>
         </member>
         <member name="T:Findx.Module.Admin.Models.SysNoticeInfo">
@@ -1561,6 +2289,11 @@
         <member name="P:Findx.Module.Admin.Models.SysUserInfo.UpdateUser">
             <summary>
             更新人
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Models.SysUserInfo.Init">
+            <summary>
+            初始化
             </summary>
         </member>
         <member name="T:Findx.Module.Admin.Models.SysUserRoleInfo">

@@ -19,7 +19,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
         /// <summary>
         /// 管理员类型（0超级管理员 1非管理员）
         /// </summary>
-        public sbyte AdminType { get; set; }
+        public int AdminType { get; set; }
 
         /// <summary>
         /// 头像
@@ -80,7 +80,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
         /// <summary>
         /// 性别(字典 1男 2女 3未知)
         /// </summary>
-        public sbyte Sex { get; set; }
+        public int Sex { get; set; }
 
         /// <summary>
         /// 状态正常
@@ -157,7 +157,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
         public string Path { set; get; }
         public bool Hidden { set; get; }
         public LoginUserMenuMetaDTO Meta { set; get; }
-        public sbyte OpenType { set; get; }
+        public int OpenType { set; get; }
     }
     /// <summary>
     /// 登录用户菜单元数据

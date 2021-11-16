@@ -1,25 +1,26 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.1.2</Version>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Version>1.1.2</Version>
+		<Description>图片处理（验证码、缩略图、文字水印、图片水印、图片合并、图片文本添加、图片压缩）</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="fonts\Breo.ttf" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Remove="fonts\Breo.ttf" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="fonts\Breo.ttf" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="fonts\Breo.ttf" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.3" />
-    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Findx.Common\Findx.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
+	</ItemGroup>
 
 </Project>

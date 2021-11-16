@@ -117,8 +117,9 @@ namespace Findx.Reflection
                             .Distinct()
                             .WhereIf(_filterSystemAssembly, name => !filter.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase)))
                             .ToList();
+
+                    return LoadFromFiles(names);
                 }
-                return LoadFromFiles(names);
             }
 
             // 传统方式

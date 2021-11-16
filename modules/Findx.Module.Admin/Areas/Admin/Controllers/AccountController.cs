@@ -63,7 +63,17 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             };
             var token = await tokenBuilder.CreateAsync(payload, _options);
 
-            return CommonResult.Success(new { Token = $"Bearer {token.AccessToken}" });
+            return CommonResult.Success<string>(token.AccessToken);
+        }
+
+        /// <summary>
+        /// 退出
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("logout")]
+        public CommonResult LoginOut()
+        {
+            return CommonResult.Success();
         }
 
         /// <summary>
@@ -84,7 +94,7 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             if (userInfo == null)
                 return CommonResult.Fail("401", "登录信息失效,请重新登录");
 
-            var superAdmin = AdminTypeEnum.SUPER_ADMIN.To<sbyte>() == userInfo.AdminType;
+            var superAdmin = userInfo.IsSuperAdmin();
             var loginUserDTO = mapper.MapTo<LoginUserDTO>(userInfo);
             loginUserDTO.Enabled = userInfo.Status == 0;
             loginUserDTO.LastLoginBrowser = HttpContext.Request.GetBrowser();
@@ -130,7 +140,7 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
                                          .ToList((a, b) => new { a.Type, a.Permission, a.Router });
                 foreach (var item in permissionList)
                 {
-                    if (MenuTypeEnum.BTN.To<sbyte>() == item.Type)
+                    if (MenuTypeEnum.BTN.To<int>() == item.Type)
                     {
                         permissions.Add(item.Permission);
                     }
@@ -149,10 +159,10 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             if (empInfo != null && roleIdList.Count > 0)
             {
                 var customDataScopeRoleIdList = new List<long>();
-                var strongerDataScopeType = DataScopeTypeEnum.SELF.To<sbyte>();
+                var strongerDataScopeType = DataScopeTypeEnum.SELF.To<int>();
                 foreach (var sysRole in roles)
                 {
-                    if (DataScopeTypeEnum.DEFINE.To<sbyte>() == sysRole.DataScopeType)
+                    if (DataScopeTypeEnum.DEFINE.To<int>() == sysRole.DataScopeType)
                     {
                         customDataScopeRoleIdList.Add(sysRole.Id);
                     }
@@ -169,18 +179,18 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
                 // 角色中拥有最大数据范围类型的数据范围
                 var dataScopes3 = new List<long>();
                 // 如果是范围类型是全部数据，则获取当前系统所有的组织架构id
-                if (DataScopeTypeEnum.ALL.To<sbyte>() == strongerDataScopeType)
+                if (DataScopeTypeEnum.ALL.To<int>() == strongerDataScopeType)
                 {
                     dataScopes3 = fsql.Select<SysOrgInfo>().Where(it => it.Status == 0).ToList(it => it.Id);
                 }
                 // 如果范围类型是本部门及以下部门，则查询本节点和子节点集合，包含本节点
-                else if (DataScopeTypeEnum.DEPT_WITH_CHILD.To<sbyte>() == strongerDataScopeType)
+                else if (DataScopeTypeEnum.DEPT_WITH_CHILD.To<int>() == strongerDataScopeType)
                 {
                     var likeValue = $"{SymbolConstant.LEFT_SQUARE_BRACKETS}{empInfo.OrgId}{SymbolConstant.RIGHT_SQUARE_BRACKETS}";
                     dataScopes3 = fsql.Select<SysOrgInfo>().Where(it => it.Pids.Contains(likeValue) && it.Status == 0).ToList(it => it.Id);
                 }
                 // 如果数据范围是本部门，不含子节点，则直接返回本部门
-                else if (DataScopeTypeEnum.DEPT.To<sbyte>() == strongerDataScopeType)
+                else if (DataScopeTypeEnum.DEPT.To<int>() == strongerDataScopeType)
                 {
                     dataScopes3.Add(empInfo.OrgId);
                 }
@@ -240,7 +250,7 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
                                    });
                 foreach (var item in menuList)
                 {
-                    if (MenuOpenTypeEnum.OUTER.To<sbyte>() == item.OpenType)
+                    if (MenuOpenTypeEnum.OUTER.To<int>() == item.OpenType)
                     {
                         item.Meta.Target = "_blank";
                         item.Path = item.Meta.Link;

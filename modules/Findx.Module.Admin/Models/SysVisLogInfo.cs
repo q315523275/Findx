@@ -74,6 +74,6 @@ namespace Findx.Module.Admin.Models
 		/// 操作类型（字典 1登入 2登出）
 		/// </summary>
 		[Column(Name = "vis_type", DbType = "tinyint(4)")]
-		public sbyte VisType { get; set; }
+		public int VisType { get; set; }
 	}
 }

@@ -1,19 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <Description>FreeSql ORM实现</Description>
-    <Version>1.1.2</Version>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+		<Description>通用仓储-FreeSql实现</Description>
+		<Version>1.1.2</Version>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="FreeSql" Version="2.6.100" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="FreeSql" Version="2.6.100" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Findx.Common\Findx.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
+	</ItemGroup>
 
 </Project>

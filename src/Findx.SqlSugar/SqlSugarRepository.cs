@@ -309,7 +309,7 @@ namespace Findx.SqlSugar
             return _sugar.Updateable<TEntity>().AS(_tableName).SetColumns(columns).Where(whereExpression).ExecuteCommandAsync();
         }
 
-        public int UpdateColumns(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression)
+        public int UpdateColumns(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression)
         {
             Check.NotNull(columns, nameof(columns));
             Check.NotNull(whereExpression, nameof(whereExpression));
@@ -324,7 +324,7 @@ namespace Findx.SqlSugar
             return update.Where(whereExpression).ExecuteCommand();
         }
 
-        public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, TEntity>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
+        public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
         {
             Check.NotNull(columns, nameof(columns));
             Check.NotNull(whereExpression, nameof(whereExpression));
@@ -778,8 +778,7 @@ namespace Findx.SqlSugar
 
         public IRepository<TEntity> AsTable(Func<string, string> tableRule)
         {
-            _tableName = tableRule.Invoke(_oldTableName);
-
+            _tableName = tableRule(_oldTableName);
             return this;
         }
         #endregion

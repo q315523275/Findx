@@ -26,7 +26,7 @@ namespace Findx.Module.Admin.Models
 		/// 数据范围类型（字典 1全部数据 2本部门及以下数据 3本部门数据 4仅本人数据 5自定义数据）
 		/// </summary>
 		[Column(Name = "data_scope_type", DbType = "tinyint(4)")]
-		public sbyte DataScopeType { get; set; }
+		public int DataScopeType { get; set; }
 
 		/// <summary>
 		/// 名称
@@ -50,7 +50,7 @@ namespace Findx.Module.Admin.Models
 		/// 状态（字典 0正常 1停用 2删除）
 		/// </summary>
 		[Column(Name = "status", DbType = "tinyint(4)")]
-		public sbyte Status { get; set; }
+		public int Status { get; set; }
 
 		/// <summary>
 		/// 创建时间

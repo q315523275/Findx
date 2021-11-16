@@ -42,6 +42,6 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
         /// <summary>
         /// 状态（字典 0正常 1停用 2删除）
         /// </summary>
-        public sbyte Status { get; set; }
+        public int Status { get; set; }
     }
 }

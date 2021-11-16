@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
+    /// <summary>
+    /// 应用信息
+    /// </summary>
     public class ApplicationController: Controller
     {
         /// <summary>

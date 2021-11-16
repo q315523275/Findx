@@ -73,11 +73,12 @@ namespace Findx.ImageSharp
         /// <param name="fileExt">文件扩展名</param>
         /// <param name="width">缩略图宽度</param>
         /// <param name="height">缩略图高度</param>
+        /// <param name="quality">图片质量,默认1</param>
         /// <param name="mode">生成缩略图的方式(默认填充)</param>
         /// <returns></returns>
-        public byte[] MakeThumbnail(byte[] byteData, string fileExt, int width, int height, ImageResizeMode mode = ImageResizeMode.Pad)
+        public byte[] MakeThumbnail(byte[] byteData, string fileExt, int width, int height, int quality = 100, ImageResizeMode mode = ImageResizeMode.Pad)
         {
-            var originalImage = Image.Load(byteData);
+            var originalImage = Image.Load(byteData, out IImageFormat format);
 
             var option = new ResizeOptions { Size = new Size(width, height), Mode = GetResizeMode(mode) };
 
@@ -86,8 +87,14 @@ namespace Findx.ImageSharp
             // 返回字节数组
             using (var ms = new MemoryStream())
             {
-                originalImage.Save(ms, GetFormat(fileExt));
-
+                if (format is JpegFormat)
+                {
+                    originalImage.SaveAsJpeg(ms, new JpegEncoder { Quality = quality });
+                }
+                else
+                {
+                    originalImage.Save(ms, GetFormat(fileExt));
+                }
                 return ms.ToArray();
             }
         }

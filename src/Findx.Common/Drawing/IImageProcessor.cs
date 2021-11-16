@@ -12,9 +12,10 @@
         /// <param name="fileExt">文件扩展名</param>
         /// <param name="width">缩略图宽度</param>
         /// <param name="height">缩略图高度</param>
+        /// <param name="quality">图片质量,默认100</param>
         /// <param name="mode">生成缩略图的方式(默认填充)</param>
         /// <returns></returns>
-        byte[] MakeThumbnail(byte[] byteData, string fileExt, int width, int height, ImageResizeMode mode = ImageResizeMode.Pad);
+        byte[] MakeThumbnail(byte[] byteData, string fileExt, int width, int height, int quality = 100, ImageResizeMode mode = ImageResizeMode.Pad);
 
         /// <summary>
         /// 图片水印

@@ -1,17 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>8.0</LangVersion>
-    <Version>1.1.2</Version>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>8.0</LangVersion>
+		<Version>1.1.2</Version>
+		<Description>Redis通用功能、分布式锁等(StackExchangeRedis)</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="StackExchange.Redis" Version="2.2.50" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="StackExchange.Redis" Version="2.2.88" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Findx.Common\Findx.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
+	</ItemGroup>
 
 </Project>

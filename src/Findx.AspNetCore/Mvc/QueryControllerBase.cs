@@ -1,10 +1,13 @@
 ﻿using Findx.Data;
 using Findx.Linq;
+using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -37,7 +40,7 @@ namespace Findx.AspNetCore.Mvc
         {
             var multiOrderBy = new MultiOrderBy<TModel>();
             if (typeof(TModel).IsAssignableTo(typeof(ISort)))
-                multiOrderBy.OrderBy.Add(new OrderByParameter<TModel> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Descending });
+                multiOrderBy.OrderBy.Add(new OrderByParameter<TModel> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
             multiOrderBy.OrderBy.Add(new OrderByParameter<TModel> { Expression = it => it.Id, SortDirection = ListSortDirection.Descending });
             return multiOrderBy;
         }
@@ -46,67 +49,20 @@ namespace Findx.AspNetCore.Mvc
         /// 查询数据
         /// </summary>
         /// <param name="request"></param>
-        /// <param name="repository"></param>
-        /// <returns></returns>
-        [HttpGet("pagerQuery")]
-        [Obsolete(message: "Please use the page method")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public virtual CommonResult PagerQuery([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
-        {
-            Check.NotNull(request, nameof(request));
-
-            var whereExpression = CreatePageWhereExpression(request);
-            var orderByExpression = CreatePageOrderExpression(request);
-
-            var pageResult = repository.Paged<TDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
-
-            return CommonResult.Success(ToPageResult(pageResult));
-        }
-
-        /// <summary>
-        /// 查询数据
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="repository"></param>
         /// <returns></returns>
         [HttpGet("page")]
-        public virtual CommonResult Page([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
+        public virtual async Task<CommonResult> PageAsync([FromQuery] TQueryParameter request)
         {
             Check.NotNull(request, nameof(request));
+
+            var repo = GetRepository<TModel>();
+
+            Check.NotNull(repo, nameof(repo));
 
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var pageResult = repository.Paged<TDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
-
-            return CommonResult.Success(ToPageResult(pageResult));
-        }
-
-        /// <summary>
-        /// 转换分页查询结果
-        /// </summary>
-        /// <param name="result">分页查询结果</param>
-        protected virtual dynamic ToPageResult(PageResult<List<TDto>> result) => result;
-
-        /// <summary>
-        /// 查询列表数据
-        /// </summary>
-        /// <param name="request"></param>
-        /// <param name="repository"></param>
-        /// <returns></returns>
-        [HttpGet("query")]
-        [Obsolete(message: "Please use the list method")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public virtual CommonResult Query([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
-        {
-            Check.NotNull(request, nameof(request));
-
-            var whereExpression = CreatePageWhereExpression(request);
-            var orderByExpression = CreatePageOrderExpression(request);
-
-            var result = repository.Top<TDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
-
-            result = ToListResult(result);
+            var result = await repo.PagedAsync<TDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
 
             return CommonResult.Success(result);
         }
@@ -115,50 +71,26 @@ namespace Findx.AspNetCore.Mvc
         /// 查询列表数据
         /// </summary>
         /// <param name="request"></param>
-        /// <param name="repository"></param>
         /// <returns></returns>
         [HttpGet("list")]
-        public virtual CommonResult List([FromQuery] TQueryParameter request, [FromServices] IRepository<TModel> repository)
+        public virtual async Task<CommonResult> ListAsync([FromQuery] TQueryParameter request)
         {
             var js = DateTime.Now;
 
             Check.NotNull(request, nameof(request));
 
+            var repo = GetRepository<TModel>();
+
+            Check.NotNull(repo, nameof(repo));
+
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var result = repository.Top<TDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
-
-            result = ToListResult(result);
+            var list = await repo.TopAsync<TDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
 
             Debug.WriteLine($"动态API查询接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
 
-            return CommonResult.Success(result);
-        }
-
-        /// <summary>
-        /// 转换列表查询结果
-        /// </summary>
-        /// <param name="result">分页查询结果</param>
-        protected virtual dynamic ToListResult(List<TDto> result) => result;
-
-        /// <summary>
-        /// 查询单条数据
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="repository"></param>
-        /// <returns></returns>
-        [HttpGet("getById")]
-        [Obsolete(message: "Please use the detail method")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        public virtual CommonResult GetById(TKey id, [FromServices] IRepository<TModel> repository)
-        {
-            Check.NotNull(id, nameof(id));
-
-            var result = repository.Get(id);
-            DetailAfter(repository, result);
-
-            return CommonResult.Success(ToDetailResult(result));
+            return CommonResult.Success(list);
         }
 
         /// <summary>
@@ -168,29 +100,55 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="repository"></param>
         /// <returns></returns>
         [HttpGet("detail")]
-        public virtual CommonResult Detail(TKey id, [FromServices] IRepository<TModel> repository)
+        public virtual async Task<CommonResult> Detail(TKey id)
         {
             Check.NotNull(id, nameof(id));
 
-            var result = repository.Get(id);
+            var repo = GetRepository<TModel>();
 
-            DetailAfter(repository, result);
+            Check.NotNull(repo, nameof(repo));
 
-            return CommonResult.Success(ToDetailResult(result));
+            var model = repo.Get(id);
+
+            await DetailAfterAsync(model);
+
+            return CommonResult.Success(ToDto(model));
         }
 
         /// <summary>
         /// 转换单条数据查询结果
         /// </summary>
-        /// <param name="result"></param>
+        /// <param name="model"></param>
         /// <returns></returns>
-        protected virtual dynamic ToDetailResult(TModel result) => result;
+        protected virtual TDto ToDto(TModel model) => model.MapTo<TDto>();
 
         /// <summary>
         /// 单条数据查询后操作
         /// </summary>
         /// <param name="repository"></param>
         /// <param name="model"></param>
-        protected virtual void DetailAfter(IRepository<TModel> repository, TModel model) { }
+        protected virtual Task DetailAfterAsync(TModel model) => Task.CompletedTask;
+
+
+
+        /// <summary>
+        /// 获取仓储方法
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        protected IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, new()
+        {
+            return Request?.HttpContext?.RequestServices.GetService<IRepository<TEntity>>();
+        }
+
+        /// <summary>
+        /// 获取服务
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        protected T GetService<T>()
+        {
+            return Request.HttpContext.RequestServices.GetService<T>();
+        }
     }
 }

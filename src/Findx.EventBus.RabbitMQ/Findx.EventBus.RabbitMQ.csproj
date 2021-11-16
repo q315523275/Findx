@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Description>分布式事件总线-RabbitMQ实现</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Findx.EventBus\Findx.EventBus.csproj" />
-    <ProjectReference Include="..\Findx.RabbitMQ\Findx.RabbitMQ.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Findx.EventBus\Findx.EventBus.csproj" />
+		<ProjectReference Include="..\Findx.RabbitMQ\Findx.RabbitMQ.csproj" />
+	</ItemGroup>
 
 </Project>

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.Admin.Areas.Admin.Controllers
 {
     [Area("api/admin")]
-    [Route("[area]/sysFile")]
+    [Route("[area]/sysFileInfo")]
     public class SysFileController : CrudControllerBase<SysFileInfo, SysFileInfo, SysFileInfo, SysFileInfo, SysQuery, long, long>
     {
     }

@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Description>服务发现-Consul实现</Description>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Consul" Version="1.6.10.3" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Consul" Version="1.6.10.3" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Findx.Discovery\Findx.Discovery.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Findx.Discovery\Findx.Discovery.csproj" />
+	</ItemGroup>
 
 </Project>

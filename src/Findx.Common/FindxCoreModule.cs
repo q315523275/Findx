@@ -5,6 +5,7 @@ using Findx.Email;
 using Findx.ExceptionHandling;
 using Findx.Extensions;
 using Findx.Locks;
+using Findx.Mapping;
 using Findx.Messaging;
 using Findx.Modularity;
 using Findx.Reflection;
@@ -39,6 +40,9 @@ namespace Findx.Builders
             // 邮件
             services.AddSingleton<IEmailSender, DefaultEmailSender>();
             services.Configure<EmailSenderOptions>(configuration.GetSection("Findx:Email"));
+
+            // 映射配置
+            services.Configure<MappingOptions>(configuration.GetSection("Findx:Mapping"));
 
             // 异常通知
             services.AddSingleton<IExceptionNotifier, ExceptionNotifier>();
