@@ -1,6 +1,7 @@
 ﻿using Findx.Discovery;
 using Findx.Extensions;
 using Findx.Modularity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using System.ComponentModel;
@@ -15,6 +16,8 @@ namespace Findx.WebApiClient
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
+            IConfiguration configuration = services.GetConfiguration();
+
             var webApiFinder = services.GetOrAddTypeFinder<IWebApiFinder>(assemblyFinder => new WebApiFinder(assemblyFinder));
             var types = webApiFinder.FindAll();
             foreach (var type in types)
@@ -22,6 +25,11 @@ namespace Findx.WebApiClient
                 var attribute = type.GetAttribute<WebApiClientAttribute>();
 
                 var httpApiBuilder = services.AddHttpApi(type);
+
+                // 配置文件配置
+                var section = configuration.GetSection($"Findx:WebApiClient:{type.Name}");
+                if (section.Exists())
+                    httpApiBuilder.ConfigureHttpApi(section);
 
                 if (attribute.FallbackStatus > 0)
                     httpApiBuilder = httpApiBuilder.AddFallbackPolicy(attribute.FallbackMessage, attribute.FallbackStatus);

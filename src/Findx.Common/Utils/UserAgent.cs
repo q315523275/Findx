@@ -47,7 +47,22 @@ namespace Findx.Utils
             { "Chrome", "谷歌Chrome浏览器" },
             { "Safari", "Safari内核浏览器" }
         };
+
+        private static string GetSystemString(string agent, string token)
+        {
+            if (agent.IndexOf(token, StringComparison.OrdinalIgnoreCase) > -1)
+            {
+                if ("iPhone".Equals(token, StringComparison.OrdinalIgnoreCase))
+                {
+                    return RegexUtil.GetValue(agent, $@"{token}\sOS\s(\d*_)*\d*(?=\s)");
+                }
+                return RegexUtil.GetValue(agent, $"{token}.*(?=;)");
+            }
+            return token;
+        }
+
         private readonly string _userAgent;
+
         /// <summary>
         /// 初始化一个<see cref="UserAgent"/>类型的新实例
         /// </summary>
@@ -77,19 +92,6 @@ namespace Findx.Utils
                 }
             }
             return SystemDict.FirstOrDefault(m => agent.IndexOf(m.Key, StringComparison.OrdinalIgnoreCase) > -1).Value ?? "未知系统";
-        }
-
-        private static string GetSystemString(string agent, string token)
-        {
-            if (agent.IndexOf(token, StringComparison.OrdinalIgnoreCase) > -1)
-            {
-                if ("iPhone".Equals(token, StringComparison.OrdinalIgnoreCase))
-                {
-                    return RegexUtils.GetValue(agent, $@"{token}\sOS\s(\d*_)*\d*(?=\s)");
-                }
-                return RegexUtils.GetValue(agent, $"{token}.*(?=;)");
-            }
-            return token;
         }
 
         /// <summary>

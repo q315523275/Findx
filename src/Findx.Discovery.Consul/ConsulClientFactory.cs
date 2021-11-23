@@ -17,7 +17,7 @@ namespace Findx.Discovery.Consul
                 s.Datacenter = options.Datacenter;
                 if (!string.IsNullOrEmpty(options.WaitTime))
                 {
-                    s.WaitTime = DateTimeUtils.ToTimeSpan(options.WaitTime);
+                    s.WaitTime = Time.ToTimeSpan(options.WaitTime);
                 }
             });
 

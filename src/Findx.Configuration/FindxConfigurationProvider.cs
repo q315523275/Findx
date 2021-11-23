@@ -22,7 +22,7 @@ namespace Findx.Configuration
         {
             Data = new ConcurrentDictionary<string, string>();
             _options = options;
-            _localBackupPath = Path.Combine(Directory.GetCurrentDirectory(), $"local.cache.{options.Namespace}.setting.json");
+            _localBackupPath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), $"local.cache.{options.Namespace}.setting.json");
             _httpClient = new HttpClient { Timeout = new TimeSpan(0, 0, 30) };
         }
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();

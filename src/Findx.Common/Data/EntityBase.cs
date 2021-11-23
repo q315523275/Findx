@@ -42,5 +42,9 @@ namespace Findx.Data
         /// </summary>
         [DisplayName("编号")]
         public abstract TKey Id { get; set; }
+
+        public interface IResponse
+        {
+        }
     }
 }

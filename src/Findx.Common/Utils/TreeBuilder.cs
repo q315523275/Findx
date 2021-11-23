@@ -10,9 +10,7 @@ namespace Findx.Utils
     /// </summary>
     /// <typeparam name="TNode"></typeparam>
     /// <typeparam name="TKey"></typeparam>
-    public class TreeBuilder<TNode, TKey>
-        where TNode : ITreeNode<TKey>
-        where TKey : struct, IComparable
+    public class TreeBuilder<TNode, TKey> where TNode : ITreeNode<TKey> where TKey : struct, IComparable
     {
         /// <summary>
         /// 构造树节点

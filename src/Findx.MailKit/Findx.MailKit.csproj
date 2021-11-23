@@ -2,8 +2,10 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Version>1.1.1</Version>
-		<Description>MailKit邮件发送器组件实现</Description>
+		<Version>1.5.1</Version>
+		<Description>MailKit邮件发送器组件包</Description>
+		<Authors>Findx</Authors>
+		<Company>Findx</Company>
 	</PropertyGroup>
 
 	<ItemGroup>

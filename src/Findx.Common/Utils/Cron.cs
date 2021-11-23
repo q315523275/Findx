@@ -17,6 +17,7 @@ namespace Findx.Utils
         {
             return GetNextOccurrence(cronExpress, DateTimeOffset.UtcNow);
         }
+
         /// <summary>
         /// 根据Cron表达式获取下次执行时间
         /// </summary>

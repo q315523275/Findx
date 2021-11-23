@@ -46,7 +46,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             ILock localLock = GetLock(context);
             var key = GetLockKey(context);
             var val = GetLockValue(context);
-            var expir = DateTimeUtils.ToTimeSpan(Interval);
+            var expir = Time.ToTimeSpan(Interval);
             if (await localLock.LockTakeAsync(key, val, expir))
             {
                 try

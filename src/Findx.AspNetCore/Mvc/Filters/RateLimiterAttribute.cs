@@ -55,7 +55,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             if (atomic == default)
             {
                 atomic = new AtomicInteger(Limit);
-                await cache.AddAsync(rateLimitKey, atomic, expiration: DateTimeUtils.ToTimeSpan(Period), token: cancellationTokenProvider.Token);
+                await cache.AddAsync(rateLimitKey, atomic, expiration: Time.ToTimeSpan(Period), token: cancellationTokenProvider.Token);
             }
             if (atomic.DecrementAndGet() < 0)
             {

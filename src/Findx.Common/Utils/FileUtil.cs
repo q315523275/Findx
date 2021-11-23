@@ -9,7 +9,7 @@ namespace Findx.Utils
     /// <summary>
     /// 文件辅助操作类
     /// </summary>
-    public class FileUtils
+    public class FileUtil
     {
         /// <summary>
         /// 创建文件，如果文件不存在
@@ -25,7 +25,7 @@ namespace Findx.Utils
             string dir = Path.GetDirectoryName(fileName);
             if (dir != null)
             {
-                DirectoryUtils.CreateIfNotExists(dir);
+                Directorys.CreateIfNotExists(dir);
             }
             File.Create(fileName);
         }

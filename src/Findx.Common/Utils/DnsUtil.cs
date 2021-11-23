@@ -8,7 +8,7 @@ namespace Findx.Utils
     /// <summary>
     /// DNS工具类
     /// </summary>
-    public static class DnsUtils
+    public static class DnsUtil
     {
         /// <summary>
         /// 解析主机地址
@@ -33,6 +33,7 @@ namespace Findx.Utils
                 return null;
             }
         }
+
         /// <summary>
         /// 解析主机名
         /// </summary>

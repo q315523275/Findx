@@ -2,6 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<Authors>Findx</Authors>
+		<Company>Findx</Company>
+		<Version>1.5.1</Version>
 		<Description>RabbitMQ功能增强,属性标注消费、连接池管理、自定义消费等</Description>
 	</PropertyGroup>
 

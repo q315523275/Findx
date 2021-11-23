@@ -9,7 +9,7 @@ namespace Findx.Utils
     /// <summary>
     /// Csv数据转换工具类
     /// </summary>
-    public static class CsvConverter
+    public static class Csv
     {
         /// <summary>
         /// 读取Csv数据

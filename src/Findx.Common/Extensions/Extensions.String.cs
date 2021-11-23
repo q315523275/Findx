@@ -12,42 +12,6 @@ namespace Findx.Extensions
     public static partial class Extensions
     {
         /// <summary>
-        /// 以<param name="c"></param>为结尾，不是则进行追加
-        /// </summary>
-        /// <param name="str"></param>
-        /// <param name="comparisonType"></param>
-        /// <returns></returns>
-        public static string EnsureEndsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)
-        {
-            Check.NotNull(str, nameof(str));
-
-            if (str.EndsWith(c.ToString(), comparisonType))
-            {
-                return str;
-            }
-
-            return str + c;
-        }
-
-        /// <summary>
-        /// 以<param name="c"></param>为开始，不是则进行追加
-        /// </summary>
-        /// <param name="str"></param>
-        /// <param name="comparisonType"></param>
-        /// <returns></returns>
-        public static string EnsureStartsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)
-        {
-            Check.NotNull(str, nameof(str));
-
-            if (str.StartsWith(c.ToString(), comparisonType))
-            {
-                return str;
-            }
-
-            return c + str;
-        }
-
-        /// <summary>
         /// 字符串是否为空
         /// </summary>
         /// <param name="str"></param>
@@ -68,6 +32,26 @@ namespace Findx.Extensions
         }
 
         /// <summary>
+        /// 字符串截取，,从指定索引位置开始
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="startIndex"></param>
+        /// <param name="len"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static string Sub(this string str, int startIndex, int len)
+        {
+            Check.NotNull(str, nameof(str));
+
+            if (str.Length < (startIndex + len))
+            {
+                throw new ArgumentException($"字符串长度小于{(startIndex + len)}");
+            }
+
+            return str.Substring(startIndex, len);
+        }
+
+        /// <summary>
         /// 字符串截取,从0索引位置开始
         /// </summary>
         /// <param name="str"></param>
@@ -83,6 +67,24 @@ namespace Findx.Extensions
             }
 
             return str.Substring(0, len);
+        }
+
+        /// <summary>
+        /// 字符串截取,从末尾截取指定长度
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="len"></param>
+        /// <returns></returns>
+        public static string Right(this string str, int len)
+        {
+            Check.NotNull(str, nameof(str));
+
+            if (str.Length < len)
+            {
+                throw new ArgumentException($"字符串长度小于{len}");
+            }
+
+            return str.Substring(str.Length - len, len);
         }
 
         /// <summary>
@@ -227,24 +229,6 @@ namespace Findx.Extensions
         }
 
         /// <summary>
-        /// 字符串截取,从末尾截取指定长度
-        /// </summary>
-        /// <param name="str"></param>
-        /// <param name="len"></param>
-        /// <returns></returns>
-        public static string Right(this string str, int len)
-        {
-            Check.NotNull(str, nameof(str));
-
-            if (str.Length < len)
-            {
-                throw new ArgumentException($"字符串长度小于{len}");
-            }
-
-            return str.Substring(str.Length - len, len);
-        }
-
-        /// <summary>
         /// 分割字符串
         /// </summary>
         public static string[] Split(this string str, string separator)
@@ -311,6 +295,42 @@ namespace Findx.Extensions
         public static string ToMd5(this string str)
         {
             return Encrypt.Md5By32(str);
+        }
+
+        /// <summary>
+        /// 以<param name="c"></param>为结尾，不是则进行追加
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="comparisonType"></param>
+        /// <returns></returns>
+        public static string EnsureEndsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)
+        {
+            Check.NotNull(str, nameof(str));
+
+            if (str.EndsWith(c.ToString(), comparisonType))
+            {
+                return str;
+            }
+
+            return str + c;
+        }
+
+        /// <summary>
+        /// 以<param name="c"></param>为开始，不是则进行追加
+        /// </summary>
+        /// <param name="str"></param>
+        /// <param name="comparisonType"></param>
+        /// <returns></returns>
+        public static string EnsureStartsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)
+        {
+            Check.NotNull(str, nameof(str));
+
+            if (str.StartsWith(c.ToString(), comparisonType))
+            {
+                return str;
+            }
+
+            return c + str;
         }
 
         /// <summary>

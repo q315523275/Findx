@@ -6,7 +6,7 @@ namespace Findx.Utils
     /// <summary>
     /// 正则操作
     /// </summary>
-    public static partial class RegexUtils
+    public static partial class RegexUtil
     {
         /// <summary>
         /// 获取匹配值集合

@@ -2,6 +2,10 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<Authors>Findx</Authors>
+		<Company>Findx</Company>
+		<Version>1.5.1</Version>
+		<Description>NLog日志组件包</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

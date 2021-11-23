@@ -11,8 +11,8 @@ namespace Findx.Discovery
         private string _scheme = "http";
         public DiscoveryOptions()
         {
-            _hostName = DnsUtils.ResolveHostName();
-            IpAddress = DnsUtils.ResolveHostAddress(_hostName);
+            _hostName = DnsUtil.ResolveHostName();
+            IpAddress = DnsUtil.ResolveHostAddress(_hostName);
         }
         /// <summary>
         /// 是否启用服务发现客户端

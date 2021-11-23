@@ -29,7 +29,7 @@ namespace Findx
             if (Port == 0) Port = _random.Next(1000, 40000);
             Version = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
             Uris = _configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
-            InstanceIP = DnsUtils.ResolveHostAddress(DnsUtils.ResolveHostName());
+            InstanceIP = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());
             InternalIP = InstanceIP;
             OSDescription = RuntimeInformation.OSDescription;
 

@@ -32,7 +32,7 @@ namespace System.ComponentModel.DataAnnotations
         {
             if (value.SafeString().IsNullOrWhiteSpace())
                 return ValidationResult.Success;
-            if (RegexUtils.IsMatch(value.SafeString(), ValidatePattern.UrlPattern))
+            if (RegexUtil.IsMatch(value.SafeString(), ValidatePattern.UrlPattern))
                 return ValidationResult.Success;
             return new ValidationResult(FormatErrorMessage(string.IsNullOrWhiteSpace(validationContext.DisplayName)
                 ? validationContext.MemberName

@@ -3,7 +3,10 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<Version>1.5.1</Version>
 		<Description>服务发现、本地发现、Http请求、负载算法(最少请求、轮询、随机、Hash)</Description>
+		<Authors>Findx</Authors>
+		<Company>Findx</Company>
 	</PropertyGroup>
 
 	<ItemGroup>

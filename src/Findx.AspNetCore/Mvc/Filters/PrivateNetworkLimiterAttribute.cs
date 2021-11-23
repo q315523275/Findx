@@ -23,7 +23,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var ipv4Address = context.HttpContext.GetClientIp();
-            if (NetUtils.IsPrivateNetwork(ipv4Address))
+            if (NetUtil.IsPrivateNetwork(ipv4Address))
             {
                 await next();
             }

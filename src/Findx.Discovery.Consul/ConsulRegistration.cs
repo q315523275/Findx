@@ -111,17 +111,17 @@ namespace Findx.Discovery.Consul
 
             if (!string.IsNullOrEmpty(Options.HealthCheckInterval))
             {
-                check.Interval = DateTimeUtils.ToTimeSpan(Options.HealthCheckInterval);
+                check.Interval = Time.ToTimeSpan(Options.HealthCheckInterval);
             }
 
             if (!string.IsNullOrEmpty(Options.HealthCheckTimeout))
             {
-                check.Timeout = DateTimeUtils.ToTimeSpan(Options.HealthCheckTimeout);
+                check.Timeout = Time.ToTimeSpan(Options.HealthCheckTimeout);
             }
 
             if (!string.IsNullOrEmpty(Options.HealthCheckCriticalTimeout))
             {
-                check.DeregisterCriticalServiceAfter = DateTimeUtils.ToTimeSpan(Options.HealthCheckCriticalTimeout);
+                check.DeregisterCriticalServiceAfter = Time.ToTimeSpan(Options.HealthCheckCriticalTimeout);
             }
 
             check.TLSSkipVerify = Options.HealthCheckTlsSkipVerify;

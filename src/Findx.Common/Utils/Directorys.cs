@@ -6,15 +6,16 @@ namespace Findx.Utils
     /// <summary>
     /// 目录辅助操作类
     /// </summary>
-    public class DirectoryUtils
+    public class Directorys
     {
         /// <summary>
         /// 获取程序根目录
         /// </summary>
         public static string RootPath()
         {
-            return Path.GetDirectoryName(typeof(DirectoryUtils).Assembly.Location);
+            return Path.GetDirectoryName(typeof(Directorys).Assembly.Location);
         }
+
         /// <summary>
         /// 创建文件夹，如果不存在
         /// </summary>
@@ -136,11 +137,11 @@ namespace Findx.Utils
             }
             if (isSet)
             {
-                di.Attributes = di.Attributes | attribute;
+                di.Attributes |= attribute;
             }
             else
             {
-                di.Attributes = di.Attributes & ~attribute;
+                di.Attributes &= ~attribute;
             }
         }
     }

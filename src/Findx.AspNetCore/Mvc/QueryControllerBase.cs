@@ -97,7 +97,6 @@ namespace Findx.AspNetCore.Mvc
         /// 查询单条数据
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="repository"></param>
         /// <returns></returns>
         [HttpGet("detail")]
         public virtual async Task<CommonResult> Detail(TKey id)
@@ -125,7 +124,6 @@ namespace Findx.AspNetCore.Mvc
         /// <summary>
         /// 单条数据查询后操作
         /// </summary>
-        /// <param name="repository"></param>
         /// <param name="model"></param>
         protected virtual Task DetailAfterAsync(TModel model) => Task.CompletedTask;
 

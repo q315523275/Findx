@@ -71,7 +71,7 @@ namespace Findx.Extensions
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
             if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak.IsNullOrWhiteSpace()) return httpClientBuilder;
 
-            var BreakTimeSpan = Findx.Utils.DateTimeUtils.ToTimeSpan(durationOfBreak);
+            var BreakTimeSpan = Findx.Utils.Time.ToTimeSpan(durationOfBreak);
 
             httpClientBuilder.AddTransientHttpErrorPolicy(build =>
             {

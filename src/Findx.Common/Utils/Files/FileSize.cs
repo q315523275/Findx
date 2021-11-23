@@ -54,7 +54,7 @@ namespace Findx.Utils.Files
         /// </summary>
         public double GetSizeByK()
         {
-            return (_size / 1024.0, 2).To<double>();
+            return (_size / 1024.0).To<double>();
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Findx.Utils.Files
         /// </summary>
         public double GetSizeByM()
         {
-            return (_size / 1024.0 / 1024.0, 2).To<double>();
+            return (_size / 1024.0 / 1024.0).To<double>();
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Findx.Utils.Files
         /// </summary>
         public double GetSizeByG()
         {
-            return (_size / 1024.0 / 1024.0 / 1024.0, 2).To<double>();
+            return (_size / 1024.0 / 1024.0 / 1024.0).To<double>();
         }
 
         /// <summary>
@@ -79,11 +79,11 @@ namespace Findx.Utils.Files
         public override string ToString()
         {
             if (_size >= 1024 * 1024 * 1024)
-                return $"{GetSizeByG()} {FileSizeUnit.G.ToDescription()}";
+                return $"{GetSizeByG():0.00} {FileSizeUnit.G.ToDescription()}";
             if (_size >= 1024 * 1024)
-                return $"{GetSizeByM()} {FileSizeUnit.M.ToDescription()}";
+                return $"{GetSizeByM():0.00} {FileSizeUnit.M.ToDescription()}";
             if (_size >= 1024)
-                return $"{GetSizeByK()} {FileSizeUnit.K.ToDescription()}";
+                return $"{GetSizeByK():0.00} {FileSizeUnit.K.ToDescription()}";
             return $"{_size} {FileSizeUnit.Byte.ToDescription()}";
         }
     }

@@ -7,7 +7,7 @@ namespace Findx.Utils
     /// <summary>
     /// 计量工具类
     /// </summary>
-    public static class MetricsUtils
+    public static class MetricsUtil
     {
         /// <summary>
         /// 获取Cpu使用率

@@ -5,7 +5,7 @@ namespace Findx.Utils
     /// <summary>
     /// 时间转换工具类
     /// </summary>
-    public class DateTimeUtils
+    public class Time
     {
         /// <summary>
         /// 字符串时间值转TimsSpan

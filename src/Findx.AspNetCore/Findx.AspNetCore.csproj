@@ -3,19 +3,10 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<Version>1.1.2</Version>
+		<Version>1.5.1</Version>
 		<Description>限速、限流、防重提交、内网限定、请求策略、动态API、上传、MVC扩展等</Description>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DocumentationFile></DocumentationFile>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
-		<DocumentationFile></DocumentationFile>
-		<TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-		<WarningsAsErrors />
+		<Authors>Findx</Authors>
+		<Company>Findx</Company>
 	</PropertyGroup>
 
 	<ItemGroup>

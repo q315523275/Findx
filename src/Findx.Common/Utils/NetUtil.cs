@@ -7,7 +7,7 @@ namespace Findx.Utils
     /// <summary>
     /// 网络辅助工具类
     /// </summary>
-    public static class NetUtils
+    public static class NetUtil
     {
         /// <summary>
         /// 是否能Ping通指定主机
@@ -29,6 +29,7 @@ namespace Findx.Utils
                 return false;
             }
         }
+
         /// <summary>
         /// 是否内网IP
         /// </summary>

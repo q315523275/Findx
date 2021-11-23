@@ -277,6 +277,9 @@ namespace Findx.Utils
             SHA256Managed managed = new SHA256Managed();
             return ToHexString(managed.ComputeHash(bytes));
         }
+        #endregion
+
+        #region Hex16进制工具
         /// <summary>
         /// Hex
         /// </summary>

@@ -2,7 +2,10 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<Version>1.5.1</Version>
 		<Description>服务发现-Consul实现</Description>
+		<Authors>Findx</Authors>
+		<Company>Findx</Company>
 	</PropertyGroup>
 
 	<ItemGroup>

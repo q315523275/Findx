@@ -94,8 +94,8 @@ namespace Findx.AspNetCore.Mvc
             if (model is ICreateUser<TUserKey> user)
                 user.CreateUser = currentUser?.UserId?.CastTo<TUserKey>();
 
-            await AddBeforeAsync(model);
             model.Init();
+            await AddBeforeAsync(model);
             var res = repo.Insert(model);
             await AddAfterAsync(model, res);
 

@@ -2,8 +2,10 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Version>1.1.1</Version>
+		<Version>1.5.1</Version>
 		<Description>Mapster实体映射器组件</Description>
+		<Authors>Findx</Authors>
+		<Company>Findx</Company>
 	</PropertyGroup>
 
 	<ItemGroup>
