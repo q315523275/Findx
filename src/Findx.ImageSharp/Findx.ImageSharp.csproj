@@ -2,8 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Version>1.5.1</Version>
-		<Description>图片处理（验证码、缩略图、文字水印、图片水印、图片合并、图片文本添加、图片压缩）</Description>
+		<Version>1.5.2</Version>
+		<Description>图片处理（验证码、缩放、裁剪、压缩、二值化、旋转、翻转、添加图片、添加文字、水印）</Description>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 	</PropertyGroup>

@@ -30,6 +30,18 @@ namespace Findx.WebHost.Controllers
         }
 
         /// <summary>
+        /// 统一社会信用代码验证
+        /// </summary>
+        /// <param name="creditCode"></param>
+        /// <returns></returns>
+        [HttpGet("/verifyCreditCode")]
+        public string VerifyCreditCode([Required] string creditCode)
+        {
+            return $"{Findx.Utils.CreditCode.IsCreditCode(creditCode)}|{Findx.Utils.CreditCode.RandomCreditCode()}";
+        }
+
+
+        /// <summary>
         /// 文本转PDF示例接口
         /// </summary>
         /// <param name="converter"></param>

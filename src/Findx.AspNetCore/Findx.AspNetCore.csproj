@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<Version>1.5.1</Version>
+		<Version>1.5.2</Version>
 		<Description>限速、限流、防重提交、内网限定、请求策略、动态API、上传、MVC扩展等</Description>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>

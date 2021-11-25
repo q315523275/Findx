@@ -9,5 +9,18 @@ namespace Findx.Utils
     /// </summary>
     public static class RuntimeUtil
     {
+
+
+        public static string ExecForStr()
+        {
+            return null;
+        }
+
+        public static string ExecForLines()
+        {
+            return null;
+        }
+
+
     }
 }

@@ -144,8 +144,15 @@ namespace Findx.RabbitMQ
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "----- RabbitMQ Error HandleIncomingMessage");
-                await FailedCallback?.Invoke(channel, basicDeliverEventArgs);
+                _logger.LogError(ex, "RabbitMQ消费异常");
+                if (FailedCallback != null)
+                {
+                    try
+                    {
+                        await FailedCallback(channel, basicDeliverEventArgs);
+                    }
+                    catch { }
+                }
             }
             // 默认值为true
             if (_autoAck)

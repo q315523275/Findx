@@ -31,6 +31,13 @@ namespace Findx.WebApiClient
                 if (section.Exists())
                     httpApiBuilder.ConfigureHttpApi(section);
 
+                // json默认控制
+                httpApiBuilder.ConfigureHttpApi(x =>
+                {
+                    x.JsonDeserializeOptions.PropertyNameCaseInsensitive = true;
+                    x.JsonSerializeOptions.PropertyNamingPolicy = null;
+                });
+
                 if (attribute.FallbackStatus > 0)
                     httpApiBuilder = httpApiBuilder.AddFallbackPolicy(attribute.FallbackMessage, attribute.FallbackStatus);
 

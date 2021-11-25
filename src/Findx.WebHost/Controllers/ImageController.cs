@@ -4,43 +4,144 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
-    public class ImageController: Controller
+    /// <summary>
+    /// 图片
+    /// </summary>
+    public class ImageController : Controller
     {
         /// <summary>
-        /// 图像处理
+        /// 缩放
         /// </summary>
         /// <param name="imageProcessor"></param>
+        /// <param name="applicationInstance"></param>
+        /// <param name="filePath"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="mode"></param>
         /// <returns></returns>
-        [HttpGet("/image/makeThumbnail")]
-        public IActionResult ImageSharp([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int width, int height, int quality = 100, ImageResizeMode mode = ImageResizeMode.Crop)
+        [HttpGet("/image/scale")]
+        public IActionResult scale([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int width, int height, ImageResizeMode mode = ImageResizeMode.Crop)
         {
-            var img = imageProcessor.MakeThumbnail(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", width, height, quality, mode);
+            var img = imageProcessor.Scale(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), width, height, mode);
 
             return File(img, "image/jpeg");
         }
 
         /// <summary>
-        /// 图像处理
+        /// 裁剪
         /// </summary>
         /// <param name="imageProcessor"></param>
+        /// <param name="applicationInstance"></param>
+        /// <param name="filePath"></param>
+        /// <param name="width"></param>
         /// <returns></returns>
-        [HttpGet("/image/imageWatermark")]
-        public IActionResult ImageWatermark([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, string filePath2, int location, float opacity)
+        [HttpGet("/image/crop")]
+        public IActionResult Crop([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int x, int y, int width)
         {
-            var img = imageProcessor.ImageWatermark(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", applicationInstance.MapPath(filePath2), location, opacity);
+            var img = imageProcessor.Crop(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), x, y, width);
 
             return File(img, "image/jpeg");
         }
 
         /// <summary>
-        /// 图像处理
+        /// 压缩
         /// </summary>
         /// <param name="imageProcessor"></param>
+        /// <param name="applicationInstance"></param>
+        /// <param name="filePath"></param>
+        /// <param name="quality"></param>
         /// <returns></returns>
-        [HttpGet("/image/letterWatermark")]
-        public IActionResult LetterWatermark([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, string text, int location, int fontSize, string fontPath)
+        [HttpGet("/image/compress")]
+        public IActionResult Compress([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, float quality = 0.8f)
         {
-            var img = imageProcessor.LetterWatermark(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), "jpg", text, location, fontPath, fontSize);
+            var img = imageProcessor.Compress(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), quality);
+
+            return File(img, "image/jpeg");
+        }
+
+        /// <summary>
+        /// 黑白
+        /// </summary>
+        /// <param name="imageProcessor"></param>
+        /// <param name="applicationInstance"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        [HttpGet("/image/gray")]
+        public IActionResult Gray([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath)
+        {
+            var img = imageProcessor.Gray(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)));
+
+            return File(img, "image/jpeg");
+        }
+
+        /// <summary>
+        /// 旋转
+        /// </summary>
+        /// <param name="imageProcessor"></param>
+        /// <param name="applicationInstance"></param>
+        /// <param name="filePath"></param>
+        /// <param name="degre"></param>
+        /// <returns></returns>
+        [HttpGet("/image/rotate")]
+        public IActionResult Rotate([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, float degre)
+        {
+            var img = imageProcessor.Rotate(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), degre);
+
+            return File(img, "image/jpeg");
+        }
+
+        /// <summary>
+        /// 水平翻转
+        /// </summary>
+        /// <param name="imageProcessor"></param>
+        /// <param name="applicationInstance"></param>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        [HttpGet("/image/flip")]
+        public IActionResult Flip([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath)
+        {
+            var img = imageProcessor.Flip(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)));
+
+            return File(img, "image/jpeg");
+        }
+
+        /// <summary>
+        /// 添加图片
+        /// </summary>
+        /// <param name="imageProcessor"></param>
+        /// <param name="applicationInstance"></param>
+        /// <param name="filePath"></param>
+        /// <param name="filePath2"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="opacity"></param>
+        /// <returns></returns>
+        [HttpGet("/image/pressImage")]
+        public IActionResult PressImage([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, string filePath2, int x, int y, float opacity = 0.8f)
+        {
+            var img = imageProcessor.PressImage(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), applicationInstance.MapPath(filePath2), x, y, opacity: opacity);
+
+            return File(img, "image/jpeg");
+        }
+
+        /// <summary>
+        /// 添加文字
+        /// </summary>
+        /// <param name="imageProcessor"></param>
+        /// <param name="applicationInstance"></param>
+        /// <param name="filePath"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="text"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="fontPath"></param>
+        /// <param name="fontColor"></param>
+        /// <param name="fontStyle"></param>
+        /// <returns></returns>
+        [HttpGet("/image/pressText")]
+        public IActionResult PressText([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int x, int y, string text, int fontSize, string fontPath, string fontColor, FontStyle fontStyle)
+        {
+            var img = imageProcessor.PressText(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), x, y, text, new FontOptions { FontColor = fontColor, FontFamilyFilePath = fontPath, FontSize = fontSize, FontStyle = fontStyle });
 
             return File(img, "image/jpeg");
         }
@@ -49,6 +150,8 @@ namespace Findx.WebHost.Controllers
         /// 图片验证码
         /// </summary>
         /// <param name="verifyCoder"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
         /// <returns></returns>
         [HttpGet("/verifyCode")]
         public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder, int width = 80, int height = 35)

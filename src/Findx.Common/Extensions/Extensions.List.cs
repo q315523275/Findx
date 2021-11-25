@@ -23,6 +23,7 @@ namespace Findx.Extensions
                 source.Insert(index++, item);
             }
         }
+
         /// <summary>
         /// 查找集合索引
         /// </summary>
@@ -41,6 +42,7 @@ namespace Findx.Extensions
             }
             return -1;
         }
+
         /// <summary>
         /// 集合头部插入
         /// </summary>
@@ -51,6 +53,7 @@ namespace Findx.Extensions
         {
             source.Insert(0, item);
         }
+
         /// <summary>
         /// 集合尾部插入
         /// </summary>
@@ -61,6 +64,7 @@ namespace Findx.Extensions
         {
             source.Insert(source.Count, item);
         }
+
         /// <summary>
         /// 集合指定对象之后插入
         /// </summary>
@@ -79,6 +83,7 @@ namespace Findx.Extensions
 
             source.Insert(index + 1, item);
         }
+
         /// <summary>
         /// 集合自定义查询对象之后插入
         /// </summary>
@@ -97,6 +102,7 @@ namespace Findx.Extensions
 
             source.Insert(index + 1, item);
         }
+
         /// <summary>
         /// 集合指定对象之前插入
         /// </summary>
@@ -115,6 +121,7 @@ namespace Findx.Extensions
 
             source.Insert(index, item);
         }
+
         /// <summary>
         /// 集合自定义查询对象之前插入
         /// </summary>
@@ -133,6 +140,7 @@ namespace Findx.Extensions
 
             source.Insert(index, item);
         }
+
         /// <summary>
         /// 集合对象替换
         /// </summary>
@@ -150,6 +158,7 @@ namespace Findx.Extensions
                 }
             }
         }
+
         /// <summary>
         /// 集合满足查询条件对象替换
         /// </summary>
@@ -168,6 +177,7 @@ namespace Findx.Extensions
                 }
             }
         }
+
         /// <summary>
         /// 集合内替换满足查询条件第一个对象
         /// </summary>
@@ -186,6 +196,7 @@ namespace Findx.Extensions
                 }
             }
         }
+
         /// <summary>
         /// 集合内替换满足查询条件的第一个对象
         /// </summary>
@@ -205,6 +216,7 @@ namespace Findx.Extensions
                 }
             }
         }
+
         /// <summary>
         /// 集合内替换指定的第一个对象
         /// </summary>
@@ -223,6 +235,7 @@ namespace Findx.Extensions
                 }
             }
         }
+
         /// <summary>
         /// 移动集合数据对象
         /// </summary>
@@ -247,6 +260,7 @@ namespace Findx.Extensions
             source.RemoveAt(currentIndex);
             source.Insert(targetIndex, item);
         }
+
         /// <summary>
         /// 获取集合指定条件数据对象
         /// </summary>
@@ -305,8 +319,7 @@ namespace Findx.Extensions
         /// <param name="getDependencies">Function to resolve the dependencies</param>
         /// <param name="sorted">List with the sortet items</param>
         /// <param name="visited">Dictionary with the visited items</param>
-        private static void SortByDependenciesVisit<T>(T item, Func<T, IEnumerable<T>> getDependencies, List<T> sorted,
-            Dictionary<T, bool> visited)
+        private static void SortByDependenciesVisit<T>(T item, Func<T, IEnumerable<T>> getDependencies, List<T> sorted, Dictionary<T, bool> visited)
         {
             bool inProcess;
             var alreadyVisited = visited.TryGetValue(item, out inProcess);

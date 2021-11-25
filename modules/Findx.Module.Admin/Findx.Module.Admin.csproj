@@ -11,7 +11,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Compile Remove="Models\SysAreaInfo.cs" />
 		<Compile Remove="Models\SysCodeGenerateConfigInfo.cs" />
 		<Compile Remove="Models\SysCodeGenerateInfo.cs" />
 		<Compile Remove="Models\SysTimersInfo.cs" />

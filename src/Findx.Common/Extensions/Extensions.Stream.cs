@@ -23,6 +23,7 @@ namespace Findx.Extensions
                 return memoryStream.ToArray();
             }
         }
+
         /// <summary>
         /// Stream转换为byte[]
         /// </summary>
@@ -38,6 +39,7 @@ namespace Findx.Extensions
                 return memoryStream.ToArray();
             }
         }
+
         /// <summary>
         /// Stream拷贝
         /// </summary>

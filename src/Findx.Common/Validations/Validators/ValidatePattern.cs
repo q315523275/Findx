@@ -57,5 +57,11 @@
         /// 固话验证正则表达式
         /// </summary>
         public const string TelNoOfChinaPatter = @"^\d{3,4}-?\d{6,8}$";
+
+        /// <summary>
+        /// 社会信用代码正则表达式
+        /// <para>法人和其他组织统一社会信用代码制度</para>
+        /// </summary>
+        public const string CreditCode = @"^[0-9A-HJ-NPQRTUWXY]{2}\d{6}[0-9A-HJ-NPQRTUWXY]{10}$";
     }
 }

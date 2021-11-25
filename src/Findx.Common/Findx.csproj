@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<LangVersion>8.0</LangVersion>
-		<Version>1.5.1</Version>
+		<Version>1.5.4</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Product />

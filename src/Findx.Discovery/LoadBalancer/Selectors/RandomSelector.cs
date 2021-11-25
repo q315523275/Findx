@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Findx.Utils;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,13 +11,11 @@ namespace Findx.Discovery.LoadBalancer.Selectors
         private readonly Func<Task<IList<IServiceInstance>>> _services;
         private readonly string _serviceName;
         private readonly Func<int, int, int> _generate;
-        private readonly Random _random;
         public RandomSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
         {
             _services = services;
             _serviceName = serviceName;
-            _random = new Random();
-            _generate = (min, max) => _random.Next(min, max);
+            _generate = (min, max) => RandomUtil.RandomInt(min, max);
         }
 
         public LoadBalancerType Name => LoadBalancerType.Random;

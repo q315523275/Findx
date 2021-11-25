@@ -1,5 +1,6 @@
 ﻿using Findx.Drawing;
 using Findx.Extensions;
+using Findx.Utils;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -19,8 +20,6 @@ namespace Findx.ImageSharp
     /// </summary>
     public class VerifyCoder : IVerifyCoder
     {
-        private static Random _random = new Random();
-
         private static readonly string[] _colorHexArr = new string[] { "#00E5EE", "#000000", "#2F4F4F", "#000000", "#43CD80", "#191970", "#006400", "#458B00", "#8B7765", "#CD5B45" };
         private static readonly string[] _lightColorHexArr = new string[] { "#FFFACD", "#FDF5E6", "#F0FFFF", "#BBFFFF", "#FAFAD2", "#FFE4E1", "#DCDCDC", "#F0E68C" };
         private static Font[] _fontArr;
@@ -66,10 +65,10 @@ namespace Findx.ImageSharp
 
             using (var imgText = new Image<Rgba32>(imageWidth, imageHeight))
             {
-                var colorTextHex = _colorHexArr[_random.Next(0, _colorHexArr.Length)];
-                var lignthColorHex = _lightColorHexArr[_random.Next(0, _lightColorHexArr.Length)];
+                var colorTextHex = _colorHexArr[RandomUtil.RandomInt(0, _colorHexArr.Length)];
+                var lignthColorHex = _lightColorHexArr[RandomUtil.RandomInt(0, _lightColorHexArr.Length)];
 
-                imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(_lightColorHexArr[_random.Next(0, _lightColorHexArr.Length)])));
+                imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(_lightColorHexArr[RandomUtil.RandomInt(0, _lightColorHexArr.Length)])));
 
                 imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(lignthColorHex)));
 
@@ -103,7 +102,7 @@ namespace Findx.ImageSharp
             int[] ints = new int[length];
             for (int i = 0; i < length; i++)
             {
-                ints[i] = _random.Next(0, 9);
+                ints[i] = RandomUtil.RandomInt(0, 9);
             }
             return ints.ExpandAndToString("");
         }
@@ -117,12 +116,11 @@ namespace Findx.ImageSharp
             List<string> result = new List<string>();
             while (result.Count < length)
             {
-                int index = _random.Next(allChars.Length);
+                int index = RandomUtil.RandomInt(allChars.Length);
                 string c = allChars[index];
                 result.Add(c);
             }
             return result.ExpandAndToString("");
         }
-
     }
 }

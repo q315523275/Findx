@@ -20,7 +20,6 @@ namespace Findx.Extensions
     /// </summary>
     public static partial class Extensions
     {
-
         #region IServiceCollection
         /// <summary>
         /// 添加Findx服务构建

@@ -51,6 +51,11 @@
             <param name="request"></param>
             <returns></returns>
         </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysAreaController">
+            <summary>
+            系统区域
+            </summary>
+        </member>
         <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysDictTypeController.DropDown(System.String,Findx.Data.IRepository{Findx.Module.Admin.Models.SysDictTypeInfo},Findx.Data.IRepository{Findx.Module.Admin.Models.SysDictDataInfo})">
             <summary>
             查询字典值
@@ -58,6 +63,39 @@
             <param name="code"></param>
             <param name="repo"></param>
             <param name="repo_data"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysFileController">
+            <summary>
+            系统文件
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysFileController.#ctor(Findx.IApplicationInstanceInfo)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="instanceInfo"></param>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysFileController.DownloadFileInfo(System.String)">
+            <summary>
+            下载文件
+            </summary>
+            <param name="id">文件编号</param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysFileController.PreviewFileInfo(System.String)">
+            <summary>
+            预览文件
+            </summary>
+            <param name="id"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysFileController.UploadAsync(Findx.Module.Admin.Areas.Admin.DTO.SysFileUploadRequest,Findx.AspNetCore.Upload.IFileUploadService)">
+            <summary>
+            文件上传
+            </summary>
+            <param name="request"></param>
+            <param name="uploadService"></param>
             <returns></returns>
         </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysMenuController">
@@ -79,6 +117,51 @@
             
             </summary>
             <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysNoticeController">
+            <summary>
+            通知公告
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysNoticeController.CreatePageWhereExpression(Findx.Module.Admin.Areas.Admin.DTO.SysNoticeQuery)">
+            <summary>
+            构建查询条件
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysNoticeController.ChangeStatus(Findx.Module.Admin.Areas.Admin.DTO.SysUserStatusUpdateRequest,Findx.Data.IRepository{Findx.Module.Admin.Models.SysNoticeInfo})">
+            <summary>
+            更新状态
+            </summary>
+            <param name="request"></param>
+            <param name="repo"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysNoticeController.ReceivedNoticePageList(Findx.Module.Admin.Areas.Admin.DTO.SysNoticeQuery)">
+            <summary>
+            获取接收的通知公告
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysOpLogController">
+            <summary>
+            操作日志
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysOpLogController.CreatePageWhereExpression(Findx.Module.Admin.Areas.Admin.DTO.SysOpLogQuery)">
+            <summary>
+            构建查询条件
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysOpLogController.DeleteAsync(System.Collections.Generic.List{Findx.AspNetCore.Mvc.DeleteParam{System.Int64}})">
+            <summary>
+            清空访问日志
+            </summary>
             <returns></returns>
         </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysOrgController">
@@ -134,6 +217,23 @@
             <param name="repo"></param>
             <returns></returns>
         </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysUserController.Selector(Findx.Module.Admin.Areas.Admin.DTO.SysUserQuery)">
+            <summary>
+            获取用户选择器
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.SysVisLogController">
+            <summary>
+            访问日志
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.SysVisLogController.DeleteAsync(System.Collections.Generic.List{Findx.AspNetCore.Mvc.DeleteParam{System.Int64}})">
+            <summary>
+            清空访问日志
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.DTO.ChangeAppMenuInput">
             <summary>
             切换应用菜单
@@ -143,6 +243,21 @@
             <summary>
             应用编码
             </summary>DeleteMenuInput
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.ChangeStatusRequest">
+            <summary>
+            更改状态入参
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.ChangeStatusRequest.Id">
+            <summary>
+            主键Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.ChangeStatusRequest.Status">
+            <summary>
+            状态-正常_0、停用_1、删除_2
+            </summary>
         </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.DTO.LoginRequest">
             <summary>
@@ -509,6 +624,36 @@
             职位名称
             </summary>
         </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysFileQuery">
+            <summary>
+            文件查询
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysFileQuery.FileLocation">
+            <summary>
+            文件存储位置（1:阿里云，2:腾讯云，3:minio，4:本地）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysFileQuery.FileBucket">
+            <summary>
+            文件仓库
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysFileQuery.FileOriginName">
+            <summary>
+            文件名称（上传时候的文件名）
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysFileUploadRequest">
+            <summary>
+            系统文件上传
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysFileUploadRequest.file">
+            <summary>
+            上传信息
+            </summary>
+        </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysMenuQuery">
             <summary>
             菜单查询入参
@@ -522,6 +667,181 @@
         <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysMenuQuery.Application">
             <summary>
             应用分类（应用编码）
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeCreateRequest">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeCreateRequest.Title">
+            <summary>
+            标题
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeCreateRequest.Content">
+            <summary>
+            内容
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeCreateRequest.Type">
+            <summary>
+            类型（字典 1通知 2公告）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeCreateRequest.Status">
+            <summary>
+            状态（字典 0草稿 1发布 2撤回 3删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeCreateRequest.NoticeUserIdList">
+            <summary>
+            通知到的人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput">
+            <summary>
+            消息公告出参
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.Id">
+            <summary>
+            主键
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.CancelTime">
+            <summary>
+            撤回时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.PublicOrgId">
+            <summary>
+            发布机构id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.PublicOrgName">
+            <summary>
+            发布机构名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.PublicTime">
+            <summary>
+            发布时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.PublicUserId">
+            <summary>
+            发布人id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.PublicUserName">
+            <summary>
+            发布人姓名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.Status">
+            <summary>
+            状态（字典 0草稿 1发布 2撤回 3删除）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.Title">
+            <summary>
+            标题
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.Type">
+            <summary>
+            类型（字典 1通知 2公告）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.Content">
+            <summary>
+            内容
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.NoticeUserIdList">
+            <summary>
+            通知到的用户Id集合
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeOutput.NoticeUserReadInfoList">
+            <summary>
+            通知到的用户阅读信息集合
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.NoticeUserRead.UserId">
+            <summary>
+            用户Id
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.NoticeUserRead.UserName">
+            <summary>
+            用户名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.NoticeUserRead.ReadStatus">
+            <summary>
+            状态（字典 0未读 1已读）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.NoticeUserRead.ReadTime">
+            <summary>
+            阅读时间
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeQuery">
+            <summary>
+            通知公告参数
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeQuery.Type">
+            <summary>
+            类型（字典 1通知 2公告）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeQuery.SearchValue">
+            <summary>
+            关键词
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeUpdateRequest">
+            <summary>
+            通知公告
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysNoticeUpdateRequest.Id">
+            <summary>
+            Id
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysOpLogQuery">
+            <summary>
+            操作日志查询
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysOpLogQuery.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysOpLogQuery.Success">
+            <summary>
+            是否执行成功（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysOpLogQuery.ReqMethod">
+            <summary>
+            请求方式
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysOpLogQuery.SearchBeginTime">
+            <summary>
+            起始时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysOpLogQuery.SearchEndTime">
+            <summary>
+            结束时间
             </summary>
         </member>
         <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysOrgRequest.Id">
@@ -894,6 +1214,36 @@
             员工信息
             </summary>
         </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.DTO.SysVisLogQuery">
+            <summary>
+            访问日志查询
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysVisLogQuery.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysVisLogQuery.Success">
+            <summary>
+            是否执行成功（Y-是，N-否）
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysVisLogQuery.VisType">
+            <summary>
+            访问类型
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysVisLogQuery.SearchBeginTime">
+            <summary>
+            起始时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Areas.Admin.DTO.SysVisLogQuery.SearchEndTime">
+            <summary>
+            结束时间
+            </summary>
+        </member>
         <member name="T:Findx.Module.Admin.Internals.AdminExtensions">
             <summary>
             管理员扩展
@@ -914,6 +1264,11 @@
         <member name="F:Findx.Module.Admin.Internals.CommonStatusEnum.DISABLE">
             <summary>
             停用
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.CommonStatusEnum.DELETED">
+            <summary>
+            删除
             </summary>
         </member>
         <member name="F:Findx.Module.Admin.Internals.DataScopeTypeEnum.ALL">
@@ -939,6 +1294,56 @@
         <member name="F:Findx.Module.Admin.Internals.DataScopeTypeEnum.DEFINE">
             <summary>
             自定义数据
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.FileLocationEnum.ALIYUN">
+            <summary>
+            阿里云
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.FileLocationEnum.TENCENT">
+            <summary>
+            腾讯云
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.FileLocationEnum.MINIO">
+            <summary>
+            minio服务器
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.FileLocationEnum.LOCAL">
+            <summary>
+            本地
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Internals.LoginTypeEnum">
+            <summary>
+            登陆类型
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.LoginTypeEnum.LOGIN">
+            <summary>
+            登陆
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.LoginTypeEnum.LOGOUT">
+            <summary>
+            登出
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.LoginTypeEnum.REGISTER">
+            <summary>
+            注册
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.LoginTypeEnum.CHANGEPASSWORD">
+            <summary>
+            改密
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.LoginTypeEnum.AUTHORIZEDLOGIN">
+            <summary>
+            三方授权登陆
             </summary>
         </member>
         <member name="T:Findx.Module.Admin.Internals.MenuOpenTypeEnum">
@@ -984,6 +1389,41 @@
         <member name="F:Findx.Module.Admin.Internals.MenuTypeEnum.BTN">
             <summary>
             按钮
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.NoticeStatusEnum.DRAFT">
+            <summary>
+            草稿
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.NoticeStatusEnum.PUBLIC">
+            <summary>
+            发布
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.NoticeStatusEnum.CANCEL">
+            <summary>
+            撤回
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.NoticeStatusEnum.DELETED">
+            <summary>
+            删除
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Internals.NoticeUserStatusEnum">
+            <summary>
+            通知公告用户状态
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.NoticeUserStatusEnum.UNREAD">
+            <summary>
+            未读
+            </summary>
+        </member>
+        <member name="F:Findx.Module.Admin.Internals.NoticeUserStatusEnum.READ">
+            <summary>
+            已读
             </summary>
         </member>
         <member name="T:Findx.Module.Admin.Internals.YesOrNotEnum">
@@ -1054,6 +1494,71 @@
         <member name="P:Findx.Module.Admin.Models.SysAppInfo.UpdateUser">
             <summary>
             修改人
+            </summary>
+        </member>
+        <member name="T:Findx.Module.Admin.Models.SysAreaInfo">
+            <summary>
+            中国行政地区表
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.Id">
+            <summary>
+            编号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.AreaCode">
+            <summary>
+            行政代码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.CityCode">
+            <summary>
+            区号
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.Lat">
+            <summary>
+            纬度
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.LevelCode">
+            <summary>
+            层级
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.Lng">
+            <summary>
+            经度
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.MergerName">
+            <summary>
+            组合名
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.Name">
+            <summary>
+            名称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.ParentCode">
+            <summary>
+            父级行政代码
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.Pinyin">
+            <summary>
+            拼音
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.ShortName">
+            <summary>
+            简称
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysAreaInfo.ZipCode">
+            <summary>
+            邮政编码
             </summary>
         </member>
         <member name="T:Findx.Module.Admin.Models.SysConfigInfo">
@@ -1316,16 +1821,6 @@
             主键id
             </summary>
         </member>
-        <member name="P:Findx.Module.Admin.Models.SysFileInfo.CreateTime">
-            <summary>
-            创建时间
-            </summary>
-        </member>
-        <member name="P:Findx.Module.Admin.Models.SysFileInfo.CreateUser">
-            <summary>
-            创建用户
-            </summary>
-        </member>
         <member name="P:Findx.Module.Admin.Models.SysFileInfo.FileBucket">
             <summary>
             文件仓库
@@ -1374,6 +1869,16 @@
         <member name="P:Findx.Module.Admin.Models.SysFileInfo.UpdateUser">
             <summary>
             修改用户
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.CreateTime">
+            <summary>
+            创建时间
+            </summary>
+        </member>
+        <member name="P:Findx.Module.Admin.Models.SysFileInfo.CreateUser">
+            <summary>
+            创建用户
             </summary>
         </member>
         <member name="T:Findx.Module.Admin.Models.SysMenuInfo">

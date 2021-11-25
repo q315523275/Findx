@@ -80,7 +80,6 @@ namespace Findx.Extensions
             return sb.ToString();
         }
 
-
         /// <summary>
         /// 过滤集合
         /// </summary>
@@ -144,7 +143,7 @@ namespace Findx.Extensions
         /// <param name="source">要操作的源</param>
         /// <param name="keySelector">重复数据筛选条件</param>
         /// <returns>不重复元素的集合</returns>
-        public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
+        public static IEnumerable<T> DistinctBy2<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
         {
             Check.NotNull(keySelector, nameof(keySelector));
 

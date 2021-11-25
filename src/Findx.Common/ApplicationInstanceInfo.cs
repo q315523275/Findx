@@ -13,10 +13,14 @@ namespace Findx
     public class ApplicationInstanceInfo : IApplicationInstanceInfo
     {
         private readonly string FindxApplicationRoot = "Findx:Application";
-        private readonly Random _random = new Random();
         private readonly IConfiguration _configuration;
         private readonly IHostEnvironment _environment;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="configuration"></param>
+        /// <param name="environment"></param>
         public ApplicationInstanceInfo(IConfiguration configuration, IHostEnvironment environment)
         {
             _configuration = configuration;
@@ -24,9 +28,9 @@ namespace Findx
 
             ApplicationId = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Id") ?? Guid.NewGuid().ToString();
             ApplicationName = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Name") ?? _environment.ApplicationName;
-            Port = _configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? _random.Next(1000, 40000);
+            Port = _configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? RandomUtil.RandomInt(1000, 40000);
             // 启用随机端口
-            if (Port == 0) Port = _random.Next(1000, 40000);
+            if (Port == 0) Port = RandomUtil.RandomInt(1000, 40000);
             Version = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
             Uris = _configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
             InstanceIP = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());

@@ -12,7 +12,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Findx.Extensions
+namespace Findx.AspNetCore.Extensions
 {
     /// <summary>
     /// HttpClientBuilder弹性构建扩展

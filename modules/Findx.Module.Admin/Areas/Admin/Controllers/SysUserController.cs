@@ -122,7 +122,26 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             return CommonResult.Success();
         }
 
+        /// <summary>
+        /// 获取用户选择器
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("selector")]
+        public async Task<CommonResult> Selector([FromQuery] SysUserQuery request)
+        {
 
-       
+            var userId = principal.Identity.GetUserId<long>();
+
+            var userInfo = fsql.Select<SysUserInfo>(userId).First();
+            if (userInfo == null)
+                return CommonResult.Fail("401", "登录信息失效,请重新登录");
+
+            var userList = await fsql.Select<SysUserInfo>()
+                                     .WhereIf(!request.SearchValue.IsNullOrWhiteSpace(), x => x.Name.Contains(request.SearchValue))
+                                     .Where(x => x.AdminType != 1)
+                                     .ToListAsync(x => new { x.Id, x.Name });
+
+            return CommonResult.Success(userList);
+        }
     }
 }

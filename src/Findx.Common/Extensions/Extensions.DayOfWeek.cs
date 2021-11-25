@@ -16,6 +16,7 @@ namespace Findx.Extensions
         {
             return dayOfWeek.IsIn(DayOfWeek.Saturday, DayOfWeek.Sunday);
         }
+
         /// <summary>
         /// 将时间转换为时间戳
         /// </summary>

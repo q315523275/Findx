@@ -53,9 +53,8 @@ namespace Findx.Utils
                     return _snowflakeId;
                 }
 
-                var random = new Random();
-                var workerId = random.Next((int)MaxWorkerId);
-                var datacenterId = random.Next((int)MaxDatacenterId);
+                var workerId = RandomUtil.RandomInt((int)MaxWorkerId);
+                var datacenterId = RandomUtil.RandomInt((int)MaxDatacenterId);
                 return _snowflakeId = new SnowflakeId(workerId, datacenterId);
             }
         }

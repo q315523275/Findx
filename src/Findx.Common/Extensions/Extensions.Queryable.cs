@@ -23,6 +23,7 @@ namespace Findx.Extensions
 
             return query.Skip(skipCount).Take(takeCount);
         }
+
         /// <summary>
         /// 分页
         /// </summary>
@@ -38,6 +39,7 @@ namespace Findx.Extensions
 
             return (TQueryable)query.Skip(skipCount).Take(takeCount);
         }
+
         /// <summary>
         /// 条件通过则进行谓词过滤
         /// </summary>
@@ -52,6 +54,7 @@ namespace Findx.Extensions
 
             return condition ? query.Where(predicate) : query;
         }
+
         /// <summary>
         /// 条件通过则进行谓词过滤
         /// </summary>
@@ -67,6 +70,7 @@ namespace Findx.Extensions
 
             return condition ? (TQueryable)query.Where(predicate) : query;
         }
+
         /// <summary>
         /// 条件通过则进行谓词过滤
         /// </summary>
@@ -81,6 +85,7 @@ namespace Findx.Extensions
 
             return condition ? query.Where(predicate) : query;
         }
+
         /// <summary>
         /// 条件通过则进行谓词过滤
         /// </summary>

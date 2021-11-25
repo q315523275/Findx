@@ -1,10 +1,13 @@
-﻿using SixLabors.Fonts;
+﻿using Findx.Utils;
+using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Findx.ImageSharp
 {
@@ -14,7 +17,6 @@ namespace Findx.ImageSharp
         {
             if (!string.IsNullOrEmpty(text))
             {
-                Random random = new Random();
                 var textWidth = (containerWidth / text.Length);
                 var img2Size = Math.Min(textWidth, containerHeight);
                 var fontMiniSize = (int)(img2Size * 0.9);
@@ -25,15 +27,15 @@ namespace Findx.ImageSharp
                 {
                     using (Image<Rgba32> img2 = new Image<Rgba32>(img2Size, img2Size))
                     {
-                        Font scaledFont = new Font(fonts[random.Next(0, fonts.Length)], random.Next(fontMiniSize, fontMaxSize), (FontStyle)fontStyleArr.GetValue(random.Next(fontStyleArr.Length)));
+                        Font scaledFont = new Font(fonts[RandomUtil.RandomInt(0, fonts.Length)], RandomUtil.RandomInt(fontMiniSize, fontMaxSize), (FontStyle)fontStyleArr.GetValue(RandomUtil.RandomInt(fontStyleArr.Length)));
                         var point = new Point(i * textWidth, (containerHeight - img2.Height) / 2);
-                        var colorHex = colorHexArr[random.Next(0, colorHexArr.Length)];
+                        var colorHex = colorHexArr[RandomUtil.RandomInt(0, colorHexArr.Length)];
                         var drawingOptions = new DrawingOptions { TextOptions = new TextOptions { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top } };
 
                         img2.Mutate(ctx => ctx
                                         .DrawText(drawingOptions, text[i].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(0, 0))
                                         .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
-                                        .Rotate(random.Next(-45, 45))
+                                        .Rotate(RandomUtil.RandomInt(-45, 45))
                                     );
                         processingContext.DrawImage(img2, point, 1);
                     }
@@ -113,5 +115,74 @@ namespace Findx.ImageSharp
             }
             return newPoint;
         }
+
+        /// <summary>
+        /// 保存指定格式图片
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="stream"></param>
+        /// <param name="format"></param>
+        public static void SaveImage(this Image image, Stream stream, IImageFormat format)
+        {
+            if (format is SixLabors.ImageSharp.Formats.Jpeg.JpegFormat)
+                image.SaveAsJpeg(stream);
+
+            if (format is SixLabors.ImageSharp.Formats.Png.PngFormat)
+                image.SaveAsPng(stream);
+
+            if (format is SixLabors.ImageSharp.Formats.Bmp.BmpFormat)
+                image.SaveAsBmp(stream);
+
+            if (format is SixLabors.ImageSharp.Formats.Gif.GifFormat)
+                image.SaveAsGif(stream);
+        }
+
+
+        /// <summary>
+        /// 图像灰度处理
+        /// </summary>
+        /// <param name="img"></param>
+        /// <returns></returns>
+        public static Image<Rgba32> ToGray(this Image<Rgba32> img)
+        {
+            for (int i = 0; i < img.Width; i++)
+            {
+                for (int j = 0; j < img.Height; j++)
+                {
+                    var color = img[i, j];
+                    // 计算灰度值
+                    int gray = (int)(color.R * 0.3 + color.G * 0.59 + color.B * 0.11);
+                    System.Drawing.Color newColor = System.Drawing.Color.FromArgb(gray, gray, gray);
+                    // 修改该像素点的RGB的颜色
+                    img[i, j] = new Rgba32(newColor.R, newColor.G, newColor.B, newColor.A);
+                }
+            }
+            return img;
+        }
+
+        /// <summary>
+        /// 黑白二值化
+        /// </summary>
+        /// <param name="image"></param>
+        /// <returns></returns>
+        public static Image<Rgba32> Binaryzation(this Image<Rgba32> image)
+        {
+            image = image.ToGray();//先灰度处理
+            int threshold = 180;//定义阈值
+            for (int i = 0; i < image.Width; i++)
+            {
+                for (int j = 0; j < image.Height; j++)
+                {
+                    //获取该像素点的RGB的颜色
+                    var color = image[i, j];
+                    //计算颜色,大于平均值为黑,小于平均值为白
+                    System.Drawing.Color newColor = color.B < threshold ? System.Drawing.Color.FromArgb(0, 0, 0) : System.Drawing.Color.FromArgb(255, 255, 255);
+                    //修改该像素点的RGB的颜色
+                    image[i, j] = new Rgba32(newColor.R, newColor.G, newColor.B, newColor.A);
+                }
+            }
+            return image;
+        }
+
     }
 }

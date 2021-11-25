@@ -39,5 +39,10 @@ namespace Findx.Module.Admin.Models
 		/// </summary>
 		[Column(Name = "user_id")]
 		public long UserId { get; set; }
-	}
+
+        public override void Init()
+        {
+			Id = Findx.Utils.SnowflakeId.Default().NextId();
+        }
+    }
 }
