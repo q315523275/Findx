@@ -43,11 +43,6 @@ namespace Findx
         string InternalIP { get; }
 
         /// <summary>
-        /// 系统名称
-        /// </summary>
-        string OSDescription { get; }
-
-        /// <summary>
         /// 应用根目录
         /// </summary>
         string RootPath { get; }

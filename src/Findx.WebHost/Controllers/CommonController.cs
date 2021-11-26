@@ -127,7 +127,7 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("/privateNetworkLimiter")]
-        [PrivateNetworkLimiter]
+        [InternalNetworkLimiter]
         public object PrivateNetworkLimiter()
         {
             var rng = new Random();
@@ -160,5 +160,30 @@ namespace Findx.WebHost.Controllers
 
         private static readonly string[] Summaries = new[] { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
 
+        /// <summary>
+        /// 命令执行
+        /// </summary>
+        /// <param name="exePath"></param>
+        /// <param name="arguments"></param>
+        /// <returns></returns>
+        [HttpGet("/cmd")]
+        public object Cmd([Required] string exePath, string arguments)
+        {
+            if (arguments.IsNullOrWhiteSpace())
+                return Findx.Utils.RuntimeUtil.ExecForStringList(exePath);
+            else
+                return Findx.Utils.RuntimeUtil.ExecForStringList(exePath, arguments);
+        }
+
+        /// <summary>
+        /// 进程销毁
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("/kill")]
+        public object Kill()
+        {
+            Findx.Utils.RuntimeUtil.Destroy();
+            return DateTime.Now;
+        }
     }
 }

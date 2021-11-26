@@ -154,7 +154,7 @@ namespace Findx.WebHost.Controllers
         /// <param name="height"></param>
         /// <returns></returns>
         [HttpGet("/verifyCode")]
-        public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder, int width = 80, int height = 35)
+        public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder, int width = 150, int height = 50)
         {
             var code = verifyCoder.GetCode(4, VerifyCodeType.NumberAndLetter);
 

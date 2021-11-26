@@ -5,15 +5,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="5.0.1" />
+    <Compile Remove="Mvc\**" />
+    <EmbeddedResource Remove="Mvc\**" />
+    <None Remove="Mvc\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Findx.AspNetCore\Findx.AspNetCore.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mvc\" />
   </ItemGroup>
 
 </Project>

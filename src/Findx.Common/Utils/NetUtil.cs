@@ -35,7 +35,7 @@ namespace Findx.Utils
         /// </summary>
         /// <param name="ipv4Address"></param>
         /// <returns></returns>
-        public static bool IsPrivateNetwork(string ipv4Address)
+        public static bool IsInternalIP(string ipv4Address)
         {
             if (IPAddress.TryParse(ipv4Address, out var ip))
             {

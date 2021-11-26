@@ -12,7 +12,7 @@ namespace Findx.AspNetCore.Mvc.Filters
     /// 私有网络访问限制
     /// </summary>
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
-    public class PrivateNetworkLimiterAttribute : ActionFilterAttribute
+    public class InternalNetworkLimiterAttribute : ActionFilterAttribute
     {
         /// <summary>
         /// Action执行
@@ -23,7 +23,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var ipv4Address = context.HttpContext.GetClientIp();
-            if (NetUtil.IsPrivateNetwork(ipv4Address))
+            if (NetUtil.IsInternalIP(ipv4Address))
             {
                 await next();
             }

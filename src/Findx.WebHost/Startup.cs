@@ -13,6 +13,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using System.Threading.Tasks;
 
 namespace Findx.WebHost
 {
@@ -55,6 +56,17 @@ namespace Findx.WebHost
             eventBus.Subscribe<FindxTestEvent, FindxTestEventHanderTwo>();
             eventBus.SubscribeDynamic<FindxTestDynamicEventHandler>("Findx.WebHost.EventBus.FindxTestEvent");
             eventBus.StartConsuming();
+
+            Task.Run(async () => {
+
+                var notifySender = app.ApplicationServices.GetRequiredService<IMessageNotifySender>();
+
+                while (true)
+                {
+                    await notifySender.PublishAsync(new PayedOrderCommand(0));
+                    await Task.Delay(500);
+                }
+            });
         }
     }
 }

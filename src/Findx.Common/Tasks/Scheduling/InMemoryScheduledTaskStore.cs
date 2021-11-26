@@ -1,6 +1,5 @@
 ﻿using Findx.Extensions;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,16 +7,16 @@ namespace Findx.Tasks.Scheduling
 {
     public class InMemoryScheduledTaskStore : IScheduledTaskStore
     {
-        private readonly ConcurrentDictionary<Guid, SchedulerTaskInfo> _tasks;
+        private readonly Dictionary<Guid, SchedulerTaskInfo> _tasks;
 
         public InMemoryScheduledTaskStore()
         {
-            _tasks = new ConcurrentDictionary<Guid, SchedulerTaskInfo>();
+            _tasks = new Dictionary<Guid, SchedulerTaskInfo>();
         }
 
         public Task DeleteAsync(Guid taskId)
         {
-            _tasks.TryRemove(taskId, out _);
+            _tasks.Remove(taskId);
             return Task.CompletedTask;
         }
 
@@ -29,7 +28,8 @@ namespace Findx.Tasks.Scheduling
         public Task<List<SchedulerTaskInfo>> GetShouldRunTasksAsync(int maxResultCount)
         {
             var referenceTime = DateTimeOffset.UtcNow.LocalDateTime;
-            var tasksThatShouldRun = _tasks.Values.Where(t => t.ShouldRun(referenceTime))
+            var tasksThatShouldRun = _tasks.Values
+                                           .Where(t => t.ShouldRun(referenceTime))
                                            .OrderBy(t => t.TryCount)
                                            .ThenBy(t => t.NextRunTime)
                                            .Take(maxResultCount)

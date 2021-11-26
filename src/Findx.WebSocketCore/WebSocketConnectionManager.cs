@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace Findx.WebSocketCore
 {
-    public class WebSocketConnectionManager
+    public class WebSocketConnectionManager: IDisposable
     {
-        private ConcurrentDictionary<string, WebSocket> _sockets = new ConcurrentDictionary<string, WebSocket>();
-        private ConcurrentDictionary<string, List<string>> _groups = new ConcurrentDictionary<string, List<string>>();
+        private ConcurrentDictionary<string, WebSocket> _sockets = new();
+        private ConcurrentDictionary<string, List<string>> _groups = new();
 
         public WebSocket GetSocketById(string id)
         {
@@ -93,6 +93,15 @@ namespace Findx.WebSocketCore
         public int GetSocketClientCount()
         {
             return _sockets.Count();
+        }
+
+        public void Dispose()
+        {
+            foreach (var item in _sockets.Values)
+            {
+                item?.Dispose();
+            }
+            _sockets.Clear();
         }
     }
 }

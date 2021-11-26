@@ -35,7 +35,6 @@ namespace Findx
             Uris = _configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
             InstanceIP = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());
             InternalIP = InstanceIP;
-            OSDescription = RuntimeInformation.OSDescription;
 
             RootPath = AppDomain.CurrentDomain.BaseDirectory;
         }
@@ -53,8 +52,6 @@ namespace Findx
         public string InstanceIP { set; get; }
 
         public string InternalIP { set; get; }
-
-        public string OSDescription { set; get; }
 
         public string RootPath { set; get; }
 
