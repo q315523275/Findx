@@ -17,9 +17,6 @@ namespace Findx.DependencyInjection
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            services.TryAddSingleton<IHybridServiceScopeFactory, DefaultServiceScopeFactory>();
-            services.AddScoped<ScopedDictionary>();
-
             // 查找所有自动注册的服务实现类型
             IDependencyTypeFinder dependencyTypeFinder = services.GetOrAddTypeFinder<IDependencyTypeFinder>(assemblyFinder => new DependencyTypeFinder(assemblyFinder));
 

@@ -1,6 +1,7 @@
 ﻿using Findx.Caching;
 using Findx.Caching.InMemory;
 using Findx.Data;
+using Findx.DependencyInjection;
 using Findx.Email;
 using Findx.ExceptionHandling;
 using Findx.Extensions;
@@ -34,8 +35,12 @@ namespace Findx.Builders
             services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();
             services.AddSingleton<ICache, InMemoryCache>();
 
+            // 注入模块
+            services.TryAddSingleton<IHybridServiceScopeFactory, DefaultServiceScopeFactory>();
+            services.AddScoped<ScopedDictionary>();
+
             // 工作单元
-            services.AddScoped<IUnitOfWorkManager, UnitOfWorkManagerBase>();
+            services.AddScoped<IUnitOfWorkManager, NullUnitOfWorkManager>();
 
             // 邮件
             services.AddSingleton<IEmailSender, DefaultEmailSender>();

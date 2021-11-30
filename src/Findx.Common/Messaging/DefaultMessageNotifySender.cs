@@ -35,6 +35,8 @@ namespace Findx.Messaging
             var maxTaskCount = _configuration.GetValue<int>("Findx:MessageHanderMaxTaskCount");
             maxTaskCount = maxTaskCount == 0 ? Environment.ProcessorCount + 1 : maxTaskCount;
             maxTaskCount = maxTaskCount <= 0 ? 1 : maxTaskCount;
+
+
             _connectionLock = new SemaphoreSlim(maxTaskCount);
             _cancellationToken = new CancellationTokenSource();
 
@@ -61,30 +63,29 @@ namespace Findx.Messaging
                 {
                     await _connectionLock.WaitAsync();
 
-                    _ = Task.Run(async () =>
-                    {
-                        try
-                        {
-                            if (_channel.Reader.TryRead(out var message))
-                            {
-                                var messageType = message.GetType();
+                    var message = await _channel.Reader.ReadAsync();
 
-                                using var scope = _serviceProvider.CreateScope();
-                                var handler = (MessageNotifyHandlerWrapper)_messageHandlers.GetOrAdd(messageType, t => ActivatorUtilities.CreateInstance(scope.ServiceProvider, typeof(MessageNotifyHandlerWrapperImpl<>).MakeGenericType(messageType)));
-                                await handler.Handle(message, scope.ServiceProvider);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Message notification execution exception");
-                        }
-                        finally
-                        {
-                            _connectionLock.Release();
-                        }
-                    }, cancellationToken);
+                    _ = Task.Run(async () => { await ProcessAsync(message); }, cancellationToken).ContinueWith(x => { _connectionLock.Release(); x.Dispose(); });
                 }
             }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+        }
+
+
+        protected async Task ProcessAsync(IMessageNotify message)
+        {
+            try
+            {
+                var messageType = message.GetType();
+
+                using var scope = _serviceProvider.CreateScope();
+
+                var handler = (MessageNotifyHandlerWrapper)_messageHandlers.GetOrAdd(messageType, t => ActivatorUtilities.CreateInstance(scope.ServiceProvider, typeof(MessageNotifyHandlerWrapperImpl<>).MakeGenericType(messageType)));
+                await handler.Handle(message, scope.ServiceProvider);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "进程消息执行失败");
+            }
         }
     }
 }

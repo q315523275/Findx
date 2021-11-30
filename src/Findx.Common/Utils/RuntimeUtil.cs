@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Findx.Utils
 {
     /// <summary>
-    /// 命令行工具
+    /// 运行时工具操作
     /// </summary>
     public static class RuntimeUtil
     {
@@ -108,6 +108,33 @@ namespace Findx.Utils
             var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
 
             return cpuUsageTotal * 100;
+        }
+
+        /// <summary>
+        /// 获取当前进程运行时长
+        /// </summary>
+        /// <returns></returns>
+        public static TimeSpan GetRunTime()
+        {
+            return DateTime.Now - Process.GetCurrentProcess().StartTime;
+        }
+
+        /// <summary>
+        /// 获取当前进程占用虚拟内存大小
+        /// </summary>
+        /// <returns>单位：KB</returns>
+        public static double GetVirtualMemory()
+        {
+            return Process.GetCurrentProcess().VirtualMemorySize64 / 1024.0;
+        }
+
+        /// <summary>
+        /// 获取内存使用大小
+        /// </summary>
+        /// <returns>单位：KB</returns>
+        public static double GetMemoryUsage()
+        {
+            return Process.GetCurrentProcess().WorkingSet64 / 1024.0;
         }
     }
 }
