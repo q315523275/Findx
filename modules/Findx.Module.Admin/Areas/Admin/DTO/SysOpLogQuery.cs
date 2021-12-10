@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Findx.Module.Admin.Areas.Admin.DTO
 {
     /// <summary>
     /// 操作日志查询
     /// </summary>
-    public class SysOpLogQuery: Findx.Data.PageBase
+    public class SysOpLogQuery : Findx.Data.PageBase
     {
         /// <summary>
         /// 名称

@@ -11,9 +11,10 @@ namespace Findx.Serialization
         {
             _options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
             {
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+                PropertyNameCaseInsensitive = true,
+                PropertyNamingPolicy = null,
             };
-            // _options.Converters.Add(new DateTimeConverter());
         }
 
         public SystemTextUtf8ByteSerializer(JsonSerializerOptions options)

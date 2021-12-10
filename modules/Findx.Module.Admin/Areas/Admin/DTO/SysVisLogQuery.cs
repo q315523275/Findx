@@ -6,7 +6,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
     /// <summary>
     /// 访问日志查询
     /// </summary>
-    public class SysVisLogQuery: Findx.Data.PageBase
+    public class SysVisLogQuery : Findx.Data.PageBase
     {
         /// <summary>
         /// 名称

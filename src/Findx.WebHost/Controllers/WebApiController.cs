@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
-    public class WebApiController: Controller
+    public class WebApiController : Controller
     {
         /// <summary>
         /// WebApiClient声明式Http请求

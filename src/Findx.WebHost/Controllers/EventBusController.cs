@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Findx.WebHost.Controllers
 {
-    public class EventBusController: Controller
+    public class EventBusController : Controller
     {
         /// <summary>
         /// RabbitMQ消息推送示例接口

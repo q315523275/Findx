@@ -202,7 +202,7 @@ namespace Findx.SqlSugar
 
         public Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            if (_softDeletable) 
+            if (_softDeletable)
                 throw new FindxException("suagr.delete.error", "当前SuagrORM不支持批量软删除,请使用Update进行软删除");
 
             //if (_softDeletable && whereExpression == null)

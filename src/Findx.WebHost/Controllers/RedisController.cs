@@ -1,12 +1,12 @@
-﻿using Findx.Redis;
+﻿using Findx.Locks;
+using Findx.Redis;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Findx.Locks;
 namespace Findx.WebHost.Controllers
 {
-    public class RedisController: Controller
+    public class RedisController : Controller
     {
         [HttpGet("/redis/geo")]
         public async Task<string> Geo([FromServices] IRedisClientProvider redisClientProvider)

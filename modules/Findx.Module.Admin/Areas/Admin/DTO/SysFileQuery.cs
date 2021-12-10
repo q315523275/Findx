@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Findx.Module.Admin.Areas.Admin.DTO
+﻿namespace Findx.Module.Admin.Areas.Admin.DTO
 {
     /// <summary>
     /// 文件查询
     /// </summary>
-    public class SysFileQuery: Findx.Data.PageBase
+    public class SysFileQuery : Findx.Data.PageBase
     {
         /// <summary>
         /// 文件存储位置（1:阿里云，2:腾讯云，3:minio，4:本地）

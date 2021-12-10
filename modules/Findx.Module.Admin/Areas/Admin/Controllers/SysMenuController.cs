@@ -1,18 +1,17 @@
 ﻿using Findx.AspNetCore.Mvc;
 using Findx.Data;
+using Findx.Extensions;
+using Findx.Linq;
 using Findx.Module.Admin.Areas.Admin.DTO;
+using Findx.Module.Admin.Internals;
 using Findx.Module.Admin.Models;
+using Findx.Security;
+using Findx.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Principal;
-using Findx.Security;
-using Findx.Module.Admin.Internals;
-using Findx.Extensions;
-using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading.Tasks;
-using Findx.Utils;
-using Findx.Linq;
 
 namespace Findx.Module.Admin.Areas.Admin.Controllers
 {

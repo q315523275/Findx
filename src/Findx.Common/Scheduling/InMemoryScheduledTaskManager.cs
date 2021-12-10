@@ -3,7 +3,7 @@ using Findx.Serialization;
 using System;
 using System.Threading.Tasks;
 
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     public class InMemoryScheduledTaskManager : IScheduledTaskManager
     {

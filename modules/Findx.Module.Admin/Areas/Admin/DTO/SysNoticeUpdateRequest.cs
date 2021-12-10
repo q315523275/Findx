@@ -5,7 +5,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
     /// <summary>
     /// 通知公告
     /// </summary>
-    public class SysNoticeUpdateRequest: SysNoticeCreateRequest
+    public class SysNoticeUpdateRequest : SysNoticeCreateRequest
     {
         /// <summary>
         /// Id

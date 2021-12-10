@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
-    public class MailController: Controller
+    public class MailController : Controller
     {
         /// <summary>
         /// 邮件发送示例接口

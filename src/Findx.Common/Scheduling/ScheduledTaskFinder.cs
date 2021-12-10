@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     /// <summary>
     /// 循环调度任务(IScheduledTask)查询器

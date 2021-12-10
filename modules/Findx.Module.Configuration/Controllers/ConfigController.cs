@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace Findex.Module.Configuration.Controllers
@@ -7,7 +6,7 @@ namespace Findex.Module.Configuration.Controllers
     /// <summary>
     /// 应用配置查询
     /// </summary>
-    public class ConfigController: ControllerBase
+    public class ConfigController : ControllerBase
     {
         /// <summary>
         /// 配置查询

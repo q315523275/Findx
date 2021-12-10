@@ -6,7 +6,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
     /// <summary>
     /// 系统文件上传
     /// </summary>
-    public class SysFileUploadRequest: IRequest
+    public class SysFileUploadRequest : IRequest
     {
         /// <summary>
         /// 上传信息

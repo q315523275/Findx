@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Findx.Module.Admin.Areas.Admin.DTO
 {
@@ -49,7 +45,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
         /// <summary>
         /// 最后登录地址
         /// </summary>
-        public string LastLoginAddress {  get; set; }
+        public string LastLoginAddress { get; set; }
 
         /// <summary>
         /// 最后登录浏览器
@@ -99,7 +95,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
         /// <summary>
         /// 系统范围
         /// </summary>
-        public dynamic Apps {  get; set; }
+        public dynamic Apps { get; set; }
         /// <summary>
         /// 数据范围
         /// </summary>

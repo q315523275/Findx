@@ -1,12 +1,12 @@
 ﻿using Findx.AspNetCore.Mvc;
+using Findx.Data;
+using Findx.Extensions;
 using Findx.Linq;
 using Findx.Module.Admin.Areas.Admin.DTO;
 using Findx.Module.Admin.Models;
-using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using Findx.Data;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Findx.Module.Admin.Areas.Admin.Controllers
 {

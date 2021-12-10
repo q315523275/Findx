@@ -2,10 +2,9 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     /// <summary>
     /// 内存调度器

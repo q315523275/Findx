@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     /// <summary>
     /// 定义一个调度任务存储器

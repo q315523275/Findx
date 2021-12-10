@@ -1,8 +1,6 @@
-﻿using Findx.Tasks.Scheduling;
-using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
-
+using Findx.Scheduling;
 namespace Findx.WebHost.Scheduling
 {
     [Scheduled(Cron = "* * * * * ?", Name = "测试任务3")]

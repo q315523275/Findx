@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Findx.WebSocketCore
 {
-    public class WebSocketConnectionManager: IDisposable
+    public class WebSocketConnectionManager : IDisposable
     {
         private ConcurrentDictionary<string, WebSocket> _sockets = new();
         private ConcurrentDictionary<string, List<string>> _groups = new();

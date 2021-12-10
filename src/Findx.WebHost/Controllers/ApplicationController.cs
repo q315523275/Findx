@@ -1,18 +1,15 @@
 ﻿using Findx.Data;
-using Findx.Security.Authorization;
-using Findx.Tasks.Scheduling;
-using Microsoft.AspNetCore.Authorization;
+using Findx.Scheduling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
     /// <summary>
     /// 应用信息
     /// </summary>
-    public class ApplicationController: Controller
+    public class ApplicationController : Controller
     {
         /// <summary>
         /// 健康检查地址

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
-    public class MessageController: Controller
+    public class MessageController : Controller
     {
         /// <summary>
         /// 消息发送(CQRS)示例接口

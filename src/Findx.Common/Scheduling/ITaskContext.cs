@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     /// <summary>
     /// 任务执行上下文

@@ -7,7 +7,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
     /// <summary>
     /// 组织机构节点
     /// </summary>
-    public class OrgTreeNode: ITreeNode<long>
+    public class OrgTreeNode : ITreeNode<long>
     {
         /// <summary>
         /// Id

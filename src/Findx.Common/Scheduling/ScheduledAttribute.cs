@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     /// <summary>
     /// 任务参数属性

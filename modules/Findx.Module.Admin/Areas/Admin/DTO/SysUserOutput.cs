@@ -6,7 +6,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
     /// <summary>
     /// 用户参数
     /// </summary>
-    public class SysUserOutput: IResponse
+    public class SysUserOutput : IResponse
     {
         /// <summary>
         /// Id

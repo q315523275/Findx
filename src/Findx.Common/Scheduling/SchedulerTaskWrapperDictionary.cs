@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     /// <summary>
     /// 调度任务Wrapper字典

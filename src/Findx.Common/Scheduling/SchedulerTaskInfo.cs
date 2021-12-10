@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     public class SchedulerTaskInfo
     {

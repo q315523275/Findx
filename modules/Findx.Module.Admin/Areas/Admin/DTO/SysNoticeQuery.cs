@@ -3,7 +3,7 @@
     /// <summary>
     /// 通知公告参数
     /// </summary>
-    public class SysNoticeQuery: Findx.Data.PageBase
+    public class SysNoticeQuery : Findx.Data.PageBase
     {
         /// <summary>
         /// 类型（字典 1通知 2公告）

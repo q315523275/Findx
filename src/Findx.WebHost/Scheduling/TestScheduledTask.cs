@@ -1,5 +1,4 @@
-﻿using Findx.Tasks.Scheduling;
-using System;
+﻿using Findx.Scheduling;
 using System.Threading;
 using System.Threading.Tasks;
 

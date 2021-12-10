@@ -1,6 +1,6 @@
 ﻿using Findx.Extensions;
 using System;
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     public class SchedulerTaskWrapper
     {

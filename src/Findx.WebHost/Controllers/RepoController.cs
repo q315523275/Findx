@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
-    public class RepoController: Controller
+    public class RepoController : Controller
     {
         [HttpGet("/repo/test")]
         public async Task<string> RepoTest([FromServices] IRepository<TestNewsInfo> repo1, [FromServices] IRepository<TestUserInfo> repo2)

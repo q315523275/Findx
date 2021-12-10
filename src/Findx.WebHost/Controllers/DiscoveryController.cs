@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
-    public class DiscoveryController: Controller
+    public class DiscoveryController : Controller
     {
         /// <summary>
         /// 服务发现查询示例接口

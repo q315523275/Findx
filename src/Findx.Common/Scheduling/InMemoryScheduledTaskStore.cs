@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     public class InMemoryScheduledTaskStore : IScheduledTaskStore
     {

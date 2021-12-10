@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
-    public class PermissionController: Controller
+    public class PermissionController : Controller
     {
         /// <summary>
         /// 权限数据查询示例接口

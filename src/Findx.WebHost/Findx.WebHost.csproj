@@ -8,7 +8,6 @@
 
 	<ItemGroup>
 	  <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="2.6.100" />
-	  <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="5.0.0" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
 	</ItemGroup>
 

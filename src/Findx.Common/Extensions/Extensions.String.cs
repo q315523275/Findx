@@ -489,7 +489,7 @@ namespace Findx.Extensions
 
         /// <summary>
         /// 将组合单词的字符串转换为空格分开的字符串
-        /// 例如: "ThisIsSampleSentence" 转换为 "This is a sample sentence".
+        /// <para>例如: "ThisIsSampleSentence" 转换为 "This is a sample sentence".</para>
         /// </summary>
         /// <param name="str"></param>
         /// <param name="useCurrentCulture"></param>
@@ -508,7 +508,7 @@ namespace Findx.Extensions
 
         /// <summary>
         /// 将组合单词的字符串转换为横线连接的字符串
-        /// 例如: "ThisIsSampleSentence" 换换为 "this-is-a-sample-sentence".
+        /// <para>例如: "ThisIsSampleSentence" 换换为 "This-is-a-sample-sentence".</para>
         /// </summary>
         /// <param name="str"></param>
         /// <param name="useCurrentCulture"></param>
@@ -529,7 +529,7 @@ namespace Findx.Extensions
 
         /// <summary>
         /// 将组合单词的字符串转换为横线连接的字符串
-        /// 例如: "ThisIsSampleSentence" 换换为 "this_is_a_sample_sentence".
+        /// <para>例如: "ThisIsSampleSentence" 换换为 "This_is_a_sample_sentence".</para>
         /// </summary>
         /// <param name="str">String to convert.</param>
         /// <returns></returns>

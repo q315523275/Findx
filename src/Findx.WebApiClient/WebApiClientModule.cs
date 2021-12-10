@@ -3,7 +3,6 @@ using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Polly;
 using System.ComponentModel;
 
 namespace Findx.WebApiClient

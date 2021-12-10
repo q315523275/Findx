@@ -3,7 +3,7 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Pdf;
-using Findx.Tasks.Scheduling;
+using Findx.Scheduling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -184,6 +184,17 @@ namespace Findx.WebHost.Controllers
         {
             Findx.Utils.RuntimeUtil.Destroy();
             return DateTime.Now;
+        }
+
+        /// <summary>
+        /// 将组合单词的字符串转换为横线连接的字符串
+        /// </summary>
+        /// <param name="ors"></param>
+        /// <returns></returns>
+        [HttpGet("/ToSnakeCase")]
+        public string ToSnakeCase([Required] string ors)
+        {
+            return ors.ToSnakeCase();
         }
     }
 }

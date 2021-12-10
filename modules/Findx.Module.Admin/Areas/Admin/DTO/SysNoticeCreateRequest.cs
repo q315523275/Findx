@@ -1,18 +1,13 @@
 ﻿using Findx.Data;
-using Findx.Module.Admin.Internals;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Findx.Module.Admin.Areas.Admin.DTO
 {
     /// <summary>
     /// 
     /// </summary>
-    public class SysNoticeCreateRequest: IRequest
+    public class SysNoticeCreateRequest : IRequest
     {
         /// <summary>
         /// 标题

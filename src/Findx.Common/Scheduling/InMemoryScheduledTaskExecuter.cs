@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Findx.Tasks.Scheduling
+namespace Findx.Scheduling
 {
     public class InMemoryScheduledTaskExecuter : IScheduledTaskExecuter
     {

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>netstandard2.1</TargetFramework>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<Description>通用仓储-FreeSql实现</Description>
 		<Version>1.5.1</Version>

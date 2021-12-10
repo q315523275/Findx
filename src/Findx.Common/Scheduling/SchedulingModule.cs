@@ -1,7 +1,6 @@
 ﻿using Findx.Extensions;
 using Findx.Messaging;
 using Findx.Modularity;
-using Findx.Tasks.Scheduling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -9,10 +8,10 @@ using System.ComponentModel;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Findx.Tasks
+namespace Findx.Scheduling
 {
     [Description("Findx-内嵌调度模块")]
-    public class ScheduledModule : FindxModule
+    public class SchedulingModule : FindxModule
     {
         public override ModuleLevel Level => ModuleLevel.Framework;
 

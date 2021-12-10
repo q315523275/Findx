@@ -1,7 +1,7 @@
 ﻿using Findx.Extensions;
 using Findx.Validations.Validators;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Findx.Utils
@@ -40,7 +40,7 @@ namespace Findx.Utils
             {
                 return false;
             }
-            return RegexUtil.IsMatch(creditCode, ValidatePattern.CreditCode);
+            return RegexUtil.IsMatch(creditCode, ValidatePattern.CreditCodePatter);
         }
 
         /// <summary>
