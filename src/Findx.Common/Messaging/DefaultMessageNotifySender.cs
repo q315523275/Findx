@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Findx.Messaging
 {
+    /// <summary>
+    /// 消息通知者
+    /// </summary>
     public class DefaultMessageNotifySender : IMessageNotifySender, IDisposable
     {
         private static readonly ConcurrentDictionary<Type, object> _messageHandlers = new ConcurrentDictionary<Type, object>();
@@ -20,6 +23,12 @@ namespace Findx.Messaging
         private readonly ILogger<DefaultMessageNotifySender> _logger;
         private readonly CancellationTokenSource _cancellationToken;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="configuration"></param>
+        /// <param name="logger"></param>
         public DefaultMessageNotifySender(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<DefaultMessageNotifySender> logger)
         {
             _serviceProvider = serviceProvider;
@@ -43,11 +52,21 @@ namespace Findx.Messaging
             StartConsuming(_cancellationToken.Token);
         }
 
+        /// <summary>
+        /// 释放
+        /// </summary>
         public void Dispose()
         {
             _cancellationToken?.Cancel();
         }
 
+        /// <summary>
+        /// 推送消息
+        /// </summary>
+        /// <typeparam name="TMessage"></typeparam>
+        /// <param name="message"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task PublishAsync<TMessage>(TMessage message, CancellationToken cancellationToken = default) where TMessage : IMessageNotify
         {
             Check.NotNull(message, nameof(message));
@@ -55,6 +74,10 @@ namespace Findx.Messaging
             await _channel.Writer.WriteAsync(message, cancellationToken);
         }
 
+        /// <summary>
+        /// 开始消费
+        /// </summary>
+        /// <param name="cancellationToken"></param>
         public void StartConsuming(CancellationToken cancellationToken = default)
         {
             Task.Factory.StartNew(async () =>
@@ -65,13 +88,18 @@ namespace Findx.Messaging
 
                     var message = await _channel.Reader.ReadAsync();
 
-                    _ = Task.Run(async () => { await ProcessAsync(message); }, cancellationToken).ContinueWith(x => { _connectionLock.Release(); x.Dispose(); });
+                    ProcessAsync(message, cancellationToken).ContinueWith(x => { _connectionLock.Release(); });
                 }
             }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
-
-        protected async Task ProcessAsync(IMessageNotify message)
+        /// <summary>
+        /// 消息处理
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        protected async Task ProcessAsync(IMessageNotify message, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -80,7 +108,7 @@ namespace Findx.Messaging
                 using var scope = _serviceProvider.CreateScope();
 
                 var handler = (MessageNotifyHandlerWrapper)_messageHandlers.GetOrAdd(messageType, t => ActivatorUtilities.CreateInstance(scope.ServiceProvider, typeof(MessageNotifyHandlerWrapperImpl<>).MakeGenericType(messageType)));
-                await handler.Handle(message, scope.ServiceProvider);
+                await handler.Handle(message, scope.ServiceProvider, cancellationToken);
             }
             catch (Exception ex)
             {

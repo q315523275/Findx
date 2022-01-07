@@ -65,7 +65,7 @@ namespace Findx.Scheduling
                     await Task.Delay(_options.ScheduleMillisecondsDelay);
                     await ExecuteOnceAsync(cancellationToken);
                 }
-            }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Current);
+            }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
             return Task.CompletedTask;
         }

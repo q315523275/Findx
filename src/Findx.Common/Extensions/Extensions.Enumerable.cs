@@ -154,7 +154,6 @@ namespace Findx.Extensions
             return source.GroupBy(keySelector).Select(group => group.First());
         }
 
-
         /// <summary>
         /// Concurrently Executes async actions for each item of <see cref="IEnumerable<typeparamref name="T"/>
         /// </summary>

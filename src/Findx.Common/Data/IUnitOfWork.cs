@@ -1,11 +1,12 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Data.Common;
 
 namespace Findx.Data
 {
     /// <summary>
     /// 工作单元
     /// </summary>
-    public interface IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
         /// <summary>
 		/// 数据库连接

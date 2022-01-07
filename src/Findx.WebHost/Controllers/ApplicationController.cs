@@ -3,6 +3,7 @@ using Findx.Scheduling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {

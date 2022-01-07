@@ -81,6 +81,7 @@ namespace Findx.AspNetCore.Extensions
             var userAgent = request.Headers?["User-Agent"].SafeString();
             return new Findx.Utils.UserAgent(userAgent).GetBrowser();
         }
+
         /// <summary>
         /// 获取请求系统
         /// </summary>

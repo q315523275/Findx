@@ -48,5 +48,11 @@ namespace Findx.SqlSugar
         {
             return _provider;
         }
+
+        public void Dispose()
+        {
+            if (Transaction != null)
+                Transaction = null;
+        }
     }
 }

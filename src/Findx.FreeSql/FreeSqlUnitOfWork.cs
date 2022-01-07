@@ -3,6 +3,7 @@ using Findx.Extensions;
 using FreeSql.Internal.ObjectPool;
 using System;
 using System.Data.Common;
+using System.Threading;
 
 namespace Findx.FreeSql
 {
@@ -30,6 +31,7 @@ namespace Findx.FreeSql
         public void BeginOrUseTransaction()
         {
             if (Transaction != null) return;
+
             if (_conn != null) _fsql.Ado.MasterPool.Return(_conn);
 
             _conn = _fsql.Ado.MasterPool.Get();
@@ -87,6 +89,21 @@ namespace Findx.FreeSql
         public IFreeSql GetInstance()
         {
             return _fsql;
+        }
+
+
+        int _disposeCounter;
+        public void Dispose()
+        {
+            if (Interlocked.Increment(ref _disposeCounter) != 1) return;
+            try
+            {
+                this.Rollback();
+            }
+            finally
+            {
+                GC.SuppressFinalize(this);
+            }
         }
     }
 }

@@ -9,6 +9,6 @@
         /// 查询分片表名
         /// </summary>
         /// <returns></returns>
-        string GetShardingName();
+        string GetShardingName(IEntity entity);
     }
 }
