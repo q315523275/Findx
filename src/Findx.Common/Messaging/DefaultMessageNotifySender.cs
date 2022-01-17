@@ -14,7 +14,7 @@ namespace Findx.Messaging
     /// </summary>
     public class DefaultMessageNotifySender : IMessageNotifySender, IDisposable
     {
-        private static readonly ConcurrentDictionary<Type, object> _messageHandlers = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> _messageHandlers = new ConcurrentDictionary<Type, object>();
 
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
@@ -58,6 +58,7 @@ namespace Findx.Messaging
         public void Dispose()
         {
             _cancellationToken?.Cancel();
+            _messageHandlers?.Clear();
         }
 
         /// <summary>
@@ -88,7 +89,7 @@ namespace Findx.Messaging
 
                     var message = await _channel.Reader.ReadAsync();
 
-                    ProcessAsync(message, cancellationToken).ContinueWith(x => { _connectionLock.Release(); });
+                    Task.Run(async () => { await ProcessAsync(message, cancellationToken); _connectionLock.Release(); }, cancellationToken);
                 }
             }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
@@ -107,7 +108,7 @@ namespace Findx.Messaging
 
                 using var scope = _serviceProvider.CreateScope();
 
-                var handler = (MessageNotifyHandlerWrapper)_messageHandlers.GetOrAdd(messageType, t => ActivatorUtilities.CreateInstance(scope.ServiceProvider, typeof(MessageNotifyHandlerWrapperImpl<>).MakeGenericType(messageType)));
+                var handler = (MessageNotifyHandlerWrapper)_messageHandlers.GetOrAdd(messageType, t => Activator.CreateInstance(typeof(MessageNotifyHandlerWrapperImpl<>).MakeGenericType(messageType)));
                 await handler.Handle(message, scope.ServiceProvider, cancellationToken);
             }
             catch (Exception ex)

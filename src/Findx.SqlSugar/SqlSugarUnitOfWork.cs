@@ -1,10 +1,11 @@
 ﻿using Findx.Data;
 using SqlSugar;
+using System;
 using System.Data.Common;
 
 namespace Findx.SqlSugar
 {
-    public class SqlSugarUnitOfWork : IUnitOfWork<SqlSugarProvider>
+    public class SqlSugarUnitOfWork : IUnitOfWork<SqlSugarProvider>, IDisposable
     {
         private readonly SqlSugarProvider _provider;
 

@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace Findx.FreeSql
 {
-    public class FreeSqlUnitOfWork : IUnitOfWork<IFreeSql>
+    public class FreeSqlUnitOfWork : IUnitOfWork<IFreeSql>, IDisposable
     {
         private readonly IFreeSql _fsql;
         protected Object<DbConnection> _conn;

@@ -6,7 +6,7 @@ namespace Findx.Data
     /// <summary>
     /// 工作单元
     /// </summary>
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork
     {
         /// <summary>
 		/// 数据库连接

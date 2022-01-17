@@ -24,11 +24,15 @@ namespace Findx.Scheduling
         {
             return Task.FromResult(_tasks.GetOrDefault<Guid, SchedulerTaskInfo>(taskId));
         }
-
+        /// <summary>
+        /// 查询待执行任务
+        /// </summary>
+        /// <param name="maxResultCount"></param>
+        /// <returns></returns>
         public Task<List<SchedulerTaskInfo>> GetShouldRunTasksAsync(int maxResultCount)
         {
             var referenceTime = DateTimeOffset.UtcNow.LocalDateTime;
-            var tasksThatShouldRun = _tasks.Values
+            var tasksThatShouldRun = _tasks.Select(x => x.Value)
                                            .Where(t => t.ShouldRun(referenceTime))
                                            .OrderBy(t => t.TryCount)
                                            .ThenBy(t => t.NextRunTime)
@@ -39,7 +43,7 @@ namespace Findx.Scheduling
 
         public Task<List<SchedulerTaskInfo>> GetTasksAsync()
         {
-            return Task.FromResult(_tasks.Values.ToList());
+            return Task.FromResult(_tasks.Select(x => x.Value).ToList());
         }
 
         public Task InsertAsync(SchedulerTaskInfo taskInfo)
