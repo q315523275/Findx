@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Findx.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -16,7 +17,6 @@ namespace Findx.Messaging
     {
         private readonly ConcurrentDictionary<Type, object> _messageHandlers = new ConcurrentDictionary<Type, object>();
 
-        private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
         private readonly Channel<IMessageNotify> _channel;
         private readonly SemaphoreSlim _connectionLock;
@@ -26,12 +26,10 @@ namespace Findx.Messaging
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="serviceProvider"></param>
         /// <param name="configuration"></param>
         /// <param name="logger"></param>
-        public DefaultMessageNotifySender(IServiceProvider serviceProvider, IConfiguration configuration, ILogger<DefaultMessageNotifySender> logger)
+        public DefaultMessageNotifySender(IConfiguration configuration, ILogger<DefaultMessageNotifySender> logger)
         {
-            _serviceProvider = serviceProvider;
             _configuration = configuration;
             _logger = logger;
 
@@ -89,7 +87,7 @@ namespace Findx.Messaging
 
                     var message = await _channel.Reader.ReadAsync();
 
-                    Task.Run(async () => { await ProcessAsync(message, cancellationToken); _connectionLock.Release(); }, cancellationToken);
+                    ProcessAsync(message, cancellationToken).ContinueWith(t => _connectionLock.Release());
                 }
             }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
@@ -106,7 +104,7 @@ namespace Findx.Messaging
             {
                 var messageType = message.GetType();
 
-                using var scope = _serviceProvider.CreateScope();
+                using var scope = ServiceLocator.ServiceProvider.CreateScope();
 
                 var handler = (MessageNotifyHandlerWrapper)_messageHandlers.GetOrAdd(messageType, t => Activator.CreateInstance(typeof(MessageNotifyHandlerWrapperImpl<>).MakeGenericType(messageType)));
                 await handler.Handle(message, scope.ServiceProvider, cancellationToken);
