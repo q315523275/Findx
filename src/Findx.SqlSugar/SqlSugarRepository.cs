@@ -30,6 +30,7 @@ namespace Findx.SqlSugar
 
         private string _oldTableName;
         private string _tableName;
+
         public SqlSugarRepository(SqlSugarClient sqlSugarClient, IUnitOfWorkManager uowManager, IOptionsMonitor<SqlSugarOptions> options)
         {
             Check.NotNull(sqlSugarClient, nameof(sqlSugarClient));
@@ -369,6 +370,7 @@ namespace Findx.SqlSugar
             return queryable.FirstAsync();
         }
 
+
         public TEntity Get(object key)
         {
             Check.NotNull(key, nameof(key));
@@ -396,8 +398,7 @@ namespace Findx.SqlSugar
         }
 
 
-
-        public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null)
+        public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -406,11 +407,22 @@ namespace Findx.SqlSugar
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
+
+            if (orderParameters != null)
+            {
+                foreach (var item in orderParameters)
+                {
+                    if (item.SortDirection == ListSortDirection.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
+            }
 
             return queryable.ToList();
         }
 
-        public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
+        public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -419,13 +431,24 @@ namespace Findx.SqlSugar
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
+
+            if (orderParameters != null)
+            {
+                foreach (var item in orderParameters)
+                {
+                    if (item.SortDirection == ListSortDirection.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
+            }
 
             _sugar.Ado.CancellationToken = cancellationToken;
 
             return queryable.ToListAsync();
         }
 
-        public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
+        public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -435,13 +458,24 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (selectByExpression == null)
+            if (orderParameters != null)
+            {
+                foreach (var item in orderParameters)
+                {
+                    if (item.SortDirection == ListSortDirection.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
+            }
+
+            if (selectExpression == null)
                 return queryable.Select<TObject>().ToList();
             else
-                return queryable.Select(selectByExpression).ToList();
+                return queryable.Select(selectExpression).ToList();
         }
 
-        public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
+        public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -450,18 +484,28 @@ namespace Findx.SqlSugar
 
             if (whereExpression != null)
                 queryable.Where(whereExpression);
+
+            if (orderParameters != null)
+            {
+                foreach (var item in orderParameters)
+                {
+                    if (item.SortDirection == ListSortDirection.Ascending)
+                        queryable.OrderBy(item.Expression, OrderByType.Asc);
+                    else
+                        queryable.OrderBy(item.Expression, OrderByType.Desc);
+                }
+            }
 
             _sugar.Ado.CancellationToken = cancellationToken;
 
-            if (selectByExpression == null)
+            if (selectExpression == null)
                 return queryable.Select<TObject>().ToListAsync();
             else
-                return queryable.Select(selectByExpression).ToListAsync();
+                return queryable.Select(selectExpression).ToListAsync();
         }
 
 
-
-        public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
+        public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -471,9 +515,9 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            if (orderParameters != null)
             {
-                foreach (var item in orderByExpression.OrderBy)
+                foreach (var item in orderParameters)
                 {
                     if (item.SortDirection == ListSortDirection.Ascending)
                         queryable.OrderBy(item.Expression, OrderByType.Asc);
@@ -485,7 +529,7 @@ namespace Findx.SqlSugar
             return queryable.Take(topSize).ToList();
         }
 
-        public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
+        public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -495,9 +539,9 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            if (orderParameters != null)
             {
-                foreach (var item in orderByExpression.OrderBy)
+                foreach (var item in orderParameters)
                 {
                     if (item.SortDirection == ListSortDirection.Ascending)
                         queryable.OrderBy(item.Expression, OrderByType.Asc);
@@ -511,7 +555,7 @@ namespace Findx.SqlSugar
             return queryable.Take(topSize).ToListAsync();
         }
 
-        public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
+        public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -521,9 +565,9 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            if (orderParameters != null)
             {
-                foreach (var item in orderByExpression.OrderBy)
+                foreach (var item in orderParameters)
                 {
                     if (item.SortDirection == ListSortDirection.Ascending)
                         queryable.OrderBy(item.Expression, OrderByType.Asc);
@@ -532,13 +576,13 @@ namespace Findx.SqlSugar
                 }
             }
 
-            if (selectByExpression == null)
+            if (selectExpression == null)
                 return queryable.Take(topSize).Select<TObject>().ToList();
             else
-                return queryable.Take(topSize).Select(selectByExpression).ToList();
+                return queryable.Take(topSize).Select(selectExpression).ToList();
         }
 
-        public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
+        public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -548,9 +592,9 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            if (orderParameters != null)
             {
-                foreach (var item in orderByExpression.OrderBy)
+                foreach (var item in orderParameters)
                 {
                     if (item.SortDirection == ListSortDirection.Ascending)
                         queryable.OrderBy(item.Expression, OrderByType.Asc);
@@ -559,15 +603,14 @@ namespace Findx.SqlSugar
                 }
             }
 
-            if (selectByExpression == null)
+            if (selectExpression == null)
                 return queryable.Take(topSize).Select<TObject>().ToListAsync();
             else
-                return queryable.Take(topSize).Select(selectByExpression).ToListAsync();
+                return queryable.Take(topSize).Select(selectExpression).ToListAsync();
         }
 
 
-
-        public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null)
+        public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -577,9 +620,9 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            if (orderParameters != null)
             {
-                foreach (var item in orderByExpression.OrderBy)
+                foreach (var item in orderParameters)
                 {
                     if (item.SortDirection == ListSortDirection.Ascending)
                         queryable.OrderBy(item.Expression, OrderByType.Asc);
@@ -595,7 +638,7 @@ namespace Findx.SqlSugar
             return new PageResult<List<TEntity>>(pageNumber, pageSize, totalRows, result);
         }
 
-        public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, CancellationToken cancellationToken = default)
+        public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -605,9 +648,9 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            if (orderParameters != null)
             {
-                foreach (var item in orderByExpression.OrderBy)
+                foreach (var item in orderParameters)
                 {
                     if (item.SortDirection == ListSortDirection.Ascending)
                         queryable.OrderBy(item.Expression, OrderByType.Asc);
@@ -625,7 +668,7 @@ namespace Findx.SqlSugar
             return new PageResult<List<TEntity>>(pageNumber, pageSize, totalRows.Value, result);
         }
 
-        public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null)
+        public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -635,9 +678,9 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            if (orderParameters != null)
             {
-                foreach (var item in orderByExpression.OrderBy)
+                foreach (var item in orderParameters)
                 {
                     if (item.SortDirection == ListSortDirection.Ascending)
                         queryable.OrderBy(item.Expression, OrderByType.Asc);
@@ -648,19 +691,19 @@ namespace Findx.SqlSugar
 
             int totalRows = 0;
 
-            if (selectByExpression == null)
+            if (selectExpression == null)
             {
                 var result = queryable.Select<TObject>().ToPageList(pageNumber, pageSize, ref totalRows);
                 return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
             }
             else
             {
-                var result = queryable.Select(selectByExpression).ToPageList(pageNumber, pageSize, ref totalRows);
+                var result = queryable.Select(selectExpression).ToPageList(pageNumber, pageSize, ref totalRows);
                 return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
             }
         }
 
-        public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, MultiOrderBy<TEntity> orderByExpression = null, Expression<Func<TEntity, TObject>> selectByExpression = null, CancellationToken cancellationToken = default)
+        public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
         {
             var queryable = _sugar.Queryable<TEntity>().AS(_tableName);
 
@@ -670,9 +713,9 @@ namespace Findx.SqlSugar
             if (whereExpression != null)
                 queryable.Where(whereExpression);
 
-            if (orderByExpression != null && orderByExpression.OrderBy.Count > 0)
+            if (orderParameters != null)
             {
-                foreach (var item in orderByExpression.OrderBy)
+                foreach (var item in orderParameters)
                 {
                     if (item.SortDirection == ListSortDirection.Ascending)
                         queryable.OrderBy(item.Expression, OrderByType.Asc);
@@ -685,14 +728,14 @@ namespace Findx.SqlSugar
 
             RefAsync<int> totalRows = 0;
 
-            if (selectByExpression == null)
+            if (selectExpression == null)
             {
                 var result = await queryable.Select<TObject>().ToPageListAsync(pageNumber, pageSize, totalRows);
                 return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
             }
             else
             {
-                var result = await queryable.Select(selectByExpression).ToPageListAsync(pageNumber, pageSize, totalRows);
+                var result = await queryable.Select(selectExpression).ToPageListAsync(pageNumber, pageSize, totalRows);
                 return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
             }
         }
@@ -726,7 +769,6 @@ namespace Findx.SqlSugar
 
             return queryable.CountAsync();
         }
-
 
 
         public bool Exist(Expression<Func<TEntity, bool>> whereExpression = null)
@@ -782,5 +824,6 @@ namespace Findx.SqlSugar
             return this;
         }
         #endregion
+
     }
 }

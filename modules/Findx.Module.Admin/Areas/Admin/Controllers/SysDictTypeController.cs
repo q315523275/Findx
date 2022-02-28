@@ -3,6 +3,7 @@ using Findx.Data;
 using Findx.Module.Admin.Areas.Admin.DTO;
 using Findx.Module.Admin.Models;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -33,12 +34,12 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             return CommonResult.Success(list);
         }
 
-        protected override MultiOrderBy<SysDictTypeInfo> CreatePageOrderExpression(SysQuery request)
+        protected override List<OrderByParameter<SysDictTypeInfo>> CreatePageOrderExpression(SysQuery request)
         {
-            var multiOrderBy = new MultiOrderBy<SysDictTypeInfo>();
+            var multiOrderBy = new List<OrderByParameter<SysDictTypeInfo>>();
             if (typeof(SysDictTypeInfo).IsAssignableTo(typeof(ISort)))
-                multiOrderBy.OrderBy.Add(new OrderByParameter<SysDictTypeInfo> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
-            multiOrderBy.OrderBy.Add(new OrderByParameter<SysDictTypeInfo> { Expression = it => it.Id, SortDirection = ListSortDirection.Ascending });
+                multiOrderBy.Add(new OrderByParameter<SysDictTypeInfo> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
+            multiOrderBy.Add(new OrderByParameter<SysDictTypeInfo> { Expression = it => it.Id, SortDirection = ListSortDirection.Ascending });
             return multiOrderBy;
         }
 

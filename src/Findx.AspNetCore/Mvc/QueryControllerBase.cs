@@ -4,6 +4,7 @@ using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -35,12 +36,12 @@ namespace Findx.AspNetCore.Mvc
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        protected virtual MultiOrderBy<TModel> CreatePageOrderExpression(TQueryParameter request)
+        protected virtual List<OrderByParameter<TModel>> CreatePageOrderExpression(TQueryParameter request)
         {
-            var multiOrderBy = new MultiOrderBy<TModel>();
+            var multiOrderBy = new List<OrderByParameter<TModel>>();
             if (typeof(TModel).IsAssignableTo(typeof(ISort)))
-                multiOrderBy.OrderBy.Add(new OrderByParameter<TModel> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
-            multiOrderBy.OrderBy.Add(new OrderByParameter<TModel> { Expression = it => it.Id, SortDirection = ListSortDirection.Descending });
+                multiOrderBy.Add(new OrderByParameter<TModel> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
+            multiOrderBy.Add(new OrderByParameter<TModel> { Expression = it => it.Id, SortDirection = ListSortDirection.Descending });
             return multiOrderBy;
         }
 
@@ -61,7 +62,7 @@ namespace Findx.AspNetCore.Mvc
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var result = await repo.PagedAsync<TDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
+            var result = await repo.PagedAsync<TDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
 
             return CommonResult.Success(result);
         }
@@ -85,7 +86,7 @@ namespace Findx.AspNetCore.Mvc
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var list = await repo.TopAsync<TDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderByExpression: orderByExpression);
+            var list = await repo.TopAsync<TDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
 
             Debug.WriteLine($"动态API查询接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
 
