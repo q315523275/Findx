@@ -80,7 +80,7 @@ namespace Findx.Authorization.Authentication
         protected virtual AuthenticationBuilder AddCookie(IServiceCollection services, AuthenticationBuilder builder)
         {
             IConfiguration configuration = services.GetConfiguration();
-            CookieOptions cookie = new CookieOptions();
+            CookieOptions cookie = new();
             configuration.Bind("Findx:Authentication:Cookie", cookie);
             if (!cookie.Enabled)
             {

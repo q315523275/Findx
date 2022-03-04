@@ -20,7 +20,7 @@ namespace Findx.WebHost.Controllers
         /// <param name="mode"></param>
         /// <returns></returns>
         [HttpGet("/image/scale")]
-        public IActionResult scale([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int width, int height, ImageResizeMode mode = ImageResizeMode.Crop)
+        public IActionResult Scale([FromServices] IImageProcessor imageProcessor, [FromServices] IApplicationInstanceInfo applicationInstance, string filePath, int width, int height, ImageResizeMode mode = ImageResizeMode.Crop)
         {
             var img = imageProcessor.Scale(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), width, height, mode);
 

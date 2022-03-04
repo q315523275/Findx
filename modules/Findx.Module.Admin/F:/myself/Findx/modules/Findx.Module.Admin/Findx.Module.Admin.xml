@@ -39,6 +39,23 @@
             <param name="mapper"></param>
             <returns></returns>
         </member>
+        <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.CaptchaController">
+            <summary>
+            验证码
+            </summary>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.CaptchaController.GetCaptchaOpen">
+            <summary>
+            是否开启验证码验证
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:Findx.Module.Admin.Areas.Admin.Controllers.CaptchaController.GetCaptchaType">
+            <summary>
+            验证码形式
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:Findx.Module.Admin.Areas.Admin.Controllers.CommonController">
             <summary>
             系统组织机构

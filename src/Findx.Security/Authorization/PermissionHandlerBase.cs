@@ -99,7 +99,7 @@ namespace Findx.Security.Authorization
         /// <returns></returns>
         protected virtual List<Permission> GetPermissions()
         {
-            ControllerFeature controllerFeature = new ControllerFeature();
+            ControllerFeature controllerFeature = new();
             PartManager.PopulateFeature(controllerFeature);
             IList<TypeInfo> controllerTypes = controllerFeature.Controllers;
             foreach (TypeInfo typeInfo in controllerTypes)

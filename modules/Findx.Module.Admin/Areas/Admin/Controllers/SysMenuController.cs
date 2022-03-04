@@ -97,7 +97,7 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var list = await repo.SelectAsync<SysMenuOutput>(whereExpression?.ToExpression());
+            var list = await repo.SelectAsync<SysMenuOutput>(whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
 
             return CommonResult.Success(new TreeBuilder<SysMenuOutput, long>().Build(list, 0));
         }
