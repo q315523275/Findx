@@ -3,7 +3,7 @@ using Findx.Finders;
 using Findx.Reflection;
 using System;
 using System.Linq;
-using System.Reflection;
+using System.Collections.Generic;
 
 namespace Findx.WebApiClient
 {
@@ -18,11 +18,11 @@ namespace Findx.WebApiClient
         {
             _appDomainAssemblyFinder = appDomainAssemblyFinder;
         }
-        protected override Type[] FindAllItems()
+        protected override IEnumerable<Type> FindAllItems()
         {
-            Assembly[] assemblies = _appDomainAssemblyFinder.FindAll(true);
+            var assemblies = _appDomainAssemblyFinder.FindAll(true);
             return assemblies.SelectMany(assembly => assembly.GetTypes())
-                             .Where(type => type.IsInterface && type.HasAttribute<WebApiClientAttribute>()).Distinct().ToArray();
+                             .Where(type => type.IsInterface && type.HasAttribute<WebApiClientAttribute>()).Distinct();
         }
     }
 }

@@ -50,14 +50,14 @@ namespace Findx.Modularity
         /// 获取当前模块的依赖模块类型
         /// </summary>
         /// <returns></returns>
-        internal Type[] GetDependModuleTypes(Type moduleType = null)
+        internal IEnumerable<Type> GetDependModuleTypes(Type moduleType = null)
         {
             if (moduleType == null)
             {
                 moduleType = GetType();
             }
-            DependsOnModulesAttribute[] dependAttrs = moduleType.GetAttributes<DependsOnModulesAttribute>();
-            if (dependAttrs.Length == 0)
+            var dependAttrs = moduleType.GetAttributes<DependsOnModulesAttribute>();
+            if (dependAttrs.Count() == 0)
             {
                 return new Type[0];
             }
@@ -76,7 +76,7 @@ namespace Findx.Modularity
                 }
             }
 
-            return dependTypes.Distinct().ToArray();
+            return dependTypes.Distinct();
         }
     }
 }

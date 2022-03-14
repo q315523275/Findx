@@ -111,8 +111,9 @@ namespace Findx.Data
         /// <param name="whereExpression"></param>
         /// <param name="updateColumns"></param>
         /// <param name="ignoreColumns"></param>
+        /// <param name="ignoreNullColumns">过滤为NULL字段(注意与ignoreColumns优先级)</param>
         /// <returns></returns>
-        int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null);
+        int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false);
         /// <summary>
         /// 异步实体更新
         /// </summary>
@@ -120,9 +121,10 @@ namespace Findx.Data
         /// <param name="whereExpression"></param>
         /// <param name="updateColumns"></param>
         /// <param name="ignoreColumns"></param>
+        /// <param name="ignoreNullColumns">过滤为NULL字段(注意与ignoreColumns优先级)</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default);
+        Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default);
         /// <summary>
         /// 更新指定字段
         /// </summary>

@@ -355,7 +355,7 @@ namespace Findx.Utils
                 return string.Empty;
             var sha256 = new HMACSHA256(encoding.GetBytes(key));
             var hash = sha256.ComputeHash(encoding.GetBytes(value));
-            return string.Join("", hash.ToList().Select(t => t.ToString("x2")).ToArray());
+            return string.Join("", hash.Select(t => t.ToString("x2")));
         }
 
         #endregion

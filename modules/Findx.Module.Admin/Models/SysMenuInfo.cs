@@ -8,7 +8,7 @@ namespace Findx.Module.Admin.Models
     /// 系统菜单表
     /// </summary>
     [Table(Name = "sys_menu")]
-    public class SysMenuInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest
+    public class SysMenuInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest, ISort
     {
         /// <summary>
         /// 主键
@@ -148,5 +148,12 @@ namespace Findx.Module.Admin.Models
         [Column(Name = "weight", DbType = "tinyint(4)")]
         public int? Weight { get; set; }
 
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public override void Init()
+        {
+            Id = Findx.Utils.SnowflakeId.Default().NextId();
+        }
     }
 }

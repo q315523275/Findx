@@ -1,6 +1,7 @@
 ﻿using Findx.Extensions;
 using Findx.Finders;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -26,11 +27,11 @@ namespace Findx.Reflection
         /// 重写以实现所有项的查找
         /// </summary>
         /// <returns></returns>
-        protected override Type[] FindAllItems()
+        protected override IEnumerable<Type> FindAllItems()
         {
-            Assembly[] assemblies = _appDomainAssemblyFinder.FindAll(true);
+            var assemblies = _appDomainAssemblyFinder.FindAll(true);
             return assemblies.SelectMany(assembly => assembly.GetTypes())
-                             .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && type.IsDeriveClassFrom<TBaseType>()).Distinct().ToArray();
+                             .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && type.IsDeriveClassFrom<TBaseType>()).Distinct();
         }
     }
 }

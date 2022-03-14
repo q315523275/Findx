@@ -1,5 +1,6 @@
 ﻿using Findx.Extensions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -36,27 +37,27 @@ namespace Findx.Security
         /// <summary>
         /// 获取指定类型的所有Claim值
         /// </summary>
-        public static Claim[] GetClaims(this IIdentity identity, string type)
+        public static IEnumerable<Claim> GetClaims(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
             if (!(identity is ClaimsIdentity claimsIdentity))
             {
                 return new Claim[0];
             }
-            return claimsIdentity.Claims.Where(m => m.Type == type).ToArray();
+            return claimsIdentity.Claims.Where(m => m.Type == type);
         }
 
         /// <summary>
         /// 获取指定类型的所有Claim值
         /// </summary>
-        public static string[] GetClaimValues(this IIdentity identity, string type)
+        public static IEnumerable<string> GetClaimValues(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
             if (!(identity is ClaimsIdentity claimsIdentity))
             {
                 return null;
             }
-            return claimsIdentity.Claims.Where(m => m.Type == type).Select(m => m.Value).ToArray();
+            return claimsIdentity.Claims.Where(m => m.Type == type).Select(m => m.Value);
         }
 
         /// <summary>
@@ -150,18 +151,19 @@ namespace Findx.Security
         /// <summary>
         /// 获取所有角色
         /// </summary>
-        public static string[] GetRoles(this IIdentity identity)
+        public static IEnumerable<string> GetRoles(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
             if (!(identity is ClaimsIdentity claimsIdentity))
             {
                 return new string[0];
             }
-            return claimsIdentity.FindAll(ClaimTypes.Role).SelectMany(m =>
+            // 不知道什么原因，netcore认证组建会自动将自定义role key转换为 System.Security.Claims.ClaimTypes.Role key
+            return claimsIdentity.FindAll(System.Security.Claims.ClaimTypes.Role).SelectMany(m =>
             {
                 string[] roles = m.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
                 return roles;
-            }).ToArray();
+            });
         }
     }
 }

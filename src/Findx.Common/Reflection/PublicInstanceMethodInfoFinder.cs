@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-
+using System.Collections.Generic;
 namespace Findx.Reflection
 {
     /// <summary>
@@ -15,9 +15,9 @@ namespace Findx.Reflection
         /// <param name="type">要查找的类型</param>
         /// <param name="predicate">筛选条件</param>
         /// <returns></returns>
-        public MethodInfo[] Find(Type type, Func<MethodInfo, bool> predicate)
+        public IEnumerable<MethodInfo> Find(Type type, Func<MethodInfo, bool> predicate)
         {
-            return FindAll(type).Where(predicate).ToArray();
+            return FindAll(type).Where(predicate);
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Findx.Reflection
         /// </summary>
         /// <param name="type">要查找的类型</param>
         /// <returns></returns>
-        public MethodInfo[] FindAll(Type type)
+        public IEnumerable<MethodInfo> FindAll(Type type)
         {
             return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
         }

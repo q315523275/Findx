@@ -67,6 +67,19 @@ namespace Findx.AspNetCore.Mvc
         protected virtual Task EditAfterAsync(TModel model, int result) => Task.CompletedTask;
 
         /// <summary>
+        /// 删除前前操作
+        /// </summary>
+        /// <param name="req">id集合</param>
+        protected virtual Task DeleteBeforeAsync(List<DeleteParam<TKey>> req) => Task.CompletedTask;
+
+        /// <summary>
+        /// 删除后操作
+        /// </summary>
+        /// <param name="req">id集合</param>
+        /// <param name="total">删除成功条数</param>
+        protected virtual Task DeleteAfterAsync(List<DeleteParam<TKey>> req, int total) => Task.CompletedTask;
+
+        /// <summary>
         /// 添加数据
         /// </summary>
         /// <param name="request"></param>
@@ -148,11 +161,11 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("delete")]
-        public virtual Task<CommonResult> DeleteAsync([FromBody] List<DeleteParam<TKey>> request)
+        public virtual async Task<CommonResult> DeleteAsync([FromBody] List<DeleteParam<TKey>> request)
         {
             Check.NotNull(request, nameof(request));
             if (request.Count == 0)
-                return Task.FromResult(CommonResult.Fail("delete.not.count", "不存在删除数据"));
+                return CommonResult.Fail("delete.not.count", "不存在删除数据");
 
             var repo = GetRepository<TModel>();
             var currentUser = GetService<ICurrentUser>();
@@ -160,13 +173,18 @@ namespace Findx.AspNetCore.Mvc
             Check.NotNull(repo, nameof(repo));
             Check.NotNull(currentUser, nameof(currentUser));
 
+            await DeleteBeforeAsync(request);
+
             int total = 0;
             foreach (var item in request)
             {
                 if (repo.Delete(key: item.Id) > 0)
                     total++;
             }
-            return Task.FromResult(CommonResult.Success($"共删除{total}条数据,失败{request.Count - total}条"));
+
+            await DeleteAfterAsync(request, total);
+
+            return CommonResult.Success($"共删除{total}条数据,失败{request.Count - total}条");
         }
     }
 

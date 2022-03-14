@@ -44,7 +44,7 @@ namespace Findx.Scheduling
 
             // 自动注册任务
             IScheduledTaskFinder scheduledTaskFinder = services.GetOrAddTypeFinder<IScheduledTaskFinder>(assemblyFinder => new ScheduledTaskFinder(assemblyFinder));
-            Type[] scheduledTaskTypes = scheduledTaskFinder.FindAll(true);
+            var scheduledTaskTypes = scheduledTaskFinder.FindAll(true);
             foreach (Type scheduledTaskType in scheduledTaskTypes)
             {
                 services.AddTransient(scheduledTaskType);
@@ -66,7 +66,7 @@ namespace Findx.Scheduling
                     IScheduledTaskManager scheduledTaskManager = provider.GetRequiredService<IScheduledTaskManager>();
                     IScheduledTaskFinder scheduledTaskFinder = provider.GetRequiredService<IScheduledTaskFinder>();
 
-                    Type[] scheduledTaskTypes = scheduledTaskFinder.FindAll(true);
+                    var scheduledTaskTypes = scheduledTaskFinder.FindAll(true);
 
                     foreach (Type scheduledTaskType in scheduledTaskTypes)
                     {

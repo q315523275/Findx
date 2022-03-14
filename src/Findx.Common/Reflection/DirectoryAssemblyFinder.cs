@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,7 +12,7 @@ namespace Findx.Reflection
     /// </summary>
     public class DirectoryAssemblyFinder : IAssemblyFinder
     {
-        private static readonly ConcurrentDictionary<string, Assembly[]> CacheDict = new ConcurrentDictionary<string, Assembly[]>();
+        private static readonly ConcurrentDictionary<string, IEnumerable<Assembly>> CacheDict = new ConcurrentDictionary<string, IEnumerable<Assembly>>();
         private readonly string _path;
 
         /// <summary>
@@ -28,25 +29,24 @@ namespace Findx.Reflection
         /// <param name="predicate">筛选条件</param>
         /// <param name="fromCache">是否来自缓存</param>
         /// <returns></returns>
-        public Assembly[] Find(Func<Assembly, bool> predicate, bool fromCache = false)
+        public IEnumerable<Assembly> Find(Func<Assembly, bool> predicate, bool fromCache = false)
         {
-            return FindAll(fromCache).Where(predicate).ToArray();
+            return FindAll(fromCache).Where(predicate);
         }
 
         /// <summary>
         /// 查找所有项
         /// </summary>
         /// <returns></returns>
-        public Assembly[] FindAll(bool fromCache = false)
+        public IEnumerable<Assembly> FindAll(bool fromCache = false)
         {
             if (fromCache && CacheDict.ContainsKey(_path))
             {
                 return CacheDict[_path];
             }
-            string[] files = Directory.GetFiles(_path, "*.dll", SearchOption.TopDirectoryOnly)
-                                      .Concat(Directory.GetFiles(_path, "*.exe", SearchOption.TopDirectoryOnly))
-                                      .ToArray();
-            Assembly[] assemblies = files.Select(Assembly.LoadFrom).Distinct().ToArray();
+            var files = Directory.GetFiles(_path, "*.dll", SearchOption.TopDirectoryOnly)
+                                 .Concat(Directory.GetFiles(_path, "*.exe", SearchOption.TopDirectoryOnly));
+            var assemblies = files.Select(Assembly.LoadFrom).Distinct();
             CacheDict[_path] = assemblies;
             return assemblies;
         }

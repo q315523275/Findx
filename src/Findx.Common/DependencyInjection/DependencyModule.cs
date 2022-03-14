@@ -20,7 +20,7 @@ namespace Findx.DependencyInjection
             // 查找所有自动注册的服务实现类型
             IDependencyTypeFinder dependencyTypeFinder = services.GetOrAddTypeFinder<IDependencyTypeFinder>(assemblyFinder => new DependencyTypeFinder(assemblyFinder));
 
-            Type[] dependencyTypes = dependencyTypeFinder.FindAll();
+            var dependencyTypes = dependencyTypeFinder.FindAll();
             foreach (Type dependencyType in dependencyTypes)
             {
                 ConfigureServices(services, dependencyType);

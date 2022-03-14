@@ -98,7 +98,7 @@ namespace Findx.SqlSugar
 
         public override void UseModule(IServiceProvider provider)
         {
-            if (SqlSugarOptions == null)
+            if (SqlSugarOptions == null || !SqlSugarOptions.Enabled)
                 return;
 
             IOptionsMonitor<SqlSugarOptions> optionsMonitor = provider.GetService<IOptionsMonitor<SqlSugarOptions>>();

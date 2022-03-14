@@ -264,7 +264,7 @@ namespace Findx.SqlSugar
             return updateable.ExecuteCommandAsync();
         }
 
-        public int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
+        public int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
         {
             var updateable = _sugar.Updateable(entity).AS(_tableName);
 
@@ -273,6 +273,9 @@ namespace Findx.SqlSugar
 
             if (ignoreColumns != null)
                 updateable.IgnoreColumns(ignoreColumns);
+
+            if (ignoreNullColumns)
+                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
 
             if (whereExpression != null)
                 updateable.Where(whereExpression);
@@ -280,7 +283,7 @@ namespace Findx.SqlSugar
             return updateable.ExecuteCommand();
         }
 
-        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
+        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
             var updateable = _sugar.Updateable(entity).AS(_tableName);
 
@@ -289,6 +292,9 @@ namespace Findx.SqlSugar
 
             if (ignoreColumns != null)
                 updateable.IgnoreColumns(ignoreColumns);
+
+            if (ignoreNullColumns)
+                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
 
             if (whereExpression != null)
                 updateable.Where(whereExpression);

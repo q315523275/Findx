@@ -173,7 +173,7 @@ namespace Findx.Extensions
             logger.LogInformation("框架初始化开始");
             Stopwatch watch = Stopwatch.StartNew();
 
-            FindxModule[] modules = provider.GetServices<FindxModule>().ToArray();
+            var modules = provider.GetServices<FindxModule>();
             foreach (FindxModule module in modules)
             {
                 module.UseModule(provider);

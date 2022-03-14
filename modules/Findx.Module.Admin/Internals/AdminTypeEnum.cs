@@ -1,8 +1,19 @@
-﻿namespace Findx.Module.Admin.Internals
+﻿using System.ComponentModel;
+
+namespace Findx.Module.Admin.Internals
 {
     internal enum AdminTypeEnum
     {
-        SUPER_ADMIN = 1,
-        NONE = 2
+        /// <summary>
+        /// 超级管理员
+        /// </summary>
+        [Description("超级管理员")]
+        SuperAdmin = 1,
+
+        /// <summary>
+        /// 普通账号
+        /// </summary>
+        [Description("普通账号")]
+        None = 2
     }
 }

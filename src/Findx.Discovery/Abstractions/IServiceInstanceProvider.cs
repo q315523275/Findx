@@ -31,6 +31,6 @@ namespace Findx.Discovery
         /// <param name="group"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<IList<string>> GetServicesAsync(string group = null, CancellationToken cancellationToken = default);
+        Task<IEnumerable<string>> GetServicesAsync(string group = null, CancellationToken cancellationToken = default);
     }
 }

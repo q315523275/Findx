@@ -56,7 +56,7 @@ namespace Findx.Extensions
         /// <returns></returns>
         public static string ExpandAndToString<T>(this IEnumerable<T> collection, Func<T, string> itemFormatFunc, string separator = ",")
         {
-            collection = collection as IList<T> ?? collection.ToList();
+            // collection = collection as IList<T> ?? collection.ToList();
 
             Check.NotNull(itemFormatFunc, nameof(itemFormatFunc));
 
@@ -116,7 +116,7 @@ namespace Findx.Extensions
         /// <returns> 为空返回True，不为空返回False </returns>
         public static bool IsEmpty<T>(this IEnumerable<T> source)
         {
-            source = source as IList<T> ?? source.ToList();
+            // source = source as IList<T> ?? source.ToList();
             return !source.Any();
         }
 
@@ -125,7 +125,7 @@ namespace Findx.Extensions
         /// </summary>
         public static IEnumerable<T> OrderByPrefixes<T>(this IEnumerable<T> source, Func<T, string> keySelector, params string[] prefixes)
         {
-            List<T> all = source.OrderBy(keySelector).ToList();
+            var all = source.OrderBy(keySelector).ToList();
             List<T> result = new List<T>();
             foreach (string prefix in prefixes)
             {
@@ -149,7 +149,7 @@ namespace Findx.Extensions
         {
             Check.NotNull(keySelector, nameof(keySelector));
 
-            source = source as IList<T> ?? source.ToList();
+            // source = source as IList<T> ?? source.ToList();
 
             return source.GroupBy(keySelector).Select(group => group.First());
         }
@@ -188,7 +188,7 @@ namespace Findx.Extensions
                     }
 
                     // Wait for all of the provided tasks to complete.
-                    await Task.WhenAll(tasksWithThrottler.ToArray());
+                    await Task.WhenAll(tasksWithThrottler);
                 }
             }
             else

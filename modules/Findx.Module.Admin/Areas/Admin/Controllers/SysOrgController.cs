@@ -1,15 +1,20 @@
 ﻿using Findx.AspNetCore.Mvc;
 using Findx.Data;
+using Findx.Exceptions;
 using Findx.Extensions;
+using Findx.Linq;
 using Findx.Module.Admin.Areas.Admin.DTO;
 using Findx.Module.Admin.Internals;
 using Findx.Module.Admin.Models;
+using Findx.Module.Admin.Service;
 using Findx.Security;
 using Findx.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Security.Principal;
+using System.Threading.Tasks;
 
 namespace Findx.Module.Admin.Areas.Admin.Controllers
 {
@@ -21,22 +26,43 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
     public class SysOrgController : CrudControllerBase<SysOrgInfo, SysOrgInfo, SysOrgRequest, SysOrgRequest, SysOrgQuery, long, long>
     {
         /// <summary>
+        /// 构建查询条件
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        protected override Expressionable<SysOrgInfo> CreatePageWhereExpression(SysOrgQuery request)
+        {
+            return ExpressionBuilder.Create<SysOrgInfo>().AndIF(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
+                                                         .AndIF(!request.Pid.IsNullOrWhiteSpace(), x => x.Pids.Contains(request.Pid) || x.Id == request.Pid.To<long>());
+        }
+
+        /// <summary>
+        /// 构建排序规则
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        protected override List<OrderByParameter<SysOrgInfo>> CreatePageOrderExpression(SysOrgQuery request)
+        {
+            var multiOrderBy = new List<OrderByParameter<SysOrgInfo>>();
+            if (typeof(SysOrgInfo).IsAssignableTo(typeof(ISort)))
+                multiOrderBy.Add(new OrderByParameter<SysOrgInfo> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
+            multiOrderBy.Add(new OrderByParameter<SysOrgInfo> { Expression = it => it.Id, SortDirection = ListSortDirection.Ascending });
+            return multiOrderBy;
+        }
+
+        /// <summary>
         /// 树形数据查询
         /// </summary>
         /// <param name="fsql"></param>
         /// <param name="principal"></param>
         /// <returns></returns>
         [HttpGet("tree")]
-        public CommonResult Tree([FromServices] IFreeSql fsql, [FromServices] IPrincipal principal)
+        public CommonResult Tree([FromServices] IFreeSql fsql, [FromServices] ICurrentUser currentUser)
         {
-            var userId = principal.Identity.GetUserId<long>();
-
-            var userInfo = fsql.Select<SysUserInfo>(userId).First();
-            if (userInfo == null)
-                return CommonResult.Fail("401", "登录信息失效,请重新登录");
+            var userId = currentUser.UserId.To<long>();
 
             var dataScopes = new List<long>();
-            if (!userInfo.IsSuperAdmin())
+            if (!currentUser.IsSuperAdmin())
             {
                 var empInfo = fsql.Select<SysEmpInfo>(userId).First();
                 dataScopes = fsql.Select<SysUserDataScopeInfo>().Where(it => it.UserId == userId).ToList(it => it.OrgId); // 用户直接分配范围
@@ -99,6 +125,49 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
                               });
 
             return CommonResult.Success(new TreeBuilder<OrgTreeNode, long>().Build(orgList, 0));
+        }
+
+        /// <summary>
+        /// 创建Pids格式
+        /// 如果pid是0顶级节点，pids就是 [0];
+        /// 如果pid不是顶级节点，pids就是 pid菜单的 pids + [pid] + ,
+        /// </summary>
+        /// <param name="pid"></param>
+        /// <returns></returns>
+        private async Task<string> CreateNewPids(long pid)
+        {
+            if (pid == 0L)
+            {
+                return "[0],";
+            }
+            else
+            {
+                var pmenu = await GetRepository<SysOrgInfo>().FirstAsync(u => u.Id == pid);
+                return pmenu.Pids + "[" + pid + "],";
+            }
+        }
+
+        protected override async Task AddBeforeAsync(SysOrgInfo model)
+        {
+            var repo = GetRepository<SysOrgInfo>();
+            var currentUser = GetService<ICurrentUser>();
+
+            var isExist = await repo.ExistAsync(u => u.Name == model.Name || u.Code == model.Code);
+            if (isExist)
+                throw new FindxException("D2002", "已有相同组织机构,编码或名称相同");
+
+            model.Pids = await CreateNewPids(model.Pid);
+            model.Status = CommonStatusEnum.ENABLE.CastTo<int>();
+        }
+
+        protected override async Task EditAfterAsync(SysOrgInfo model, int result)
+        {
+            model.Pids = await CreateNewPids(model.Pid);
+        }
+
+        protected override Task DeleteBeforeAsync(List<DeleteParam<long>> req)
+        {
+            return base.DeleteBeforeAsync(req);
         }
     }
 }

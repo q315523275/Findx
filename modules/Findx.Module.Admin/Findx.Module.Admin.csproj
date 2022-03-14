@@ -6,14 +6,13 @@
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DocumentationFile>F:\myself\Findx\modules\Findx.Module.Admin\Findx.Module.Admin.xml</DocumentationFile>
+	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+	  <WarningLevel>4</WarningLevel>
+	  <DocumentationFile></DocumentationFile>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<Compile Remove="Models\SysCodeGenerateConfigInfo.cs" />
 		<Compile Remove="Models\SysCodeGenerateInfo.cs" />
-		<Compile Remove="Models\SysTimersInfo.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -25,10 +24,16 @@
 		<ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
 		<ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
 		<ProjectReference Include="..\..\src\Findx.SqlSugar\Findx.SqlSugar.csproj" />
+		<ProjectReference Include="..\..\src\Findx.MailKit\Findx.MailKit.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Folder Include="Utils\" />
+	  <Folder Include="Scheduling\" />
+	  <Folder Include="Service\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="Service\" />
+	  <None Remove="Extensions\Extensions.CurrentUser" />
+	</ItemGroup>
 </Project>

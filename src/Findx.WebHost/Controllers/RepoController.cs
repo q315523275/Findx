@@ -17,6 +17,8 @@ namespace Findx.WebHost.Controllers
 
             try
             {
+                var a1 = await repo1.PagedAsync(1, 20, orderParameters: new OrderByParameter<TestNewsInfo> { Expression = x => x.Id, SortDirection = System.ComponentModel.ListSortDirection.Descending });
+                var b2 = await repo2.PagedAsync(1, 20);
 
                 var a = await repo1.SelectAsync();
                 var b = await repo2.SelectAsync();

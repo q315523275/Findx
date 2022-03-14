@@ -18,7 +18,7 @@ namespace Findx.WebSocketCore
             services.AddTransient<WebSocketConnectionManager>();
 
             IWebSocketHandlerTypeFinder handlerTypeFinder = services.GetOrAddTypeFinder<IWebSocketHandlerTypeFinder>(assemblyFinder => new WebSocketHandlerTypeFinder(assemblyFinder));
-            Type[] moduleTypes = handlerTypeFinder.FindAll();
+            var moduleTypes = handlerTypeFinder.FindAll();
             foreach (var type in moduleTypes)
             {
                 if (type.GetTypeInfo().BaseType == typeof(WebSocketHandler))

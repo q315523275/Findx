@@ -29,9 +29,9 @@ namespace Findx.Finders
         /// <param name="predicate">筛选条件</param>
         /// <param name="fromCache">是否来自缓存</param>
         /// <returns></returns>
-        public virtual TItem[] Find(Func<TItem, bool> predicate, bool fromCache = false)
+        public virtual IEnumerable<TItem> Find(Func<TItem, bool> predicate, bool fromCache = false)
         {
-            return FindAll(fromCache).Where(predicate).ToArray();
+            return FindAll(fromCache).Where(predicate);
         }
 
         /// <summary>
@@ -39,16 +39,16 @@ namespace Findx.Finders
         /// </summary>
         /// <param name="fromCache">是否来自缓存</param>
         /// <returns></returns>
-        public virtual TItem[] FindAll(bool fromCache = false)
+        public virtual IEnumerable<TItem> FindAll(bool fromCache = false)
         {
             _lockObj.Wait();
             try
             {
                 if (fromCache && Found)
                 {
-                    return ItemsCache.ToArray();
+                    return ItemsCache;
                 }
-                TItem[] items = FindAllItems();
+                var items = FindAllItems();
                 Found = true;
                 ItemsCache.Clear();
                 ItemsCache.AddRange(items);
@@ -64,6 +64,6 @@ namespace Findx.Finders
         /// 重写以实现所有项的查找
         /// </summary>
         /// <returns></returns>
-        protected abstract TItem[] FindAllItems();
+        protected abstract IEnumerable<TItem> FindAllItems();
     }
 }

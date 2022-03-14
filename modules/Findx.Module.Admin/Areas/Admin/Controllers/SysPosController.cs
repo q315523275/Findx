@@ -9,6 +9,7 @@ using Findx.Module.Admin.Models;
 using Findx.Security;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Findx.Module.Admin.Areas.Admin.Controllers
@@ -25,6 +26,20 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             return ExpressionBuilder.Create<SysPosInfo>().AndIF(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
                                                          .AndIF(!request.Code.IsNullOrWhiteSpace(), x => x.Code.Contains(request.Code))
                                                          .And(x => x.Status == CommonStatusEnum.ENABLE.To<int>());
+        }
+
+        /// <summary>
+        /// 构建排序规则
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        protected override List<OrderByParameter<SysPosInfo>> CreatePageOrderExpression(SysPosQuery request)
+        {
+            var multiOrderBy = new List<OrderByParameter<SysPosInfo>>();
+            if (typeof(SysPosInfo).IsAssignableTo(typeof(ISort)))
+                multiOrderBy.Add(new OrderByParameter<SysPosInfo> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
+            multiOrderBy.Add(new OrderByParameter<SysPosInfo> { Expression = it => it.Id, SortDirection = ListSortDirection.Ascending });
+            return multiOrderBy;
         }
 
         protected override async Task AddBeforeAsync(SysPosInfo model)

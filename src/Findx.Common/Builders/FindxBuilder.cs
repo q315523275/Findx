@@ -10,7 +10,7 @@ namespace Findx.Builders
 {
     public class FindxBuilder : IFindxBuilder
     {
-        private readonly List<FindxModule> _sourceModules;
+        private readonly IEnumerable<FindxModule> _sourceModules;
         private List<FindxModule> _modules;
 
         public FindxBuilder(IServiceCollection services)
@@ -36,9 +36,9 @@ namespace Findx.Builders
 
         public IFindxBuilder AddModules(params Type[] exceptModuleTypes)
         {
-            var source = _sourceModules.ToArray();
-            var exceptModules = source.Where(m => exceptModuleTypes.Contains(m.GetType())).ToArray();
-            source = source.Except(exceptModules).ToArray();
+            var source = _sourceModules;
+            var exceptModules = source.Where(m => exceptModuleTypes.Contains(m.GetType()));
+            source = source.Except(exceptModules);
             foreach (FindxModule module in source)
             {
                 AddModule(module.GetType());
@@ -58,7 +58,7 @@ namespace Findx.Builders
                 return this;
             }
 
-            var tmpModules = new FindxModule[_modules.Count];
+            var tmpModules = new FindxModule[_modules.Count()];
             _modules.CopyTo(tmpModules);
             var module = _sourceModules.FirstOrDefault(m => m.GetType() == type);
             if (module == null)
@@ -88,9 +88,9 @@ namespace Findx.Builders
             {
                 var moduleType = tmpModule.GetType();
                 var moduleName = moduleType.GetDescription();
-                var tmp = Services.ToArray();
+                var tmp = Services;
                 AddModule(Services, tmpModule);
-                Services.LogInformation($"模块《{moduleName}》的服务添加完毕,添加了 {Services.Count - tmp.Length} 个服务", logName);
+                Services.LogInformation($"模块《{moduleName}》的服务添加完毕,添加了 {Services.Count - tmp.Count()} 个服务", logName);
             }
 
             return this;
@@ -104,8 +104,8 @@ namespace Findx.Builders
             if (type.BaseType?.IsAbstract == false)
             {
                 // 移除多重继承的模块
-                ServiceDescriptor[] descriptors = services.Where(m => m.Lifetime == ServiceLifetime.Singleton && m.ServiceType == serviceType
-                                                                    && m.ImplementationInstance?.GetType() == type.BaseType).ToArray();
+                var descriptors = services.Where(m => m.Lifetime == ServiceLifetime.Singleton && m.ServiceType == serviceType
+                                                      && m.ImplementationInstance?.GetType() == type.BaseType);
                 foreach (var descriptor in descriptors)
                 {
                     services.Remove(descriptor);
@@ -121,12 +121,12 @@ namespace Findx.Builders
             return services;
         }
 
-        private static List<FindxModule> GetAllModules(IServiceCollection services)
+        private static IEnumerable<FindxModule> GetAllModules(IServiceCollection services)
         {
             IFindxModuleTypeFinder moduleTypeFinder = services.GetOrAddTypeFinder<IFindxModuleTypeFinder>(assemblyFinder => new FindxModuleTypeFinder(assemblyFinder));
-            Type[] moduleTypes = moduleTypeFinder.FindAll();
+            var moduleTypes = moduleTypeFinder.FindAll();
             return moduleTypes.Select(m => (FindxModule)Activator.CreateInstance(m))
-                              .OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName).ToList();
+                              .OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName);
         }
 
     }

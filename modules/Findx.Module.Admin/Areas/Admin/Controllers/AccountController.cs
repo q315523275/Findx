@@ -57,7 +57,8 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
                 { ClaimTypes.UserId, accountInfo.Id.ToString() },
                 { ClaimTypes.PhoneNumber, accountInfo.Phone.SafeString() },
                 { ClaimTypes.FullName, accountInfo.Name.SafeString() },
-                { ClaimTypes.Role, "admin" }
+                { ClaimTypes.Role, "admin" },
+                { "SuperAdmin", accountInfo.AdminType.ToString() }
             };
             var token = await tokenBuilder.CreateAsync(payload, _options);
 
@@ -126,12 +127,12 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             // 角色信息
             var roles = fsql.Select<SysRoleInfo, SysUserRoleInfo>().InnerJoin((a, b) => a.Id == b.RoleId && b.UserId == userId).Where((a, b) => a.Status == 0)
                             .ToList((a, b) => new { a.Id, a.Name, a.Code, a.DataScopeType });
-            var roleIdList = roles.Select(it => it.Id).ToList();
+            var roleIdList = roles.Select(it => it.Id);
             loginUserDTO.Roles = roles;
 
             // 权限信息
             var permissions = new List<string>();
-            if (roleIdList.Count > 0)
+            if (roleIdList.Count() > 0)
             {
                 var permissionList = fsql.Select<SysMenuInfo, SysRoleMenuInfo>().InnerJoin((a, b) => a.Id == b.MenuId)
                                          .Where((a, b) => roleIdList.Contains(b.RoleId) && a.Status == 0 && a.Type == 2)
@@ -154,7 +155,7 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
 
             // 数据范围信息
             var dataScopes = fsql.Select<SysUserDataScopeInfo>().Where(it => it.UserId == userId).ToList(it => it.OrgId); // 用户直接分配范围
-            if (empInfo != null && roleIdList.Count > 0)
+            if (empInfo != null && roleIdList.Count() > 0)
             {
                 var customDataScopeRoleIdList = new List<long>();
                 var strongerDataScopeType = DataScopeTypeEnum.SELF.To<int>();
@@ -205,7 +206,7 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
                 loginUserDTO.Apps = appList;
                 firstAppCode = appList.FirstOrDefault(it => it.Active)?.Code ?? appList.FirstOrDefault()?.Code;
             }
-            else if (roleIdList.Count > 0)
+            else if (roleIdList.Count() > 0)
             {
                 //获取用户菜单对应的应用编码集合
                 var appCodeList = fsql.Select<SysMenuInfo, SysRoleMenuInfo>().InnerJoin((a, b) => a.Id == b.MenuId)

@@ -10,7 +10,7 @@ namespace Findx.Module.Admin.Areas.Admin.DTO
         /// <summary>
         /// 员工Id
         /// </summary>
-        public string Id { get; set; }
+        public long Id { get; set; }
 
         /// <summary>
         /// 工号

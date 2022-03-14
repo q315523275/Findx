@@ -14,11 +14,11 @@ namespace Findx.Messaging
 
             Check.NotNull(handler, nameof(handler));
 
-            Task<TResponse> Handler() => handler.Handle((TRequest)request, cancellationToken);
-
             var messagePipelines = serviceProvider.GetServices<IMessagePipeline<TRequest, TResponse>>();
             if (messagePipelines != null && messagePipelines.Count() > 0)
             {
+                Task<TResponse> Handler() => handler.Handle((TRequest)request, cancellationToken);
+
                 return messagePipelines.Reverse()
                                        .Aggregate((MessageHandlerDelegate<TResponse>)Handler, (next, pipeline) => () => pipeline.Handle((TRequest)request, next, cancellationToken))();
             }

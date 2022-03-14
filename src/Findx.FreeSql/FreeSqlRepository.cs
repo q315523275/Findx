@@ -173,9 +173,14 @@ namespace Findx.FreeSql
         #endregion
 
         #region 更新
-        public int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
+        public int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
         {
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entity);
+            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
+
+            if (ignoreNullColumns)
+                update.SetSourceIgnore(entity, col => col == null);
+            else
+                update.SetSource(entity);
 
             if (updateColumns != null)
                 update.UpdateColumns(updateColumns);
@@ -189,9 +194,14 @@ namespace Findx.FreeSql
             return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
 
-        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
+        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entity);
+            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
+
+            if (ignoreNullColumns)
+                update.SetSourceIgnore(entity, col => col == null);
+            else
+                update.SetSource(entity);
 
             if (updateColumns != null)
                 update.UpdateColumns(updateColumns);

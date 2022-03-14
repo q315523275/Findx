@@ -97,9 +97,9 @@ namespace Findx.Extensions
         /// <param name="source"></param>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        public static IList<T> RemoveAll<T>(this ICollection<T> source, Func<T, bool> predicate)
+        public static IEnumerable<T> RemoveAll<T>(this ICollection<T> source, Func<T, bool> predicate)
         {
-            var items = source.Where(predicate).ToList();
+            var items = source.Where(predicate);
 
             foreach (var item in items)
             {

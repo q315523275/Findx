@@ -82,12 +82,12 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Connect();
 
-            var endPoints = _cache.Multiplexer.GetEndPoints().ToList();
+            var endPoints = _cache.Multiplexer.GetEndPoints();
 
-            endPoints.ForEach(endPoint =>
+            foreach(var endPoint in endPoints)
             {
                 _cache.Multiplexer.GetServer(endPoint).FlushDatabase(_cache.Database);
-            });
+            }
         }
 
         /// <summary>
@@ -2049,7 +2049,7 @@ namespace Findx.Redis.StackExchangeRedis
             return res;
         }
 
-        public List<string> GeoHash(string cacheKey, List<string> members)
+        public string[] GeoHash(string cacheKey, List<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
@@ -2062,11 +2062,10 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(item);
             }
 
-            var res = _cache.GeoHash(cacheKey, list.ToArray());
-            return res.ToList();
+            return _cache.GeoHash(cacheKey, list.ToArray());
         }
 
-        public async Task<List<string>> GeoHashAsync(string cacheKey, List<string> members)
+        public async Task<string[]> GeoHashAsync(string cacheKey, List<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
@@ -2079,8 +2078,7 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(item);
             }
 
-            var res = await _cacheAsync.GeoHashAsync(cacheKey, list.ToArray());
-            return res.ToList();
+            return await _cacheAsync.GeoHashAsync(cacheKey, list.ToArray());
         }
 
         public List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, List<string> members)

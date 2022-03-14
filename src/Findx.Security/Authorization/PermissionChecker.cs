@@ -40,7 +40,7 @@ namespace Findx.Security.Authorization
                 return Task.FromResult(true);
             }
             // 检查角色-功能的权限
-            string[] userRoleNames = principal.Identity.GetRoles();
+            var userRoleNames = principal.Identity.GetRoles();
             // 超级管理员
             if (!SuperRoleName.IsNullOrWhiteSpace() && userRoleNames.Contains(SuperRoleName))
             {

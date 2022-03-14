@@ -81,9 +81,12 @@ namespace Findx.Module.Admin.Models
 		public long? UpdateUser { get; set; }
 
 
-        public override void Init()
-        {
+		/// <summary>
+		/// 初始化
+		/// </summary>
+		public override void Init()
+		{
 			Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
-    }
+		}
+	}
 }

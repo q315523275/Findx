@@ -139,9 +139,9 @@ namespace Findx.Extensions
         /// <param name="memberInfo">类型类型成员</param>
         /// <param name="inherit">是否从继承中查找</param>
         /// <returns>返回所有指定Attribute特性的数组</returns>
-        public static T[] GetAttributes<T>(this MemberInfo memberInfo, bool inherit = true) where T : Attribute
+        public static IEnumerable<T> GetAttributes<T>(this MemberInfo memberInfo, bool inherit = true) where T : Attribute
         {
-            return memberInfo.GetCustomAttributes(typeof(T), inherit).Cast<T>().ToArray();
+            return memberInfo.GetCustomAttributes(typeof(T), inherit).Cast<T>();
         }
 
         /// <summary>

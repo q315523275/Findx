@@ -721,14 +721,14 @@ namespace Findx.Redis
         /// <param name="cacheKey"></param>
         /// <param name="members"></param>
         /// <returns></returns>
-        List<string> GeoHash(string cacheKey, List<string> members);
+        string[] GeoHash(string cacheKey, List<string> members);
         /// <summary>
         /// 返回一个或多个位置对象的 geohash 值
         /// </summary>
         /// <param name="cacheKey"></param>
         /// <param name="members"></param>
         /// <returns></returns>
-        Task<List<string>> GeoHashAsync(string cacheKey, List<string> members);
+        Task<string[]> GeoHashAsync(string cacheKey, List<string> members);
         /// <summary>
         /// 获取地理位置的坐标
         /// </summary>

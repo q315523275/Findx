@@ -1,7 +1,9 @@
 ﻿using Findx.AspNetCore.Mvc;
 using Findx.Data;
+using Findx.Linq;
 using Findx.Module.Admin.Areas.Admin.DTO;
 using Findx.Module.Admin.Models;
+using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,7 +14,7 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
 {
     [Area("api/admin")]
     [Route("[area]/sysDictType")]
-    public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SysDictTypeInfo, SysDictTypeRequest, SysDictTypeRequest, SysQuery, long, long>
+    public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SysDictTypeInfo, SysDictTypeRequest, SysDictTypeRequest, SysDictTypeQuery, long, long>
     {
 
         /// <summary>
@@ -29,20 +31,15 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             if (dictType == null)
                 return CommonResult.Fail("500", "没有字典配置数据");
 
-            var list = repo_data.Select(it => it.TypeId == dictType.Id && it.Status == 0, it => new SysDictDataInfo { Code = it.Code, Value = it.Value, Sort = it.Sort }).OrderBy(it => it.Sort);
+            var list = repo_data.Select(it => it.TypeId == dictType.Id && it.Status == 0, it => new { Code = it.Code, Value = it.Value, Sort = it.Sort }).OrderBy(it => it.Sort);
 
             return CommonResult.Success(list);
         }
 
-        protected override List<OrderByParameter<SysDictTypeInfo>> CreatePageOrderExpression(SysQuery request)
-        {
-            var multiOrderBy = new List<OrderByParameter<SysDictTypeInfo>>();
-            if (typeof(SysDictTypeInfo).IsAssignableTo(typeof(ISort)))
-                multiOrderBy.Add(new OrderByParameter<SysDictTypeInfo> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
-            multiOrderBy.Add(new OrderByParameter<SysDictTypeInfo> { Expression = it => it.Id, SortDirection = ListSortDirection.Ascending });
-            return multiOrderBy;
-        }
-
+        /// <summary>
+        /// 查询字典树
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("tree")]
         public CommonResult Tree()
         {
@@ -65,6 +62,31 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
                     Name = c.Value
                 })
             }));
+        }
+
+        /// <summary>
+        /// 构建查询条件
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        protected override Expressionable<SysDictTypeInfo> CreatePageWhereExpression(SysDictTypeQuery request)
+        {
+            return ExpressionBuilder.Create<SysDictTypeInfo>().AndIF(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
+                                                              .AndIF(!request.Code.IsNullOrWhiteSpace(), x => x.Code.Contains(request.Code));
+        }
+
+        /// <summary>
+        /// 构建排序规则
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        protected override List<OrderByParameter<SysDictTypeInfo>> CreatePageOrderExpression(SysDictTypeQuery request)
+        {
+            var multiOrderBy = new List<OrderByParameter<SysDictTypeInfo>>();
+            if (typeof(SysDictTypeInfo).IsAssignableTo(typeof(ISort)))
+                multiOrderBy.Add(new OrderByParameter<SysDictTypeInfo> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
+            multiOrderBy.Add(new OrderByParameter<SysDictTypeInfo> { Expression = it => it.Id, SortDirection = ListSortDirection.Ascending });
+            return multiOrderBy;
         }
     }
 }

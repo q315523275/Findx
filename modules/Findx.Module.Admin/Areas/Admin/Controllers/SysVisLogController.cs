@@ -6,6 +6,7 @@ using Findx.Module.Admin.Areas.Admin.DTO;
 using Findx.Module.Admin.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Findx.Module.Admin.Areas.Admin.Controllers
@@ -37,5 +38,24 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
             return CommonResult.Success();
         }
 
+
+        /// <summary>
+        /// 用户导出
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("export")]
+        public async Task<IActionResult> Export()
+        {
+            var list = GetRepository<SysVisLogInfo>().Select();
+
+            //var memoryStream = new MemoryStream();
+            //memoryStream.SaveAs(list);
+            //memoryStream.Seek(0, SeekOrigin.Begin);
+            //return await Task.FromResult(new FileStreamResult(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            //{
+            //    FileDownloadName = "user.xlsx"
+            //});
+            return null;
+        }
     }
 }

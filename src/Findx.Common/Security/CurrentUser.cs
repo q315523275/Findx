@@ -1,5 +1,6 @@
 ﻿using Findx.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -33,25 +34,25 @@ namespace Findx.Security
 
         public string TenantId => _principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.TenantId);
 
-        public string[] Roles => _principal?.Identity?.GetClaimValues(ClaimTypes.Role);
+        public IEnumerable<string> Roles => _principal?.Identity?.GetClaimValues(ClaimTypes.Role);
 
         public Claim FindClaim(string claimType)
         {
             return _principal?.Identity?.GetClaimFirstOrDefault(claimType);
         }
 
-        public Claim[] FindClaims(string claimType)
+        public IEnumerable<Claim> FindClaims(string claimType)
         {
             return _principal?.Identity?.GetClaims(claimType);
         }
 
-        public Claim[] GetAllClaims()
+        public IEnumerable<Claim> GetAllClaims()
         {
             if (!(_principal.Identity is ClaimsIdentity claimsIdentity))
             {
                 return new Claim[0];
             }
-            return claimsIdentity?.Claims?.ToArray();
+            return claimsIdentity?.Claims;
         }
 
         public bool IsInRole(string roleName)

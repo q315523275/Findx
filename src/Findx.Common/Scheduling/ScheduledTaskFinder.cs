@@ -2,7 +2,7 @@
 using Findx.Reflection;
 using System;
 using System.Linq;
-using System.Reflection;
+using System.Collections.Generic;
 
 namespace Findx.Scheduling
 {
@@ -25,12 +25,12 @@ namespace Findx.Scheduling
         /// 重写以实现所有项的查找
         /// </summary>
         /// <returns></returns>
-        protected override Type[] FindAllItems()
+        protected override IEnumerable<Type> FindAllItems()
         {
             Type baseTypes = typeof(IScheduledTask);
-            Assembly[] assemblies = _appDomainAssemblyFinder.FindAll(true);
+            var assemblies = _appDomainAssemblyFinder.FindAll(true);
             return assemblies.SelectMany(assemblie => assemblie.GetTypes())
-                             .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && baseTypes.IsAssignableFrom(type)).Distinct().ToArray();
+                             .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && baseTypes.IsAssignableFrom(type)).Distinct();
         }
     }
 }

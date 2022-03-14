@@ -1,7 +1,7 @@
 ﻿using Findx.DependencyInjection;
 using Findx.Extensions;
 using System.Linq;
-
+using System.Collections.Generic;
 namespace Findx.Data
 {
     public static class ScopedDictionaryExtensions
@@ -18,9 +18,9 @@ namespace Findx.Data
         /// <summary>
         /// 获取所有连接串的UnitOfWork
         /// </summary>
-        public static IUnitOfWork[] GetConnUnitOfWorks(this ScopedDictionary dict)
+        public static IEnumerable<IUnitOfWork> GetConnUnitOfWorks(this ScopedDictionary dict)
         {
-            return dict.Where(m => m.Key.StartsWith("UnitOfWork_ConnPrimary_")).Select(m => m.Value as IUnitOfWork).ToArray();
+            return dict.Where(m => m.Key.StartsWith("UnitOfWork_ConnPrimary_")).Select(m => m.Value as IUnitOfWork);
         }
 
         /// <summary>

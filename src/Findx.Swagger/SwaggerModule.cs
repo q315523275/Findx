@@ -45,8 +45,8 @@ namespace Findx.Swagger
                             return false;
                         }
                         // 文档分组
-                        string[] versions = method.DeclaringType.GetAttributes<ApiExplorerSettingsAttribute>().Select(m => m.GroupName).ToArray();
-                        if (version.ToLower() == "v1" && versions.Length == 0)
+                        var versions = method.DeclaringType.GetAttributes<ApiExplorerSettingsAttribute>().Select(m => m.GroupName);
+                        if (version.ToLower() == "v1" && versions.Count() == 0)
                         {
                             return true;
                         }
@@ -54,7 +54,11 @@ namespace Findx.Swagger
                     });
                 }
                 options.CustomSchemaIds(x => x.FullName);
-                Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml").ToList().ForEach(file => { options.IncludeXmlComments(file); });
+                var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml");
+                foreach(var file in files)
+                {
+                    options.IncludeXmlComments(file);
+                }
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,

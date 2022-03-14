@@ -122,7 +122,7 @@ namespace Findx.Security.Authorization
                 };
                 _permissions.Add(typePermission);
 
-                MemberInfo[] methods = MethodInfoFinder.FindAll(typeInfo);
+                var methods = MethodInfoFinder.FindAll(typeInfo);
                 foreach (MemberInfo method in methods)
                 {
                     if (!method.CustomAttributes.Any(m =>

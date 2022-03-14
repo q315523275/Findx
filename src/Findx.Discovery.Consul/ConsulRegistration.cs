@@ -3,6 +3,7 @@ using Findx.Utils;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Findx.Discovery.Consul
 {
@@ -54,7 +55,7 @@ namespace Findx.Discovery.Consul
 
             return $"{ServiceName}-{Host}:{Port}".Replace(".", "-").Replace(":", "-");
         }
-        private string[] CreateTags()
+        private IEnumerable<string> CreateTags()
         {
             List<string> tags = new List<string>();
             if (Options.Tags != null)
@@ -70,7 +71,7 @@ namespace Findx.Discovery.Consul
             tags.Add("secure=" + (Options.Scheme == "https").ToString().ToLower());
             tags.Add("version=" + (_applicationInstanceInfo.Version).ToString().ToLower());
 
-            return tags.ToArray();
+            return tags;
         }
         private AgentServiceRegistration CreateRegistration()
         {
@@ -84,7 +85,7 @@ namespace Findx.Discovery.Consul
                 Name = ServiceName,
                 Address = Host,
                 Port = Port,
-                Tags = CreateTags(),
+                Tags = CreateTags().ToArray(),
             };
             SetCheck(service);
 

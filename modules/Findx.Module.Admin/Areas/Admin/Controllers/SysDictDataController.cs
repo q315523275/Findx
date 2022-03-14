@@ -3,6 +3,7 @@ using Findx.Data;
 using Findx.Linq;
 using Findx.Module.Admin.Areas.Admin.DTO;
 using Findx.Module.Admin.Models;
+using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,11 +14,24 @@ namespace Findx.Module.Admin.Areas.Admin.Controllers
     [Route("[area]/sysDictData")]
     public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SysDictDataInfo, SysDictDataRequest, SysDictDataRequest, SysDictDataQuery, long, long>
     {
+
+        /// <summary>
+        /// 构建查询条件
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         protected override Expressionable<SysDictDataInfo> CreatePageWhereExpression(SysDictDataQuery request)
         {
-            return ExpressionBuilder.Create<SysDictDataInfo>().AndIF(request.TypeId > 0, x => x.TypeId == request.TypeId);
+            return ExpressionBuilder.Create<SysDictDataInfo>().AndIF(request.TypeId > 0, x => x.TypeId == request.TypeId)
+                                                              .AndIF(!request.Value.IsNullOrWhiteSpace(), x => x.Value.Contains(request.Value))
+                                                              .AndIF(!request.Code.IsNullOrWhiteSpace(), x => x.Code.Contains(request.Code));
         }
 
+        /// <summary>
+        /// 构建排序规则
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         protected override List<OrderByParameter<SysDictDataInfo>> CreatePageOrderExpression(SysDictDataQuery request)
         {
             var multiOrderBy = new List<OrderByParameter<SysDictDataInfo>>();

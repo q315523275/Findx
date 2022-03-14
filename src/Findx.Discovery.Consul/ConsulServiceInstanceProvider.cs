@@ -37,11 +37,11 @@ namespace Findx.Discovery.Consul
             }
         }
 
-        public async Task<IList<string>> GetServicesAsync(string group = null, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<string>> GetServicesAsync(string group = null, CancellationToken cancellationToken = default)
         {
             var result = await _client.Catalog.Services(QueryOptions.Default, cancellationToken).ConfigureAwait(false);
             var response = result.Response;
-            return response.Keys.ToList();
+            return response.Keys.AsEnumerable();
         }
     }
 }

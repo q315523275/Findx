@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-
+using System.Collections.Generic;
 namespace Findx.Security
 {
     /// <summary>
@@ -50,7 +50,7 @@ namespace Findx.Security
         /// <summary>
         /// 角色列表
         /// </summary>
-        string[] Roles { get; }
+        IEnumerable<string> Roles { get; }
 
         /// <summary>
         /// 查找声明
@@ -62,12 +62,12 @@ namespace Findx.Security
         /// 查找声明列表
         /// </summary>
         /// <param name="claimType">声明类型</param>
-        Claim[] FindClaims(string claimType);
+        IEnumerable<Claim> FindClaims(string claimType);
 
         /// <summary>
         /// 获取所有声明列表
         /// </summary>
-        Claim[] GetAllClaims();
+        IEnumerable<Claim> GetAllClaims();
 
         /// <summary>
         /// 是否包含指定角色

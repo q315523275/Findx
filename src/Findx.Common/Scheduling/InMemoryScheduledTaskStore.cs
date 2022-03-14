@@ -29,21 +29,20 @@ namespace Findx.Scheduling
         /// </summary>
         /// <param name="maxResultCount"></param>
         /// <returns></returns>
-        public Task<List<SchedulerTaskInfo>> GetShouldRunTasksAsync(int maxResultCount)
+        public Task<IEnumerable<SchedulerTaskInfo>> GetShouldRunTasksAsync(int maxResultCount)
         {
             var referenceTime = DateTimeOffset.UtcNow.LocalDateTime;
             var tasksThatShouldRun = _tasks.Select(x => x.Value)
                                            .Where(t => t.ShouldRun(referenceTime))
                                            .OrderBy(t => t.TryCount)
                                            .ThenBy(t => t.NextRunTime)
-                                           .Take(maxResultCount)
-                                           .ToList();
+                                           .Take(maxResultCount);
             return Task.FromResult(tasksThatShouldRun);
         }
 
-        public Task<List<SchedulerTaskInfo>> GetTasksAsync()
+        public Task<IEnumerable<SchedulerTaskInfo>> GetTasksAsync()
         {
-            return Task.FromResult(_tasks.Select(x => x.Value).ToList());
+            return Task.FromResult(_tasks.Select(x => x.Value));
         }
 
         public Task InsertAsync(SchedulerTaskInfo taskInfo)

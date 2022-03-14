@@ -81,5 +81,13 @@ namespace Findx.Module.Admin.Models
         /// </summary>
         [Column(Name = "validate_code")]
         public string ValidateCode { get; set; }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public override void Init()
+        {
+            Id = Findx.Utils.SnowflakeId.Default().NextId();
+        }
     }
 }

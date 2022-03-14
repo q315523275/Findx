@@ -87,5 +87,13 @@ namespace Findx.Module.Admin.Models
         /// </summary>
         [Column(Name = "create_user")]
         public long? CreateUser { get; set; }
+
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        public override void Init()
+        {
+            Id = Findx.Utils.SnowflakeId.Default().NextId();
+        }
     }
 }

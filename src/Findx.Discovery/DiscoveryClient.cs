@@ -79,7 +79,7 @@ namespace Findx.Discovery.Consul
             return instances;
         }
 
-        public Task<IList<string>> GetServicesAsync(string group = null, CancellationToken cancellationToken = default)
+        public Task<IEnumerable<string>> GetServicesAsync(string group = null, CancellationToken cancellationToken = default)
         {
             return _serviceInstanceProvider.GetServicesAsync(group, cancellationToken);
         }

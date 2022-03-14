@@ -38,11 +38,11 @@ namespace Findx.Scheduling
         /// </summary>
         /// <param name="maxResultCount"></param>
         /// <returns></returns>
-        Task<List<SchedulerTaskInfo>> GetShouldRunTasksAsync(int maxResultCount);
+        Task<IEnumerable<SchedulerTaskInfo>> GetShouldRunTasksAsync(int maxResultCount);
         /// <summary>
         /// 查询所有任务
         /// </summary>
         /// <returns></returns>
-        Task<List<SchedulerTaskInfo>> GetTasksAsync();
+        Task<IEnumerable<SchedulerTaskInfo>> GetTasksAsync();
     }
 }

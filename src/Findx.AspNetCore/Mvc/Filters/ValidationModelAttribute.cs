@@ -22,7 +22,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             {
                 var errors = context.ModelState
                                     .Where(e => e.Value.Errors.Count > 0)
-                                    .Select(e => new ErrorMember() { ErrorMemberName = e.Key, ErrorMessage = e.Value.Errors.First().ErrorMessage }).ToList();
+                                    .Select(e => new ErrorMember() { ErrorMemberName = e.Key, ErrorMessage = e.Value.Errors.First().ErrorMessage });
 
                 context.Result = new JsonResult(CommonResult.Fail("4001", "参数校验不通过", errors));
             }

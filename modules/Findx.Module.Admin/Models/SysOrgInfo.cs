@@ -100,6 +100,14 @@ namespace Findx.Module.Admin.Models
 
 		//[Column(Name = "delete_user")]
 		//public long? DeleteUser { get; set; }
+
+		/// <summary>
+		/// 初始化
+		/// </summary>
+		public override void Init()
+		{
+			Id = Findx.Utils.SnowflakeId.Default().NextId();
+		}
 	}
 
 }
