@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
@@ -55,7 +55,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B66E551E-181
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "module", "module", "{8F3EC254-3200-46DB-9193-030B91CB04F5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Module.Admin", "modules\Findx.Module.Admin\Findx.Module.Admin.csproj", "{EA4A50E7-B551-4A68-84B0-A968F9C66E6C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Module.Admin.Sys", "modules\Findx.Module.Admin.Sys\Findx.Module.Admin.Sys.csproj", "{EA4A50E7-B551-4A68-84B0-A968F9C66E6C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Module.WebHost", "modules\Findx.Module.WebHost\Findx.Module.WebHost.csproj", "{7D390E7B-9903-427B-85E5-4780ABDB3CA2}"
 EndProject
@@ -63,9 +63,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.WebApiClient", "src\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Module.Configuration", "modules\Findx.Module.Configuration\Findx.Module.Configuration.csproj", "{1D550AB6-213F-4CA0-A5E3-FB8D878A9F5F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{87162ED3-C83B-4589-8E21-6F55514343B9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Castle", "src\Findx.Castle\Findx.Castle.csproj", "{FFDFE502-0888-4B4E-93D9-F35EC77875D2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Module.Admin.Cms", "modules\Findx.Module.Admin.Cms\Findx.Module.Admin.Cms.csproj", "{C105B238-E8CC-4FF6-A799-4D2A72291803}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -189,6 +189,10 @@ Global
 		{FFDFE502-0888-4B4E-93D9-F35EC77875D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFDFE502-0888-4B4E-93D9-F35EC77875D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFDFE502-0888-4B4E-93D9-F35EC77875D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C105B238-E8CC-4FF6-A799-4D2A72291803}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C105B238-E8CC-4FF6-A799-4D2A72291803}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C105B238-E8CC-4FF6-A799-4D2A72291803}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C105B238-E8CC-4FF6-A799-4D2A72291803}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -223,6 +227,7 @@ Global
 		{669FD454-BE9D-4F3F-9EBA-CF89E921D5BF} = {B66E551E-1813-4080-BC15-E2D9888B8308}
 		{1D550AB6-213F-4CA0-A5E3-FB8D878A9F5F} = {8F3EC254-3200-46DB-9193-030B91CB04F5}
 		{FFDFE502-0888-4B4E-93D9-F35EC77875D2} = {B66E551E-1813-4080-BC15-E2D9888B8308}
+		{C105B238-E8CC-4FF6-A799-4D2A72291803} = {8F3EC254-3200-46DB-9193-030B91CB04F5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7630DAB2-2CEC-407B-81D8-220E7EF09F33}

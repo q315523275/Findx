@@ -88,7 +88,6 @@ namespace Findx.ImageSharp
         /// 合并图片
         /// </summary>
         /// <param name="byteData">图片字节数组</param>
-        /// <param name="fileExt">图片扩展名</param>
         /// <param name="mergeImagePath">合并图片物理路径</param>
         /// <param name="X">X轴</param>
         /// <param name="Y">Y轴</param>
@@ -121,10 +120,7 @@ namespace Findx.ImageSharp
         /// 绘制多行文本
         /// </summary>
         /// <param name="byteData"></param>
-        /// <param name="fileExt"></param>
         /// <param name="text"></param>
-        /// <param name="fontFamilyPath">字体资源路径</param>
-        /// <param name="fontSize"></param>
         /// <param name="X"></param>
         /// <param name="Y"></param>
         /// <returns></returns>
@@ -240,11 +236,8 @@ namespace Findx.ImageSharp
         /// 文字水印
         /// </summary>
         /// <param name="byteData">图片字节数组</param>
-        /// <param name="fileExt">图片扩展名</param>
         /// <param name="text">水印文字</param>
         /// <param name="location">图片水印位置 0=不使用 1=左上 2=中上 3=右上 4=左中  9=右下</param>
-        /// <param name="fontName">字体</param>
-        /// <param name="fontSize">字体大小</param>
         /// <returns></returns>
         public byte[] LetterWatermark(byte[] byteData, string text, int location, FontOptions fontOptions)
         {

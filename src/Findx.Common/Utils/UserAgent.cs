@@ -78,7 +78,7 @@ namespace Findx.Utils
         public string GetSystem()
         {
             string agent = _userAgent;
-            string[] tokens = { "Windows", "Android", "iPhone" };
+            string[] tokens = { "Windows", "Android", "iPhone", "Mac", "Linux" };
             foreach (string token in tokens)
             {
                 string system = GetSystemString(agent, token);

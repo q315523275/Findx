@@ -17,6 +17,8 @@ namespace Findx.Security.Authorization
         {
             IServiceProvider provider = context.RequestServices;
 
+            string path = context.Request.Path;
+
             string area = context.GetAreaName(),
                 controller = context.GetControllerName(),
                 action = context.GetActionName();

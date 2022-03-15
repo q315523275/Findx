@@ -1,5 +1,6 @@
 ﻿using Findx.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -13,11 +14,10 @@ namespace Findx.Security.Authorization
         private readonly IOptions<AuthorizationOptions> _options;
         private readonly IPermissionStore _store;
 
-        public MvcPermissionHandler(IServiceProvider _provider, ApplicationPartManager _partManager, IMethodInfoFinder _methodInfoFinder, IOptions<AuthorizationOptions> options, IEnumerable<IPermissionStore> stores)
+        public MvcPermissionHandler(IServiceProvider _provider, IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider, IOptions<AuthorizationOptions> options, IEnumerable<IPermissionStore> stores)
         {
             base.ServiceProvider = _provider;
-            base.PartManager = _partManager;
-            base.MethodInfoFinder = _methodInfoFinder;
+            base.ActionDescriptorCollectionProvider = _actionDescriptorCollectionProvider;
 
             _options = options;
             _store = stores.FirstOrDefault(it => it.PermissionStoreType == options.Value.PermissionStoreType);

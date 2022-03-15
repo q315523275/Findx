@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,12 +41,17 @@ namespace Findx.Security.Authorization
         /// <summary>
         /// 应用程序部分管理
         /// </summary>
-        public ApplicationPartManager PartManager { get; set; }
+        /// public ApplicationPartManager PartManager { get; set; }
+
+        /// <summary>
+        /// 应用程序Action集合提供器
+        /// </summary>
+        public IActionDescriptorCollectionProvider ActionDescriptorCollectionProvider { set; get; }
 
         /// <summary>
         /// 方法查询器
         /// </summary>
-        public IMethodInfoFinder MethodInfoFinder { get; set; }
+        /// public IMethodInfoFinder MethodInfoFinder { get; set; }
 
         /// <summary>
         /// 服务提供器
@@ -57,8 +63,8 @@ namespace Findx.Security.Authorization
         /// </summary>
         public void Initialize()
         {
-            Check.NotNull(PartManager, nameof(PartManager));
-            Check.NotNull(MethodInfoFinder, nameof(MethodInfoFinder));
+            // Check.NotNull(PartManager, nameof(PartManager));
+            // Check.NotNull(MethodInfoFinder, nameof(MethodInfoFinder));
             Check.NotNull(ServiceProvider, nameof(ServiceProvider));
 
             List<Permission> permissions = GetPermissions();
@@ -99,69 +105,58 @@ namespace Findx.Security.Authorization
         /// <returns></returns>
         protected virtual List<Permission> GetPermissions()
         {
-            ControllerFeature controllerFeature = new();
-            PartManager.PopulateFeature(controllerFeature);
-            IList<TypeInfo> controllerTypes = controllerFeature.Controllers;
-            foreach (TypeInfo typeInfo in controllerTypes)
+            //ControllerFeature controllerFeature = new();
+            //PartManager.PopulateFeature(controllerFeature);
+            //IList<TypeInfo> controllerTypes = controllerFeature.Controllers;
+
+            foreach(var item in ActionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>())
             {
-                if (typeInfo.IsAbstract || !typeInfo.IsPublic)
+                var routeValues = item.RouteValues;
+                var area = routeValues["area"];
+                var typePermission = _permissions.FirstOrDefault(x => x.IsController == true && x.Area == area && x.Controller == item.ControllerName);
+                if (typePermission == null)
                 {
-                    continue;
-                }
-                AuthorizeAttribute authorize = typeInfo.GetAttribute<AuthorizeAttribute>();
-                PermiessionAccessType typeAccessType = authorize == null ? PermiessionAccessType.Anonymous :
-                       authorize.Roles.IsNullOrWhiteSpace() ? PermiessionAccessType.Login : PermiessionAccessType.RoleLimit;
-                Permission typePermission = new()
-                {
-                    Name = typeInfo.GetDescription(),
-                    Area = GetArea(typeInfo),
-                    Controller = typeInfo.Name.Replace("ControllerBase", string.Empty).Replace("Controller", string.Empty),
-                    IsController = true,
-                    AccessType = typeAccessType,
-                    Roles = authorize?.Roles
-                };
-                _permissions.Add(typePermission);
-
-                var methods = MethodInfoFinder.FindAll(typeInfo);
-                foreach (MemberInfo method in methods)
-                {
-                    if (!method.CustomAttributes.Any(m =>
-                            m.AttributeType == typeof(HttpGetAttribute)
-                            || m.AttributeType == typeof(HttpPostAttribute)
-                            || m.AttributeType == typeof(HttpPutAttribute)
-                            || m.AttributeType == typeof(HttpOptionsAttribute)
-                            || m.AttributeType == typeof(HttpHeadAttribute)
-                            || m.AttributeType == typeof(HttpPatchAttribute)
-                            || m.AttributeType == typeof(HttpDeleteAttribute)))
+                    var typeInfo = item.ControllerTypeInfo;
+                    AuthorizeAttribute authorize = typeInfo.GetAttribute<AuthorizeAttribute>();
+                    PermiessionAccessType typeAccessType = authorize == null ? PermiessionAccessType.Anonymous :
+                           authorize.Roles.IsNullOrWhiteSpace() ? PermiessionAccessType.Login : PermiessionAccessType.RoleLimit;
+                    typePermission = new Permission()
                     {
-                        continue;
-                    }
-
-                    AuthorizeAttribute methodAuthorize = method.GetAttribute<AuthorizeAttribute>();
-                    PermiessionAccessType methodAccessType = method.HasAttribute<AllowAnonymousAttribute>()
-                                                    ? PermiessionAccessType.Anonymous
-                                                    : methodAuthorize == null
-                                                    ? typeAccessType
-                                                    : methodAuthorize.Roles.IsNullOrWhiteSpace()
-                                                    ? PermiessionAccessType.Login : PermiessionAccessType.RoleLimit;
-                    string actionRoles = methodAccessType == PermiessionAccessType.RoleLimit
-                                                    ? methodAuthorize == null
-                                                    ? authorize?.Roles : methodAuthorize?.Roles
-                                                    : null;
-                    Permission MemberPermission = new()
-                    {
-                        Name = $"{typePermission.Name}-{method.GetDescription()}",
-                        Area = typePermission.Area,
-                        Controller = typePermission.Controller,
-                        Action = method.Name,
-                        AccessType = methodAccessType,
-                        IsController = false,
-                        Roles = actionRoles
+                        Name = typeInfo.GetDescription(),
+                        Area = routeValues["area"],
+                        Controller = item.ControllerName,
+                        IsController = true,
+                        AccessType = typeAccessType,
+                        Roles = authorize?.Roles
                     };
-
-                    _permissions.Add(MemberPermission);
+                    _permissions.Add(typePermission);
                 }
-            }
+
+                // Action
+                AuthorizeAttribute methodAuthorize = item.MethodInfo.GetAttribute<AuthorizeAttribute>();
+                PermiessionAccessType methodAccessType = item.MethodInfo.HasAttribute<AllowAnonymousAttribute>()
+                                                ? PermiessionAccessType.Anonymous
+                                                : methodAuthorize == null
+                                                ? typePermission.AccessType
+                                                : methodAuthorize.Roles.IsNullOrWhiteSpace()
+                                                ? PermiessionAccessType.Login : PermiessionAccessType.RoleLimit;
+                string actionRoles = methodAccessType == PermiessionAccessType.RoleLimit
+                                                ? methodAuthorize == null
+                                                ? typePermission.Roles : methodAuthorize?.Roles
+                                                : null;
+                Permission MemberPermission = new()
+                {
+                    Name = $"{typePermission.Name}-{item.MethodInfo.GetDescription()}",
+                    Area = typePermission.Area,
+                    Controller = typePermission.Controller,
+                    Action = item.ActionName,
+                    AccessType = methodAccessType,
+                    IsController = false,
+                    Roles = actionRoles
+                };
+
+                _permissions.Add(MemberPermission);
+            }          
             return _permissions;
         }
 

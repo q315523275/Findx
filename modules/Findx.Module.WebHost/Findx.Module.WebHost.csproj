@@ -5,10 +5,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Findx.Mapster\Findx.Mapster.csproj" />
-    <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
-    <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
-    <ProjectReference Include="..\Findx.Module.Admin\Findx.Module.Admin.csproj" />
+    <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Findx.Module.Admin.Sys\Findx.Module.Admin.Sys.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\Findx.Module.Admin.Cms\Findx.Module.Admin.Cms.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Findx.Mapster\Findx.Mapster.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Findx.MailKit\Findx.MailKit.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Findx.Log4Net\Findx.Log4Net.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
   </ItemGroup>
-
 </Project>
