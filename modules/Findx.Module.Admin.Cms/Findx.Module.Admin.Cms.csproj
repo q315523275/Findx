@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <None Remove="Models\" />
+	  <None Remove="Areas\" />
+	  <None Remove="Areas\Cms\" />
+	  <None Remove="DTO\" />
+	  <None Remove="Areas\Cms\Controller\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Models\" />
+	  <Folder Include="Areas\" />
+	  <Folder Include="Areas\Cms\" />
+	  <Folder Include="DTO\" />
+	  <Folder Include="Areas\Cms\Controller\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
+	  <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+	  <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
+	</ItemGroup>
+</Project>

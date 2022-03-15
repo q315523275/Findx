@@ -1,0 +1,63 @@
+﻿using System;
+using System.Threading.Tasks;
+using Findx.AspNetCore.Mvc;
+using Findx.Data;
+using Findx.Module.Admin.Captcha;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Findx.Module.Admin.Areas.Sys.Controllers
+{
+	/// <summary>
+	/// 验证码
+	/// </summary>
+	[Area("api/sys")]
+	[Route("[area]/captcha")]
+	[ApiExplorerSettings(GroupName = "system")]
+	public class CaptchaController : AreaApiControllerBase
+	{
+		private readonly IClickWordCaptcha _captchaHandle; // 验证码服务
+
+		/// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="captchaHandle"></param>
+        public CaptchaController(IClickWordCaptcha captchaHandle)
+        {
+            _captchaHandle = captchaHandle;
+        }
+
+        /// <summary>
+        /// 是否开启验证码验证
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("getCaptchaOpen")]
+		public CommonResult GetCaptchaOpen()
+        {
+			return CommonResult.Success(true);
+        }
+
+		/// <summary>
+		/// 验证码形式
+		/// </summary>
+		/// <returns></returns>
+		[HttpPost("get")]
+		public async Task<ClickWordCaptchaResult> GetCaptchaType()
+		{
+			// 图片大小要与前端保持一致（坐标范围）
+			return await _captchaHandle.CreateCaptchaImage(_captchaHandle.RandomCode(4), 310, 155);
+		}
+
+		/// <summary>
+		/// 校验验证码
+		/// </summary>
+		/// <param name="input"></param>
+		/// <returns></returns>
+		[HttpPost("check")]
+		public async Task<ClickWordCaptchaResult> VerificationCode(ClickWordCaptchaRequest input)
+		{
+			return await _captchaHandle.CheckCode(input);
+		}
+	}
+}
+
