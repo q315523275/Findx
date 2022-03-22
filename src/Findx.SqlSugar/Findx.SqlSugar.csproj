@@ -2,14 +2,14 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
-		<Version>1.5.3</Version>
+		<Version>1.5.8</Version>
 		<Description>SqlSugar ORM组件</Description>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="SqlSugarCore" Version="5.0.5.9" />
+	  <PackageReference Include="SqlSugarCore" Version="5.0.6.1" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -11,6 +11,7 @@
 	<ItemGroup>
 		<None Remove="fonts\Breo.ttf" />
 		<None Remove="fonts\actionj.ttf" />
+		<None Remove="SixLabors.ImageSharp.Drawing" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -19,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+		<PackageReference Include="SixLabors.ImageSharp" Version="2.1.0" />
 		<PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta13" />
 	</ItemGroup>
 
