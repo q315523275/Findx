@@ -1,4 +1,4 @@
-﻿namespace Findx.Module.Admin.DTO
+﻿namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 附属机构和职位参数

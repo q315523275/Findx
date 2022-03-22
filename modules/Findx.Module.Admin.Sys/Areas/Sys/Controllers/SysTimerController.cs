@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Findx.Data;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Scheduling;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 登录用户信息DTO模型

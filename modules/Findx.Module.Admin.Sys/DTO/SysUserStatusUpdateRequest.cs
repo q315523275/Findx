@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 更新用户状态入参

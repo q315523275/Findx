@@ -1,4 +1,6 @@
-﻿namespace Findx.Security.Authorization
+﻿using System.Threading.Tasks;
+
+namespace Findx.Security.Authorization
 {
     /// <summary>
     /// 权限处理器
@@ -8,7 +10,7 @@
         /// <summary>
         /// 初始化权限资源
         /// </summary>
-        void Initialize();
+        Task InitializeAsync();
 
         /// <summary>
         /// 刷新功能信息缓存

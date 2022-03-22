@@ -26,7 +26,7 @@ namespace Findx.Module.Cms.Models
         /// 类别ID
         /// </summary>
         [Column(Name = "category_id")]
-        public int CategoryId { get; set; }
+        public long CategoryId { get; set; }
 
         /// <summary>
         /// 标题
@@ -128,7 +128,7 @@ namespace Findx.Module.Cms.Models
         /// 创建时间
         /// </summary>
         [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime CreateTime { get; set; }
+        public DateTime? CreateTime { get; set; }
 
         /// <summary>
         /// 创建人

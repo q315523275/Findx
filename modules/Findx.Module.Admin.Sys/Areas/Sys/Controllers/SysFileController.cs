@@ -4,7 +4,7 @@ using Findx.AspNetCore.Upload.Params;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Enum;
 using Findx.Module.Admin.Models;
 using Findx.Security;
@@ -58,13 +58,16 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             var repo = GetRepository<SysFileInfo>();
 
             var file = await repo.GetAsync(id);
-            Check.NotNull(file, nameof(file));
+            if (file == null)
+                return new JsonResult(CommonResult.Fail("f004", "文件数据缺失"));
+
             var fileName = HttpUtility.UrlEncode(file.FileOriginName, Encoding.GetEncoding("UTF-8"));
 
             switch (file.FileLocation)
             {
                 default:
                     var path = Path.Combine(_instanceInfo.RootPath, file.FilePath);
+                    if (!System.IO.File.Exists(path)) return new JsonResult(CommonResult.Fail("f004", "文件缺失"));
                     return new FileStreamResult(new FileStream(path, FileMode.Open), "application/octet-stream") { FileDownloadName = fileName };
             }
         }
@@ -75,6 +78,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("preview")]
+        [AllowAnonymous]
         public async Task<IActionResult> PreviewFileInfo([FromQuery, Required] string id)
         {
             return await DownloadFileInfo(id);

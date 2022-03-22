@@ -24,10 +24,16 @@ namespace Findx.Module.Cms.Models
         public int ChannelId { get; set; }
 
         /// <summary>
-        /// 所属父类
+		/// 父id
+		/// </summary>
+		[Column(Name = "pid")]
+        public long Pid { get; set; }
+
+        /// <summary>
+        /// 父ids
         /// </summary>
-        [Column(Name = "parent_id")]
-        public long ParentId { get; set; } = 0;
+        [Column(Name = "pids", DbType = "text")]
+        public string Pids { get; set; }
 
         /// <summary>
         /// 调用别名
@@ -99,7 +105,7 @@ namespace Findx.Module.Cms.Models
         /// 创建时间
         /// </summary>
         [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime CreateTime { get; set; }
+        public DateTime? CreateTime { get; set; }
 
         /// <summary>
         /// 创建人

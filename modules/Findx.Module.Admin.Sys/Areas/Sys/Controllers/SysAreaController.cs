@@ -1,5 +1,5 @@
 ﻿using Findx.AspNetCore.Mvc;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Models;
 using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;

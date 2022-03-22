@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 员工信息参数

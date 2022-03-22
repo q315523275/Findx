@@ -2,7 +2,7 @@
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Models;
 using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;

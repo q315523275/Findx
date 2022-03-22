@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 操作日志查询

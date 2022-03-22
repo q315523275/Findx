@@ -32,7 +32,7 @@ namespace Findx.Module.Admin.Models
         /// 创建时间
         /// </summary>
         [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime CreateTime { get; set; }
+        public DateTime? CreateTime { get; set; }
 
         /// <summary>
         /// 创建人

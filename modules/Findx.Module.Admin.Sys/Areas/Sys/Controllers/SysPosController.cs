@@ -3,7 +3,7 @@ using Findx.Data;
 using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Linq;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Enum;
 using Findx.Module.Admin.Models;
 using Findx.Security;

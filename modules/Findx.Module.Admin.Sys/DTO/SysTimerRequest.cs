@@ -1,5 +1,5 @@
 ﻿using System;
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
 	/// <summary>
     /// 定时任务请求入参

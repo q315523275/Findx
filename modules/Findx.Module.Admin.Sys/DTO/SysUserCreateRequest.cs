@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 更新用户信息
@@ -35,6 +35,7 @@ namespace Findx.Module.Admin.DTO
         /// <summary>
         /// 姓名
         /// </summary>
+        [Required(ErrorMessage = "姓名不能为空")]
         public string Name { get; set; }
 
         /// <summary>
@@ -60,6 +61,7 @@ namespace Findx.Module.Admin.DTO
         /// <summary>
         /// 手机
         /// </summary>
+        [Required(ErrorMessage = "手机不能为空")]
         public string Phone { get; set; }
 
         /// <summary>
@@ -76,6 +78,7 @@ namespace Findx.Module.Admin.DTO
         /// <summary>
         /// 员工信息
         /// </summary>
+        [Required(ErrorMessage = "员工信息不能为空")]
         public SysUserEmpRequest SysEmpParam { get; set; } = new SysUserEmpRequest();
     }
 }

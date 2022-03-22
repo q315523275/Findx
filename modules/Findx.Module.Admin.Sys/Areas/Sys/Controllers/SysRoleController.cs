@@ -4,11 +4,15 @@ using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Linq;
 using Findx.Extensions;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Findx.Module.Admin.Sys.Filters;
+using Findx.Security;
+using Findx.Module.Admin.Enum;
+using System.Linq;
 
 namespace Findx.Module.Admin.Areas.Sys.Controllers
 {
@@ -98,9 +102,41 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         /// 设置角色数据范围
         /// </summary>
         /// <returns></returns>
+        [DataScope]
         [HttpPost("grantData")]
-        public CommonResult GrantData([FromBody] SysRoleGrantDataRequest req)
+        public CommonResult GrantData([FromBody] SysRoleGrantDataRequest req, [FromServices] ICurrentUser currentUser)
         {
+            // 如果登录用户不是超级管理员，则进行数据权限校验
+            if (!currentUser.IsSuperAdmin())
+            {
+                var dataScopeType = req.DataScopeType;
+                // 如果授权的角色的数据范围类型为全部，则没权限，只有超级管理员有
+                if (DataScopeTypeEnum.ALL.To<int>() == dataScopeType)
+                {
+                    return CommonResult.Fail("D4003", "没有权限操作该数据，请联系管理员");
+                }
+                // 如果授权的角色数据范围类型为自定义，则要判断授权的数据范围是否在自己的数据范围内
+                if (DataScopeTypeEnum.DEFINE.To<int>() == dataScopeType)
+                {
+                    List<long> dataScope = currentUser.DataScope();
+                    // 要授权的数据范围列表
+                    List<long> grantOrgIdList = req.GrantOrgIdList;
+                    if (!grantOrgIdList.IsNullOrEmpty())
+                    {
+                        // 数据范围为空
+                        if (dataScope.IsNullOrEmpty())
+                        {
+                            return CommonResult.Fail("D4003", "没有权限操作该数据，请联系管理员");
+                        }
+                        else if (dataScope.Except(grantOrgIdList).Any()) // 存在差集
+                        {
+                            // 所要授权的数据不在自己的数据范围内
+                            return CommonResult.Fail("D4003", "没有权限操作该数据，请联系管理员");
+                        }
+                    }
+                }
+            }
+
             var repo_role = GetRepository<SysRoleInfo>();
             var repo_data = GetRepository<SysRoleDataScopeInfo>();
 

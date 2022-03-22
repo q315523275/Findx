@@ -1,7 +1,7 @@
 ﻿using System;
 using Findx.Data;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
 	/// <summary>
     /// 角色操作入参

@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 更新用户信息参数
@@ -46,7 +46,6 @@ namespace Findx.Module.Admin.DTO
         /// <summary>
         /// 邮箱
         /// </summary>
-        [Required(ErrorMessage = "邮箱不能为空")]
         public string Email { get; set; }
 
         /// <summary>

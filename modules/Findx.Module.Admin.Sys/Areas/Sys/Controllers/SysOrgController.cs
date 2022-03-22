@@ -3,7 +3,7 @@ using Findx.Data;
 using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Linq;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Enum;
 using Findx.Module.Admin.Models;
 using Findx.Module.Admin.Const;
@@ -16,18 +16,58 @@ using System.Linq;
 using System.Threading.Tasks;
 using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Findx.Module.Admin.Sys.Filters;
 
 namespace Findx.Module.Admin.Areas.Sys.Controllers
 {
     /// <summary>
     /// 系统组织机构
     /// </summary>
+    [DataScope]
     [Area("api/sys")]
     [Route("[area]/sysOrg")]
     [ApiExplorerSettings(GroupName = "system")]
     [Authorize(Policy = PermissionRequirement.Policy, Roles = "admin")]
     public class SysOrgController : CrudControllerBase<SysOrgInfo, SysOrgInfo, SysOrgRequest, SysOrgRequest, SysOrgQuery, long, long>
     {
+        private readonly ICurrentUser _currentUser;
+
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="currentUser"></param>
+        public SysOrgController(ICurrentUser currentUser)
+        {
+            _currentUser = currentUser;
+        }
+
+        /// <summary>
+        /// 构建数据范围
+        /// </summary>
+        /// <returns></returns>
+        private List<long> CreateDataScopes()
+        {
+            var dataScopes = _currentUser.DataScope();
+            var dataScopes2 = new List<long>();
+            // 此处获取所有的上级节点，放入set，用于构造完整树
+            var repo = GetRepository<SysOrgInfo>();
+            foreach (var item in dataScopes)
+            {
+                var model = repo.Get(item);
+                string pids = model.Pids;
+                string pidsWithRightSymbol = pids.Replace(SymbolConst.LEFT_SQUARE_BRACKETS, "");
+                string pidsNormal = pidsWithRightSymbol.Replace(SymbolConst.RIGHT_SQUARE_BRACKETS, "");
+                string[] pidsNormalArr = pidsNormal.Split(SymbolConst.COMMA);
+                foreach (string pid in pidsNormalArr)
+                {
+                    if (!pid.IsNullOrWhiteSpace())
+                        dataScopes2.Add(pid.To<long>());
+                }
+            }
+            dataScopes.AddRange(dataScopes2);
+            return dataScopes;
+        }
+
         /// <summary>
         /// 构建查询条件
         /// </summary>
@@ -35,7 +75,13 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         /// <returns></returns>
         protected override Expressionable<SysOrgInfo> CreatePageWhereExpression(SysOrgQuery request)
         {
-            return ExpressionBuilder.Create<SysOrgInfo>().AndIF(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
+            var dataScopes = new List<long>();
+            if (!_currentUser.IsSuperAdmin())
+            {
+                dataScopes = CreateDataScopes();
+            }
+            return ExpressionBuilder.Create<SysOrgInfo>().AndIF(!_currentUser.IsSuperAdmin(), x => dataScopes.Contains(x.Id))
+                                                         .AndIF(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
                                                          .AndIF(!request.Pid.IsNullOrWhiteSpace(), x => x.Pids.Contains(request.Pid) || x.Id == request.Pid.To<long>());
         }
 
@@ -63,62 +109,16 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         public CommonResult Tree([FromServices] IFreeSql fsql, [FromServices] ICurrentUser currentUser)
         {
             var userId = currentUser.UserId.To<long>();
-
             var dataScopes = new List<long>();
             if (!currentUser.IsSuperAdmin())
             {
-                var empInfo = fsql.Select<SysEmpInfo>(userId).First();
-                dataScopes = fsql.Select<SysUserDataScopeInfo>().Where(it => it.UserId == userId).ToList(it => it.OrgId); // 用户直接分配范围
-                var roles = fsql.Select<SysRoleInfo, SysUserRoleInfo>().InnerJoin((a, b) => a.Id == b.RoleId && b.UserId == userId).Where((a, b) => a.Status == 0)
-                                .ToList((a, b) => new { a.Id, a.Name, a.Code, a.DataScopeType });
-                var roleIdList = roles.Select(it => it.Id).ToList();
-                if (empInfo != null && roles.Count > 0)
-                {
-                    var customDataScopeRoleIdList = new List<long>();
-                    var strongerDataScopeType = DataScopeTypeEnum.SELF.To<int>();
-                    foreach (var sysRole in roles)
-                    {
-                        if (DataScopeTypeEnum.DEFINE.To<int>() == sysRole.DataScopeType)
-                        {
-                            customDataScopeRoleIdList.Add(sysRole.Id);
-                        }
-                        else
-                        {
-                            if (sysRole.DataScopeType <= strongerDataScopeType)
-                            {
-                                strongerDataScopeType = sysRole.DataScopeType;
-                            }
-                        }
-                    }
-                    // 自定义数据范围的角色对应的数据范围
-                    var dataScopes2 = fsql.Select<SysRoleDataScopeInfo>().Where(it => customDataScopeRoleIdList.Contains(it.RoleId)).ToList(it => it.OrgId);
-                    // 角色中拥有最大数据范围类型的数据范围
-                    var dataScopes3 = new List<long>();
-                    // 如果是范围类型是全部数据，则获取当前系统所有的组织架构id
-                    if (DataScopeTypeEnum.ALL.To<int>() == strongerDataScopeType)
-                    {
-                        dataScopes3 = fsql.Select<SysOrgInfo>().Where(it => it.Status == 0).ToList(it => it.Id);
-                    }
-                    // 如果范围类型是本部门及以下部门，则查询本节点和子节点集合，包含本节点
-                    else if (DataScopeTypeEnum.DEPT_WITH_CHILD.To<int>() == strongerDataScopeType)
-                    {
-                        var likeValue = $"{SymbolConst.LEFT_SQUARE_BRACKETS}{empInfo.OrgId}{SymbolConst.RIGHT_SQUARE_BRACKETS}";
-                        dataScopes3 = fsql.Select<SysOrgInfo>().Where(it => it.Pids.Contains(likeValue) && it.Status == 0).ToList(it => it.Id);
-                    }
-                    // 如果数据范围是本部门，不含子节点，则直接返回本部门
-                    else if (DataScopeTypeEnum.DEPT.To<int>() == strongerDataScopeType)
-                    {
-                        dataScopes3.Add(empInfo.OrgId);
-                    }
-                    dataScopes.AddRange(dataScopes2);
-                    dataScopes.AddRange(dataScopes3);
-                }
+                dataScopes = CreateDataScopes();
             }
 
             var orgList = fsql.Select<SysOrgInfo>()
-                              .WhereIf(dataScopes.Count > 0, x => dataScopes.Contains(x.Id))
+                              .WhereIf(!currentUser.IsSuperAdmin(), x => dataScopes.Contains(x.Id))
                               .Where(x => x.Status == 0).OrderBy(x => x.Sort)
-                              .ToList(x => new OrgTreeNode
+                              .ToList(x => new SysOrgTreeNode
                               {
                                   Id = x.Id,
                                   ParentId = x.Pid,
@@ -127,7 +127,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                                   Weight = x.Sort
                               });
 
-            return CommonResult.Success(new TreeBuilder<OrgTreeNode, long>().Build(orgList, 0));
+            return CommonResult.Success(new TreeBuilder<SysOrgTreeNode, long>().Build(orgList, 0));
         }
 
         /// <summary>
@@ -150,11 +150,39 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             }
         }
 
+        /// <summary>
+        /// 新增前操作
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <exception cref="FindxException"></exception>
         protected override async Task AddBeforeAsync(SysOrgInfo model)
         {
-            var repo = GetRepository<SysOrgInfo>();
-            var currentUser = GetService<ICurrentUser>();
+            if (!_currentUser.IsSuperAdmin())
+            {
+                // 如果新增的机构父id不是0，则进行数据权限校验
+                if (model.Pid != 0L)
+                {
+                    List<long> dataScope = _currentUser.DataScope();
+                    // 数据范围为空
+                    if (dataScope.IsEmpty())
+                    {
+                        throw new FindxException("D2003", "没有权限操作该数据，请联系管理员");
+                    }
+                    else if (!dataScope.Contains(model.Pid))
+                    {
+                        // 所添加的组织机构的父机构不在自己的数据范围内
+                        throw new FindxException("D2003", "没有权限操作该数据，请联系管理员");
+                    }
+                }
+                else
+                {
+                    // 如果新增的机构父id是0，则根本没权限，只有超级管理员能添加父id为0的节点
+                    throw new FindxException("D2003", "没有权限操作该数据，请联系管理员");
+                }
+            }
 
+            var repo = GetRepository<SysOrgInfo>();
             var isExist = await repo.ExistAsync(u => u.Name == model.Name || u.Code == model.Code);
             if (isExist)
                 throw new FindxException("D2002", "已有相同组织机构,编码或名称相同");
@@ -163,14 +191,74 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             model.Status = CommonStatusEnum.ENABLE.CastTo<int>();
         }
 
-        protected override async Task EditAfterAsync(SysOrgInfo model, int result)
+        /// <summary>
+        /// 编辑前操作
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        /// <exception cref="FindxException"></exception>
+        protected override async Task EditBeforeAsync(SysOrgInfo model)
         {
+            if (!_currentUser.IsSuperAdmin())
+            {
+                List<long> dataScope = _currentUser.DataScope();
+                // 数据范围为空
+                if (dataScope.IsEmpty())
+                {
+                    throw new FindxException("D2003", "没有权限操作该数据，请联系管理员");
+                }
+                // 数据范围中不包含本公司
+                else if (!dataScope.Contains(model.Id))
+                {
+                    throw new FindxException("D2003", "没有权限操作该数据，请联系管理员");
+                }
+            }
+            var repo = GetRepository<SysOrgInfo>();
+            var old = await repo.FirstAsync(u => u.Name == model.Name || u.Code == model.Code);
+            if (old != null && old.Id != model.Id)
+                throw new FindxException("D2002", "已有相同组织机构,编码或名称相同");
+
             model.Pids = await CreateNewPids(model.Pid);
         }
 
-        protected override Task DeleteBeforeAsync(List<DeleteParam<long>> req)
+        /// <summary>
+        /// 删除前操作
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        protected override async Task DeleteBeforeAsync(List<DeleteParam<long>> req)
         {
-            return base.DeleteBeforeAsync(req);
+            var repo = GetRepository<SysEmpInfo>();
+            var repo2 = GetRepository<SysEmpExtOrgPosInfo>();
+            List<long> dataScope = _currentUser.DataScope();
+            foreach (var item in req)
+            {
+                if (!_currentUser.IsSuperAdmin())
+                {
+                    // 数据范围为空
+                    if (dataScope.IsEmpty())
+                    {
+                        throw new FindxException("D2003", "没有权限操作该数据，请联系管理员");
+                    }
+                    else if (!dataScope.Contains(item.Id))
+                    {
+                        // 所操作的数据不在自己的数据范围内
+                        throw new FindxException("D2003", "没有权限操作该数据，请联系管理员");
+                    }
+                }
+                // 该机构下有员工，则不能删
+                bool hasOrgEmp = await repo.ExistAsync(x => x.OrgId == item.Id);
+                if (hasOrgEmp)
+                {
+                    throw new FindxException("D2004", "该机构或子机构下有员工，无法删除");
+                }
+                // 该附属机构下若有员工，则不能删除
+                bool hasExtOrgEmp = await repo2.ExistAsync(x => x.OrgId == item.Id);
+                if (hasExtOrgEmp)
+                {
+                    throw new FindxException("D2004", "该机构或子机构下有员工，无法删除");
+                }
+            }
         }
     }
 }

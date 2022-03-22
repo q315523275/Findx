@@ -1,7 +1,7 @@
 ﻿using Findx.Module.Admin.Enum;
 using System;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 访问日志查询

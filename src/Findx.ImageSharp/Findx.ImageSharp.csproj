@@ -10,10 +10,12 @@
 
 	<ItemGroup>
 		<None Remove="fonts\Breo.ttf" />
+		<None Remove="fonts\actionj.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<EmbeddedResource Include="fonts\Breo.ttf" />
+		<EmbeddedResource Include="fonts\actionj.ttf" />
 	</ItemGroup>
 
 	<ItemGroup>

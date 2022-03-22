@@ -1,7 +1,10 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
+using Findx.Caching;
 using Findx.Data;
+using Findx.Drawing;
 using Findx.Module.Admin.Captcha;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -57,6 +60,16 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
 		public async Task<ClickWordCaptchaResult> VerificationCode(ClickWordCaptchaRequest input)
 		{
 			return await _captchaHandle.CheckCode(input);
+		}
+
+		/// <summary>
+		/// 短信验证码图片
+		/// </summary>
+		/// <returns></returns>
+		[HttpGet("getSmsCaptcha")]
+		public async Task<CommonResult> GetSmsCaptcha([Required, Phone] string mobile)
+		{
+			return CommonResult.Fail("401", "暂时不提供短信服务");
 		}
 	}
 }

@@ -2,12 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 组织机构节点
     /// </summary>
-    public class OrgTreeNode : ITreeNode<long>
+    public class SysOrgTreeNode : ITreeNode<long>
     {
         /// <summary>
         /// Id
@@ -37,7 +37,7 @@ namespace Findx.Module.Admin.DTO
         /// <summary>
         /// 子节点
         /// </summary>
-        public List<OrgTreeNode> Children { get; set; } = new List<OrgTreeNode>();
+        public List<SysOrgTreeNode> Children { get; set; } = new List<SysOrgTreeNode>();
 
         /// <summary>
         /// 上一级Id
@@ -56,7 +56,7 @@ namespace Findx.Module.Admin.DTO
 
         public void SetChildren(IList children)
         {
-            Children = (List<OrgTreeNode>)children;
+            Children = (List<SysOrgTreeNode>)children;
         }
     }
 }

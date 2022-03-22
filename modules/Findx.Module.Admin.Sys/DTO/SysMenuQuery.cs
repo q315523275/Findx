@@ -1,6 +1,6 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 菜单查询入参

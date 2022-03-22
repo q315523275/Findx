@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Findx.Data;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 系统用户通用请求

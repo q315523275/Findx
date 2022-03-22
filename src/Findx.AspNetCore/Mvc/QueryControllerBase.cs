@@ -14,9 +14,22 @@ namespace Findx.AspNetCore.Mvc
     /// <summary>
     /// 通用查询控制器基类
     /// </summary>
-    public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> : ApiControllerBase
+    public abstract class QueryControllerBase<TModel, TDTO, TQueryParameter, TKey> : QueryControllerBase<TModel, TDTO, TDTO, TQueryParameter, TKey>
         where TModel : EntityBase<TKey>, new()
-        where TDto : IResponse, new()
+        where TDTO : IResponse, new()
+        where TQueryParameter : IPager, new()
+        where TKey : struct
+    {
+
+    }
+
+        /// <summary>
+        /// 通用查询控制器基类
+        /// </summary>
+        public abstract class QueryControllerBase<TModel, TListDTO, TDetailDTO, TQueryParameter, TKey> : ApiControllerBase
+        where TModel : EntityBase<TKey>, new()
+        where TListDTO : IResponse, new()
+        where TDetailDTO : IResponse, new()
         where TQueryParameter : IPager, new()
         where TKey : struct
     {
@@ -27,7 +40,6 @@ namespace Findx.AspNetCore.Mvc
         /// <returns></returns>
         protected virtual Expressionable<TModel> CreatePageWhereExpression(TQueryParameter request)
         {
-            // ExpressionBuilder.Create<TModel>();
             return null;
         }
 
@@ -62,7 +74,7 @@ namespace Findx.AspNetCore.Mvc
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var result = await repo.PagedAsync<TDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
+            var result = await repo.PagedAsync<TListDTO>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
 
             return CommonResult.Success(result);
         }
@@ -86,7 +98,7 @@ namespace Findx.AspNetCore.Mvc
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var list = await repo.TopAsync<TDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
+            var list = await repo.TopAsync<TListDTO>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
 
             Debug.WriteLine($"动态API查询接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
 
@@ -109,23 +121,32 @@ namespace Findx.AspNetCore.Mvc
 
             var model = repo.Get(id);
 
-            await DetailAfterAsync(model);
+            var result = ToDetailDTO(model);
 
-            return CommonResult.Success(ToDto(model));
+            await DetailAfterAsync(model, result);
+
+            return CommonResult.Success(result);
         }
+
+        /// <summary>
+        /// 转换多条数据查询结果
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        protected virtual List<TListDTO> ToListDTO(TModel model) => model.MapTo<List<TListDTO>>();
 
         /// <summary>
         /// 转换单条数据查询结果
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        protected virtual TDto ToDto(TModel model) => model.MapTo<TDto>();
+        protected virtual TDetailDTO ToDetailDTO(TModel model) => model.MapTo<TDetailDTO>();
 
         /// <summary>
         /// 单条数据查询后操作
         /// </summary>
         /// <param name="model"></param>
-        protected virtual Task DetailAfterAsync(TModel model) => Task.CompletedTask;
+        protected virtual Task DetailAfterAsync(TModel model, TDetailDTO dto) => Task.CompletedTask;
 
 
 

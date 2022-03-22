@@ -2,7 +2,7 @@
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Enum;
 using Findx.Module.Admin.Models;
 using Findx.Security;
@@ -123,7 +123,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             }
         }
 
-        protected override async Task DetailAfterAsync(SysNoticeInfo model)
+        protected override async Task DetailAfterAsync(SysNoticeInfo model, SysNoticeOutput dto)
         {
             var currentUser = GetService<ICurrentUser>();
             var userId = currentUser?.UserId?.CastTo<long>();
@@ -133,12 +133,12 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 await repo.UpdateColumnsAsync(x => new SysNoticeUserInfo { ReadTime = DateTime.Now, Status = 1 }, x => x.NoticeId == model.Id && x.UserId == userId);
         }
 
-        protected override SysNoticeOutput ToDto(SysNoticeInfo model)
+        protected override SysNoticeOutput ToDetailDTO(SysNoticeInfo model)
         {
             var currentUser = GetService<ICurrentUser>();
             var userName = currentUser?.UserName;
 
-            var noticeResult = base.ToDto(model);
+            var noticeResult = base.ToDetailDTO(model);
 
             var repo = GetRepository<SysNoticeUserInfo>();
             // 获取通知到的用户

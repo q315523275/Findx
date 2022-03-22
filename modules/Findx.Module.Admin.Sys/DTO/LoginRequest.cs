@@ -1,4 +1,4 @@
-﻿namespace Findx.Module.Admin.DTO
+﻿namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 系统登录入参

@@ -1,6 +1,6 @@
 ﻿using Findx.AspNetCore.Mvc;
 using Findx.Linq;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Models;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;

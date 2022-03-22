@@ -8,7 +8,7 @@ namespace Findx.Module.Admin.Models
     /// 系统应用表
     /// </summary>
     [Table(Name = "sys_app")]
-    public class SysAppInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest
+    public class SysAppInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest, ISort
     {
         /// <summary>
         /// 主键id
@@ -32,7 +32,7 @@ namespace Findx.Module.Admin.Models
         /// 创建时间
         /// </summary>
         [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime CreateTime { get; set; }
+        public DateTime? CreateTime { get; set; }
 
         /// <summary>
         /// 创建人
@@ -64,6 +64,11 @@ namespace Findx.Module.Admin.Models
         [Column(Name = "update_user")]
         public long? UpdateUser { get; set; }
 
+        /// <summary>
+		/// 排序
+		/// </summary>
+		[Column(Name = "sort")]
+		public int Sort { get; set; }
 
         public override void Init()
         {

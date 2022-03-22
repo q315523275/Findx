@@ -20,19 +20,9 @@ namespace Findx.Module.Admin.Cms.DTO
         public int ChannelId { get; set; }
 
         /// <summary>
-        /// 所属父类
+        /// 类别ID
         /// </summary>
-        public long ParentId { get; set; } = 0;
-
-        /// <summary>
-        /// 调用别名
-        /// </summary>
-        public string CallIndex { get; set; }
-
-        /// <summary>
-        /// 类别深度
-        /// </summary>
-        public int ClassLayer { get; set; } = 1;
+        public long CategoryId { get; set; }
 
         /// <summary>
         /// 标题
@@ -40,14 +30,29 @@ namespace Findx.Module.Admin.Cms.DTO
         public string Title { get; set; }
 
         /// <summary>
-        /// 图片地址
+        /// 来源
         /// </summary>
-        public string ImgUrl { get; set; }
+        public string Source { get; set; }
+
+        /// <summary>
+        /// 作者
+        /// </summary>
+        public string Author { get; set; }
 
         /// <summary>
         /// 外部链接
         /// </summary>
         public string LinkUrl { get; set; }
+
+        /// <summary>
+        /// 图片地址
+        /// </summary>
+        public string ImgUrl { get; set; }
+
+        /// <summary>
+        /// 内容摘要
+        /// </summary>
+        public string Zhaiyao { get; set; }
 
         /// <summary>
         /// 内容介绍
@@ -60,19 +65,9 @@ namespace Findx.Module.Admin.Cms.DTO
         public int Sort { get; set; }
 
         /// <summary>
-        /// SEO标题
+        /// 浏览总数
         /// </summary>
-        public string SeoTitle { get; set; }
-
-        /// <summary>
-        /// SEO关健字
-        /// </summary>
-        public string SeoKeyword { get; set; }
-
-        /// <summary>
-        /// SEO描述
-        /// </summary>
-        public string SeoDescription { get; set; }
+        public int Click { get; set; } = 0;
 
         /// <summary>
         /// 状态（字典 0正常 1停用 2删除）

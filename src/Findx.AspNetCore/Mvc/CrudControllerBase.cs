@@ -13,15 +13,76 @@ namespace Findx.AspNetCore.Mvc
     /// 增删改查通用控制器基类
     /// </summary>
     /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TQueryParameter"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TUserKey"></typeparam>
+    public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey, TUserKey>: CrudControllerBase<TModel, TModel, TModel, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
+                where TModel : EntityBase<TKey>, IResponse, new()
+        where TRequest : IRequest, new()
+        where TQueryParameter : IPager, new()
+        where TKey : struct
+        where TUserKey : struct
+    {
+
+    }
+
+    /// <summary>
+    /// 增删改查通用控制器基类
+    /// </summary>
+    /// <typeparam name="TModel"></typeparam>
     /// <typeparam name="TDto"></typeparam>
+    /// <typeparam name="TRequest"></typeparam>
+    /// <typeparam name="TQueryParameter"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TUserKey"></typeparam>
+    public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<TModel, TDto, TDto, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
+        where TModel : EntityBase<TKey>, new()
+        where TDto : IResponse, new()
+        where TRequest : IRequest, new()
+        where TQueryParameter : IPager, new()
+        where TKey : struct
+        where TUserKey : struct
+    {
+
+    }
+
+    /// <summary>
+    /// 增删改查通用控制器基类
+    /// </summary>
+    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TDto"></typeparam>
+    /// <typeparam name="TQueryParameter"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <typeparam name="TUserKey"></typeparam>
+    public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<TModel, TDto, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey>
+        where TModel : EntityBase<TKey>, new()
+        where TDto : IResponse, new()
+        where TCreateRequest : IRequest, new()
+        where TUpdateRequest : IRequest, new()
+        where TQueryParameter : IPager, new()
+        where TKey : struct
+        where TUserKey : struct
+    {
+
+    }
+
+    /// <summary>
+    /// 增删改查通用控制器基类
+    /// </summary>
+    /// <typeparam name="TModel"></typeparam>
+    /// <typeparam name="TListDto"></typeparam>
+    /// <typeparam name="TDetailDto"></typeparam>
     /// <typeparam name="TCreateRequest"></typeparam>
     /// <typeparam name="TUpdateRequest"></typeparam>
     /// <typeparam name="TQueryParameter"></typeparam>
     /// <typeparam name="TKey">实体主键类型</typeparam>
     /// <typeparam name="TUserKey">用户字段类型</typeparam>
-    public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey> : QueryControllerBase<TModel, TDto, TQueryParameter, TKey>
+    public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey>
+        : QueryControllerBase<TModel, TListDto, TDetailDto, TQueryParameter, TKey>
         where TModel : EntityBase<TKey>, new()
-        where TDto : IResponse, new()
+        where TListDto : IResponse, new()
+        where TDetailDto : IResponse, new()
         where TCreateRequest : IRequest, new()
         where TUpdateRequest : IRequest, new()
         where TQueryParameter : IPager, new()
@@ -105,7 +166,10 @@ namespace Findx.AspNetCore.Mvc
 
             // 创建人
             if (model is ICreateUser<TUserKey> user)
+            {
+                user.CreateTime = DateTime.Now;
                 user.CreateUser = currentUser?.UserId?.CastTo<TUserKey>();
+            }
 
             model.Init();
             await AddBeforeAsync(model);
@@ -143,7 +207,10 @@ namespace Findx.AspNetCore.Mvc
                 updateTime.UpdateTime = DateTime.Now;
             // 修改信息
             if (model is IUpdateUser<TUserKey> updateUser)
+            {
+                updateUser.UpdateTime = DateTime.Now;
                 updateUser.UpdateUser = currentUser?.UserId?.CastTo<TUserKey>();
+            }
 
             await EditBeforeAsync(model);
             var res = repo.Update(model, true);

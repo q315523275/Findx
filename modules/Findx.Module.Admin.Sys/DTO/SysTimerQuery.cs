@@ -1,7 +1,7 @@
 ﻿using System;
 using Findx.Data;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
 	/// <summary>
     /// 系统定时任务查询入参

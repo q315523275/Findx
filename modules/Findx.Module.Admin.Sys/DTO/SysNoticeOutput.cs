@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 消息公告出参

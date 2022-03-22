@@ -1,6 +1,6 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 系统字典值请求如惨

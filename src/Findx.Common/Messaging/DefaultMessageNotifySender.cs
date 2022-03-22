@@ -83,11 +83,11 @@ namespace Findx.Messaging
             {
                 while (await _channel.Reader.WaitToReadAsync())
                 {
-                    await _connectionLock.WaitAsync();
-
-                    var message = await _channel.Reader.ReadAsync();
-
-                    ProcessAsync(message, cancellationToken).ContinueWith(t => _connectionLock.Release());
+                    while (_channel.Reader.TryRead(out var message))
+                    {
+                        await _connectionLock.WaitAsync();
+                        ProcessAsync(message, cancellationToken).ContinueWith(t => _connectionLock.Release());
+                    }
                 }
             }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }

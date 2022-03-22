@@ -8,6 +8,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
+
 namespace Findx.Security.Authorization
 {
     [Description("Findex-授权模块")]
@@ -22,7 +24,7 @@ namespace Findx.Security.Authorization
             var section = configuration.GetSection("Findx:Authorization");
             services.Configure<AuthorizationOptions>(section);
 
-            Enabled = configuration.GetValue<bool>("Findx:Authentication:Enabled");
+            Enabled = configuration.GetValue<bool>("Findx:Authorization:Enabled");
             if (Enabled)
             {
                 services.AddSingleton<IPermissionChecker, PermissionChecker>();
@@ -43,11 +45,12 @@ namespace Findx.Security.Authorization
             {
                 app.UseAuthorization();
 
-                IServiceProvider provider = app.ApplicationServices;
-
-                IPermissionHandler permissionHandler = provider.GetService<IPermissionHandler>();
-                permissionHandler?.Initialize();
-
+                Task.Run(async () =>
+                {
+                    IServiceProvider provider = app.ApplicationServices;
+                    IPermissionHandler permissionHandler = provider.GetService<IPermissionHandler>();
+                    await permissionHandler?.InitializeAsync();
+                });
                 base.UseModule(app);
             }
         }

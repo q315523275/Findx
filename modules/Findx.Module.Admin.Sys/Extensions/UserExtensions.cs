@@ -1,7 +1,10 @@
-﻿using Findx.Extensions;
+﻿using System.Collections.Generic;
+using Findx.DependencyInjection;
+using Findx.Extensions;
 using Findx.Module.Admin.Enum;
 using Findx.Module.Admin.Models;
 using Findx.Security;
+using Microsoft.AspNetCore.Http;
 
 namespace Findx.Module.Admin
 {
@@ -18,6 +21,16 @@ namespace Findx.Module.Admin
         public static bool IsSuperAdmin(this SysUserInfo userInfo)
         {
             return AdminTypeEnum.SuperAdmin.To<int>() == userInfo.AdminType;
+        }
+
+        /// <summary>
+        /// 数据范围
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <returns></returns>
+        public static List<long> DataScope(this SysUserInfo userInfo)
+        {
+            return (List<long>)ServiceLocator.GetService<IHttpContextAccessor>().HttpContext?.Items.GetOrDefault("dataScope");
         }
 
         /// <summary>
@@ -49,6 +62,16 @@ namespace Findx.Module.Admin
 		public static string OrgName(this ICurrentUser user)
         {
             return user.FindClaim(Const.ClaimConst.ORG_NAME)?.Value;
+        }
+
+        /// <summary>
+        /// 数据范围
+        /// </summary>
+        /// <param name="userInfo"></param>
+        /// <returns></returns>
+        public static List<long> DataScope(this ICurrentUser user)
+        {
+            return (List<long>)ServiceLocator.GetService<IHttpContextAccessor>().HttpContext?.Items.GetOrDefault("dataScope");
         }
     }
 }

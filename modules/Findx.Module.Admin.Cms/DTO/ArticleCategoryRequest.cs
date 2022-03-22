@@ -20,9 +20,14 @@ namespace Findx.Module.Admin.Cms.DTO
         public int ChannelId { get; set; }
 
         /// <summary>
-        /// 所属父类
+		/// 父id
+		/// </summary>
+        public long Pid { get; set; }
+
+        /// <summary>
+        /// 父ids
         /// </summary>
-        public long ParentId { get; set; } = 0;
+        public string Pids { get; set; }
 
         /// <summary>
         /// 调用别名

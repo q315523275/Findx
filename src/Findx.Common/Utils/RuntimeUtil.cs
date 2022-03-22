@@ -129,12 +129,39 @@ namespace Findx.Utils
         }
 
         /// <summary>
-        /// 获取内存使用大小
+        /// 获取当前进程内存使用大小
         /// </summary>
         /// <returns>单位：KB</returns>
         public static double GetMemoryUsage()
         {
             return Process.GetCurrentProcess().WorkingSet64 / 1024.0;
+        }
+
+        /// <summary>
+        /// 获取当前进程线程数
+        /// </summary>
+        /// <returns></returns>
+        public static int GetThreadCount()
+        {
+            return Process.GetCurrentProcess().Threads.Count;
+        }
+
+        /// <summary>
+        /// 获取当前进程已打开句柄数
+        /// </summary>
+        /// <returns></returns>
+        public static int GetHandleCount()
+        {
+            return Process.GetCurrentProcess().HandleCount;
+        }
+
+        /// <summary>
+        /// 获取GC信息
+        /// </summary>
+        /// <returns>单位：KB</returns>
+        public static (double gen0, double gen1, double gen2, double totalMemory) GetGCInfo()
+        {
+            return (GCUtil.Gen0CollectCount / 1024.0, GCUtil.Gen1CollectCount / 1024.0, GCUtil.Gen2CollectCount / 1024.0, GCUtil.TotalMemory / 1024.0);
         }
     }
 }

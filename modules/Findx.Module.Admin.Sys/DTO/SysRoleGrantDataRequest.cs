@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Findx.Data;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
 	public class SysRoleGrantDataRequest: IRequest
 	{

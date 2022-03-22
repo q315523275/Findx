@@ -38,7 +38,7 @@ namespace Findx.Module.WebHost
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
-                app.UseJsonExceptionHandler(); // app.UseDeveloperExceptionPage();
+                app.UseJsonExceptionHandler();
             else
                 app.UseJsonExceptionHandler();
 

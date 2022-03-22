@@ -9,5 +9,7 @@
         public const string LEFT_SQUARE_BRACKETS = "[";
 
         public const string RIGHT_SQUARE_BRACKETS = "]";
+
+        public const string COMMA = ",";
     }
 }

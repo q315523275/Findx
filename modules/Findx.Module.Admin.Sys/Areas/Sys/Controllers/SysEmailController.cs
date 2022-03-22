@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Findx.Data;
 using Findx.Email;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

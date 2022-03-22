@@ -14,7 +14,6 @@ namespace Findx.Module.WebHost
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseEnvironment(EnvironmentName.Development)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseFindxStartup<Startup>();

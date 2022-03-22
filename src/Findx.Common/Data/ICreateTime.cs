@@ -10,6 +10,6 @@ namespace Findx.Data
         /// <summary>
         /// 创建时间
         /// </summary>
-        DateTime CreateTime { get; set; }
+        DateTime? CreateTime { get; set; }
     }
 }

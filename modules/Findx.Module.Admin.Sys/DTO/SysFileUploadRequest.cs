@@ -1,7 +1,7 @@
 ﻿using Findx.Data;
 using Microsoft.AspNetCore.Http;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 系统文件上传

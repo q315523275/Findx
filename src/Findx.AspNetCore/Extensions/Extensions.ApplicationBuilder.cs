@@ -92,13 +92,14 @@ namespace Findx.AspNetCore.Extensions
             // 所有模块初始化
             foreach (FindxModule module in findxBuilder.Modules)
             {
+                var jsTime = DateTime.Now;
                 Type moduleType = module.GetType();
                 logger.LogInformation($"正在初始化模块《{moduleType.GetDescription()}》({moduleType.Name})”");
                 if (module is AspNetCoreModuleBase aspNetCoreModule)
                     aspNetCoreModule.UseModule(builder);
                 else
                     module.UseModule(provider);
-                logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成");
+                logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now -jsTime).TotalMilliseconds}ms");
             }
             // 所有模块停止委托注册
             IHostApplicationLifetime hostApplicationLifetime = provider.GetService<IHostApplicationLifetime>();

@@ -16,7 +16,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj" />
 		<ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
 		<ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
 		<ProjectReference Include="..\..\src\Findx.SqlSugar\Findx.SqlSugar.csproj" />
@@ -32,6 +31,7 @@
 	  <Folder Include="Extensions\" />
 	  <Folder Include="Const\" />
 	  <Folder Include="DTO\" />
+	  <Folder Include="Filters\" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -41,6 +41,7 @@
 	  <None Remove="Extensions\" />
 	  <None Remove="Const\" />
 	  <None Remove="DTO\" />
+	  <None Remove="Filters\" />
 	</ItemGroup>
 
 </Project>

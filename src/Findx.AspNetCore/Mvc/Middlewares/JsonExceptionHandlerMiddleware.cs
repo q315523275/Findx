@@ -10,6 +10,9 @@ using Polly.Timeout;
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace Findx.AspNetCore.Mvc.Middlewares
@@ -22,7 +25,6 @@ namespace Findx.AspNetCore.Mvc.Middlewares
         private readonly RequestDelegate _next;
         private readonly ILogger<JsonExceptionHandlerMiddleware> _logger;
         private readonly IExceptionNotifier _exceptionNotifier;
-
         /// <summary>
         /// Ctor
         /// </summary>

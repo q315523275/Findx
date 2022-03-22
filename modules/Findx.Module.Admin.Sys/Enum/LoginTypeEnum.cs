@@ -11,30 +11,30 @@ namespace Findx.Module.Admin.Enum
         /// 登陆
         /// </summary>
         [Description("登陆")]
-        LOGIN = 0,
+        LOGIN = 1,
 
         /// <summary>
         /// 登出
         /// </summary>
         [Description("登出")]
-        LOGOUT = 1,
+        LOGOUT = 2,
 
         /// <summary>
         /// 注册
         /// </summary>
         [Description("注册")]
-        REGISTER = 2,
+        REGISTER = 3,
 
         /// <summary>
         /// 改密
         /// </summary>
         [Description("改密")]
-        CHANGEPASSWORD = 3,
+        CHANGEPASSWORD = 4,
 
         /// <summary>
         /// 三方授权登陆
         /// </summary>
         [Description("授权登陆")]
-        AUTHORIZEDLOGIN = 4
+        AUTHORIZEDLOGIN = 5
     }
 }

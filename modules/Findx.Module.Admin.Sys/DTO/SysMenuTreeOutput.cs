@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Findx.Data;
 using Findx.Module.Admin.Enum;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
 	/// <summary>
 	/// 菜单树---授权、新增编辑时选择

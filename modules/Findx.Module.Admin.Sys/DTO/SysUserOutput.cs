@@ -1,7 +1,7 @@
 ﻿using Findx.Data;
 using System;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     /// <summary>
     /// 用户参数

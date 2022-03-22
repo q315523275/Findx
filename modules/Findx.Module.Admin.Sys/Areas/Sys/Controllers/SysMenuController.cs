@@ -4,7 +4,7 @@ using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Linq;
 using Findx.Mapping;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Enum;
 using Findx.Module.Admin.Models;
 using Findx.Security;
@@ -67,13 +67,12 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         {
             var userId = user.UserId.To<long>();
 
-            var roles = fsql.Select<SysRoleInfo, SysUserRoleInfo>().InnerJoin((a, b) => a.Id == b.RoleId && b.UserId == userId).Where((a, b) => a.Status == 0)
-                            .ToList((a, b) => new { a.Id, a.Name, a.Code, a.DataScopeType });
-            var roleIdList = roles.Select(it => it.Id).ToList();
+            var roleIdList = fsql.Select<SysRoleInfo, SysUserRoleInfo>().InnerJoin((a, b) => a.Id == b.RoleId && b.UserId == userId).Where((a, b) => a.Status == 0)
+                            .ToList((a, b) => a.Id);
 
             var menuList = fsql.Select<SysMenuInfo, SysRoleMenuInfo>().LeftJoin((a, b) => a.Id == b.MenuId)
                                .WhereIf(!user.IsSuperAdmin(), (a, b) => roleIdList.Contains(b.RoleId))
-                               .WhereIf(user.IsSuperAdmin(), (a, b) => a.Weight != 2)
+                               //.WhereIf(user.IsSuperAdmin(), (a, b) => a.Weight != 2) // 超级管理不碰业务
                                .Where((a, b) => a.Application == input.Application && a.Type != 2 && a.Status == 0)
                                .OrderBy((a, b) => a.Sort)
                                .ToList((a, b) => new LoginUserMenuDTO
@@ -93,7 +92,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                                        Show = a.Visible == "Y",
                                        Link = a.Link
                                    }
-                               });
+                               }).DistinctBy2(x => x.Id);
 
             foreach (var item in menuList)
             {
@@ -249,6 +248,10 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         /// <returns></returns>
         protected override async Task AddBeforeAsync(SysMenuInfo model)
         {
+            var repo = GetRepository<SysMenuInfo>();
+            var isExist = await repo.ExistAsync(u => u.Code == model.Code);
+            if (isExist)
+                throw new FindxException("D4000", "菜单已存在");
             model.Pids = await CreateNewPids(model.Pid);
             model.Status = CommonStatusEnum.ENABLE.CastTo<int>();
         }

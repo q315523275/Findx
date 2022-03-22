@@ -1,4 +1,5 @@
 ﻿using Findx.Extensions;
+using Findx.UA;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
@@ -72,25 +73,24 @@ namespace Findx.AspNetCore.Extensions
         }
 
         /// <summary>
-        /// 获取请求浏览器
+        /// 获取GetUserAgent
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static string GetBrowser(this HttpRequest request)
+        public static string GetUserAgentString(this HttpRequest request)
         {
-            var userAgent = request.Headers?["User-Agent"].SafeString();
-            return new Findx.Utils.UserAgent(userAgent).GetBrowser();
+            return request.Headers?["User-Agent"].SafeString();
         }
 
         /// <summary>
-        /// 获取请求系统
+        /// 获取GetUserAgent
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static string GetSystem(this HttpRequest request)
+        public static UserAgent GetUserAgent(this HttpRequest request)
         {
-            var userAgent = request.Headers?["User-Agent"].SafeString();
-            return new Findx.Utils.UserAgent(userAgent).GetSystem();
+            var ua = request.Headers?["User-Agent"].SafeString();
+            return Findx.Utils.UserAgentUtil.Parse(ua);
         }
     }
 }

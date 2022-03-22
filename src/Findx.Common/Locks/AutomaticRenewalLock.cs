@@ -42,12 +42,12 @@ namespace Findx.Locks
         {
             _timer?.Dispose();
             _timer = null;
-            Console.WriteLine($"分布式锁{_lockKey}进行自动续期锁释放,时间{DateTime.Now}");
+            Debug.WriteLine($"分布式锁{_lockKey}进行自动续期锁释放,时间{DateTime.Now}");
         }
 
         public bool RefreshTimeToLive()
         {
-            Console.WriteLine($"分布式锁{_lockKey}进行自动续期,时长{_seconds}秒,时间{DateTime.Now}");
+            Debug.WriteLine($"分布式锁{_lockKey}进行自动续期,时长{_seconds}秒,时间{DateTime.Now}");
 
             var result = _distributedLock.RefreshTimeToLive(_lockKey, TimeSpan.FromSeconds(_seconds));
 

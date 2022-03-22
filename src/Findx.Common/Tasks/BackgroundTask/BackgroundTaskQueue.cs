@@ -1,23 +1,39 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 namespace Findx.Tasks.BackgroundTask
 {
     public class BackgroundTaskQueue : IBackgroundTaskQueue
     {
-        private readonly ConcurrentQueue<Func<CancellationToken, Task>> _workItems = new ConcurrentQueue<Func<CancellationToken, Task>>();
-        public Task<Func<CancellationToken, Task>> DequeueAsync(CancellationToken cancellationToken)
+        private readonly Channel<Func<CancellationToken, ValueTask>> _queue;
+
+        public BackgroundTaskQueue(int capacity)
         {
-            _workItems.TryDequeue(out var workItem);
-            return Task.FromResult(workItem);
+            var options = new BoundedChannelOptions(capacity)
+            {
+                FullMode = BoundedChannelFullMode.Wait
+            };
+            _queue = Channel.CreateBounded<Func<CancellationToken, ValueTask>>(options);
         }
-        public Task EnqueueAsync(Func<CancellationToken, Task> workItem)
+
+        public async ValueTask QueueBackgroundWorkItemAsync(Func<CancellationToken, ValueTask> workItem)
         {
-            Check.NotNull(workItem, nameof(workItem));
-            _workItems.Enqueue(workItem);
-            return Task.CompletedTask;
+            if (workItem == null)
+            {
+                throw new ArgumentNullException(nameof(workItem));
+            }
+
+            await _queue.Writer.WriteAsync(workItem);
+        }
+
+        public async ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(CancellationToken cancellationToken)
+        {
+            var workItem = await _queue.Reader.ReadAsync(cancellationToken);
+
+            return workItem;
         }
     }
 }

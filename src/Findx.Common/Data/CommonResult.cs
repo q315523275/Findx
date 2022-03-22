@@ -1,7 +1,9 @@
-﻿namespace Findx.Data
+﻿using System.Text.Json.Serialization;
+namespace Findx.Data
 {
     public class CommonResult<TData> : CommonResult
     {
+        [JsonPropertyName("data")]
         public TData Data { set; get; }
         public CommonResult() { }
         public CommonResult(string code, string msg, TData data) : base(code, msg)
@@ -17,7 +19,9 @@
             Msg = msg;
         }
         public CommonResult() { }
+        [JsonPropertyName("code")]
         public string Code { set; get; }
+        [JsonPropertyName("msg")]
         public string Msg { set; get; }
 
 

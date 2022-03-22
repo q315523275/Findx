@@ -6,7 +6,8 @@ namespace Findx.Tasks.BackgroundTask
 {
     public interface IBackgroundTaskQueue
     {
-        Task EnqueueAsync(Func<CancellationToken, Task> workItem);
-        Task<Func<CancellationToken, Task>> DequeueAsync(CancellationToken cancellationToken);
+        ValueTask QueueBackgroundWorkItemAsync(Func<CancellationToken, ValueTask> workItem);
+
+        ValueTask<Func<CancellationToken, ValueTask>> DequeueAsync(CancellationToken cancellationToken);
     }
 }

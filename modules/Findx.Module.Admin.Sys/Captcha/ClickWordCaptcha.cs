@@ -72,9 +72,9 @@ namespace Findx.Module.Admin.Captcha
             {
                 // 文字
                 var word = code[i].ToString();
-                var font = fontFamily.CreateFont(random.Next(16, 30));  // 字体
+                var font = fontFamily.CreateFont(random.Next(18, 30));  // 字体
                 // 颜色
-                Color[] colorList = { Color.Black, Color.DarkBlue, Color.Green, Color.Orange, Color.Brown, Color.DarkCyan, Color.Purple };
+                Color[] colorList = { Color.Black, Color.DarkBlue, Color.Green, Color.Brown, Color.DarkCyan, Color.Purple };
                 var colorIndex = random.Next(colorList.Length);
                 var color = colorList[colorIndex];
                 // 坐标

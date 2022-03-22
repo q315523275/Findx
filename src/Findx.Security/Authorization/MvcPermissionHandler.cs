@@ -11,15 +11,12 @@ namespace Findx.Security.Authorization
 {
     public class MvcPermissionHandler : PermissionHandlerBase
     {
-        private readonly IOptions<AuthorizationOptions> _options;
         private readonly IPermissionStore _store;
 
-        public MvcPermissionHandler(IServiceProvider _provider, IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider, IOptions<AuthorizationOptions> options, IEnumerable<IPermissionStore> stores)
+        public MvcPermissionHandler(IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider, IOptions<AuthorizationOptions> options, IEnumerable<IPermissionStore> stores)
         {
-            base.ServiceProvider = _provider;
             base.ActionDescriptorCollectionProvider = _actionDescriptorCollectionProvider;
 
-            _options = options;
             _store = stores.FirstOrDefault(it => it.PermissionStoreType == options.Value.PermissionStoreType);
             Check.NotNull(_store, nameof(_store));
         }

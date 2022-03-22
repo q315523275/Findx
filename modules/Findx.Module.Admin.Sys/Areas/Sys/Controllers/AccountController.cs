@@ -3,7 +3,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Mapping;
-using Findx.Module.Admin.DTO;
+using Findx.Module.Admin.Sys.DTO;
 using Findx.Module.Admin.Enum;
 using Findx.Module.Admin.Models;
 using Findx.Module.Admin.Const;
@@ -18,6 +18,9 @@ using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Findx.Security.Authorization;
+using Findx.Module.Admin.Captcha;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text.RegularExpressions;
 
 namespace Findx.Module.Admin.Areas.Sys.Controllers
 {
@@ -29,6 +32,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
     [ApiExplorerSettings(GroupName = "system")]
     public class AccountController : AreaApiControllerBase
     {
+        private readonly IClickWordCaptcha _captchaHandle; // 验证码服务
         private readonly JwtOptions _options;
 
         /// <summary>
@@ -38,6 +42,27 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         public AccountController(IOptionsMonitor<JwtOptions> _optionsMonitor)
         {
             _options = _optionsMonitor.CurrentValue;
+        }
+
+        private void SaveVisLog(SysUserInfo userInfo, LoginTypeEnum loginType, string result, string msg)
+        {
+            var userAgent = HttpContext.Request.GetUserAgent();
+            // 登录成功，记录登录日志
+            SysVisLogInfo visLog = new SysVisLogInfo
+            {
+                Account = userInfo.Account,
+                Browser = userAgent?.Browser.Name,
+                Ip = HttpContext.GetClientIp(),
+                Os = userAgent?.OS?.Name,
+                Message = msg,
+                VisTime = DateTime.Now,
+                Name = loginType.ToDescription(),
+                VisType = loginType.To<int>(),
+                Success = result
+            };
+            var repo = HttpContext.RequestServices.GetService<IRepository<SysVisLogInfo>>();
+            visLog.Init();
+            repo.Insert(visLog);
         }
 
         /// <summary>
@@ -54,16 +79,30 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             // 验证帐号是否存在
             if (accountInfo == null)
                 return CommonResult.Fail("D1000", "账户不存在");
-            // 验证账号是否被冻结
-            if (accountInfo.Status != CommonStatusEnum.ENABLE.To<int>())
-                return CommonResult.Fail("D1017", "账号已冻结");
             // 验证帐号密码是否正确
             if (accountInfo.Password != Findx.Utils.Encrypt.Md5By32(request.Password))
+            {
+                SaveVisLog(accountInfo, LoginTypeEnum.LOGIN, "N", "账户密码错误");
                 return CommonResult.Fail("D1000", "账户密码错误");
+            }
+            // 验证账号是否被冻结
+            if (accountInfo.Status != CommonStatusEnum.ENABLE.To<int>())
+            {
+                SaveVisLog(accountInfo, LoginTypeEnum.LOGIN, "N", "账号已冻结");
+                return CommonResult.Fail("D1017", "账号已冻结");
+            }
 
             // 员工信息
             var empInfo = empRepo.Get(accountInfo.Id);
 
+            // 更新登陆信息
+            accountInfo.LastLoginIp = HttpContext.GetClientIp();
+            accountInfo.LastLoginTime = DateTime.Now;
+            userRepo.UpdateColumns(x => new SysUserInfo { LastLoginIp = accountInfo.LastLoginIp, LastLoginTime = accountInfo.LastLoginTime }, x => x.Id == accountInfo.Id);
+
+            SaveVisLog(accountInfo, LoginTypeEnum.LOGIN, "Y", null);
+
+            // token票据
             var payload = new Dictionary<string, string>
             {
                 { ClaimTypes.UserId, accountInfo.Id.SafeString() },
@@ -85,8 +124,17 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         /// <returns></returns>
         [HttpGet("logout")]
         [Authorize(Roles = "admin")]
-        public CommonResult LoginOut()
+        public CommonResult LoginOut([FromServices] IPrincipal principal)
         {
+            var userId = principal.Identity.GetUserId<long>();
+            var repo = HttpContext.RequestServices.GetService<IRepository<SysUserInfo>>();
+            // 用户信息
+            var userInfo = repo.First(x => x.Id == userId);
+            if (userInfo == null)
+                return CommonResult.Success();
+
+            SaveVisLog(userInfo, LoginTypeEnum.LOGOUT, "Y", null);
+
             return CommonResult.Success();
         }
 
@@ -111,10 +159,13 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             var superAdmin = userInfo.IsSuperAdmin();
             var loginUserDTO = mapper.MapTo<LoginUserDTO>(userInfo);
             loginUserDTO.Enabled = userInfo.Status == CommonStatusEnum.ENABLE.To<int>();
-            loginUserDTO.LastLoginBrowser = HttpContext.Request.GetBrowser();
-            loginUserDTO.LastLoginOs = HttpContext.Request.GetSystem();
-            loginUserDTO.LastLoginIp = HttpContext.GetClientIp();
-            loginUserDTO.LastLoginTime = DateTime.Now;
+
+            var userAgent = HttpContext.Request.GetUserAgent();
+
+            loginUserDTO.LastLoginBrowser = userAgent?.Browser.Name;
+            loginUserDTO.LastLoginOs = userAgent?.OS.Name;
+            // loginUserDTO.LastLoginIp = HttpContext.GetClientIp();
+            // loginUserDTO.LastLoginTime = DateTime.Now;
 
             // 员工信息
             var loginEmpDTO = new LoginEmpDTO();
@@ -220,7 +271,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             var firstAppCode = string.Empty;
             if (superAdmin)
             {
-                var appList = fsql.Select<SysAppInfo>().Where(it => it.Status == 0).ToList(it => new { it.Code, it.Name, Active = it.Active == "Y" });
+                var appList = fsql.Select<SysAppInfo>().Where(it => it.Status == 0).OrderByDescending(x => x.Active).OrderBy(x => x.Sort).ToList(it => new { it.Code, it.Name, Active = it.Active == "Y" });
                 loginUserDTO.Apps = appList;
                 firstAppCode = appList.FirstOrDefault(it => it.Active)?.Code ?? appList.FirstOrDefault()?.Code;
             }
@@ -230,7 +281,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 var appCodeList = fsql.Select<SysMenuInfo, SysRoleMenuInfo>().InnerJoin((a, b) => a.Id == b.MenuId)
                                       .Where((a, b) => roleIdList.Contains(b.RoleId) && a.Status == 0).Distinct().ToList((a, b) => a.Application);
                 // 当应用编码不为空时，则限制查询范围
-                var appList = fsql.Select<SysAppInfo>().Where(it => appCodeList.Contains(it.Code) && it.Status == 0).ToList(it => new { it.Code, it.Name, Active = it.Active == "Y" });
+                var appList = fsql.Select<SysAppInfo>().Where(it => appCodeList.Contains(it.Code) && it.Status == 0).OrderByDescending(x => x.Active).OrderBy(x => x.Sort).ToList(it => new { it.Code, it.Name, Active = it.Active == "Y" });
                 loginUserDTO.Apps = appList;
                 firstAppCode = appList.FirstOrDefault(it => it.Active)?.Code ?? appList.FirstOrDefault()?.Code;
             }
@@ -244,7 +295,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             {
                 var menuList = fsql.Select<SysMenuInfo, SysRoleMenuInfo>().LeftJoin((a, b) => a.Id == b.MenuId)
                                    .WhereIf(!superAdmin, (a, b) => roleIdList.Contains(b.RoleId))
-                                   .WhereIf(superAdmin, (a, b) => a.Weight != 2)
+                                   //.WhereIf(superAdmin, (a, b) => a.Weight != 2) // 超级管理不碰业务
                                    .Where((a, b) => a.Application == firstAppCode && a.Type != 2 && a.Status == 0)
                                    .OrderBy((a, b) => a.Sort)
                                    .ToList((a, b) => new LoginUserMenuDTO
@@ -264,7 +315,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                                            Show = a.Visible == "Y",
                                            Link = a.Link
                                        }
-                                   });
+                                   }).DistinctBy2(x => x.Id);
                 foreach (var item in menuList)
                 {
                     if (MenuOpenTypeEnum.OUTER.To<int>() == item.OpenType)

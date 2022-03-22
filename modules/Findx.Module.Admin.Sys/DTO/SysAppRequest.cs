@@ -1,6 +1,6 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.Admin.DTO
+namespace Findx.Module.Admin.Sys.DTO
 {
     public class SysAppRequest : IRequest
     {
@@ -23,5 +23,10 @@ namespace Findx.Module.Admin.DTO
         /// 应用名称
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// 排序
+        /// </summary>
+        public int Sort { get; set; }
     }
 }

@@ -12,51 +12,48 @@ namespace Findx.Tasks.BackgroundTask
     /// <summary>
     /// 异步排队任务后台服务
     /// </summary>
-    public class AsyncQueueTaskHostedService : BackgroundService
+    public class QueuedHostedService : BackgroundService
     {
-        private readonly ILogger _logger;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly StartupLogger _startupLogger;
-        public AsyncQueueTaskHostedService(IBackgroundTaskQueue taskQueue, IServiceProvider serviceProvider)
+        private readonly ILogger<QueuedHostedService> _logger;
+
+        public QueuedHostedService(IBackgroundTaskQueue taskQueue, ILogger<QueuedHostedService> logger)
         {
             TaskQueue = taskQueue;
-            _serviceProvider = serviceProvider;
-            _logger = _serviceProvider.GetLogger<AsyncQueueTaskHostedService>();
-            _startupLogger = _serviceProvider.GetService<StartupLogger>();
+            _logger = logger;
         }
+
         public IBackgroundTaskQueue TaskQueue { get; }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _startupLogger.LogInformation("异步排队任务启动...", "QueuedTaskHostedService");
+            _logger.LogInformation(
+                $"Queued Hosted Service is running.{Environment.NewLine}" +
+                $"{Environment.NewLine}Tap W to add a work item to the " +
+                $"background queue.{Environment.NewLine}");
 
             await BackgroundProcessing(stoppingToken);
         }
+
         private async Task BackgroundProcessing(CancellationToken stoppingToken)
         {
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 var workItem = await TaskQueue.DequeueAsync(stoppingToken);
-                if (workItem != null)
+
+                try
                 {
-                    try
-                    {
-                        await workItem(stoppingToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"异步排队任务{nameof(workItem)}");
-                    }
+                    await workItem(stoppingToken);
                 }
-                else
+                catch (Exception ex)
                 {
-                    await Task.Delay(500);
+                    _logger.LogError(ex, "Error occurred executing {WorkItem}.", nameof(workItem));
                 }
             }
         }
+
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("异步排队任务停止...");
+            _logger.LogInformation("Queued Hosted Service is stopping.");
 
             await base.StopAsync(stoppingToken);
         }

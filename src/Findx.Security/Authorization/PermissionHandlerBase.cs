@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -39,36 +40,17 @@ namespace Findx.Security.Authorization
         }
 
         /// <summary>
-        /// 应用程序部分管理
-        /// </summary>
-        /// public ApplicationPartManager PartManager { get; set; }
-
-        /// <summary>
         /// 应用程序Action集合提供器
         /// </summary>
         public IActionDescriptorCollectionProvider ActionDescriptorCollectionProvider { set; get; }
 
         /// <summary>
-        /// 方法查询器
-        /// </summary>
-        /// public IMethodInfoFinder MethodInfoFinder { get; set; }
-
-        /// <summary>
-        /// 服务提供器
-        /// </summary>
-        public IServiceProvider ServiceProvider { get; set; }
-
-        /// <summary>
         /// 从程序集中获取功能信息
         /// </summary>
-        public void Initialize()
+        public async Task InitializeAsync()
         {
-            // Check.NotNull(PartManager, nameof(PartManager));
-            // Check.NotNull(MethodInfoFinder, nameof(MethodInfoFinder));
-            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
-
             List<Permission> permissions = GetPermissions();
-            SyncToStoreAsync(permissions).ConfigureAwait(false).GetAwaiter();
+            await SyncToStoreAsync(permissions);
             RefreshCache();
         }
 
@@ -105,11 +87,11 @@ namespace Findx.Security.Authorization
         /// <returns></returns>
         protected virtual List<Permission> GetPermissions()
         {
-            //ControllerFeature controllerFeature = new();
-            //PartManager.PopulateFeature(controllerFeature);
-            //IList<TypeInfo> controllerTypes = controllerFeature.Controllers;
-
-            foreach(var item in ActionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>())
+            var jsTime = DateTime.Now;
+            var list = ActionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>();
+            Debug.WriteLine($"----------------初始化ActionDescriptors资源耗时:{(DateTime.Now - jsTime).TotalMilliseconds}ms");
+            jsTime = DateTime.Now;
+            foreach (var item in list)
             {
                 var routeValues = item.RouteValues;
                 var area = routeValues["area"];
@@ -156,7 +138,8 @@ namespace Findx.Security.Authorization
                 };
 
                 _permissions.Add(MemberPermission);
-            }          
+            }
+            Debug.WriteLine($"----------------初始化接口资源耗时:{(DateTime.Now - jsTime).TotalMilliseconds}ms");
             return _permissions;
         }
 
