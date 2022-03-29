@@ -20,7 +20,7 @@ namespace Findx.EventBus.RabbitMQ
 
         public void Send(TransportMessage message)
         {
-            using (var channel = _pool.Acquire().CreateModel())
+            using (var channel = _pool.Get().CreateModel())
             {
                 // 创建并配置交换器
                 channel.ExchangeDeclare(exchange: _options.CurrentValue.ExchangeName, type: _options.CurrentValue.ExchangeType);
@@ -39,7 +39,7 @@ namespace Findx.EventBus.RabbitMQ
 
         public Task SendAsync(TransportMessage message, CancellationToken cancellationToken = default)
         {
-            using (var channel = _pool.Acquire().CreateModel())
+            using (var channel = _pool.Get().CreateModel())
             {
                 // 创建并配置交换器
                 channel.ExchangeDeclare(exchange: _options.CurrentValue.ExchangeName, type: _options.CurrentValue.ExchangeType);

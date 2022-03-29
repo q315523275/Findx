@@ -2,9 +2,19 @@
 {
     public interface IRedisClientProvider
     {
-        IRedisClient CreateClient();
-        IRedisClient CreateClient(RedisOptions options);
-        IRedisClient CreateClient(IRedisSerializer redisSerializer);
-        IRedisClient CreateClient(RedisOptions options, IRedisSerializer redisSerializer);
+        /// <summary>
+        /// 创建redis客户端服务
+        /// </summary>
+        /// <param name="connectionName"></param>
+        /// <returns></returns>
+        IRedisClient CreateClient(string connectionName = null);
+
+        /// <summary>
+        /// 创建redis客户端服务
+        /// </summary>
+        /// <param name="redisSerializer"></param>
+        /// <param name="connectionName"></param>
+        /// <returns></returns>
+        IRedisClient CreateClient(IRedisSerializer redisSerializer, string connectionName = null);
     }
 }

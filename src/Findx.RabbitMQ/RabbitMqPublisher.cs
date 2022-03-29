@@ -3,12 +3,12 @@ using System.Text;
 
 namespace Findx.RabbitMQ
 {
-    public class RabbitMQPublisher : IRabbitMQPublisher
+    public class RabbitMqPublisher : IRabbitMqPublisher
     {
         private readonly IConnectionPool _connectionPool;
-        private readonly IRabbitMQSerializer _serializer;
+        private readonly IRabbitMqSerializer _serializer;
 
-        public RabbitMQPublisher(IConnectionPool connectionPool, IRabbitMQSerializer serializer)
+        public RabbitMqPublisher(IConnectionPool connectionPool, IRabbitMqSerializer serializer)
         {
             _connectionPool = connectionPool;
             _serializer = serializer;
@@ -19,7 +19,7 @@ namespace Findx.RabbitMQ
             var message = _serializer.Serialize(obj);
             var body = Encoding.UTF8.GetBytes(message);
 
-            using (var channel = _connectionPool.Acquire().CreateModel())
+            using (var channel = _connectionPool.Get().CreateModel())
             {
                 // 创建并配置交换器
                 channel.ExchangeDeclare(exchange: exchangeName, type: exchangeType);

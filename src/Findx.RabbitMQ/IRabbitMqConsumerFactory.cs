@@ -3,7 +3,7 @@
     /// <summary>
     /// RabbitMQ消费者工厂
     /// </summary>
-    public interface IRabbitMQConsumerFactory
+    public interface IRabbitMqConsumerFactory
     {
         /// <summary>
         /// 创建消费者
@@ -12,6 +12,6 @@
         /// <param name="queue"></param>
         /// <param name="autoAck"></param>
         /// <returns></returns>
-        IRabbitMQConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue, bool autoAck = true);
+        IRabbitMqConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue, string connectionName = null);
     }
 }

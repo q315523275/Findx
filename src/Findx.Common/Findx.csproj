@@ -5,7 +5,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Nullable>disable</Nullable>
 		<LangVersion>10.0</LangVersion>
-		<Version>1.5.8</Version>
+		<Version>1.5.9</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Product />
@@ -31,5 +31,9 @@
 		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
 		<PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
 		<PackageReference Include="System.Threading.Channels" Version="7.0.0-preview.2.22152.2" />
+		<PackageReference Include="JetBrains.Annotations" Version="2022.1.0-eap3" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="JetBrains.Annotations" />
 	</ItemGroup>
 </Project>

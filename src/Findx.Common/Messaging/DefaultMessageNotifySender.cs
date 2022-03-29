@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ namespace Findx.Messaging
         private readonly Channel<IMessageNotify> _channel;
         private readonly SemaphoreSlim _connectionLock;
         private readonly ILogger<DefaultMessageNotifySender> _logger;
-        private readonly CancellationTokenSource _cancellationToken;
+        private readonly CancellationTokenSource _cts;
 
         /// <summary>
         /// Ctor
@@ -39,15 +40,16 @@ namespace Findx.Messaging
             else
                 _channel = Channel.CreateUnbounded<IMessageNotify>();
 
-            var maxTaskCount = _configuration.GetValue<int>("Findx:MessageHanderMaxTaskCount");
-            maxTaskCount = maxTaskCount == 0 ? Environment.ProcessorCount + 1 : maxTaskCount;
-            maxTaskCount = maxTaskCount <= 0 ? 1 : maxTaskCount;
+            var consumerThreadCount = _configuration.GetValue<int>("Findx:MessageHanderMaxTaskCount");
+            consumerThreadCount = consumerThreadCount == 0 ? Environment.ProcessorCount + 1 : consumerThreadCount;
+            consumerThreadCount = consumerThreadCount <= 0 ? 1 : consumerThreadCount;
 
+            _connectionLock = new SemaphoreSlim(consumerThreadCount);
+            _cts = new CancellationTokenSource();
 
-            _connectionLock = new SemaphoreSlim(maxTaskCount);
-            _cancellationToken = new CancellationTokenSource();
-
-            StartConsuming(_cancellationToken.Token);
+            // StartConsuming(_cancellationToken.Token);
+            Task.WhenAll(Enumerable.Range(0, consumerThreadCount)
+                   .Select(_ => Task.Factory.StartNew(() => Processing(_channel, _cts.Token), _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default)).ToArray());
         }
 
         /// <summary>
@@ -55,7 +57,7 @@ namespace Findx.Messaging
         /// </summary>
         public void Dispose()
         {
-            _cancellationToken?.Cancel();
+            _cts?.Cancel();
             _messageHandlers?.Clear();
         }
 
@@ -74,10 +76,53 @@ namespace Findx.Messaging
         }
 
         /// <summary>
+        /// 消费执行方法
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private async Task Processing(Channel<IMessageNotify> channel, CancellationToken cancellationToken)
+        {
+            try
+            {
+                while (await channel.Reader.WaitToReadAsync(cancellationToken))
+                {
+                    while (channel.Reader.TryRead(out var message))
+                    {
+                        try
+                        {
+                            var messageType = message.GetType();
+
+                            using (var scope = ServiceLocator.ServiceProvider.CreateScope())
+                            {
+                                var handler = (MessageNotifyHandlerWrapper)_messageHandlers.GetOrAdd(messageType, t => Activator.CreateInstance(typeof(MessageNotifyHandlerWrapperImpl<>).MakeGenericType(messageType)));
+                                await handler.Handle(message, scope.ServiceProvider, cancellationToken);
+                            }
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            //expected
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError(e, $"An exception occurred when invoke notify subscriber");
+                        }
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // expected
+            }
+        }
+
+
+        /// <summary>
         /// 开始消费
         /// </summary>
         /// <param name="cancellationToken"></param>
-        public void StartConsuming(CancellationToken cancellationToken = default)
+        [Obsolete]
+        private void StartConsuming(CancellationToken cancellationToken = default)
         {
             Task.Factory.StartNew(async () =>
             {
@@ -86,7 +131,8 @@ namespace Findx.Messaging
                     while (_channel.Reader.TryRead(out var message))
                     {
                         await _connectionLock.WaitAsync();
-                        ProcessAsync(message, cancellationToken).ContinueWith(t => _connectionLock.Release());
+                        var task = ProcessAsync(message, cancellationToken);
+                        task.ContinueWith(t => _connectionLock.Release());
                     }
                 }
             }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
@@ -98,7 +144,8 @@ namespace Findx.Messaging
         /// <param name="message"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected async Task ProcessAsync(IMessageNotify message, CancellationToken cancellationToken = default)
+        [Obsolete]
+        private async Task ProcessAsync(IMessageNotify message, CancellationToken cancellationToken = default)
         {
             try
             {

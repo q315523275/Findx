@@ -2,86 +2,33 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.Redis.StackExchangeRedis
 {
     public class StackExchangeRedisClient : IRedisClient
     {
-        private readonly IStackExchangeRedisDataBaseProvider _dataBaseProvider;
-        private readonly RedisOptions _options;
+        private readonly ConnectionMultiplexer _connection;
         private readonly IRedisSerializer _serializer;
-        private readonly SemaphoreSlim _connectionLock;
-
-        public StackExchangeRedisClient(IStackExchangeRedisDataBaseProvider dataBaseProvider, RedisOptions options, IRedisSerializer serializer)
-        {
-            _dataBaseProvider = dataBaseProvider;
-            _options = options;
-            _serializer = serializer;
-            _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-            Name = options.Name;
-        }
-
-        #region 私有
-
-        private IDatabase _cache;
-
-        private IDatabase _cacheAsync;
-
-        private void Connect()
-        {
-            if (_cache != null)
-                return;
-
-            _connectionLock.Wait();
-
-            try
-            {
-                if (_cache != null)
-                    return;
-
-                _cache = _dataBaseProvider.GetConnection(_options).GetDatabase();
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
-        }
-
-        private async Task ConnectAsync(CancellationToken cancellationToken = default)
-        {
-            if (_cacheAsync != null)
-                return;
-
-            await _connectionLock.WaitAsync();
-
-            try
-            {
-                if (_cacheAsync != null)
-                    return;
-
-                _cacheAsync = (await _dataBaseProvider.GetConnectionAsync(_options, cancellationToken)).GetDatabase();
-            }
-            finally
-            {
-                _connectionLock.Release();
-            }
-        }
-
-        #endregion
-
-        #region Public
+        private readonly IDatabase _cache;
 
         public string Name { get; }
+
+        public StackExchangeRedisClient(IRedisSerializer serializer, ConnectionMultiplexer connection, string name)
+        {
+            _serializer = serializer;
+            _connection = connection;
+            _cache = _connection.GetDatabase();
+            Name = name;
+        }
+
+        #region Public
 
         /// <summary>
         /// 清除key
         /// </summary>
         public void FlushDb()
         {
-            Connect();
-
             var endPoints = _cache.Multiplexer.GetEndPoints();
 
             foreach(var endPoint in endPoints)
@@ -95,13 +42,11 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         public async Task FlushDbAsync()
         {
-            await ConnectAsync();
-
-            var endPoints = _cacheAsync.Multiplexer.GetEndPoints();
+            var endPoints = _cache.Multiplexer.GetEndPoints();
 
             foreach (var endpoint in endPoints)
             {
-                await _cacheAsync.Multiplexer.GetServer(endpoint).FlushDatabaseAsync(_cacheAsync.Database);
+                await _cache.Multiplexer.GetServer(endpoint).FlushDatabaseAsync(_cache.Database);
             }
         }
 
@@ -132,8 +77,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(script, nameof(script));
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var redisKey = new RedisKey[] { cacheKey };
 
@@ -168,7 +111,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(script, nameof(script));
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
+            
 
             var redisKey = new RedisKey[] { cacheKey };
 
@@ -186,7 +129,7 @@ namespace Findx.Redis.StackExchangeRedis
                 }
             }
 
-            var res = await _cacheAsync.ScriptEvaluateAsync(script, redisKey, redisValues.ToArray());
+            var res = await _cache.ScriptEvaluateAsync(script, redisKey, redisValues.ToArray());
 
             return res;
         }
@@ -211,15 +154,12 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>匹配上的所有键名</returns>
         public IEnumerable<string> SearchKeys(string pattern)
         {
-            var endpoints = _dataBaseProvider.GetConnection(_options)?.GetEndPoints();
+            var endpoints = _connection?.GetEndPoints();
 
             if (endpoints == null || !endpoints.Any())
                 return null;
 
-            return _dataBaseProvider.GetConnection(_options)
-                        .GetServer(endpoints.First())
-                        .Keys(pattern: pattern)
-                        .Select(r => (string)r);
+            return _connection.GetServer(endpoints.First()).Keys(pattern: pattern).Select(r => (string)r);
         }
 
         /// <summary>
@@ -229,8 +169,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public long TTL(string key)
         {
-            Connect();
-
             var ts = _cache.KeyTimeToLive(key);
             return ts.HasValue ? (long)ts.Value.TotalSeconds : -1;
         }
@@ -242,9 +180,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<long> TTLAsync(string key)
         {
-            await ConnectAsync();
-
-            var ts = await _cacheAsync.KeyTimeToLiveAsync(key);
+            var ts = await _cache.KeyTimeToLiveAsync(key);
             return ts.HasValue ? (long)ts.Value.TotalSeconds : -1;
         }
 
@@ -255,8 +191,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public bool Exists(string key)
         {
-            Connect();
-
             return _cache.KeyExists(key);
         }
 
@@ -267,9 +201,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<bool> ExistsAsync(string key)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.KeyExistsAsync(key);
+            return await _cache.KeyExistsAsync(key);
         }
 
         /// <summary>
@@ -280,8 +212,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public bool Expire(string key, TimeSpan expiry)
         {
-            Connect();
-
             return _cache.KeyExpire(key, expiry);
         }
 
@@ -293,9 +223,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<bool> ExpireAsync(string key, TimeSpan expiry)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.KeyExpireAsync(key, expiry);
+            return await _cache.KeyExpireAsync(key, expiry);
         }
 
         /// <summary>
@@ -306,8 +234,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public bool Expire(string key, DateTime expiry)
         {
-            Connect();
-
             return _cache.KeyExpire(key, expiry);
         }
 
@@ -319,9 +245,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<bool> ExpireAsync(string key, DateTime expiry)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.KeyExpireAsync(key, expiry);
+            return await _cache.KeyExpireAsync(key, expiry);
         }
 
         /// <summary>
@@ -331,8 +255,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public bool Remove(string key)
         {
-            Connect();
-
             return _cache.KeyDelete(key);
         }
 
@@ -343,9 +265,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<bool> RemoveAsync(string key)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.KeyDeleteAsync(key);
+            return await _cache.KeyDeleteAsync(key);
         }
 
         /// <summary>
@@ -380,8 +300,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public int CalcuteKeyCount(string prefix)
         {
-            Connect();
-
             var retVal = _cache.ScriptEvaluate("return table.getn(redis.call('keys', ARGV[1]))", values: new RedisValue[] { prefix });
             if (retVal.IsNull)
             {
@@ -396,8 +314,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="prefix">key前缀</param>
         public void DeleteKeyWithKeyPrefix(string prefix)
         {
-            Connect();
-
             _cache.ScriptEvaluate(@"
                 local keys = redis.call('keys', ARGV[1])
                 for i=1,#keys,5000 do
@@ -411,9 +327,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="prefix">key前缀</param>
         public async Task DeleteKeyWithKeyPrefixAsync(string prefix)
         {
-            await ConnectAsync();
-
-            await _cacheAsync.ScriptEvaluateAsync(@"
+            await _cache.ScriptEvaluateAsync(@"
                 local keys = redis.call('keys', ARGV[1])
                 for i=1,#keys,5000 do
                 redis.call('del', unpack(keys, i, math.min(i+4999, #keys)))
@@ -433,8 +347,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public bool StringSet<T>(string key, T value)
         {
-            Connect();
-
             var objBytes = _serializer.Serialize(value);
 
             return _cache.StringSet(key, objBytes, when: When.Always);
@@ -449,11 +361,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public async Task<bool> StringSetAsync<T>(string key, T value)
         {
-            await ConnectAsync();
-
             var objBytes = _serializer.Serialize(value);
 
-            return await _cacheAsync.StringSetAsync(key, objBytes);
+            return await _cache.StringSetAsync(key, objBytes);
         }
 
         /// <summary>
@@ -466,8 +376,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public bool StringSet<T>(string key, T value, TimeSpan expiresIn)
         {
-            Connect();
-
             var objBytes = _serializer.Serialize(value);
             return _cache.StringSet(key, objBytes, expiresIn);
         }
@@ -482,10 +390,8 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public async Task<bool> StringSetAsync<T>(string key, T value, TimeSpan expiresIn)
         {
-            await ConnectAsync();
-
             var objBytes = _serializer.Serialize(value);
-            return await _cacheAsync.StringSetAsync(key, objBytes, expiresIn);
+            return await _cache.StringSetAsync(key, objBytes, expiresIn);
         }
 
         /// <summary>
@@ -498,8 +404,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public bool StringSet<T>(string key, T value, DateTimeOffset expiresAt)
         {
-            Connect();
-
             var objBytes = _serializer.Serialize(value);
 
             var expiration = expiresAt.Subtract(DateTimeOffset.Now);
@@ -517,11 +421,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public async Task<bool> StringSetAsync<T>(string key, T value, DateTimeOffset expiresAt)
         {
-            await ConnectAsync();
-
             var objBytes = _serializer.Serialize(value);
             var expiration = expiresAt.Subtract(DateTimeOffset.Now);
-            return await _cacheAsync.StringSetAsync(key, objBytes, expiration);
+            return await _cache.StringSetAsync(key, objBytes, expiration);
         }
 
         /// <summary>
@@ -532,8 +434,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public bool StringSetAll<T>(IList<Tuple<string, T>> items)
         {
-            Connect();
-
             var values = items.Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
 
             return _cache.StringSet(values);
@@ -547,11 +447,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public async Task<bool> StringSetAllAsync<T>(IList<Tuple<string, T>> items)
         {
-            await ConnectAsync();
-
             var values = items.Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
 
-            return await _cacheAsync.StringSetAsync(values);
+            return await _cache.StringSetAsync(values);
         }
 
         /// <summary>
@@ -562,8 +460,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public T StringGet<T>(string key)
         {
-            Connect();
-
             var valuesBytes = _cache.StringGet(key);
             if (!valuesBytes.HasValue)
             {
@@ -579,9 +475,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         public async Task<T> StringGetAsync<T>(string key)
         {
-            await ConnectAsync();
-
-            var valuesBytes = await _cacheAsync.StringGetAsync(key);
+            var valuesBytes = await _cache.StringGetAsync(key);
             if (!valuesBytes.HasValue)
             {
                 return default;
@@ -597,8 +491,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>累加后的值</returns>
         public long StringIncrement(string key, long value = 1)
         {
-            Connect();
-
             return _cache.StringIncrement(key, value);
         }
 
@@ -610,9 +502,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>累加后的值</returns>
         public async Task<long> StringIncrementAsync(string key, long value = 1)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.StringIncrementAsync(key, value);
+            return await _cache.StringIncrementAsync(key, value);
         }
 
         /// <summary>
@@ -623,8 +513,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>累加后的值</returns>
         public double StringIncrementDouble(string key, double value)
         {
-            Connect();
-
             return _cache.StringIncrement(key, value);
         }
 
@@ -636,9 +524,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>累加后的值</returns>
         public async Task<double> StringIncrementDoubleAsync(string key, double value)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.StringIncrementAsync(key, value);
+            return await _cache.StringIncrementAsync(key, value);
         }
 
         /// <summary>
@@ -649,8 +535,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>递减后的值</returns>
         public long StringDecrement(string key, long value = 1)
         {
-            Connect();
-
             return _cache.StringDecrement(key, value);
         }
 
@@ -662,9 +546,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>递减后的值</returns>
         public async Task<long> StringDecrementAsync(string key, long value = 1)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.StringDecrementAsync(key, value);
+            return await _cache.StringDecrementAsync(key, value);
         }
 
         /// <summary>
@@ -675,8 +557,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>递减后的值</returns>
         public double StringDecrementDouble(string key, double value)
         {
-            Connect();
-
             return _cache.StringDecrement(key, value);
         }
 
@@ -688,9 +568,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>递减后的值</returns>
         public async Task<double> StringDecrementDoubleAsync(string key, double value)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.StringDecrementAsync(key, value);
+            return await _cache.StringDecrementAsync(key, value);
         }
 
         #endregion StringSet
@@ -705,8 +583,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public IEnumerable<string> HashKeys(string key)
         {
-            Connect();
-
             return _cache.HashKeys(key).Select(x => x.ToString());
         }
 
@@ -718,8 +594,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public long HashLength(string key)
         {
-            Connect();
-
             return _cache.HashLength(key);
         }
 
@@ -733,8 +607,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public bool HashSet<T>(string key, string hashField, T value)
         {
-            Connect();
-
             return _cache.HashSet(key, hashField, _serializer.Serialize(value));
         }
 
@@ -748,10 +620,8 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<bool> HashSetAsync<T>(string key, string hashField, T value)
         {
-            await ConnectAsync();
-
             var objBytes = _serializer.Serialize(value);
-            return await _cacheAsync.HashSetAsync(key, hashField, objBytes);
+            return await _cache.HashSetAsync(key, hashField, objBytes);
         }
 
         /// <summary>
@@ -762,8 +632,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="values">键值对</param>
         public void HashSet<T>(string key, Dictionary<string, T> values)
         {
-            Connect();
-
             var entries = values.Select(kv => new HashEntry(kv.Key, _serializer.Serialize(kv.Value)));
 
             _cache.HashSet(key, entries.ToArray());
@@ -777,10 +645,8 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="values">键值对</param>
         public async Task HashSetAsync<T>(string key, Dictionary<string, T> values)
         {
-            await ConnectAsync();
-
             var entries = values.Select(kv => new HashEntry(kv.Key, _serializer.Serialize(kv.Value)));
-            await _cacheAsync.HashSetAsync(key, entries.ToArray());
+            await _cache.HashSetAsync(key, entries.ToArray());
         }
 
         /// <summary>
@@ -792,8 +658,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public T HashGet<T>(string key, string hashField)
         {
-            Connect();
-
             var redisValue = _cache.HashGet(key, hashField);
 
             return redisValue.HasValue ? _serializer.Deserialize<T>(redisValue) : default;
@@ -808,9 +672,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<T> HashGetAsync<T>(string key, string hashField)
         {
-            await ConnectAsync();
-
-            var redisValue = await _cacheAsync.HashGetAsync(key, hashField);
+            var redisValue = await _cache.HashGetAsync(key, hashField);
 
             return redisValue.HasValue ? _serializer.Deserialize<T>(redisValue) : default;
         }
@@ -859,8 +721,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public Dictionary<string, T> HashGetAll<T>(string key)
         {
-            Connect();
-
             return (_cache.HashGetAll(key))
                              .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
         }
@@ -873,9 +733,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<Dictionary<string, T>> HashGetAllAsync<T>(string key)
         {
-            await ConnectAsync();
-
-            return (await _cacheAsync.HashGetAllAsync(key))
+            return (await _cache.HashGetAllAsync(key))
                                         .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
         }
 
@@ -887,8 +745,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public IEnumerable<T> HashValues<T>(string key)
         {
-            Connect();
-
             return _cache.HashValues(key).Select(m => _serializer.Deserialize<T>(m));
         }
 
@@ -900,9 +756,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<IEnumerable<T>> HashValuesAsync<T>(string key)
         {
-            await ConnectAsync();
-
-            return (await _cacheAsync.HashValuesAsync(key)).Select(m => _serializer.Deserialize<T>(m));
+            return (await _cache.HashValuesAsync(key)).Select(m => _serializer.Deserialize<T>(m));
         }
 
         /// <summary>
@@ -913,8 +767,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public bool HashExists(string key, string hashField)
         {
-            Connect();
-
             return _cache.HashExists(key, hashField);
         }
 
@@ -926,9 +778,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<bool> HashExistsAsync(string key, string hashField)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.HashExistsAsync(key, hashField);
+            return await _cache.HashExistsAsync(key, hashField);
         }
 
         /// <summary>
@@ -939,8 +789,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public bool HashDelete(string key, string hashField)
         {
-            Connect();
-
             return _cache.HashDelete(key, hashField);
         }
 
@@ -952,9 +800,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<bool> HashDeleteAsync(string key, string hashField)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.HashDeleteAsync(key, hashField);
+            return await _cache.HashDeleteAsync(key, hashField);
         }
 
         /// <summary>
@@ -965,8 +811,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public long HashDelete(string key, IEnumerable<string> hashFields)
         {
-            Connect();
-
             return _cache.HashDelete(key, hashFields.Select(x => (RedisValue)x).ToArray());
         }
 
@@ -978,9 +822,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<long> HashDeleteAsync(string key, IEnumerable<string> hashFields)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.HashDeleteAsync(key, hashFields.Select(x => (RedisValue)x).ToArray());
+            return await _cache.HashDeleteAsync(key, hashFields.Select(x => (RedisValue)x).ToArray());
         }
 
         /// <summary>
@@ -992,8 +834,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public long HashIncrement(string key, string hashField, long value = 1)
         {
-            Connect();
-
             return _cache.HashIncrement(key, hashField, value);
         }
 
@@ -1006,9 +846,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<long> HashIncrementAsync(string key, string hashField, long value = 1)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.HashIncrementAsync(key, hashField, value);
+            return await _cache.HashIncrementAsync(key, hashField, value);
         }
 
         /// <summary>
@@ -1020,8 +858,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public long HashDecrement(string key, string hashField, long value = 1)
         {
-            Connect();
-
             return _cache.HashDecrement(key, hashField, value);
         }
 
@@ -1034,9 +870,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<long> HashDecrementAsync(string key, string hashField, long value = 1)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.HashDecrementAsync(key, hashField, value);
+            return await _cache.HashDecrementAsync(key, hashField, value);
         }
 
         /// <summary>
@@ -1048,8 +882,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public double HashIncrementDouble(string key, string hashField, double value)
         {
-            Connect();
-
             return _cache.HashIncrement(key, hashField, value);
         }
 
@@ -1062,9 +894,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<double> HashIncrementDoubleAsync(string key, string hashField, double value)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.HashIncrementAsync(key, hashField, value);
+            return await _cache.HashIncrementAsync(key, hashField, value);
         }
 
         /// <summary>
@@ -1076,8 +906,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public double HashDecrementDouble(string key, string hashField, double value)
         {
-            Connect();
-
             return _cache.HashDecrement(key, hashField, value);
         }
 
@@ -1090,9 +918,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns></returns>
         public async Task<double> HashDecrementDoubleAsync(string key, string hashField, double value)
         {
-            await ConnectAsync();
-
-            return await _cacheAsync.HashDecrementAsync(key, hashField, value);
+            return await _cache.HashDecrementAsync(key, hashField, value);
         }
 
         #endregion hash
@@ -1109,8 +935,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public bool LockTake<T>(string key, T value, TimeSpan expiry)
         {
-            Connect();
-
             var objBytes = _serializer.Serialize(value);
             return _cache.LockTake(key, objBytes, expiry);
         }
@@ -1125,10 +949,8 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public async Task<bool> LockTakeAsync<T>(string key, T value, TimeSpan expiry)
         {
-            await ConnectAsync();
-
             var objBytes = _serializer.Serialize(value);
-            return await _cacheAsync.LockTakeAsync(key, objBytes, expiry);
+            return await _cache.LockTakeAsync(key, objBytes, expiry);
         }
 
         /// <summary>
@@ -1140,8 +962,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public bool LockRelease<T>(string key, T value)
         {
-            Connect();
-
             var objBytes = _serializer.Serialize(value);
             return _cache.LockRelease(key, objBytes);
         }
@@ -1155,10 +975,8 @@ namespace Findx.Redis.StackExchangeRedis
         /// <returns>成功返回true</returns>
         public async Task<bool> LockReleaseAsync<T>(string key, T value)
         {
-            await ConnectAsync();
-
             var objBytes = _serializer.Serialize(value);
-            return await _cacheAsync.LockReleaseAsync(key, objBytes);
+            return await _cache.LockReleaseAsync(key, objBytes);
         }
 
         #endregion lock
@@ -1168,8 +986,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var bytes = _cache.ListGetByIndex(cacheKey, index);
             return _serializer.Deserialize<T>(bytes);
         }
@@ -1178,16 +994,12 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             return _cache.ListLength(cacheKey);
         }
 
         public T ListLeftPop<T>(string cacheKey)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var bytes = _cache.ListLeftPop(cacheKey);
             return _serializer.Deserialize<T>(bytes);
@@ -1197,8 +1009,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
-
-            Connect();
 
             var list = new List<RedisValue>();
 
@@ -1214,8 +1024,6 @@ namespace Findx.Redis.StackExchangeRedis
         public List<T> ListRange<T>(string cacheKey, long start, long stop)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var list = new List<T>();
 
@@ -1233,8 +1041,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var bytes = _serializer.Serialize(cacheValue);
             return _cache.ListRemove(cacheKey, bytes, count);
         }
@@ -1242,8 +1048,6 @@ namespace Findx.Redis.StackExchangeRedis
         public bool ListSetByIndex<T>(string cacheKey, long index, T cacheValue)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var bytes = _serializer.Serialize(cacheValue);
             _cache.ListSetByIndex(cacheKey, index, bytes);
@@ -1254,8 +1058,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             _cache.ListTrim(cacheKey, start, stop);
             return true;
         }
@@ -1264,8 +1066,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var bytes = _serializer.Serialize(cacheValue);
             return _cache.ListLeftPush(cacheKey, bytes);
         }
@@ -1273,8 +1073,6 @@ namespace Findx.Redis.StackExchangeRedis
         public long ListInsertBefore<T>(string cacheKey, T pivot, T cacheValue)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var pivotBytes = _serializer.Serialize(pivot);
             var cacheValueBytes = _serializer.Serialize(cacheValue);
@@ -1285,8 +1083,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var pivotBytes = _serializer.Serialize(pivot);
             var cacheValueBytes = _serializer.Serialize(cacheValue);
             return _cache.ListInsertAfter(cacheKey, pivotBytes, cacheValueBytes);
@@ -1296,8 +1092,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var bytes = _serializer.Serialize(cacheValue);
             return _cache.ListRightPush(cacheKey, bytes);
         }
@@ -1306,8 +1100,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
-
-            Connect();
 
             var list = new List<RedisValue>();
 
@@ -1324,8 +1116,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var bytes = _cache.ListRightPop(cacheKey);
             return _serializer.Deserialize<T>(bytes);
         }
@@ -1334,9 +1124,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var bytes = await _cacheAsync.ListGetByIndexAsync(cacheKey, index);
+            var bytes = await _cache.ListGetByIndexAsync(cacheKey, index);
             return _serializer.Deserialize<T>(bytes);
         }
 
@@ -1344,18 +1132,14 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            return await _cacheAsync.ListLengthAsync(cacheKey);
+            return await _cache.ListLengthAsync(cacheKey);
         }
 
         public async Task<T> ListLeftPopAsync<T>(string cacheKey)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var bytes = await _cacheAsync.ListLeftPopAsync(cacheKey);
+            var bytes = await _cache.ListLeftPopAsync(cacheKey);
             return _serializer.Deserialize<T>(bytes);
         }
 
@@ -1363,10 +1147,8 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var bytes = _serializer.Serialize(cacheValue);
-            return await _cacheAsync.ListLeftPushAsync(cacheKey, bytes);
+            return await _cache.ListLeftPushAsync(cacheKey, bytes);
         }
 
         public async Task<long> ListLeftPushAsync<T>(string cacheKey, IList<T> cacheValues)
@@ -1374,8 +1156,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            await ConnectAsync();
-
             var list = new List<RedisValue>();
 
             foreach (var item in cacheValues)
@@ -1383,7 +1163,7 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(_serializer.Serialize(item));
             }
 
-            var len = await _cacheAsync.ListLeftPushAsync(cacheKey, list.ToArray());
+            var len = await _cache.ListLeftPushAsync(cacheKey, list.ToArray());
             return len;
         }
 
@@ -1391,9 +1171,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var bytes = await _cacheAsync.ListRightPopAsync(cacheKey);
+            var bytes = await _cache.ListRightPopAsync(cacheKey);
             return _serializer.Deserialize<T>(bytes);
         }
 
@@ -1401,18 +1179,14 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var bytes = _serializer.Serialize(cacheValue);
-            return await _cacheAsync.ListRightPushAsync(cacheKey, bytes);
+            return await _cache.ListRightPushAsync(cacheKey, bytes);
         }
 
         public async Task<long> ListRightPushAsync<T>(string cacheKey, IList<T> cacheValues)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
-
-            await ConnectAsync();
 
             var list = new List<RedisValue>();
 
@@ -1421,7 +1195,7 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(_serializer.Serialize(item));
             }
 
-            var len = await _cacheAsync.ListRightPushAsync(cacheKey, list.ToArray());
+            var len = await _cache.ListRightPushAsync(cacheKey, list.ToArray());
             return len;
         }
 
@@ -1429,11 +1203,9 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var list = new List<T>();
 
-            var bytes = await _cacheAsync.ListRangeAsync(cacheKey, start, stop);
+            var bytes = await _cache.ListRangeAsync(cacheKey, start, stop);
 
             foreach (var item in bytes)
             {
@@ -1447,20 +1219,16 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var bytes = _serializer.Serialize(cacheValue);
-            return await _cacheAsync.ListRemoveAsync(cacheKey, bytes, count);
+            return await _cache.ListRemoveAsync(cacheKey, bytes, count);
         }
 
         public async Task<bool> ListSetByIndexAsync<T>(string cacheKey, long index, T cacheValue)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var bytes = _serializer.Serialize(cacheValue);
-            await _cacheAsync.ListSetByIndexAsync(cacheKey, index, bytes);
+            await _cache.ListSetByIndexAsync(cacheKey, index, bytes);
             return true;
         }
 
@@ -1468,9 +1236,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            await _cacheAsync.ListTrimAsync(cacheKey, start, stop);
+            await _cache.ListTrimAsync(cacheKey, start, stop);
             return true;
         }
 
@@ -1478,22 +1244,18 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var pivotBytes = _serializer.Serialize(pivot);
             var cacheValueBytes = _serializer.Serialize(cacheValue);
-            return await _cacheAsync.ListInsertBeforeAsync(cacheKey, pivotBytes, cacheValueBytes);
+            return await _cache.ListInsertBeforeAsync(cacheKey, pivotBytes, cacheValueBytes);
         }
 
         public async Task<long> ListInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var pivotBytes = _serializer.Serialize(pivot);
             var cacheValueBytes = _serializer.Serialize(cacheValue);
-            return await _cacheAsync.ListInsertAfterAsync(cacheKey, pivotBytes, cacheValueBytes);
+            return await _cache.ListInsertAfterAsync(cacheKey, pivotBytes, cacheValueBytes);
         }
 
         #endregion
@@ -1503,8 +1265,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
-
-            Connect();
 
             var list = new List<RedisValue>();
 
@@ -1527,8 +1287,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var len = _cache.SetLength(cacheKey);
             return len;
         }
@@ -1536,8 +1294,6 @@ namespace Findx.Redis.StackExchangeRedis
         public bool SetContains<T>(string cacheKey, T cacheValue)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var bytes = _serializer.Serialize(cacheValue);
 
@@ -1548,8 +1304,6 @@ namespace Findx.Redis.StackExchangeRedis
         public List<T> SetMembers<T>(string cacheKey)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var list = new List<T>();
 
@@ -1567,8 +1321,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var bytes = _cache.SetPop(cacheKey);
 
             return _serializer.Deserialize<T>(bytes);
@@ -1577,8 +1329,6 @@ namespace Findx.Redis.StackExchangeRedis
         public List<T> SetRandomMembers<T>(string cacheKey, int count = 1)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var list = new List<T>();
 
@@ -1595,8 +1345,6 @@ namespace Findx.Redis.StackExchangeRedis
         public long SetRemove<T>(string cacheKey, IList<T> cacheValues = null)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var len = 0L;
 
@@ -1625,8 +1373,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            await ConnectAsync();
-
             var list = new List<RedisValue>();
 
             foreach (var item in cacheValues)
@@ -1634,11 +1380,11 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(_serializer.Serialize(item));
             }
 
-            var len = await _cacheAsync.SetAddAsync(cacheKey, list.ToArray());
+            var len = await _cache.SetAddAsync(cacheKey, list.ToArray());
 
             if (expiration.HasValue)
             {
-                await _cacheAsync.KeyExpireAsync(cacheKey, expiration.Value);
+                await _cache.KeyExpireAsync(cacheKey, expiration.Value);
             }
 
             return len;
@@ -1648,9 +1394,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var len = await _cacheAsync.SetLengthAsync(cacheKey);
+            var len = await _cache.SetLengthAsync(cacheKey);
             return len;
         }
 
@@ -1658,11 +1402,9 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var bytes = _serializer.Serialize(cacheValue);
 
-            var flag = await _cacheAsync.SetContainsAsync(cacheKey, bytes);
+            var flag = await _cache.SetContainsAsync(cacheKey, bytes);
             return flag;
         }
 
@@ -1670,11 +1412,9 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var list = new List<T>();
 
-            var vals = await _cacheAsync.SetMembersAsync(cacheKey);
+            var vals = await _cache.SetMembersAsync(cacheKey);
 
             foreach (var item in vals)
             {
@@ -1688,9 +1428,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var bytes = await _cacheAsync.SetPopAsync(cacheKey);
+            var bytes = await _cache.SetPopAsync(cacheKey);
 
             return _serializer.Deserialize<T>(bytes);
         }
@@ -1699,11 +1437,9 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var list = new List<T>();
 
-            var bytes = await _cacheAsync.SetRandomMembersAsync(cacheKey, count);
+            var bytes = await _cache.SetRandomMembersAsync(cacheKey, count);
 
             foreach (var item in bytes)
             {
@@ -1717,10 +1453,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var len = 0L;
-
+            long len;
             if (cacheValues != null && cacheValues.Any())
             {
                 var bytes = new List<RedisValue>();
@@ -1730,11 +1463,11 @@ namespace Findx.Redis.StackExchangeRedis
                     bytes.Add(_serializer.Serialize<T>(item));
                 }
 
-                len = await _cacheAsync.SetRemoveAsync(cacheKey, bytes.ToArray());
+                len = await _cache.SetRemoveAsync(cacheKey, bytes.ToArray());
             }
             else
             {
-                var flag = await _cacheAsync.KeyDeleteAsync(cacheKey);
+                var flag = await _cache.KeyDeleteAsync(cacheKey);
                 len = flag ? 1 : 0;
             }
 
@@ -1746,8 +1479,6 @@ namespace Findx.Redis.StackExchangeRedis
         public long SortedSetAdd<T>(string cacheKey, Dictionary<T, double> cacheValues)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var param = new List<SortedSetEntry>();
 
@@ -1765,8 +1496,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var len = _cache.SortedSetLength(cacheKey);
             return len;
         }
@@ -1774,8 +1503,6 @@ namespace Findx.Redis.StackExchangeRedis
         public long SortedSetLengthByValue(string cacheKey, double min, double max)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var len = _cache.SortedSetLengthByValue(cacheKey, min, max);
             return len;
@@ -1786,8 +1513,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNullOrWhiteSpace(field, nameof(field));
 
-            Connect();
-
             var value = _cache.SortedSetIncrement(cacheKey, field, val);
             return value;
         }
@@ -1796,8 +1521,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var len = _cache.SortedSetLengthByValue(cacheKey, min, max);
             return len;
         }
@@ -1805,8 +1528,6 @@ namespace Findx.Redis.StackExchangeRedis
         public List<T> SortedSetRangeByRank<T>(string cacheKey, long start, long stop)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var list = new List<T>();
 
@@ -1824,8 +1545,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var bytes = _serializer.Serialize(cacheValue);
 
             var index = _cache.SortedSetRank(cacheKey, bytes);
@@ -1836,8 +1555,6 @@ namespace Findx.Redis.StackExchangeRedis
         public long SortedSetRemove<T>(string cacheKey, IList<T> cacheValues)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            Connect();
 
             var bytes = new List<RedisValue>();
 
@@ -1855,8 +1572,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            Connect();
-
             var bytes = _serializer.Serialize(cacheValue);
 
             var score = _cache.SortedSetScore(cacheKey, bytes);
@@ -1868,8 +1583,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var param = new List<SortedSetEntry>();
 
             foreach (var item in cacheValues)
@@ -1877,7 +1590,7 @@ namespace Findx.Redis.StackExchangeRedis
                 param.Add(new SortedSetEntry(_serializer.Serialize(item.Key), item.Value));
             }
 
-            var len = await _cacheAsync.SortedSetAddAsync(cacheKey, param.ToArray());
+            var len = await _cache.SortedSetAddAsync(cacheKey, param.ToArray());
 
             return len;
         }
@@ -1886,9 +1599,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var len = await _cacheAsync.SortedSetLengthAsync(cacheKey);
+            var len = await _cache.SortedSetLengthAsync(cacheKey);
             return len;
         }
 
@@ -1896,9 +1607,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var len = await _cacheAsync.SortedSetLengthByValueAsync(cacheKey, min, max);
+            var len = await _cache.SortedSetLengthByValueAsync(cacheKey, min, max);
             return len;
         }
 
@@ -1907,9 +1616,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNullOrWhiteSpace(field, nameof(field));
 
-            await ConnectAsync();
-
-            var value = await _cacheAsync.SortedSetIncrementAsync(cacheKey, field, val);
+            var value = await _cache.SortedSetIncrementAsync(cacheKey, field, val);
             return value;
         }
 
@@ -1917,9 +1624,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
-            var len = await _cacheAsync.SortedSetLengthByValueAsync(cacheKey, min, max);
+            var len = await _cache.SortedSetLengthByValueAsync(cacheKey, min, max);
             return len;
         }
 
@@ -1927,11 +1632,9 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var list = new List<T>();
 
-            var bytes = await _cacheAsync.SortedSetRangeByRankAsync(cacheKey, start, stop);
+            var bytes = await _cache.SortedSetRangeByRankAsync(cacheKey, start, stop);
 
             foreach (var item in bytes)
             {
@@ -1945,11 +1648,9 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var bytes = _serializer.Serialize(cacheValue);
 
-            var index = await _cacheAsync.SortedSetRankAsync(cacheKey, bytes);
+            var index = await _cache.SortedSetRankAsync(cacheKey, bytes);
 
             return index;
         }
@@ -1958,8 +1659,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var bytes = new List<RedisValue>();
 
             foreach (var item in cacheValues)
@@ -1967,7 +1666,7 @@ namespace Findx.Redis.StackExchangeRedis
                 bytes.Add(_serializer.Serialize(item));
             }
 
-            var len = await _cacheAsync.SortedSetRemoveAsync(cacheKey, bytes.ToArray());
+            var len = await _cache.SortedSetRemoveAsync(cacheKey, bytes.ToArray());
 
             return len;
         }
@@ -1976,11 +1675,9 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            await ConnectAsync();
-
             var bytes = _serializer.Serialize(cacheValue);
 
-            var score = await _cacheAsync.SortedSetScoreAsync(cacheKey, bytes);
+            var score = await _cache.SortedSetScoreAsync(cacheKey, bytes);
 
             return score;
         }
@@ -1991,8 +1688,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
-
-            Connect();
 
             var list = new List<GeoEntry>();
 
@@ -2010,8 +1705,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            await ConnectAsync();
-
             var list = new List<GeoEntry>();
 
             foreach (var item in values)
@@ -2019,7 +1712,7 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(new GeoEntry(item.longitude, item.latitude, item.member));
             }
 
-            var res = await _cacheAsync.GeoAddAsync(cacheKey, list.ToArray());
+            var res = await _cache.GeoAddAsync(cacheKey, list.ToArray());
             return res;
         }
 
@@ -2029,8 +1722,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(member1, nameof(member1));
             Check.NotNullOrWhiteSpace(member2, nameof(member2));
             Check.NotNullOrWhiteSpace(unit, nameof(unit));
-
-            Connect();
 
             var res = _cache.GeoDistance(cacheKey, member1, member2, GetGeoUnit(unit));
             return res;
@@ -2043,9 +1734,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(member2, nameof(member2));
             Check.NotNullOrWhiteSpace(unit, nameof(unit));
 
-            await ConnectAsync();
-
-            var res = await _cacheAsync.GeoDistanceAsync(cacheKey, member1, member2, GetGeoUnit(unit));
+            var res = await _cache.GeoDistanceAsync(cacheKey, member1, member2, GetGeoUnit(unit));
             return res;
         }
 
@@ -2053,8 +1742,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
-
-            Connect();
 
             var list = new List<RedisValue>();
             foreach (var item in members)
@@ -2070,23 +1757,19 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
 
-            await ConnectAsync();
-
             var list = new List<RedisValue>();
             foreach (var item in members)
             {
                 list.Add(item);
             }
 
-            return await _cacheAsync.GeoHashAsync(cacheKey, list.ToArray());
+            return await _cache.GeoHashAsync(cacheKey, list.ToArray());
         }
 
         public List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, List<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
-
-            Connect();
 
             var list = new List<RedisValue>();
             foreach (var item in members)
@@ -2118,15 +1801,13 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
 
-            await ConnectAsync();
-
             var list = new List<RedisValue>();
             foreach (var item in members)
             {
                 list.Add(item);
             }
 
-            var res = await _cacheAsync.GeoPositionAsync(cacheKey, list.ToArray());
+            var res = await _cache.GeoPositionAsync(cacheKey, list.ToArray());
 
             var tuple = new List<(decimal longitude, decimal latitude)?>();
 
@@ -2151,8 +1832,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(member, nameof(member));
 
-            Connect();
-
             var res = _cache.GeoRadius(cacheKey, member, radius, GetGeoUnit(unit), count: count, order: GetGeoOrder(order), options: GeoRadiusOptions.WithDistance);
 
             var tuple = new List<(string member, double? distance)>();
@@ -2170,9 +1849,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(member, nameof(member));
 
-            await ConnectAsync();
-
-            var res = await _cacheAsync.GeoRadiusAsync(cacheKey, member, radius, GetGeoUnit(unit), count: count, order: GetGeoOrder(order), options: GeoRadiusOptions.WithDistance);
+            var res = await _cache.GeoRadiusAsync(cacheKey, member, radius, GetGeoUnit(unit), count: count, order: GetGeoOrder(order), options: GeoRadiusOptions.WithDistance);
 
             var tuple = new List<(string member, double? distance)>();
 
@@ -2227,8 +1904,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            Connect();
-
             var list = new List<RedisValue>();
 
             foreach (var item in values)
@@ -2245,8 +1920,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            await ConnectAsync();
-
             var list = new List<RedisValue>();
 
             foreach (var item in values)
@@ -2254,15 +1927,13 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(_serializer.Serialize(item));
             }
 
-            var res = await _cacheAsync.HyperLogLogAddAsync(cacheKey, list.ToArray());
+            var res = await _cache.HyperLogLogAddAsync(cacheKey, list.ToArray());
             return res;
         }
 
         public long HyperLogLogLength(List<string> cacheKeys)
         {
             Check.NotNull(cacheKeys, nameof(cacheKeys));
-
-            Connect();
 
             var list = new List<RedisKey>();
 
@@ -2279,8 +1950,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNull(cacheKeys, nameof(cacheKeys));
 
-            await ConnectAsync();
-
             var list = new List<RedisKey>();
 
             foreach (var item in cacheKeys)
@@ -2288,7 +1957,7 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(item);
             }
 
-            var res = await _cacheAsync.HyperLogLogLengthAsync(list.ToArray());
+            var res = await _cache.HyperLogLogLengthAsync(list.ToArray());
             return res;
         }
 
@@ -2296,8 +1965,6 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(destKey, nameof(destKey));
             Check.NotNull(sourceKeys, nameof(sourceKeys));
-
-            Connect();
 
             var list = new List<RedisKey>();
 
@@ -2315,8 +1982,6 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(destKey, nameof(destKey));
             Check.NotNull(sourceKeys, nameof(sourceKeys));
 
-            await ConnectAsync();
-
             var list = new List<RedisKey>();
 
             foreach (var item in sourceKeys)
@@ -2324,7 +1989,7 @@ namespace Findx.Redis.StackExchangeRedis
                 list.Add(item);
             }
 
-            await _cacheAsync.HyperLogLogMergeAsync(destKey, list.ToArray());
+            await _cache.HyperLogLogMergeAsync(destKey, list.ToArray());
             return true;
         }
         #endregion

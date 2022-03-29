@@ -1,17 +1,17 @@
-﻿using Findx.Caching;
+﻿using System.ComponentModel;
+using Findx.Caching;
 using Findx.Extensions;
 using Findx.Locks;
 using Findx.Modularity;
 using Findx.Redis.StackExchangeRedis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel;
 
 namespace Findx.Redis
 {
-    [Description("Findex-Redis缓存模块")]
-    public class RedisModule : FindxModule
-    {
+	[Description("Findx-Redis缓存模块")]
+	public class FindxRedisModule : FindxModule
+	{
         public override ModuleLevel Level => ModuleLevel.Framework;
 
         public override int Order => 20;
@@ -20,11 +20,10 @@ namespace Findx.Redis
         {
             // 配置服务
             IConfiguration configuration = services.GetConfiguration();
-            var section = configuration.GetSection("Findx:Redis");
-            services.Configure<RedisOptions>(section);
+            services.Configure<FindxRedisOptions>(configuration.GetSection("Findx:Redis"));
 
             // redis 连接池
-            services.AddSingleton<IStackExchangeRedisDataBaseProvider, StackExchangeRedisDataBaseProvider>();
+            services.AddSingleton<IStackExchangeRedisConnectionProvider, StackExchangeRedisConnectionProvider>();
 
             // redisClient 提供器
             services.AddSingleton<IRedisClientProvider, StackExchangeRedisClientProvider>();
@@ -41,10 +40,8 @@ namespace Findx.Redis
             // 缓存实现
             services.AddSingleton<ICache, RedisCacheProvider>();
 
-            // redis stream队列
-            services.AddSingleton<IRedisStreamManager, StackExchangeRedisStreamManager>();
-
             return services;
         }
     }
 }
+

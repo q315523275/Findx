@@ -14,18 +14,18 @@ namespace Findx.EventBus.RabbitMQ
 {
     public class EventRabbitMQSubscriber : EventSubscriberBase
     {
-        private readonly IRabbitMQConsumerFactory _consumerFactory;
+        private readonly IRabbitMqConsumerFactory _consumerFactory;
         private readonly IApplicationInstanceInfo _application;
         private readonly EventBusRabbitMqOptions _options;
-        private ConcurrentDictionary<string, IRabbitMQConsumer> _consumers;
+        private ConcurrentDictionary<string, IRabbitMqConsumer> _consumers;
 
-        public EventRabbitMQSubscriber(IRabbitMQConsumerFactory consumerFactory, IEventSubscribeManager subscribeManager, IEventStore storage, IEventDispatcher dispatcher, IApplicationInstanceInfo application, IOptions<EventBusRabbitMqOptions> options, ILogger<EventSubscriberBase> logger) : base(subscribeManager, storage, logger, dispatcher)
+        public EventRabbitMQSubscriber(IRabbitMqConsumerFactory consumerFactory, IEventSubscribeManager subscribeManager, IEventStore storage, IEventDispatcher dispatcher, IApplicationInstanceInfo application, IOptions<EventBusRabbitMqOptions> options, ILogger<EventSubscriberBase> logger) : base(subscribeManager, storage, logger, dispatcher)
         {
             _consumerFactory = consumerFactory;
             _options = options.Value;
             _application = application;
 
-            _consumers = new ConcurrentDictionary<string, IRabbitMQConsumer>();
+            _consumers = new ConcurrentDictionary<string, IRabbitMqConsumer>();
         }
 
         protected override void DoInternalSubscribe(string eventName, string handlerName, int prefetchCount)
@@ -41,12 +41,12 @@ namespace Findx.EventBus.RabbitMQ
 
                     var queueDeclareConfiguration = new QueueDeclareConfiguration(handlerName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
 
-                    IRabbitMQConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration, false);
+                    IRabbitMqConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration);
 
                     _consumers.TryAdd(handlerName, rabbitMqConsumer);
                 }
 
-                _consumers.GetOrDefault(handlerName)?.Bind(eventName);
+                _consumers.GetOrDefault(handlerName)?.BindAsync(eventName);
             }
         }
 
@@ -54,7 +54,7 @@ namespace Findx.EventBus.RabbitMQ
         {
             foreach (var consumer in _consumers.Values)
             {
-                consumer.Unbind(eventName);
+                consumer.UnbindAsync(eventName);
             }
         }
 
@@ -106,7 +106,7 @@ namespace Findx.EventBus.RabbitMQ
 
                 _consumer.OnMessageReceived(Consumer_Received);
 
-                _consumer.StartConsuming();
+                // _consumer.StartConsuming();
             }
         }
     }

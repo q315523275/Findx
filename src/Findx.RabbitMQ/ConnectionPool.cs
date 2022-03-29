@@ -3,139 +3,75 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
-
+using Findx.Extensions;
 namespace Findx.RabbitMQ
 {
     public class ConnectionPool : IConnectionPool, IDisposable
     {
-        private RabbitMQOptions _options;
-        private IConnectionFactory _connectionFactory;
-        private IConnection _connection;
+
+        protected FindxRabbitMqOptions Options { get; }
+
+        protected ConcurrentDictionary<string, Lazy<IConnection>> Connections { get; }
+
         private bool _isDisposed;
 
-        private readonly ILogger<ConnectionPool> _logger;
-        private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(initialCount: 1, maxCount: 1);
-        public ConnectionPool(IOptionsMonitor<RabbitMQOptions> options, ILogger<ConnectionPool> logger)
+        public ConnectionPool(IOptions<FindxRabbitMqOptions> options)
         {
-            _logger = logger;
-            _options = options.CurrentValue;
-            options.OnChange(ConfigurationOnChange);
-            CreateConnectionFactory();
+            Options = options.Value;
+            Connections = new ConcurrentDictionary<string, Lazy<IConnection>>();
         }
 
-        private void ConfigurationOnChange(RabbitMQOptions changeOptions)
+        public virtual IConnection Get(string connectionName = null)
         {
-            if (changeOptions.ToString() != _options.ToString())
-            {
-                _options = changeOptions;
+            connectionName ??= RabbitMqConnections.DefaultConnectionName;
 
-                Dispose();
-
-                CreateConnectionFactory();
-
-                _logger.LogInformation("RabbitMQ client configuration update");
-            }
-        }
-
-        private void CreateConnectionFactory()
-        {
-            _connectionFactory = new ConnectionFactory
-            {
-                HostName = _options.HostName,
-                Port = _options.Port,
-                UserName = _options.UserName,
-                Password = _options.Password,
-                VirtualHost = _options.VirtualHost,
-                ClientProvidedName = (_options.ClientProvidedName ?? Environment.MachineName) + $"-{Process.GetCurrentProcess()?.Id}",
-            };
-        }
-
-        public bool IsConnected
-        {
-            get
-            {
-                return _connection != null && _connection.IsOpen && !_isDisposed;
-            }
-        }
-
-        public IConnection Acquire()
-        {
-            if (IsConnected)
-                return _connection;
-
-            _connectionLock.Wait();
             try
             {
-                if (IsConnected)
-                    return _connection;
+                var lazyConnection = Connections.GetOrAdd(
+                    connectionName, (connectionName) => new Lazy<IConnection>(() =>
+                    {
+                        var connection = Options.Connections.GetOrDefault(connectionName);
+                        var hostnames = connection.HostName.TrimEnd(';').Split(';');
+                        // Handle Rabbit MQ Cluster.
+                        return hostnames.Length == 1 ? connection.CreateConnection() : connection.CreateConnection(hostnames);
 
-                _connection?.Dispose();
-                _connection = null;
+                    })
+                );
 
-                _connection = _connectionFactory.CreateConnection();
-
-                if (IsConnected)
-                {
-                    _connection.ConnectionShutdown += OnConnectionShutdown;
-                    _connection.CallbackException += OnCallbackException;
-                    _connection.ConnectionBlocked += OnConnectionBlocked;
-                }
-
-                return _connection;
+                return lazyConnection.Value;
             }
-            finally
+            catch (Exception)
             {
-                _connectionLock.Release();
+                Connections.TryRemove(connectionName, out _);
+                throw;
             }
         }
 
         public void Dispose()
         {
-            if (IsConnected)
+            if (_isDisposed)
             {
-                if (_isDisposed)
-                    return;
+                return;
+            }
 
-                _isDisposed = true;
+            _isDisposed = true;
 
+            foreach (var connection in Connections.Values)
+            {
                 try
                 {
-                    _connection.Dispose();
+                    connection.Value.Dispose();
                 }
                 catch
                 {
 
                 }
             }
-        }
 
-        private void OnConnectionBlocked(object sender, ConnectionBlockedEventArgs e)
-        {
-            if (_isDisposed) return;
-
-            _logger.LogWarning("A RabbitMQ connection is shutdown. Trying to re-connect...");
-
-            Acquire();
-        }
-
-        void OnCallbackException(object sender, CallbackExceptionEventArgs e)
-        {
-            if (_isDisposed) return;
-
-            _logger.LogWarning("A RabbitMQ connection throw exception. Trying to re-connect...");
-
-            Acquire();
-        }
-
-        void OnConnectionShutdown(object sender, ShutdownEventArgs reason)
-        {
-            if (_isDisposed) return;
-
-            _logger.LogWarning("A RabbitMQ connection is on shutdown. Trying to re-connect...");
-
-            Acquire();
+            Connections.Clear();
         }
     }
 }

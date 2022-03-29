@@ -16,16 +16,16 @@ namespace Findx.RabbitMQ
     {
         private readonly IRabbitConsumerFinder _finder;
         private readonly IMethodInfoFinder _methodFinder;
-        private readonly IRabbitMQConsumerFactory _factory;
+        private readonly IRabbitMqConsumerFactory _factory;
         private readonly IJsonSerializer _serializer;
 
-        public RabbitConsumerBuilder(IRabbitConsumerFinder finder, IMethodInfoFinder methodFinder, IRabbitMQConsumerFactory factory, IJsonSerializer serializer)
+        public RabbitConsumerBuilder(IRabbitConsumerFinder finder, IMethodInfoFinder methodFinder, IRabbitMqConsumerFactory factory, IJsonSerializer serializer)
         {
             _finder = finder;
             _methodFinder = methodFinder;
             _factory = factory;
             _serializer = serializer;
-            Consumers = new List<IRabbitMQConsumer>();
+            Consumers = new List<IRabbitMqConsumer>();
             MethodParameter = new ConcurrentDictionary<MethodInfo, Type>();
             Handlers = new ConcurrentDictionary<MethodInfo, Func<object, object[], object>>();
         }
@@ -43,9 +43,7 @@ namespace Findx.RabbitMQ
                     var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(attr.ExchangeName, attr.Type);
                     var queueDeclareConfiguration = new QueueDeclareConfiguration(attr.QueueName, qos: attr.Qos) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
 
-                    var consumer = _factory.Create(exchange: exchangeDeclareConfiguration, queue: queueDeclareConfiguration);
-
-                    consumer.Bind(attr.RoutingKey);
+                    var consumer = _factory.Create(exchange: exchangeDeclareConfiguration, queue: queueDeclareConfiguration, attr.ConnectionName);
 
                     consumer.OnMessageReceived(async (channel, eventArgs) =>
                     {
@@ -69,15 +67,14 @@ namespace Findx.RabbitMQ
                         }
                     });
 
-                    Consumers.Add(consumer);
+                    consumer.BindAsync(attr.RoutingKey);
 
-                    // 启动开始消费
-                    consumer.StartConsuming();
+                    Consumers.Add(consumer);
                 }
             }
         }
 
-        private List<IRabbitMQConsumer> Consumers { get; }
+        private List<IRabbitMqConsumer> Consumers { get; }
         private ConcurrentDictionary<MethodInfo, Type> MethodParameter { get; }
         private ConcurrentDictionary<MethodInfo, Func<object, object[], object>> Handlers { get; }
     }

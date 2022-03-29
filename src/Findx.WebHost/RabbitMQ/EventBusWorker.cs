@@ -20,13 +20,13 @@ namespace Findx.WebHost.RabbitMQ
         {
             await Task.Yield();
 
-            _eventBus.Subscribe<FindxTestEvent, FindxTestEventHander>();
+            //_eventBus.Subscribe<FindxTestEvent, FindxTestEventHander>();
 
-            _eventBus.Subscribe<FindxTestEvent, FindxTestEventHanderTwo>();
+            //_eventBus.Subscribe<FindxTestEvent, FindxTestEventHanderTwo>();
 
-            _eventBus.SubscribeDynamic<FindxTestDynamicEventHandler>("Findx.WebHost.EventBus.FindxTestEvent");
+            //_eventBus.SubscribeDynamic<FindxTestDynamicEventHandler>("Findx.WebHost.EventBus.FindxTestEvent");
 
-            _eventBus.StartConsuming();
+            //_eventBus.StartConsuming();
         }
     }
 

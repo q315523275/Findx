@@ -14,7 +14,7 @@ namespace Findx.RabbitMQ
         public string Type { get; }
         /// <summary>
         /// 设置是否持久化。durable设置true表示持久化，反之是持久化。
-        /// 持久化可以将将换机存盘，在服务器重启时不会丢失相关信息
+        /// 持久化可以将交换机存盘，在服务器重启时不会丢失相关信息
         /// </summary>
         public bool Durable { get; set; }
         /// <summary>

@@ -15,7 +15,7 @@ namespace Findx.Redis
         public RedisCacheProvider(IRedisClientProvider redisClientProvider)
         {
             _redisClient = redisClientProvider.CreateClient();
-            Name = _redisClient.Name;
+            Name = $"Redis.{_redisClient.Name}";
         }
 
         public void Add<T>(string key, T value, TimeSpan? expiration = null)

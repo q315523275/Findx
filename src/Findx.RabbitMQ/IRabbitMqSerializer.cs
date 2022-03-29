@@ -2,7 +2,7 @@
 
 namespace Findx.RabbitMQ
 {
-    public interface IRabbitMQSerializer
+    public interface IRabbitMqSerializer
     {
         string Serialize(object obj);
 

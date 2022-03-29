@@ -1,9 +1,10 @@
-﻿using RabbitMQ.Client;
+﻿using System;
+using RabbitMQ.Client;
 
 namespace Findx.RabbitMQ
 {
-    public interface IConnectionPool
+    public interface IConnectionPool : IDisposable
     {
-        IConnection Acquire();
+        IConnection Get(string connectionName = null);
     }
 }

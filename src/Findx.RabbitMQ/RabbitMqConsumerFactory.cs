@@ -1,21 +1,28 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Findx.RabbitMQ
 {
-    public class RabbitMQConsumerFactory : IRabbitMQConsumerFactory
+    public class RabbitMqConsumerFactory : IRabbitMqConsumerFactory, IDisposable
     {
-        private readonly ILogger<RabbitMQConsumer> _logger;
-        private readonly IConnectionPool _connectionPool;
+        protected IServiceScope ServiceScope { get; }
 
-        public RabbitMQConsumerFactory(ILogger<RabbitMQConsumer> logger, IConnectionPool connectionPool)
+        public RabbitMqConsumerFactory(IServiceScopeFactory serviceScopeFactory)
         {
-            _logger = logger;
-            _connectionPool = connectionPool;
+            ServiceScope = serviceScopeFactory.CreateScope();
         }
 
-        public IRabbitMQConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue, bool autoAck = true)
+        public IRabbitMqConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue, string connectionName = null)
         {
-            return new RabbitMQConsumer(_logger, _connectionPool, exchange, queue, autoAck);
+            var consumer = ServiceScope.ServiceProvider.GetRequiredService<RabbitMqConsumer>();
+            consumer.Initialize(exchange, queue, connectionName);
+            return consumer;
+        }
+
+        public void Dispose()
+        {
+            ServiceScope?.Dispose();
         }
     }
 }

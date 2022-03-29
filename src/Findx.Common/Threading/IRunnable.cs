@@ -1,25 +1,22 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Findx.Scheduling
+namespace Findx.Threading
 {
     /// <summary>
-    /// 调度器
+    /// 线程启动停止服务接口
     /// </summary>
-    public interface IScheduler
-    {
+    public interface IRunnable
+	{
         /// <summary>
-        /// 启动调度器
+        /// 开始服务
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
         Task StartAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 停止调度器
+        /// 停止服务
         /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
         Task StopAsync(CancellationToken cancellationToken = default);
     }
 }
+

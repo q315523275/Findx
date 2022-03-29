@@ -8,7 +8,7 @@ using System.ComponentModel;
 namespace Findx.EventBus.RabbitMQ
 {
     [Description("Findx-消息总线模块")]
-    [DependsOnModules(typeof(RabbitMQModule))]
+    [DependsOnModules(typeof(FindxRabbitMqModule))]
     public class EventBusRabbitMqModule : FindxModule
     {
         public override ModuleLevel Level => ModuleLevel.Framework;
