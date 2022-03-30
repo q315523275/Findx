@@ -10,7 +10,7 @@
         /// <summary>
         /// 用户名。默认：<see cref="System.Security.Claims.ClaimTypes.Name"/>
         /// </summary>
-        public static string UserName { get; set; } = "user_name"; // System.Security.Claims.ClaimTypes.Name;
+        public static string UserName { get; set; } = System.Security.Claims.ClaimTypes.Name; // "user_name";
 
         /// <summary>
         /// 姓名。默认："full_name"
@@ -20,12 +20,12 @@
         /// <summary>
         /// 用户标识。默认：<see cref="System.Security.Claims.ClaimTypes.NameIdentifier"/>
         /// </summary>
-        public static string UserId { get; set; } = "user_id"; // System.Security.Claims.ClaimTypes.NameIdentifier;
+        public static string UserId { get; set; } = System.Security.Claims.ClaimTypes.NameIdentifier; // "user_id";
 
         /// <summary>
         /// 电子邮件。默认：<see cref="System.Security.Claims.ClaimTypes.Email"/>
         /// </summary>
-        public static string Email { get; set; } = "email"; // System.Security.Claims.ClaimTypes.Email;
+        public static string Email { get; set; } = System.Security.Claims.ClaimTypes.Email; // "email";
 
         /// <summary>
         /// 已验证电子邮件。默认："email_verified"
@@ -106,7 +106,7 @@
         /// <summary>
         /// 角色。默认：<see cref="System.Security.Claims.ClaimTypes.Role"/>
         /// </summary>
-        public static string Role { get; set; } = "role"; // System.Security.Claims.ClaimTypes.Role;
+        public static string Role { get; set; } = System.Security.Claims.ClaimTypes.Role; // "role";
 
         /// <summary>
         /// 角色标识列表。默认："role_ids"

@@ -43,7 +43,7 @@ namespace Findx.FreeSql
                 // 开启逻辑删除
                 if (FreeSqlOptions.SoftDeletable)
                 {
-                    freeSql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.Deleted == false);
+                    freeSql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
                 }
                 // AOP
                 freeSql.Aop.CurdAfter += (s, e) =>

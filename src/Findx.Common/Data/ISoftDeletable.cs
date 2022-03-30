@@ -10,11 +10,11 @@ namespace Findx.Data
         /// <summary>
         /// 逻辑删除时间
         /// </summary>
-        DateTime? DeletedTime { get; set; }
+        DateTime? DeletionTime { get; set; }
 
         /// <summary>
         /// 是否逻辑删除
         /// </summary>
-        bool Deleted { get; set; }
+        bool IsDeleted { get; set; }
     }
 }

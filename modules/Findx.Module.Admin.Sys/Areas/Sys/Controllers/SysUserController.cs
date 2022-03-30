@@ -143,10 +143,10 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 user.Name = user.Account;
             if (string.IsNullOrEmpty(user.NickName))
                 user.NickName = user.Account;
-            user.CreateTime = DateTime.Now;
-            user.CreateUser = currentUser?.UserId?.CastTo<long>();
             user.AdminType = AdminTypeEnum.None.To<int>();
-            user.Init();
+            user.CreatedTime = DateTime.Now;
+            user.CreatorId = (long?)(currentUser?.UserId?.CastTo(user.CreatorId.GetType()));
+            user.SetEmptyKey();
 
             // 事物
             var uow = repo.GetUnitOfWork();
@@ -238,8 +238,8 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
 
             var user = request.MapTo<SysUserInfo>();
             Check.NotNull(user, nameof(user));
-            user.UpdateTime = DateTime.Now;
-            user.UpdateUser = currentUser?.UserId?.CastTo<long>();
+            user.LastUpdatedTime = DateTime.Now;
+            user.LastUpdaterId = (long?)(currentUser?.UserId?.CastTo(user.LastUpdaterId.GetType()));
 
             // 事物
             var uow = repo.GetUnitOfWork();
@@ -247,7 +247,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             try
             {
                 await EditBeforeAsync(user);
-                var res = await repo.UpdateAsync(user, ignoreColumns: x => new { x.Password, x.Status, x.AdminType, x.CreateTime, x.CreateUser, x.LastLoginIp, x.LastLoginTime }, ignoreNullColumns: true);
+                var res = await repo.UpdateAsync(user, ignoreColumns: x => new { x.Password, x.Status, x.AdminType, x.CreatedTime, x.CreatorId, x.LastLoginIp, x.LastLoginTime }, ignoreNullColumns: true);
                 await EditAfterAsync(user, res);
 
                 // 员工信息

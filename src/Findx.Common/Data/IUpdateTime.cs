@@ -10,6 +10,6 @@ namespace Findx.Data
         /// <summary>
         /// 更新时间
         /// </summary>
-        DateTime? UpdateTime { get; set; }
+        DateTime? LastUpdatedTime { get; set; }
     }
 }

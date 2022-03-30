@@ -140,8 +140,8 @@ namespace Findx.SqlSugar
                 if (model != null)
                 {
                     var softDeletable = model as ISoftDeletable;
-                    softDeletable.Deleted = true;
-                    softDeletable.DeletedTime = DateTime.Now;
+                    softDeletable.IsDeleted = true;
+                    softDeletable.DeletionTime = DateTime.Now;
 
                     return _sugar.Updateable(model).AS(_tableName)
                                  .UpdateColumns(Options.SoftDeletableField, Options.SoftDeletableTimeField)
@@ -189,8 +189,8 @@ namespace Findx.SqlSugar
                 if (model != null)
                 {
                     var softDeletable = model as ISoftDeletable;
-                    softDeletable.Deleted = true;
-                    softDeletable.DeletedTime = DateTime.Now;
+                    softDeletable.IsDeleted = true;
+                    softDeletable.DeletionTime = DateTime.Now;
 
                     return _sugar.Updateable(model).AS(_tableName)
                                  .UpdateColumns(Options.SoftDeletableField, Options.SoftDeletableTimeField)
@@ -828,6 +828,12 @@ namespace Findx.SqlSugar
         {
             _tableName = tableRule(_oldTableName);
             return this;
+        }
+
+        public DatabaseType GetDbType()
+        {
+            var dataType = _sugar.CurrentConnectionConfig.DbType.ToString();
+            return dataType.CastTo<DatabaseType>();
         }
         #endregion
 

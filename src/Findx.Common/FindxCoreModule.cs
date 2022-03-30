@@ -11,6 +11,7 @@ using Findx.Messaging;
 using Findx.Modularity;
 using Findx.Reflection;
 using Findx.Serialization;
+using Findx.Setting;
 using Findx.Sms;
 using Findx.Storage;
 using Findx.Threading;
@@ -29,6 +30,9 @@ namespace Findx.Builders
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             IConfiguration configuration = services.GetConfiguration();
+
+            // 配置
+            services.AddSingleton<ISettingProvider, ConfigurationSettingProvider>();
 
             // 缓存
             services.TryAddSingleton<ICacheProvider, CacheProvider>();

@@ -26,13 +26,5 @@ namespace Findx.Module.Admin.Models
         /// </summary>
         [Column(Name = "role_id")]
         public long RoleId { get; set; }
-
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        public override void Init()
-        {
-            Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
     }
 }

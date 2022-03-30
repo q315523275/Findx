@@ -343,6 +343,13 @@ namespace Findx.Data
         /// </summary>
         /// <returns></returns>
         List<string> GetDbColumnName();
+
+        /// <summary>
+        /// 获取数据库类型
+        /// </summary>
+        /// <returns></returns>
+        DatabaseType GetDbType();
+
         /// <summary>
         /// 切换表规则
         /// </summary>

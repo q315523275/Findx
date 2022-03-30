@@ -35,5 +35,9 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="JetBrains.Annotations" />
+	  <None Remove="Setting\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Setting\" />
 	</ItemGroup>
 </Project>

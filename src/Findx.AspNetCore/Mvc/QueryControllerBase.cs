@@ -18,7 +18,7 @@ namespace Findx.AspNetCore.Mvc
         where TModel : EntityBase<TKey>, new()
         where TDTO : IResponse, new()
         where TQueryParameter : IPager, new()
-        where TKey : struct
+        where TKey : IEquatable<TKey>
     {
 
     }
@@ -31,7 +31,7 @@ namespace Findx.AspNetCore.Mvc
         where TListDTO : IResponse, new()
         where TDetailDTO : IResponse, new()
         where TQueryParameter : IPager, new()
-        where TKey : struct
+        where TKey : IEquatable<TKey>
     {
         /// <summary>
         /// 构建分页查询条件

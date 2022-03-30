@@ -61,7 +61,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 Success = result
             };
             var repo = HttpContext.RequestServices.GetService<IRepository<SysVisLogInfo>>();
-            visLog.Init();
+            visLog.SetEmptyKey();
             repo.Insert(visLog);
         }
 

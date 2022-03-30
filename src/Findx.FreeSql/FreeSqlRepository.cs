@@ -119,7 +119,7 @@ namespace Findx.FreeSql
         {
             if (_softDeletable)
             {
-                return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).Deleted == true).Set(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+                return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
             }
 
             return _fsql.Delete<TEntity>(key).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
@@ -129,7 +129,7 @@ namespace Findx.FreeSql
         {
             if (_softDeletable)
             {
-                return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).Deleted == true).Set(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+                return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
 
             return _fsql.Delete<TEntity>(key).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
@@ -139,12 +139,12 @@ namespace Findx.FreeSql
         {
             if (_softDeletable && whereExpression == null)
             {
-                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).Deleted == true).Set(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).Where(it => true).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
             }
 
             if (_softDeletable && whereExpression != null)
             {
-                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).Deleted == true).Set(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
             }
 
             if (whereExpression == null)
@@ -157,12 +157,12 @@ namespace Findx.FreeSql
         {
             if (_softDeletable && whereExpression == null)
             {
-                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).Deleted == true).Set(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).Where(it => true).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
 
             if (_softDeletable && whereExpression != null)
             {
-                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).Deleted == true).Set(it => (it as ISoftDeletable).DeletedTime == DateTime.Now).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
 
             if (whereExpression == null)
@@ -670,14 +670,12 @@ namespace Findx.FreeSql
 
             return this;
         }
+
+        public DatabaseType GetDbType()
+        {
+            var dataType = _fsql.Ado.DataType.ToString();
+            return dataType.CastTo<DatabaseType>();
+        }
         #endregion
-
-        
-
-        
-
-
-
-
     }
 }

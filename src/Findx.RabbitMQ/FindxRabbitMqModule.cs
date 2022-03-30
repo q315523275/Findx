@@ -42,8 +42,8 @@ namespace Findx.RabbitMQ
 
         public override void UseModule(IServiceProvider provider)
         {
-            // Task.Run(() => { provider.GetService<IRabbitConsumerBuilder>()?.Build(); });
-            provider.GetService<IRabbitConsumerBuilder>()?.Build();
+            Task.Run(() => { provider.GetService<IRabbitConsumerBuilder>()?.Build(); });
+            // provider.GetService<IRabbitConsumerBuilder>()?.Build();
             base.UseModule(provider);
         }
 

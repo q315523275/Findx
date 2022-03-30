@@ -192,7 +192,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             if (request.Status == NoticeStatusEnum.CANCEL.To<int>())
                 updateColums.Add(x => x.CancelTime == DateTime.Now);
 
-            updateColums.Add(x => x.UpdateTime == DateTime.Now);
+            updateColums.Add(x => x.LastUpdatedTime == DateTime.Now);
 
             repo.UpdateColumns(updateColums, x => x.Id == request.Id);
 

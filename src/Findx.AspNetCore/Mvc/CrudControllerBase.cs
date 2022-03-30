@@ -2,9 +2,11 @@
 using Findx.Extensions;
 using Findx.Mapping;
 using Findx.Security;
+using Findx.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.Threading.Tasks;
 
 namespace Findx.AspNetCore.Mvc
@@ -21,7 +23,7 @@ namespace Findx.AspNetCore.Mvc
                 where TModel : EntityBase<TKey>, IResponse, new()
         where TRequest : IRequest, new()
         where TQueryParameter : IPager, new()
-        where TKey : struct
+        where TKey : IEquatable<TKey>
         where TUserKey : struct
     {
 
@@ -41,7 +43,7 @@ namespace Findx.AspNetCore.Mvc
         where TDto : IResponse, new()
         where TRequest : IRequest, new()
         where TQueryParameter : IPager, new()
-        where TKey : struct
+        where TKey : IEquatable<TKey>
         where TUserKey : struct
     {
 
@@ -61,7 +63,7 @@ namespace Findx.AspNetCore.Mvc
         where TCreateRequest : IRequest, new()
         where TUpdateRequest : IRequest, new()
         where TQueryParameter : IPager, new()
-        where TKey : struct
+        where TKey : IEquatable<TKey>
         where TUserKey : struct
     {
 
@@ -86,7 +88,7 @@ namespace Findx.AspNetCore.Mvc
         where TCreateRequest : IRequest, new()
         where TUpdateRequest : IRequest, new()
         where TQueryParameter : IPager, new()
-        where TKey : struct
+        where TKey : IEquatable<TKey>
         where TUserKey : struct
     {
         /// <summary>
@@ -151,27 +153,31 @@ namespace Findx.AspNetCore.Mvc
             Check.NotNull(request, nameof(request));
 
             var repo = GetRepository<TModel>();
-            var currentUser = GetService<ICurrentUser>();
+            var principal = GetService<IPrincipal>();
 
             Check.NotNull(repo, nameof(repo));
-            Check.NotNull(currentUser, nameof(currentUser));
 
             var model = ToModelFromCreateRequest(request);
 
             Check.NotNull(model, nameof(model));
 
-            // 创建时间
-            if (model is ICreateTime time)
-                time.CreateTime = DateTime.Now;
+            model.CheckICreatedTime<TModel, TKey>();
+            model.CheckICreationAudited<TModel, TKey, TUserKey>(principal);
 
-            // 创建人
-            if (model is ICreateUser<TUserKey> user)
+            var keyType = typeof(TKey);
+            // 雪花长整形
+            if (typeof(long) == keyType && model.Id.Equals(default(long)))
             {
-                user.CreateTime = DateTime.Now;
-                user.CreateUser = currentUser?.UserId?.CastTo<TUserKey>();
+                model.Id = SnowflakeId.Default().NextId().CastTo<TKey>();
             }
 
-            model.Init();
+            // 有序Guid
+            if (typeof(Guid) == keyType && model.Id.CastTo<Guid>() == Guid.Empty)
+            {
+                var dbType = repo.GetDbType();
+                model.Id = SequentialGuid.Instance.Create(dbType).CastTo<TKey>();
+            }
+
             await AddBeforeAsync(model);
             var res = repo.Insert(model);
             await AddAfterAsync(model, res);
@@ -204,12 +210,13 @@ namespace Findx.AspNetCore.Mvc
 
             // 修改时间
             if (model is IUpdateTime updateTime)
-                updateTime.UpdateTime = DateTime.Now;
+                updateTime.LastUpdatedTime = DateTime.Now;
+
             // 修改信息
-            if (model is IUpdateUser<TUserKey> updateUser)
+            if (model is IUpdateAudited<TUserKey> updateUser)
             {
-                updateUser.UpdateTime = DateTime.Now;
-                updateUser.UpdateUser = currentUser?.UserId?.CastTo<TUserKey>();
+                updateUser.LastUpdatedTime = DateTime.Now;
+                updateUser.LastUpdaterId = currentUser?.UserId?.CastTo<TUserKey>();
             }
 
             await EditBeforeAsync(model);
@@ -259,7 +266,7 @@ namespace Findx.AspNetCore.Mvc
     /// 通用增删改查 - 删除入参
     /// </summary>
     /// <typeparam name="TTKey"></typeparam>
-    public class DeleteParam<TTKey> where TTKey : struct
+    public class DeleteParam<TTKey> where TTKey : IEquatable<TTKey>
     {
         /// <summary>
         /// 删除编号

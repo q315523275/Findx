@@ -111,13 +111,5 @@ namespace Findx.Module.Admin.Models
         /// </summary>
         [Column(Name = "url", DbType = "varchar(500)")]
         public string Url { get; set; }
-
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        public override void Init()
-        {
-            Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
     }
 }

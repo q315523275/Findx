@@ -8,6 +8,6 @@
         /// <summary>
         /// 逻辑删除操作人
         /// </summary>
-        TUserKey? DeleteUser { get; set; }
+        TUserKey? DeleterId { get; set; }
     }
 }

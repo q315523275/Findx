@@ -75,13 +75,5 @@ namespace Findx.Module.Admin.Models
         /// </summary>
         [Column(Name = "vis_type", DbType = "tinyint(4)")]
         public int VisType { get; set; }
-
-        /// <summary>
-        /// 初始化
-        /// </summary>
-        public override void Init()
-        {
-            Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
     }
 }

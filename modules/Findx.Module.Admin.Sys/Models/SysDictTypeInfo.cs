@@ -8,7 +8,7 @@ namespace Findx.Module.Admin.Models
     /// 系统字典类型表
     /// </summary>
     [Table(Name = "sys_dict_type")]
-    public partial class SysDictTypeInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest
+    public partial class SysDictTypeInfo : EntityBase<long>, IFullAudited<long>, IResponse, IRequest
     {
 
         /// <summary>
@@ -22,18 +22,6 @@ namespace Findx.Module.Admin.Models
         /// </summary>
         [Column(Name = "code", DbType = "varchar(50)")]
         public string Code { get; set; }
-
-        /// <summary>
-        /// 创建时间
-        /// </summary>
-        [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime? CreateTime { get; set; }
-
-        /// <summary>
-        /// 创建人
-        /// </summary>
-        [Column(Name = "create_user")]
-        public long? CreateUser { get; set; }
 
         /// <summary>
         /// 名称
@@ -60,23 +48,27 @@ namespace Findx.Module.Admin.Models
         public int Status { get; set; }
 
         /// <summary>
-        /// 更新时间
+        /// 创建人
         /// </summary>
-        [Column(Name = "update_time", DbType = "datetime")]
-        public DateTime? UpdateTime { get; set; }
+        [Column(Name = "create_user")]
+        public long? CreatorId { get; set; }
 
         /// <summary>
-        /// 更新人
+        /// 创建时间
+        /// </summary>
+        [Column(Name = "create_time", DbType = "datetime")]
+        public DateTime? CreatedTime { get; set; }
+
+        /// <summary>
+        /// 修改人
         /// </summary>
         [Column(Name = "update_user")]
-        public long? UpdateUser { get; set; }
+        public long? LastUpdaterId { get; set; }
 
         /// <summary>
-        /// 初始化
+        /// 最后更新时间
         /// </summary>
-        public override void Init()
-        {
-            Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
+        [Column(Name = "update_time", DbType = "datetime")]
+        public DateTime? LastUpdatedTime { get; set; }
     }
 }

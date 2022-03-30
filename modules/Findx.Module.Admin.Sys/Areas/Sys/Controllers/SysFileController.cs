@@ -117,10 +117,10 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 FileSizeKb = fileInfo.Size.GetSizeByK().To<long>(),
                 FileSuffix = fileInfo.Extension,
                 FileObjectName = fileInfo.SaveName,
-                CreateTime = System.DateTime.Now,
-                CreateUser = currentUser?.UserId?.CastTo<long>(),
+                CreatedTime = System.DateTime.Now,
             };
-            sysFileInfo.Init();
+            sysFileInfo.CreatorId = (long?)(currentUser?.UserId?.CastTo(sysFileInfo .LastUpdaterId.GetType()));
+            sysFileInfo.SetEmptyKey();
             await repo.InsertAsync(sysFileInfo);
             return CommonResult.Success(sysFileInfo);
         }

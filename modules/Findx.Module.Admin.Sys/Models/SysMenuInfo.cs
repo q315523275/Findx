@@ -8,7 +8,7 @@ namespace Findx.Module.Admin.Models
     /// 系统菜单表
     /// </summary>
     [Table(Name = "sys_menu")]
-    public class SysMenuInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest, ISort
+    public class SysMenuInfo : EntityBase<long>, IFullAudited<long>, IResponse, IRequest, ISort
     {
         /// <summary>
         /// 主键
@@ -33,18 +33,6 @@ namespace Findx.Module.Admin.Models
         /// </summary>
         [Column(Name = "component")]
         public string Component { get; set; }
-
-        /// <summary>
-        /// 创建时间
-        /// </summary>
-        [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime? CreateTime { get; set; }
-
-        /// <summary>
-        /// 创建人
-        /// </summary>
-        [Column(Name = "create_user")]
-        public long? CreateUser { get; set; }
 
         /// <summary>
         /// 图标
@@ -125,18 +113,6 @@ namespace Findx.Module.Admin.Models
         public int Type { get; set; }
 
         /// <summary>
-        /// 修改时间
-        /// </summary>
-        [Column(Name = "update_time", DbType = "datetime")]
-        public DateTime? UpdateTime { get; set; }
-
-        /// <summary>
-        /// 修改人
-        /// </summary>
-        [Column(Name = "update_user")]
-        public long? UpdateUser { get; set; }
-
-        /// <summary>
         /// 是否可见（Y-是，N-否）
         /// </summary>
         [Column(Name = "visible", DbType = "char(1)")]
@@ -148,12 +124,29 @@ namespace Findx.Module.Admin.Models
         [Column(Name = "weight", DbType = "tinyint(4)")]
         public int? Weight { get; set; }
 
+
         /// <summary>
-        /// 初始化
+        /// 创建人
         /// </summary>
-        public override void Init()
-        {
-            Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
+        [Column(Name = "create_user")]
+        public long? CreatorId { get; set; }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        [Column(Name = "create_time", DbType = "datetime")]
+        public DateTime? CreatedTime { get; set; }
+
+        /// <summary>
+        /// 修改人
+        /// </summary>
+        [Column(Name = "update_user")]
+        public long? LastUpdaterId { get; set; }
+
+        /// <summary>
+        /// 最后更新时间
+        /// </summary>
+        [Column(Name = "update_time", DbType = "datetime")]
+        public DateTime? LastUpdatedTime { get; set; }
     }
 }

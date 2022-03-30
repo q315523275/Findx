@@ -8,7 +8,7 @@ namespace Findx.Module.Cms.Models
 	/// 信息表
 	/// </summary>
 	[Table(Name = "cms_article")]
-	public class ArticleInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest, ISort
+	public class ArticleInfo : EntityBase<long>, ICreateUser<long>, IUpdateAudited<long>, IResponse, IRequest, ISort
 	{
         /// <summary>
         /// 编号
@@ -146,7 +146,7 @@ namespace Findx.Module.Cms.Models
         /// 更新人
         /// </summary>
         [Column(Name = "update_user")]
-        public long? UpdateUser { get; set; }
+        public long? LastUpdaterId { get; set; }
 
         /// <summary>
         /// 初始化

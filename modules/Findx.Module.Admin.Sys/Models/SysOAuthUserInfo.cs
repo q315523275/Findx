@@ -8,7 +8,7 @@ namespace Findx.Module.Admin.Models
     /// 第三方认证用户信息表
     /// </summary>
     [Table(Name = "sys_oauth_user")]
-    public class SysOauthUserInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest
+    public class SysOauthUserInfo : EntityBase<long>, IFullAudited<long>, IResponse, IRequest
     {
         /// <summary>
         /// 主键
@@ -39,18 +39,6 @@ namespace Findx.Module.Admin.Models
         /// </summary>
         [Column(Name = "company")]
         public string Company { get; set; }
-
-        /// <summary>
-        /// 创建时间
-        /// </summary>
-        [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime? CreateTime { get; set; }
-
-        /// <summary>
-        /// 创建用户
-        /// </summary>
-        [Column(Name = "create_user")]
-        public long? CreateUser { get; set; }
 
         /// <summary>
         /// 邮箱
@@ -89,29 +77,33 @@ namespace Findx.Module.Admin.Models
         public string Source { get; set; }
 
         /// <summary>
-        /// 更新时间
-        /// </summary>
-        [Column(Name = "update_time", DbType = "datetime")]
-        public DateTime? UpdateTime { get; set; }
-
-        /// <summary>
-        /// 更新用户
-        /// </summary>
-        [Column(Name = "update_user")]
-        public long? UpdateUser { get; set; }
-
-        /// <summary>
         /// 第三方平台的用户唯一id
         /// </summary>
         [Column(Name = "uuid")]
         public string Uuid { get; set; }
 
         /// <summary>
-        /// 初始化
+        /// 创建人
         /// </summary>
-        public override void Init()
-        {
-            Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
+        [Column(Name = "create_user")]
+        public long? CreatorId { get; set; }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        [Column(Name = "create_time", DbType = "datetime")]
+        public DateTime? CreatedTime { get; set; }
+
+        /// <summary>
+        /// 修改人
+        /// </summary>
+        [Column(Name = "update_user")]
+        public long? LastUpdaterId { get; set; }
+
+        /// <summary>
+        /// 最后更新时间
+        /// </summary>
+        [Column(Name = "update_time", DbType = "datetime")]
+        public DateTime? LastUpdatedTime { get; set; }
     }
 }

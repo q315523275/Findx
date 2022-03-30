@@ -8,7 +8,7 @@ namespace Findx.Module.Admin.Models
     /// 文件信息表
     /// </summary>
     [Table(Name = "sys_file_info")]
-    public class SysFileInfo : EntityBase<long>, ICreateUser<long>, IUpdateUser<long>, IResponse, IRequest
+    public class SysFileInfo : EntityBase<long>, IFullAudited<long>, IResponse, IRequest
     {
         /// <summary>
         /// 主键id
@@ -65,35 +65,27 @@ namespace Findx.Module.Admin.Models
         public string FileSuffix { get; set; }
 
         /// <summary>
-        /// 修改时间
+        /// 创建人
         /// </summary>
-        [Column(Name = "update_time", DbType = "datetime")]
-        public DateTime? UpdateTime { get; set; }
-
-        /// <summary>
-        /// 修改用户
-        /// </summary>
-        [Column(Name = "update_user")]
-        public long? UpdateUser { get; set; }
+        [Column(Name = "create_user")]
+        public long? CreatorId { get; set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
         [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime? CreateTime { get; set; }
+        public DateTime? CreatedTime { get; set; }
 
         /// <summary>
-        /// 创建用户
+        /// 修改人
         /// </summary>
-        [Column(Name = "create_user")]
-        public long? CreateUser { get; set; }
+        [Column(Name = "update_user")]
+        public long? LastUpdaterId { get; set; }
 
         /// <summary>
-        /// 初始化
+        /// 最后更新时间
         /// </summary>
-        public override void Init()
-        {
-            Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
+        [Column(Name = "update_time", DbType = "datetime")]
+        public DateTime? LastUpdatedTime { get; set; }
     }
 }
