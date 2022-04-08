@@ -49,7 +49,7 @@ namespace Findx.Messaging
 
             // StartConsuming(_cancellationToken.Token);
             Task.WhenAll(Enumerable.Range(0, consumerThreadCount)
-                   .Select(_ => Task.Factory.StartNew(() => Processing(_channel, _cts.Token), _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default)).ToArray());
+                   .Select(_ => Task.Factory.StartNew(() => Processing(_channel, _cts.Token), _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default)));
         }
 
         /// <summary>

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using MiniExcelLibs;
 
 namespace Findx.Module.Admin.Areas.Sys.Controllers
 {
@@ -60,6 +61,27 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             //    FileDownloadName = "user.xlsx"
             //});
             return null;
+        }
+
+        /// <summary>
+        /// 数据导出
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("export")]
+        public async Task<IActionResult> Export([FromQuery] SysVisLogQuery request)
+        {
+            var where = CreatePageWhereExpression(request)?.ToExpression() ?? null;
+            var orderBy = CreatePageOrderExpression(request);
+
+            var list = GetRepository<SysVisLogInfo>().Select(whereExpression: where, orderParameters: orderBy.ToArray());
+
+            var memoryStream = new MemoryStream();
+            memoryStream.SaveAs(list);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return await Task.FromResult(new FileStreamResult(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            {
+                FileDownloadName = "SysVisLog.xlsx"
+            });
         }
     }
 }

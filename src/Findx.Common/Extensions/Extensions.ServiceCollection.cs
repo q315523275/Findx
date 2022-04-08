@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
@@ -142,10 +143,9 @@ namespace Findx.Extensions
         /// <summary>
         /// 获取所有模块信息
         /// </summary>
-        public static FindxModule[] GetAllModules(this IServiceProvider provider)
+        public static IEnumerable<FindxModule> GetAllModules(this IServiceProvider provider)
         {
-            FindxModule[] modules = provider.GetServices<FindxModule>().OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName).ToArray();
-            return modules;
+            return provider.GetServices<FindxModule>().OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName);
         }
 
         /// <summary>

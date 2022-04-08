@@ -17,6 +17,8 @@ using System.Threading.Tasks;
 using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Findx.Module.Admin.Sys.Filters;
+using System.IO;
+using MiniExcelLibs;
 
 namespace Findx.Module.Admin.Areas.Sys.Controllers
 {
@@ -259,6 +261,27 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                     throw new FindxException("D2004", "该机构或子机构下有员工，无法删除");
                 }
             }
+        }
+
+        /// <summary>
+        /// 数据导出
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("export")]
+        public async Task<IActionResult> Export([FromQuery] SysOrgQuery request)
+        {
+            var where = CreatePageWhereExpression(request)?.ToExpression() ?? null;
+            var orderBy = CreatePageOrderExpression(request);
+
+            var list = GetRepository<SysOrgInfo>().Select(whereExpression: where, orderParameters: orderBy.ToArray());
+
+            var memoryStream = new MemoryStream();
+            memoryStream.SaveAs(list);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return await Task.FromResult(new FileStreamResult(memoryStream, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            {
+                FileDownloadName = "SysOrg.xlsx"
+            });
         }
     }
 }

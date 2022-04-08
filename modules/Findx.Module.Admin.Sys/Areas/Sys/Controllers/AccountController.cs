@@ -17,10 +17,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Findx.Security.Authorization;
 using Findx.Module.Admin.Captcha;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.RegularExpressions;
 
 namespace Findx.Module.Admin.Areas.Sys.Controllers
 {

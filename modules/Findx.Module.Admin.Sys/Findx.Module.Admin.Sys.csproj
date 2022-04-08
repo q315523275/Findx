@@ -41,6 +41,10 @@
 	  <None Remove="Const\" />
 	  <None Remove="DTO\" />
 	  <None Remove="Filters\" />
+	  <None Remove="MiniExcel" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="MiniExcel" Version="1.25.2" />
+	</ItemGroup>
 </Project>
