@@ -2,12 +2,15 @@
 
   <PropertyGroup>
 	  <TargetFramework>net6.0</TargetFramework>
-	  <Version>1.5.8</Version>
+	  <Version>1.5.9</Version>
 	  <Authors>Findx</Authors>
 	  <Company>Findx</Company>
 	  <Description>Swagger在线文档组件</Description>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
   </ItemGroup>

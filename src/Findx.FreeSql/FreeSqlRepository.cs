@@ -61,9 +61,9 @@ namespace Findx.FreeSql
             var baseOns = BaseOnMap.GetOrAdd(EntityType , () =>
             {
                 // 是否标记实体逻辑删除
-                var softDeletable = EntityType .IsBaseOn(typeof(ISoftDeletable));
+                var softDeletable = EntityType.IsBaseOn(typeof(ISoftDeletable));
                 // 是否标记自定义分表函数
-                var customSharding = EntityType .IsBaseOn(typeof(ITableSharding));
+                var customSharding = EntityType.IsBaseOn(typeof(ITableSharding));
                 return (softDeletable, customSharding);
             });
             _softDeletable = baseOns.softDeletable;

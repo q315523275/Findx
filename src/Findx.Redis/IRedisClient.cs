@@ -37,7 +37,7 @@ namespace Findx.Redis
         /// <param name="cacheKey"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        object Eval(string script, string cacheKey, List<object> args);
+        object Eval(string script, string cacheKey, IEnumerable<object> args);
 
         /// <summary>
         /// 命令操作
@@ -46,7 +46,7 @@ namespace Findx.Redis
         /// <param name="cacheKey"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        Task<object> EvalAsync(string script, string cacheKey, List<object> args);
+        Task<object> EvalAsync(string script, string cacheKey, IEnumerable<object> args);
 
         #endregion Public
 
@@ -143,14 +143,14 @@ namespace Findx.Redis
         /// 移除全部key
         /// </summary>
         /// <param name="keys"></param>
-        void RemoveAll(List<string> keys);
+        void RemoveAll(IEnumerable<string> keys);
 
         /// <summary>
         /// 移除全部key
         /// </summary>
         /// <param name="keys"></param>
         /// <returns></returns>
-        Task RemoveAllAsync(List<string> keys);
+        Task RemoveAllAsync(IEnumerable<string> keys);
 
         /// <summary>
         /// 计算当前prefix开头的key总数
@@ -689,14 +689,14 @@ namespace Findx.Redis
         /// <param name="cacheKey"></param>
         /// <param name="values"></param>
         /// <returns></returns>
-        long GeoAdd(string cacheKey, List<(double longitude, double latitude, string member)> values);
+        long GeoAdd(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values);
         /// <summary>
         /// 添加地理位置的坐标
         /// </summary>
         /// <param name="cacheKey"></param>
         /// <param name="values"></param>
         /// <returns></returns>
-        Task<long> GeoAddAsync(string cacheKey, List<(double longitude, double latitude, string member)> values);
+        Task<long> GeoAddAsync(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values);
         /// <summary>
         /// 计算两个位置之间的距离
         /// </summary>
@@ -721,28 +721,28 @@ namespace Findx.Redis
         /// <param name="cacheKey"></param>
         /// <param name="members"></param>
         /// <returns></returns>
-        string[] GeoHash(string cacheKey, List<string> members);
+        string[] GeoHash(string cacheKey, IEnumerable<string> members);
         /// <summary>
         /// 返回一个或多个位置对象的 geohash 值
         /// </summary>
         /// <param name="cacheKey"></param>
         /// <param name="members"></param>
         /// <returns></returns>
-        Task<string[]> GeoHashAsync(string cacheKey, List<string> members);
+        Task<string[]> GeoHashAsync(string cacheKey, IEnumerable<string> members);
         /// <summary>
         /// 获取地理位置的坐标
         /// </summary>
         /// <param name="cacheKey"></param>
         /// <param name="members"></param>
         /// <returns></returns>
-        List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, List<string> members);
+        List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, IEnumerable<string> members);
         /// <summary>
         /// 获取地理位置的坐标
         /// </summary>
         /// <param name="cacheKey"></param>
         /// <param name="members"></param>
         /// <returns></returns>
-        Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, List<string> members);
+        Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members);
         /// <summary>
         /// 根据用户给定的经纬度坐标来获取指定范围内的地理位置集合
         /// </summary>
@@ -775,7 +775,7 @@ namespace Findx.Redis
         /// <param name="cacheKey"></param>
         /// <param name="values"></param>
         /// <returns></returns>
-        bool HyperLogLogAdd<T>(string cacheKey, List<T> values);
+        bool HyperLogLogAdd<T>(string cacheKey, IEnumerable<T> values);
         /// <summary>
         /// 添加指定元素到 HyperLogLog 中
         /// </summary>
@@ -783,33 +783,33 @@ namespace Findx.Redis
         /// <param name="cacheKey"></param>
         /// <param name="values"></param>
         /// <returns></returns>
-        Task<bool> HyperLogLogAddAsync<T>(string cacheKey, List<T> values);
+        Task<bool> HyperLogLogAddAsync<T>(string cacheKey, IEnumerable<T> values);
         /// <summary>
         /// 返回给定 HyperLogLog 的基数估算值
         /// </summary>
         /// <param name="cacheKeys"></param>
         /// <returns></returns>
-        long HyperLogLogLength(List<string> cacheKeys);
+        long HyperLogLogLength(IEnumerable<string> cacheKeys);
         /// <summary>
         /// 返回给定 HyperLogLog 的基数估算值
         /// </summary>
         /// <param name="cacheKeys"></param>
         /// <returns></returns>
-        Task<long> HyperLogLogLengthAsync(List<string> cacheKeys);
+        Task<long> HyperLogLogLengthAsync(IEnumerable<string> cacheKeys);
         /// <summary>
         /// 将多个 HyperLogLog 合并为一个 HyperLogLog
         /// </summary>
         /// <param name="destKey"></param>
         /// <param name="sourceKeys"></param>
         /// <returns></returns>
-        bool HyperLogLogMerge(string destKey, List<string> sourceKeys);
+        bool HyperLogLogMerge(string destKey, IEnumerable<string> sourceKeys);
         /// <summary>
         /// 将多个 HyperLogLog 合并为一个 HyperLogLog
         /// </summary>
         /// <param name="destKey"></param>
         /// <param name="sourceKeys"></param>
         /// <returns></returns>
-        Task<bool> HyperLogLogMergeAsync(string destKey, List<string> sourceKeys);
+        Task<bool> HyperLogLogMergeAsync(string destKey, IEnumerable<string> sourceKeys);
         #endregion
     }
 }

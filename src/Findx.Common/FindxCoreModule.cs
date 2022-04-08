@@ -5,6 +5,7 @@ using Findx.DependencyInjection;
 using Findx.Email;
 using Findx.ExceptionHandling;
 using Findx.Extensions;
+using Findx.Guids;
 using Findx.Locks;
 using Findx.Mapping;
 using Findx.Messaging;
@@ -15,6 +16,7 @@ using Findx.Setting;
 using Findx.Sms;
 using Findx.Storage;
 using Findx.Threading;
+using Findx.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -83,6 +85,9 @@ namespace Findx.Builders
 
             // 应用
             services.AddSingleton<IApplicationInstanceInfo, ApplicationInstanceInfo>();
+
+            // 有序Guid
+            services.Configure<SequentialGuidOptions>(configuration.GetSection("Findx:SequentialGuid"));
 
             return services;
         }

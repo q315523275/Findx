@@ -125,12 +125,12 @@ namespace Findx.Extensions
         /// </summary>
         public static IEnumerable<T> OrderByPrefixes<T>(this IEnumerable<T> source, Func<T, string> keySelector, params string[] prefixes)
         {
-            var all = source.OrderBy(keySelector).ToList();
-            List<T> result = new List<T>();
+            var all = source.OrderBy(keySelector).AsEnumerable();
+            var result = new List<T>();
             foreach (string prefix in prefixes)
             {
-                List<T> tmpList = all.Where(m => keySelector(m).StartsWith(prefix)).OrderBy(keySelector).ToList();
-                all = all.Except(tmpList).ToList();
+                var tmpList = all.Where(m => keySelector(m).StartsWith(prefix)).OrderBy(keySelector);
+                all = all.Except(tmpList);
                 result.AddRange(tmpList);
             }
             result.AddRange(all);

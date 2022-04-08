@@ -40,7 +40,7 @@ namespace Findx.Data
         {
             if (entity is ICreatedTime entity1)
             {
-                if (entity1.CreatedTime == default(DateTime))
+                if (!entity1.CreatedTime.HasValue || entity1.CreatedTime == default(DateTime))
                 {
                     entity1.CreatedTime = DateTime.Now;
                 }
@@ -63,7 +63,7 @@ namespace Findx.Data
             if (entity is ICreationAudited<TUserKey> entity1)
             {
                 entity1.CreatorId = user.Identity.IsAuthenticated ? user.Identity.GetUserId<TUserKey>() : null;
-                if (entity1.CreatedTime == default(DateTime))
+                if (!entity1.CreatedTime.HasValue || entity1.CreatedTime == default(DateTime))
                 {
                     entity1.CreatedTime = DateTime.Now;
                 }

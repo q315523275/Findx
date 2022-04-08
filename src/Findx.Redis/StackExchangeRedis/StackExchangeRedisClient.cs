@@ -31,7 +31,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             var endPoints = _cache.Multiplexer.GetEndPoints();
 
-            foreach(var endPoint in endPoints)
+            foreach (var endPoint in endPoints)
             {
                 _cache.Multiplexer.GetServer(endPoint).FlushDatabase(_cache.Database);
             }
@@ -73,7 +73,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="cacheKey"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public object Eval(string script, string cacheKey, List<object> args)
+        public object Eval(string script, string cacheKey, IEnumerable<object> args)
         {
             Check.NotNullOrWhiteSpace(script, nameof(script));
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -106,12 +106,12 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="cacheKey"></param>
         /// <param name="args"></param>
         /// <returns></returns>
-        public async Task<object> EvalAsync(string script, string cacheKey, List<object> args)
+        public async Task<object> EvalAsync(string script, string cacheKey, IEnumerable<object> args)
         {
             Check.NotNullOrWhiteSpace(script, nameof(script));
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            
+
 
             var redisKey = new RedisKey[] { cacheKey };
 
@@ -272,7 +272,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// 移除全部key
         /// </summary>
         /// <param name="keys"></param>
-        public void RemoveAll(List<string> keys)
+        public void RemoveAll(IEnumerable<string> keys)
         {
             foreach (var key in keys)
             {
@@ -285,7 +285,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="keys"></param>
         /// <returns></returns>
-        public async Task RemoveAllAsync(List<string> keys)
+        public async Task RemoveAllAsync(IEnumerable<string> keys)
         {
             foreach (var key in keys)
             {
@@ -1010,14 +1010,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var list = new List<RedisValue>();
-
-            foreach (var item in cacheValues)
-            {
-                list.Add(_serializer.Serialize(item));
-            }
-
-            var len = _cache.ListLeftPush(cacheKey, list.ToArray());
+            var len = _cache.ListLeftPush(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return len;
         }
 
@@ -1101,14 +1094,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var list = new List<RedisValue>();
-
-            foreach (var item in cacheValues)
-            {
-                list.Add(_serializer.Serialize(item));
-            }
-
-            var len = _cache.ListRightPush(cacheKey, list.ToArray());
+            var len = _cache.ListRightPush(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return len;
         }
 
@@ -1156,14 +1142,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var list = new List<RedisValue>();
-
-            foreach (var item in cacheValues)
-            {
-                list.Add(_serializer.Serialize(item));
-            }
-
-            var len = await _cache.ListLeftPushAsync(cacheKey, list.ToArray());
+            var len = await _cache.ListLeftPushAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return len;
         }
 
@@ -1188,14 +1167,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var list = new List<RedisValue>();
-
-            foreach (var item in cacheValues)
-            {
-                list.Add(_serializer.Serialize(item));
-            }
-
-            var len = await _cache.ListRightPushAsync(cacheKey, list.ToArray());
+            var len = await _cache.ListRightPushAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return len;
         }
 
@@ -1266,14 +1238,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var list = new List<RedisValue>();
-
-            foreach (var item in cacheValues)
-            {
-                list.Add(_serializer.Serialize(item));
-            }
-
-            var len = _cache.SetAdd(cacheKey, list.ToArray());
+            var len = _cache.SetAdd(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
 
             if (expiration.HasValue)
             {
@@ -1350,14 +1315,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             if (cacheValues != null && cacheValues.Any())
             {
-                var bytes = new List<RedisValue>();
-
-                foreach (var item in cacheValues)
-                {
-                    bytes.Add(_serializer.Serialize<T>(item));
-                }
-
-                len = _cache.SetRemove(cacheKey, bytes.ToArray());
+                len = _cache.SetRemove(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             }
             else
             {
@@ -1373,14 +1331,7 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var list = new List<RedisValue>();
-
-            foreach (var item in cacheValues)
-            {
-                list.Add(_serializer.Serialize(item));
-            }
-
-            var len = await _cache.SetAddAsync(cacheKey, list.ToArray());
+            var len = await _cache.SetAddAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
 
             if (expiration.HasValue)
             {
@@ -1456,14 +1407,7 @@ namespace Findx.Redis.StackExchangeRedis
             long len;
             if (cacheValues != null && cacheValues.Any())
             {
-                var bytes = new List<RedisValue>();
-
-                foreach (var item in cacheValues)
-                {
-                    bytes.Add(_serializer.Serialize<T>(item));
-                }
-
-                len = await _cache.SetRemoveAsync(cacheKey, bytes.ToArray());
+                len = await _cache.SetRemoveAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             }
             else
             {
@@ -1480,14 +1424,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var param = new List<SortedSetEntry>();
-
-            foreach (var item in cacheValues)
-            {
-                param.Add(new SortedSetEntry(_serializer.Serialize(item.Key), item.Value));
-            }
-
-            var len = _cache.SortedSetAdd(cacheKey, param.ToArray());
+            var len = _cache.SortedSetAdd(cacheKey, cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray());
 
             return len;
         }
@@ -1556,14 +1493,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var bytes = new List<RedisValue>();
-
-            foreach (var item in cacheValues)
-            {
-                bytes.Add(_serializer.Serialize(item));
-            }
-
-            var len = _cache.SortedSetRemove(cacheKey, bytes.ToArray());
+            var len = _cache.SortedSetRemove(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
 
             return len;
         }
@@ -1583,14 +1513,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var param = new List<SortedSetEntry>();
-
-            foreach (var item in cacheValues)
-            {
-                param.Add(new SortedSetEntry(_serializer.Serialize(item.Key), item.Value));
-            }
-
-            var len = await _cache.SortedSetAddAsync(cacheKey, param.ToArray());
+            var len = await _cache.SortedSetAddAsync(cacheKey, cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray());
 
             return len;
         }
@@ -1684,35 +1607,21 @@ namespace Findx.Redis.StackExchangeRedis
         #endregion
 
         #region Geo(经纬度操作)
-        public long GeoAdd(string cacheKey, List<(double longitude, double latitude, string member)> values)
+        public long GeoAdd(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            var list = new List<GeoEntry>();
-
-            foreach (var item in values)
-            {
-                list.Add(new GeoEntry(item.longitude, item.latitude, item.member));
-            }
-
-            var res = _cache.GeoAdd(cacheKey, list.ToArray());
+            var res = _cache.GeoAdd(cacheKey, values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray());
             return res;
         }
 
-        public async Task<long> GeoAddAsync(string cacheKey, List<(double longitude, double latitude, string member)> values)
+        public async Task<long> GeoAddAsync(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            var list = new List<GeoEntry>();
-
-            foreach (var item in values)
-            {
-                list.Add(new GeoEntry(item.longitude, item.latitude, item.member));
-            }
-
-            var res = await _cache.GeoAddAsync(cacheKey, list.ToArray());
+            var res = await _cache.GeoAddAsync(cacheKey, values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray());
             return res;
         }
 
@@ -1738,46 +1647,28 @@ namespace Findx.Redis.StackExchangeRedis
             return res;
         }
 
-        public string[] GeoHash(string cacheKey, List<string> members)
+        public string[] GeoHash(string cacheKey, IEnumerable<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
 
-            var list = new List<RedisValue>();
-            foreach (var item in members)
-            {
-                list.Add(item);
-            }
-
-            return _cache.GeoHash(cacheKey, list.ToArray());
+            return _cache.GeoHash(cacheKey, members.Select(x => (RedisValue)x).ToArray());
         }
 
-        public async Task<string[]> GeoHashAsync(string cacheKey, List<string> members)
+        public async Task<string[]> GeoHashAsync(string cacheKey, IEnumerable<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
 
-            var list = new List<RedisValue>();
-            foreach (var item in members)
-            {
-                list.Add(item);
-            }
-
-            return await _cache.GeoHashAsync(cacheKey, list.ToArray());
+            return await _cache.GeoHashAsync(cacheKey, members.Select(x => (RedisValue)x).ToArray());
         }
 
-        public List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, List<string> members)
+        public List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, IEnumerable<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
 
-            var list = new List<RedisValue>();
-            foreach (var item in members)
-            {
-                list.Add(item);
-            }
-
-            var res = _cache.GeoPosition(cacheKey, list.ToArray());
+            var res = _cache.GeoPosition(cacheKey, members.Select(x => (RedisValue)x).ToArray());
 
             var tuple = new List<(decimal longitude, decimal latitude)?>();
 
@@ -1796,18 +1687,12 @@ namespace Findx.Redis.StackExchangeRedis
             return tuple;
         }
 
-        public async Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, List<string> members)
+        public async Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
 
-            var list = new List<RedisValue>();
-            foreach (var item in members)
-            {
-                list.Add(item);
-            }
-
-            var res = await _cache.GeoPositionAsync(cacheKey, list.ToArray());
+            var res = await _cache.GeoPositionAsync(cacheKey, members.Select(x => (RedisValue)x).ToArray());
 
             var tuple = new List<(decimal longitude, decimal latitude)?>();
 
@@ -1899,97 +1784,55 @@ namespace Findx.Redis.StackExchangeRedis
         #endregion
 
         #region HyperLogLog()
-        public bool HyperLogLogAdd<T>(string cacheKey, List<T> values)
+        public bool HyperLogLogAdd<T>(string cacheKey, IEnumerable<T> values)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            var list = new List<RedisValue>();
-
-            foreach (var item in values)
-            {
-                list.Add(_serializer.Serialize(item));
-            }
-
-            var res = _cache.HyperLogLogAdd(cacheKey, list.ToArray());
+            var res = _cache.HyperLogLogAdd(cacheKey, values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return res;
         }
 
-        public async Task<bool> HyperLogLogAddAsync<T>(string cacheKey, List<T> values)
+        public async Task<bool> HyperLogLogAddAsync<T>(string cacheKey, IEnumerable<T> values)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            var list = new List<RedisValue>();
-
-            foreach (var item in values)
-            {
-                list.Add(_serializer.Serialize(item));
-            }
-
-            var res = await _cache.HyperLogLogAddAsync(cacheKey, list.ToArray());
+            var res = await _cache.HyperLogLogAddAsync(cacheKey, values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return res;
         }
 
-        public long HyperLogLogLength(List<string> cacheKeys)
+        public long HyperLogLogLength(IEnumerable<string> cacheKeys)
         {
             Check.NotNull(cacheKeys, nameof(cacheKeys));
 
-            var list = new List<RedisKey>();
-
-            foreach (var item in cacheKeys)
-            {
-                list.Add(item);
-            }
-
-            var res = _cache.HyperLogLogLength(list.ToArray());
+            var res = _cache.HyperLogLogLength(cacheKeys.Select(x => (RedisKey)x).ToArray());
             return res;
         }
 
-        public async Task<long> HyperLogLogLengthAsync(List<string> cacheKeys)
+        public async Task<long> HyperLogLogLengthAsync(IEnumerable<string> cacheKeys)
         {
             Check.NotNull(cacheKeys, nameof(cacheKeys));
 
-            var list = new List<RedisKey>();
-
-            foreach (var item in cacheKeys)
-            {
-                list.Add(item);
-            }
-
-            var res = await _cache.HyperLogLogLengthAsync(list.ToArray());
+            var res = await _cache.HyperLogLogLengthAsync(cacheKeys.Select(x => (RedisKey)x).ToArray());
             return res;
         }
 
-        public bool HyperLogLogMerge(string destKey, List<string> sourceKeys)
+        public bool HyperLogLogMerge(string destKey, IEnumerable<string> sourceKeys)
         {
             Check.NotNullOrWhiteSpace(destKey, nameof(destKey));
             Check.NotNull(sourceKeys, nameof(sourceKeys));
 
-            var list = new List<RedisKey>();
-
-            foreach (var item in sourceKeys)
-            {
-                list.Add(item);
-            }
-
-            _cache.HyperLogLogMerge(destKey, list.ToArray());
+            _cache.HyperLogLogMerge(destKey, sourceKeys.Select(x => (RedisKey)x).ToArray());
             return true;
         }
 
-        public async Task<bool> HyperLogLogMergeAsync(string destKey, List<string> sourceKeys)
+        public async Task<bool> HyperLogLogMergeAsync(string destKey, IEnumerable<string> sourceKeys)
         {
             Check.NotNullOrWhiteSpace(destKey, nameof(destKey));
             Check.NotNull(sourceKeys, nameof(sourceKeys));
 
-            var list = new List<RedisKey>();
-
-            foreach (var item in sourceKeys)
-            {
-                list.Add(item);
-            }
-
-            await _cache.HyperLogLogMergeAsync(destKey, list.ToArray());
+            await _cache.HyperLogLogMergeAsync(destKey, sourceKeys.Select(x => (RedisKey)x).ToArray());
             return true;
         }
         #endregion

@@ -18,7 +18,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
 		<ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
-		<ProjectReference Include="..\..\src\Findx.SqlSugar\Findx.SqlSugar.csproj" />
 		<ProjectReference Include="..\..\src\Findx.MailKit\Findx.MailKit.csproj" />
 		<ProjectReference Include="..\..\src\Findx.ImageSharp\Findx.ImageSharp.csproj" />
 	</ItemGroup>

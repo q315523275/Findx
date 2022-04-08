@@ -1,20 +1,16 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
-using Findx.Caching;
 using Findx.Data;
-using Findx.Drawing;
 using Findx.Module.Admin.Captcha;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.Admin.Areas.Sys.Controllers
 {
-	/// <summary>
-	/// 验证码
-	/// </summary>
-	[Area("api/sys")]
+    /// <summary>
+    /// 验证码
+    /// </summary>
+    [Area("api/sys")]
 	[Route("[area]/captcha")]
 	[ApiExplorerSettings(GroupName = "system")]
 	public class CaptchaController : AreaApiControllerBase
@@ -67,7 +63,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
 		/// </summary>
 		/// <returns></returns>
 		[HttpGet("getSmsCaptcha")]
-		public async Task<CommonResult> GetSmsCaptcha([Required, Phone] string mobile)
+		public CommonResult GetSmsCaptcha([Required, Phone] string mobile)
 		{
 			return CommonResult.Fail("401", "暂时不提供短信服务");
 		}

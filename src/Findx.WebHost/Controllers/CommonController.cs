@@ -193,5 +193,17 @@ namespace Findx.WebHost.Controllers
         {
             return ors.ToSnakeCase();
         }
+
+
+        /// <summary>
+        /// 网络Ping
+        /// </summary>
+        /// <param name="ors"></param>
+        /// <returns></returns>
+        [HttpGet("/Ping")]
+        public bool Ping([Required] string ip)
+        {
+            return Findx.Utils.NetUtil.Ping(ip);
+        }
     }
 }

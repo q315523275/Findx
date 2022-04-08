@@ -9,7 +9,7 @@ namespace Findx.Module.Cms.Models
     /// 信息分类表
     /// </summary>
     [Table(Name = "cms_article_category")]
-    public class ArticleCategoryInfo : EntityBase<long>, ICreateUser<long>, IUpdateAudited<long>, IResponse, IRequest, ISort
+    public class ArticleCategoryInfo : EntityBase<long>, IFullAudited<long>, IResponse, IRequest, ISort
     {
         /// <summary>
         /// 编号
@@ -102,36 +102,28 @@ namespace Findx.Module.Cms.Models
         public int Status { get; set; }
 
         /// <summary>
-        /// 创建时间
-        /// </summary>
-        [Column(Name = "create_time", DbType = "datetime")]
-        public DateTime? CreateTime { get; set; }
-
-        /// <summary>
         /// 创建人
         /// </summary>
         [Column(Name = "create_user")]
-        public long? CreateUser { get; set; }
+        public long? CreatorId { get; set; }
 
         /// <summary>
-        /// 更新时间
+        /// 创建时间
         /// </summary>
-        [Column(Name = "update_time", DbType = "datetime")]
-        public DateTime? UpdateTime { get; set; }
+        [Column(Name = "create_time", DbType = "datetime")]
+        public DateTime? CreatedTime { get; set; }
 
         /// <summary>
-        /// 更新人
+        /// 修改人
         /// </summary>
         [Column(Name = "update_user")]
         public long? LastUpdaterId { get; set; }
 
         /// <summary>
-        /// 初始化
+        /// 最后更新时间
         /// </summary>
-        public override void Init()
-        {
-            Id = Findx.Utils.SnowflakeId.Default().NextId();
-        }
+        [Column(Name = "update_time", DbType = "datetime")]
+        public DateTime? LastUpdatedTime { get; set; }
     }
 }
 

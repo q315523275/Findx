@@ -80,7 +80,7 @@ namespace Findx.AspNetCore.Upload
             {
                 if (param.Request.Form.Files != null && param.Request.Form.Files.Any())
                 {
-                    param.FormFiles = param.Request.Form.Files.ToList();
+                    param.FormFiles = param.Request.Form.Files.AsEnumerable();
                 }
             }
 

@@ -97,13 +97,13 @@ namespace Findx.Redis
         public void RemoveByPrefix(string prefix)
         {
             var keys = _redisClient.SearchKeys($"{prefix}*");
-            _redisClient.RemoveAll(keys.ToList());
+            _redisClient.RemoveAll(keys);
         }
 
         public Task RemoveByPrefixAsync(string prefix, CancellationToken token = default(CancellationToken))
         {
             var keys = _redisClient.SearchKeys($"{prefix}*");
-            return _redisClient.RemoveAllAsync(keys.ToList());
+            return _redisClient.RemoveAllAsync(keys);
         }
 
         public bool TryAdd<T>(string key, T value, TimeSpan? expiration = null)

@@ -61,7 +61,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 Success = result
             };
             var repo = HttpContext.RequestServices.GetService<IRepository<SysVisLogInfo>>();
-            visLog.SetEmptyKey();
+            visLog.SetEmptyKey(repo.GetDbType());
             repo.Insert(visLog);
         }
 
@@ -256,6 +256,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 {
                     var likeValue = $"{SymbolConst.LEFT_SQUARE_BRACKETS}{empInfo.OrgId}{SymbolConst.RIGHT_SQUARE_BRACKETS}";
                     dataScopes3 = fsql.Select<SysOrgInfo>().Where(it => it.Pids.Contains(likeValue) && it.Status == 0).ToList(it => it.Id);
+                    dataScopes3.Add(empInfo.OrgId);
                 }
                 // 如果数据范围是本部门，不含子节点，则直接返回本部门
                 else if (DataScopeTypeEnum.DEPT.To<int>() == strongerDataScopeType)

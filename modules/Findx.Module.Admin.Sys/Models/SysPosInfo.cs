@@ -8,7 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 using Findx.Data;
-using SqlSugar;
 using System;
 using FreeSql.DataAnnotations;
 namespace Findx.Module.Admin.Models

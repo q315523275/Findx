@@ -5,7 +5,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Nullable>disable</Nullable>
 		<LangVersion>10.0</LangVersion>
-		<Version>1.5.9</Version>
+		<Version>1.6.1</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Product />
@@ -36,6 +36,8 @@
 	<ItemGroup>
 	  <None Remove="JetBrains.Annotations" />
 	  <None Remove="Setting\" />
+	  <None Remove="System.IO.Compression.ZipFile" />
+	  <None Remove="SharpZipLib" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Setting\" />

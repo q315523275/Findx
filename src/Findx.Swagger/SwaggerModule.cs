@@ -57,7 +57,7 @@ namespace Findx.Swagger
                 var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml");
                 foreach(var file in files)
                 {
-                    options.IncludeXmlComments(file);
+                    options.IncludeXmlComments(file, true);
                 }
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {

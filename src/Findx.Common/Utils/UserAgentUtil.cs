@@ -1,12 +1,11 @@
-﻿using System;
-using Findx.UA;
+﻿using Findx.UA;
 
 namespace Findx.Utils
 {
-	/// <summary>
-	/// UserAgent操作类
-	/// </summary>
-	public class UserAgentUtil
+    /// <summary>
+    /// UserAgent操作类
+    /// </summary>
+    public class UserAgentUtil
 	{
 		/// <summary>
 		/// 解析User-Agent

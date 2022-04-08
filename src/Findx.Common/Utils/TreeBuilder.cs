@@ -5,7 +5,7 @@ using System.Linq;
 namespace Findx.Utils
 {
     /// <summary>
-    /// 
+    /// 树形数据构建者
     /// </summary>
     /// <typeparam name="TNode"></typeparam>
     /// <typeparam name="TKey"></typeparam>

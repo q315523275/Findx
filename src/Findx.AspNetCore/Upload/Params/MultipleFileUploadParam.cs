@@ -17,7 +17,7 @@ namespace Findx.AspNetCore.Upload.Params
         /// <summary>
         /// 上传的文件对象
         /// </summary>
-        public IList<IFormFile> FormFiles { get; set; }
+        public IEnumerable<IFormFile> FormFiles { get; set; }
 
         /// <summary>
         /// 存储根路径
