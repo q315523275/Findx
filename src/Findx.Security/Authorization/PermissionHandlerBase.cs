@@ -77,7 +77,13 @@ namespace Findx.Security.Authorization
             foreach (Permission permission in _permissions)
             {
                 var roles = permission.Roles.IsNullOrWhiteSpace() ? new string[] { } : permission.Roles.Split(",");
-                _permissionAccess[$"{permission.Area}-{permission.Controller}-{permission.Action}"] = new PermissionAccess(permission.AccessType, roles);
+
+                _permissionAccess.AddOrUpdate($"{permission.Area}-{permission.Controller}-{permission.Action}", new PermissionAccess(permission.AccessType, roles), (key, old) =>
+                {
+                    old.AccessType = permission.AccessType;
+                    old.Roles = roles;
+                    return old;
+                });
             }
         }
 

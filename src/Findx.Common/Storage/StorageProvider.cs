@@ -1,21 +1,26 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Findx.Setting;
+
 namespace Findx.Storage
 {
     public class StorageProvider : IStorageProvider
     {
-        private readonly IDictionary<string, IStorage> _storages;
+        private readonly IDictionary<string, IFileStorage> _storages;
 
-        public StorageProvider(IEnumerable<IStorage> storages)
+        private readonly ISettingProvider _setting;
+
+        public StorageProvider(IEnumerable<IFileStorage> storages, ISettingProvider setting)
         {
-            _storages = storages.ToDictionary(it => it.StorageName, it => it);
+            _storages = storages.ToDictionary(it => it.Name, it => it);
+            _setting = setting;
         }
 
-        public IStorage Get(string storageName = "Local")
+        public IFileStorage Get(string storageName = null)
         {
-            Check.NotNullOrWhiteSpace(storageName, nameof(storageName));
+            storageName ??= _setting.GetValue<string>("Storage:Primary") ?? FileStorageType.Folder.ToString();
 
-            _storages.TryGetValue(storageName, out IStorage storage);
+            _storages.TryGetValue(storageName, out IFileStorage storage);
 
             Check.NotNull(storage, nameof(storage));
 

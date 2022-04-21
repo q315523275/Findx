@@ -35,7 +35,7 @@ namespace Findx.Redis
             services.AddSingleton<IRedisSerializer, RedisJsonSerializer>();
 
             // 分布式锁
-            services.AddSingleton<IDistributedLock, RedisDistributedLock>();
+            services.AddSingleton<ILock, RedisDistributedLock>();
 
             // 缓存实现
             services.AddSingleton<ICache, RedisCacheProvider>();

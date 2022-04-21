@@ -6,26 +6,30 @@
     public static class ClaimTypes
     {
         #region User(用户)
+        /// <summary>
+        /// 用户标识。默认：<see cref="System.Security.Claims.ClaimTypes.NameIdentifier"/>
+        /// </summary>
+        public static string UserId { get; set; } = System.Security.Claims.ClaimTypes.NameIdentifier;
 
         /// <summary>
         /// 用户名。默认：<see cref="System.Security.Claims.ClaimTypes.Name"/>
         /// </summary>
-        public static string UserName { get; set; } = System.Security.Claims.ClaimTypes.Name; // "user_name";
+        public static string UserName { get; set; } = System.Security.Claims.ClaimTypes.Name;
 
         /// <summary>
-        /// 姓名。默认："full_name"
+        /// 姓名。默认：<see cref="System.Security.Claims.ClaimTypes.GivenName"/>
         /// </summary>
-        public static string FullName { get; set; } = "full_name";
+        public static string Name { get; set; } = System.Security.Claims.ClaimTypes.GivenName;
 
         /// <summary>
-        /// 用户标识。默认：<see cref="System.Security.Claims.ClaimTypes.NameIdentifier"/>
+        /// 昵称
         /// </summary>
-        public static string UserId { get; set; } = System.Security.Claims.ClaimTypes.NameIdentifier; // "user_id";
+        public static string NickName { get; set; } = "nick_name";
 
         /// <summary>
         /// 电子邮件。默认：<see cref="System.Security.Claims.ClaimTypes.Email"/>
         /// </summary>
-        public static string Email { get; set; } = System.Security.Claims.ClaimTypes.Email; // "email";
+        public static string Email { get; set; } = System.Security.Claims.ClaimTypes.Email;
 
         /// <summary>
         /// 已验证电子邮件。默认："email_verified"
@@ -51,6 +55,7 @@
         /// 客户端标识。默认："client_id"
         /// </summary>
         public static string ClientId { get; set; } = "client_id";
+
         /// <summary>
         /// 客户端类型。默认："client_type"
         /// </summary>
@@ -74,11 +79,6 @@
         /// 应用程序名称。默认："application_name"
         /// </summary>
         public static string ApplicationName { get; set; } = "application_name";
-
-        /// <summary>
-        /// 昵称
-        /// </summary>
-        public static string NickName { get; set; } = "nick_name";
 
         #endregion
 

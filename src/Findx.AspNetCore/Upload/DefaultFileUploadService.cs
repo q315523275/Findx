@@ -1,5 +1,6 @@
 ﻿using Findx.AspNetCore.Upload.Params;
 using Findx.Exceptions;
+using Findx.Utils.Files;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using FileInfo = Findx.Utils.Files.FileInfo;
 
 namespace Findx.AspNetCore.Upload
 {
@@ -22,7 +22,7 @@ namespace Findx.AspNetCore.Upload
         /// </summary>
         /// <param name="param">参数</param>
         /// <param name="cancellationToken">取消令牌</param>
-        public async Task<FileInfo> UploadAsync(SingleFileUploadParam param, CancellationToken cancellationToken = default)
+        public async Task<FileSpec> UploadAsync(SingleFileUploadParam param, CancellationToken cancellationToken = default)
         {
             if (param.FormFile == null || param.FormFile.Length < 1)
             {
@@ -47,7 +47,7 @@ namespace Findx.AspNetCore.Upload
         /// <param name="relativePath">相对路径</param>
         /// <param name="rootPath">根路径</param>
         /// <param name="cancellationToken">取消令牌</param>
-        private async Task<FileInfo> SaveAsync(IFormFile formFile, string relativePath, string rootPath, CancellationToken cancellationToken = default)
+        private async Task<FileSpec> SaveAsync(IFormFile formFile, string relativePath, string rootPath, CancellationToken cancellationToken = default)
         {
             var date = DateTime.Now;
 
@@ -55,7 +55,7 @@ namespace Findx.AspNetCore.Upload
             var size = formFile.Length;
             var path = Path.Combine(relativePath, date.ToString("yyyy"), date.ToString("MM"), date.ToString("dd"));
             var id = Guid.NewGuid();
-            var fileInfo = new FileInfo(path, size, name, id.ToString());
+            var fileInfo = new FileSpec(path, size, name, id.ToString());
             fileInfo.SaveName = $"{id.ToString().Replace("-", "")}.{fileInfo.Extension}";
 
             var fullDir = Path.Combine(rootPath, fileInfo.Path);
@@ -74,7 +74,7 @@ namespace Findx.AspNetCore.Upload
         /// </summary>
         /// <param name="param">参数</param>
         /// <param name="cancellationToken">取消令牌</param>
-        public async Task<IEnumerable<FileInfo>> UploadAsync(MultipleFileUploadParam param, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<FileSpec>> UploadAsync(MultipleFileUploadParam param, CancellationToken cancellationToken = default)
         {
             if (param.FormFiles == null || !param.FormFiles.Any())
             {
@@ -89,7 +89,7 @@ namespace Findx.AspNetCore.Upload
                 throw new FindxException("4401", "请选择文件!");
             }
 
-            var tasks = new List<Task<FileInfo>>();
+            var tasks = new List<Task<FileSpec>>();
             foreach (var formFile in param.FormFiles)
             {
                 tasks.Add(SaveAsync(formFile, param.RelativePath, param.RootPath, cancellationToken));

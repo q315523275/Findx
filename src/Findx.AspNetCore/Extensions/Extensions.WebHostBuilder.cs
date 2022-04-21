@@ -20,7 +20,7 @@ namespace Findx.AspNetCore.Extensions
             webHostBuilder.UseStartup<TStartup>();
             webHostBuilder.UseKestrel(options =>
             {
-                IApplicationInstanceInfo applicationInstanceInfo = options.ApplicationServices.GetService<IApplicationInstanceInfo>();
+                IApplicationContext applicationInstanceInfo = options.ApplicationServices.GetService<IApplicationContext>();
                 options.ListenAnyIP(applicationInstanceInfo.Port);
             });
             return webHostBuilder;

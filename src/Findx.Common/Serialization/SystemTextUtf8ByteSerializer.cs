@@ -1,5 +1,6 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Unicode;
 
 namespace Findx.Serialization
@@ -14,6 +15,8 @@ namespace Findx.Serialization
                 Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
                 PropertyNameCaseInsensitive = true,
                 PropertyNamingPolicy = null,
+                ReferenceHandler = ReferenceHandler.IgnoreCycles, // 过滤递归循环引用
+                WriteIndented = true
             };
         }
 

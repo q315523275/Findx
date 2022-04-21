@@ -37,7 +37,7 @@ namespace Findx.ImageSharp
                 var assembly = Assembly.GetExecutingAssembly();
                 var names = assembly.GetManifestResourceNames();
 
-                if (names?.Length > 0 == true)
+                if (names?.Length > 0)
                 {
                     var fontList = new List<Font>();
                     var fontCollection = new FontCollection();

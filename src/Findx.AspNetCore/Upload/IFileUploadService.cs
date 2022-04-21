@@ -17,14 +17,14 @@ namespace Findx.AspNetCore.Upload
         /// </summary>
         /// <param name="param">参数</param>
         /// <param name="cancellationToken">取消令牌</param>
-        Task<FileInfo> UploadAsync(SingleFileUploadParam param, CancellationToken cancellationToken = default);
+        Task<FileSpec> UploadAsync(SingleFileUploadParam param, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 上传文件。多文件
         /// </summary>
         /// <param name="param">参数</param>
         /// <param name="cancellationToken">取消令牌</param>
-        Task<IEnumerable<FileInfo>> UploadAsync(MultipleFileUploadParam param, CancellationToken cancellationToken = default);
+        Task<IEnumerable<FileSpec>> UploadAsync(MultipleFileUploadParam param, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 保存文件

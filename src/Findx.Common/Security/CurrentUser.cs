@@ -20,21 +20,24 @@ namespace Findx.Security
 
         public string UserId => _principal?.Identity?.GetUserId();
 
-        public string UserName => _principal?.Identity?.GetUserName();
+        public string UserName => this.FindClaimValue(ClaimTypes.UserName);
 
-        public string PhoneNumber => _principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.PhoneNumber);
+        public string Name => this.FindClaimValue(ClaimTypes.Name);
 
-        public bool PhoneNumberVerified => string.Equals(_principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.PhoneNumber), "true",
-            StringComparison.InvariantCultureIgnoreCase);
+        public string PhoneNumber => this.FindClaimValue(ClaimTypes.PhoneNumber);
 
-        public string Email => _principal?.Identity?.GetEmail();
+        public bool PhoneNumberVerified => string.Equals(this.FindClaimValue(ClaimTypes.PhoneNumberVerified), "true", StringComparison.InvariantCultureIgnoreCase);
 
-        public bool EmailVerified => string.Equals(_principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.EmailVerified), "true",
-            StringComparison.InvariantCultureIgnoreCase);
+        public string Email => this.FindClaimValue(ClaimTypes.Email);
+
+        public bool EmailVerified => string.Equals(this.FindClaimValue(ClaimTypes.EmailVerified), "true", StringComparison.InvariantCultureIgnoreCase);
 
         public string TenantId => _principal?.Identity?.GetClaimValueFirstOrDefault(ClaimTypes.TenantId);
 
-        public IEnumerable<string> Roles => _principal?.Identity?.GetClaimValues(ClaimTypes.Role);
+        public IEnumerable<string> Roles => FindClaims(ClaimTypes.Role).Select(c => c.Value).Distinct();
+
+
+
 
         public Claim FindClaim(string claimType)
         {
@@ -48,7 +51,7 @@ namespace Findx.Security
 
         public IEnumerable<Claim> GetAllClaims()
         {
-            if (!(_principal.Identity is ClaimsIdentity claimsIdentity))
+            if (_principal.Identity is not ClaimsIdentity claimsIdentity)
             {
                 return new Claim[0];
             }

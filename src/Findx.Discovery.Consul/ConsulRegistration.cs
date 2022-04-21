@@ -24,7 +24,7 @@ namespace Findx.Discovery.Consul
 
         private readonly IOptionsMonitor<DiscoveryOptions> _options;
 
-        private readonly IApplicationInstanceInfo _applicationInstanceInfo;
+        private readonly IApplicationContext _applicationInstanceInfo;
 
         private DiscoveryOptions Options
         {
@@ -38,7 +38,7 @@ namespace Findx.Discovery.Consul
             }
         }
 
-        public ConsulRegistration(IOptionsMonitor<DiscoveryOptions> options, IApplicationInstanceInfo applicationInstanceInfo)
+        public ConsulRegistration(IOptionsMonitor<DiscoveryOptions> options, IApplicationContext applicationInstanceInfo)
         {
             _options = options;
             _applicationInstanceInfo = applicationInstanceInfo;

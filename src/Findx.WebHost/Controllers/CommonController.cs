@@ -2,8 +2,8 @@
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions;
+using Findx.Jobs;
 using Findx.Pdf;
-using Findx.Scheduling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -99,9 +99,9 @@ namespace Findx.WebHost.Controllers
         /// <param name="storage"></param>
         /// <returns></returns>
         [HttpGet("/jobs")]
-        public async Task<object> QueryJobs([FromServices] IScheduledTaskStore storage)
+        public async Task<object> QueryJobs([FromServices] IJobStorage storage)
         {
-            return await storage.GetTasksAsync();
+            return await storage.GetJobsAsync();
         }
 
         /// <summary>

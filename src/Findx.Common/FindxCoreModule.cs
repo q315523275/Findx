@@ -1,4 +1,5 @@
-﻿using Findx.Caching;
+﻿
+using Findx.Caching;
 using Findx.Caching.InMemory;
 using Findx.Data;
 using Findx.DependencyInjection;
@@ -16,7 +17,6 @@ using Findx.Setting;
 using Findx.Sms;
 using Findx.Storage;
 using Findx.Threading;
-using Findx.Utils;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -60,14 +60,15 @@ namespace Findx.Builders
             services.AddSingleton<IExceptionSubscriber, NullExceptionSubscriber>();
 
             // 锁
-            services.AddSingleton<ILock, LocalLock>();
+            services.AddSingleton<ILock, LocalCacheLock>();
+            services.AddSingleton<ILockProvider, LockProvider>();
 
             // 反射查询器
             services.AddSingleton<IMethodInfoFinder, PublicInstanceMethodInfoFinder>();
 
             // 进程消息
-            services.AddScoped<IMessageSender, DefaultMessageSender>();
-            services.AddSingleton<IMessageNotifySender, DefaultMessageNotifySender>();
+            services.AddScoped<IMessageSender, MessageSender>();
+            services.AddSingleton<IApplicationEventPublisher, ApplicationEventPublisher>();
 
             // 序列化
             services.AddSingleton<IJsonSerializer, SystemTextJsonStringSerializer>();
@@ -77,14 +78,14 @@ namespace Findx.Builders
             services.AddSingleton<ISmsSender, NullSmsSender>();
 
             // 存储
-            services.AddSingleton<IStorage, LocalStorage>();
+            services.AddSingleton<IFileStorage, FolderFileStorage>();
             services.AddSingleton<IStorageProvider, StorageProvider>();
 
             // 线程取消通知
             services.AddSingleton<ICancellationTokenProvider, NullCancellationTokenProvider>();
 
             // 应用
-            services.AddSingleton<IApplicationInstanceInfo, ApplicationInstanceInfo>();
+            services.AddSingleton<IApplicationContext, ApplicationContext>();
 
             // 有序Guid
             services.Configure<SequentialGuidOptions>(configuration.GetSection("Findx:SequentialGuid"));

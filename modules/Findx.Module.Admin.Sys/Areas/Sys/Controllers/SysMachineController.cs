@@ -28,7 +28,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
     {
 
         [HttpGet("query")]
-        public async Task<CommonResult> QueryAsync([FromServices] IApplicationInstanceInfo app)
+        public async Task<CommonResult> QueryAsync([FromServices] IApplicationContext app)
         {
             ThreadPool.GetAvailableThreads(out var availableWorkerThreads, out var availableCompletionPortThreads);
             ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);

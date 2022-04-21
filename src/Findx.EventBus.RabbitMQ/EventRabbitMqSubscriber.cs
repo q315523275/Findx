@@ -15,11 +15,11 @@ namespace Findx.EventBus.RabbitMQ
     public class EventRabbitMQSubscriber : EventSubscriberBase
     {
         private readonly IRabbitMqConsumerFactory _consumerFactory;
-        private readonly IApplicationInstanceInfo _application;
+        private readonly IApplicationContext _application;
         private readonly EventBusRabbitMqOptions _options;
         private ConcurrentDictionary<string, IRabbitMqConsumer> _consumers;
 
-        public EventRabbitMQSubscriber(IRabbitMqConsumerFactory consumerFactory, IEventSubscribeManager subscribeManager, IEventStore storage, IEventDispatcher dispatcher, IApplicationInstanceInfo application, IOptions<EventBusRabbitMqOptions> options, ILogger<EventSubscriberBase> logger) : base(subscribeManager, storage, logger, dispatcher)
+        public EventRabbitMQSubscriber(IRabbitMqConsumerFactory consumerFactory, IEventSubscribeManager subscribeManager, IEventStore storage, IEventDispatcher dispatcher, IApplicationContext application, IOptions<EventBusRabbitMqOptions> options, ILogger<EventSubscriberBase> logger) : base(subscribeManager, storage, logger, dispatcher)
         {
             _consumerFactory = consumerFactory;
             _options = options.Value;

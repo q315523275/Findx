@@ -105,7 +105,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             {
                 { ClaimTypes.UserId, accountInfo.Id.SafeString() },
                 { ClaimTypes.PhoneNumber, accountInfo.Phone.SafeString() },
-                { ClaimTypes.FullName, accountInfo.Name.SafeString() },
+                { ClaimTypes.Name, accountInfo.Name.SafeString() },
                 { ClaimTypes.Role, "admin" },
                 { ClaimConst.SUPER_ADMIN, accountInfo.AdminType.SafeString() },
                 { ClaimConst.ORG_ID, empInfo.OrgId.SafeString() },

@@ -3,6 +3,7 @@ using Findx.Extensions;
 using Findx.Locks;
 using Findx.Security;
 using Findx.Utils;
+using Findx.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,18 +22,22 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// 业务标识
         /// </summary>
         public string Key { get; set; }
+
         /// <summary>
         /// 是否分布式
         /// </summary>
         public bool IsDistributed { set; get; }
+
         /// <summary>
         /// 再次提交时间间隔
         /// </summary>
         public string Interval { get; set; } = "30s";
+
         /// <summary>
         /// 锁类型
         /// </summary>
         public LockType Type { get; set; } = LockType.User;
+
         /// <summary>
         /// 执行
         /// </summary>
@@ -43,11 +48,12 @@ namespace Findx.AspNetCore.Mvc.Filters
         {
             Check.NotNull(context, nameof(context));
 
-            ILock localLock = GetLock(context);
+            ILock rlock = GetLock(context);
             var key = GetLockKey(context);
-            var val = GetLockValue(context);
             var expir = Time.ToTimeSpan(Interval);
-            if (await localLock.LockTakeAsync(key, val, expir))
+
+            var getLock = await rlock.AcquireAsync(key, timeUntilExpires: expir, renew: true);
+            if (getLock.IsLocked())
             {
                 try
                 {
@@ -55,7 +61,7 @@ namespace Findx.AspNetCore.Mvc.Filters
                 }
                 finally
                 {
-                    await localLock.LockReleaseAsync(key, val);
+                    await getLock.ReleaseAsync();
                 }
             }
             else
@@ -63,27 +69,39 @@ namespace Findx.AspNetCore.Mvc.Filters
                 context.Result = new JsonResult(CommonResult.Fail("4019", "重复提交,请稍后再试"));
             }
         }
+
+
+        /// <summary>
+        /// 获取锁服务
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         private ILock GetLock(ActionExecutingContext context)
         {
+            var provider = context.HttpContext.RequestServices.GetService<ILockProvider>();
             if (IsDistributed)
-                return context.HttpContext.RequestServices.GetService<IDistributedLock>();
-            return context.HttpContext.RequestServices.GetService<ILock>();
+                return provider.Get(Locks.LockType.Distributed);
+            return provider.Get(Locks.LockType.Local);
         }
+
+        /// <summary>
+        /// 获取锁资源key
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         private string GetLockKey(ActionExecutingContext context)
         {
             var currentUser = context.HttpContext.RequestServices.GetCurrentUser();
+
             var userId = string.Empty;
+
             if (Type == LockType.User && currentUser.Identity.IsAuthenticated)
                 userId = $"{currentUser.Identity.GetUserId()}_";
+
+            if (Type == LockType.IP)
+                userId = $"{context.HttpContext.GetClientIp()}_";
+
             return Key.IsNullOrWhiteSpace() ? $"ADR:{userId}{context.HttpContext.Request.Path}" : $"ADR:{userId}{Key}";
-        }
-        private string GetLockValue(ActionExecutingContext context)
-        {
-            var currentUser = context.HttpContext.RequestServices.GetCurrentUser();
-            var value = string.Empty;
-            if (Type == LockType.User && currentUser.Identity.IsAuthenticated)
-                value = $"{currentUser.Identity.GetUserId()}";
-            return value.IsNullOrWhiteSpace() ? "findx_global_lock" : value;
         }
     }
     /// <summary>
@@ -97,8 +115,13 @@ namespace Findx.AspNetCore.Mvc.Filters
         User = 0,
 
         /// <summary>
+        /// 用户级别锁,同一IP只能同时发起一个请求
+        /// </summary>
+        IP = 1,
+
+        /// <summary>
         /// 全局锁，该操作同时只有一个用户请求被执行
         /// </summary>
-        Global = 1
+        Global = 2
     }
 }

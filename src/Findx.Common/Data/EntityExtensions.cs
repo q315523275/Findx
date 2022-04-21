@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Security.Principal;
+using Findx.DependencyInjection;
 using Findx.Extensions;
+using Findx.Guids;
 using Findx.Security;
 using Findx.Utils;
 
@@ -113,7 +115,7 @@ namespace Findx.Data
             // 有序Guid
             if (typeof(Guid) == keyType && entity.Id.CastTo<Guid>() == Guid.Empty)
             {
-                entity.Id = SequentialGuid.Instance.Create().CastTo<TKey>();
+                entity.Id = ServiceLocator.GetService<IGuidGenerator>().Create().CastTo<TKey>();
             }
 
             return entity;

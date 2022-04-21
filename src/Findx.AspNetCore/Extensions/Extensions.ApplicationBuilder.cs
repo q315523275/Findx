@@ -117,7 +117,6 @@ namespace Findx.AspNetCore.Extensions
             return builder;
         }
 
-
         /// <summary>
         /// 添加Json异常处理器中间件
         /// </summary>

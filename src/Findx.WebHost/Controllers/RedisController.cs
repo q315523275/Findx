@@ -3,6 +3,7 @@ using Findx.Redis;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 namespace Findx.WebHost.Controllers
 {
@@ -31,21 +32,23 @@ namespace Findx.WebHost.Controllers
             return $"{lock_result}|{unlock_result}";
         }
 
-        [HttpGet("/redis/autoLiveLock")]
-        public async Task<string> AutoLiveLock([FromServices] IDistributedLock _lock)
+        [HttpGet("/redis/renewLock")]
+        public async Task<string> AutoLiveLock([FromServices] ILockProvider provider, [Required] LockType lockType)
         {
-            var getlock = _lock.GetLock("autoLiveLock", 10);
+            var @lock = provider.Get(lockType);
+
+            var getlock = await @lock.AcquireAsync("test_renew_lock", renew: true);
+
+            if (!getlock.IsLocked())
+                return "未拿到锁";
 
             try
             {
-                if (await getlock.TryLockAsync())
-                {
-                    await Task.Delay(20 * 1000);
-                }
+                await Task.Delay(26 * 1000);
             }
             finally
             {
-                await getlock.UnLockAsync();
+                await getlock.ReleaseAsync();
             }
             return DateTime.Now.ToString();
         }

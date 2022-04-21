@@ -73,7 +73,11 @@ namespace Findx.Caching.InMemory
         {
             Check.NotNull(key, nameof(key));
 
-            _cache[key] = new CacheItem(value, expire);
+            _cache.AddOrUpdate(key, new CacheItem(value, expire), (key, oldItem) =>
+            {
+                oldItem.Set(value, expire);
+                return oldItem;
+            });
 
             return Task.CompletedTask;
         }
@@ -82,7 +86,7 @@ namespace Findx.Caching.InMemory
         {
             Check.NotNull(key, nameof(key));
 
-            _cache.TryRemove(key, out var _);
+            _cache.TryRemove(key, out _);
 
             return Task.CompletedTask;
         }
@@ -153,12 +157,16 @@ namespace Findx.Caching.InMemory
         {
             Check.NotNull(key, nameof(key));
 
-            _cache[key] = new CacheItem(value, expire);
+            _cache.AddOrUpdate(key, new CacheItem(value, expire), (key, oldItem) =>
+            {
+                oldItem.Set(value, expire);
+                return oldItem;
+            });
         }
 
         public void Remove(string key)
         {
-            _cache.TryRemove(key, out var _);
+            _cache.TryRemove(key, out _);
         }
 
         public void RemoveByPrefix(string prefix)

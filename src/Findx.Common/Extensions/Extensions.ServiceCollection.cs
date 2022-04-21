@@ -176,8 +176,10 @@ namespace Findx.Extensions
             var modules = provider.GetServices<FindxModule>();
             foreach (FindxModule module in modules)
             {
+                var jsTime = DateTime.Now;
+                Type moduleType = module.GetType();
                 module.UseModule(provider);
-                logger.LogInformation($"模块{module.GetType()}加载成功");
+                logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now - jsTime).TotalMilliseconds}ms");
             }
 
             watch.Stop();

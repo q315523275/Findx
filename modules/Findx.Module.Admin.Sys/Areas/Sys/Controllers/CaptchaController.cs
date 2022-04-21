@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
+using Findx.Drawing;
 using Findx.Module.Admin.Captcha;
 using Microsoft.AspNetCore.Mvc;
 
@@ -66,6 +67,23 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
 		public CommonResult GetSmsCaptcha([Required, Phone] string mobile)
 		{
 			return CommonResult.Fail("401", "暂时不提供短信服务");
+		}
+
+		/// <summary>
+		/// 图片验证码
+		/// </summary>
+		/// <param name="verifyCoder"></param>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
+		/// <returns></returns>
+		[HttpGet("getImgCaptcha")]
+		public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder, int width = 150, int height = 50)
+		{
+			var code = verifyCoder.GetCode(5, VerifyCodeType.NumberAndLetter);
+
+			var img = await verifyCoder.CreateImageAsync(code, width: width, height: height);
+
+			return File(img, "image/jpeg");
 		}
 	}
 }

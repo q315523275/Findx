@@ -17,12 +17,12 @@ namespace Findx.Security.Authorization
         /// 访问类型
         /// </summary>
         [DisplayName("访问类型")]
-        public PermiessionAccessType AccessType { get; }
+        public PermiessionAccessType AccessType { get; set; }
 
         /// <summary>
         /// 访问角色
         /// </summary>
         [DisplayName("访问角色")]
-        public string[] Roles { get; }
+        public string[] Roles { get; set; }
     }
 }

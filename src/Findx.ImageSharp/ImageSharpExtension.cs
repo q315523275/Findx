@@ -20,25 +20,24 @@ namespace Findx.ImageSharp
                 var textWidth = (containerWidth / text.Length);
                 var img2Size = Math.Min(textWidth, containerHeight);
                 var fontMiniSize = (int)(img2Size * 0.9);
-                var fontMaxSize = (int)(img2Size * 1.37);
+                var fontMaxSize = (int)(img2Size * 1.15);
                 Array fontStyleArr = Enum.GetValues(typeof(FontStyle));
 
                 for (int i = 0; i < text.Length; i++)
                 {
-                    using (Image<Rgba32> img2 = new Image<Rgba32>(img2Size, img2Size))
-                    {
-                        Font scaledFont = new Font(fonts[RandomUtil.RandomInt(0, fonts.Length)], RandomUtil.RandomInt(fontMiniSize, fontMaxSize), (FontStyle)fontStyleArr.GetValue(RandomUtil.RandomInt(fontStyleArr.Length)));
-                        var point = new Point(i * textWidth, (containerHeight - img2.Height) / 2);
-                        var colorHex = colorHexArr[RandomUtil.RandomInt(0, colorHexArr.Length)];
-                        var drawingOptions = new DrawingOptions { TextOptions = new TextOptions { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top } };
+                    using Image<Rgba32> img2 = new(img2Size, img2Size);
+                    Font scaledFont = new(fonts[RandomUtil.RandomInt(0, fonts.Length)], RandomUtil.RandomInt(fontMiniSize, fontMaxSize), (FontStyle)fontStyleArr.GetValue(RandomUtil.RandomInt(fontStyleArr.Length)));
+                    var point = new Point(i * textWidth, (containerHeight - img2.Height) / 2);
+                    var colorHex = colorHexArr[RandomUtil.RandomInt(0, colorHexArr.Length)];
+                    var drawingOptions = new DrawingOptions { TextOptions = new TextOptions { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top } };
 
-                        img2.Mutate(ctx => ctx
-                                        .DrawText(drawingOptions, text[i].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(0, 0))
-                                        .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
-                                        .Rotate(RandomUtil.RandomInt(-45, 45))
-                                    );
-                        processingContext.DrawImage(img2, point, 1);
-                    }
+                    img2.Mutate(ctx =>
+                                ctx.DrawText(drawingOptions, text[i].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(0, 0))
+                                   .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
+                                   // .Rotate(RandomUtil.RandomInt(-5, 5)) // 字体自带旋转，意思一下就行
+                               );
+
+                    processingContext.DrawImage(img2, point, 1);
                 }
             }
 

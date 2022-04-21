@@ -1,6 +1,7 @@
 ﻿using Findx.Utils;
 using System;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -85,6 +86,24 @@ namespace Findx.Extensions
             }
 
             return str.Substring(str.Length - len, len);
+        }
+
+        /// <summary>
+        /// 格式化目录地址
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string NormalizePath(this string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return path;
+
+            if (Path.DirectorySeparatorChar == '\\')
+                path = path.Replace('/', Path.DirectorySeparatorChar);
+            else if (Path.DirectorySeparatorChar == '/')
+                path = path.Replace('\\', Path.DirectorySeparatorChar);
+
+            return path;
         }
 
         /// <summary>

@@ -1,5 +1,7 @@
 ﻿using Findx.Messaging;
-using Findx.WebHost.Messaging;
+using Findx.WebHost.EventHandlers;
+using Findx.Extensions;
+using Findx;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -16,19 +18,19 @@ namespace Findx.WebHost.Controllers
         public async Task<string> MessageSend([FromServices] IMessageSender sender)
         {
             var orderId = Findx.Utils.SnowflakeId.Default().NextId();
-            var res = await sender.SendAsync(new CancelOrderCommand(orderId));
+            var res = await sender.SendAsync(new CancelOrderCommand(orderId.ToString()));
             return $"orderId:{orderId},result:{res}";
         }
 
         /// <summary>
         /// 消息通知示例接口
         /// </summary>
-        /// <param name="notifySender"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
         [HttpGet("/message/notify")]
-        public async Task<string> MessageNotify([FromServices] IMessageNotifySender notifySender)
+        public async Task<string> MessageNotify([FromServices] IApplicationContext context)
         {
-            await notifySender.PublishAsync(new PayedOrderCommand(0));
+            await context.PublishEventAsync(new PayedOrderCommand(0));
             return "ok";
         }
     }

@@ -10,37 +10,36 @@ namespace Findx.Locks
     public interface ILock
     {
         /// <summary>
-        /// 获取一个锁(需要自己释放)
+        /// 锁类型
         /// </summary>
-        /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
-        /// <param name="span">耗时时间</param>
-        /// <returns>成功返回true</returns>
-        bool LockTake(string key, string value, TimeSpan span);
+        LockType LockType { get; }
 
         /// <summary>
-        /// 异步获取一个锁(需要自己释放)
+        /// 获取锁
         /// </summary>
-        /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
-        /// <param name="span">耗时时间</param>
-        /// <returns>成功返回true</returns>
-        Task<bool> LockTakeAsync(string key, string value, TimeSpan span, CancellationToken token = default);
+        /// <param name="resource"></param>
+        /// <param name="timeUntilExpires"></param>
+        /// <param name="isWait"></param>
+        /// <param name="renew"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<RLock> AcquireAsync(string resource, TimeSpan? timeUntilExpires = null, bool isWait = false, bool renew = false, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 释放一个锁
+        /// 释放锁
         /// </summary>
-        /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
-        /// <returns>成功返回true</returns>
-        bool LockRelease(string key, string value);
+        /// <param name="resource"></param>
+        /// <param name="lockId"></param>
+        /// <returns></returns>
+        Task ReleaseAsync(string resource, string lockId);
 
         /// <summary>
-        /// 异步释放一个锁
+        /// 更新锁时间，自动续期
         /// </summary>
-        /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
-        /// <returns>成功返回true</returns>
-        Task<bool> LockReleaseAsync(string key, string value, CancellationToken token = default);
+        /// <param name="resource"></param>
+        /// <param name="lockId"></param>
+        /// <param name="timeUntilExpires"></param>
+        /// <returns></returns>
+        Task RenewAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null);
     }
 }

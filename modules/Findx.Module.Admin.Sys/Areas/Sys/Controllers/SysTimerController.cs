@@ -2,43 +2,40 @@
 using System.Threading.Tasks;
 using Findx.Data;
 using Findx.Module.Admin.Sys.DTO;
-using Findx.Scheduling;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
 using Findx.Security.Authorization;
+using Findx.Jobs;
 
 namespace Findx.Module.Admin.Areas.Sys.Controllers
 {
-	/// <summary>
+    /// <summary>
     /// 系统定时任务
     /// </summary>
-	[Area("api/sys")]
+    [Area("api/sys")]
 	[Route("[area]/sysTimers")]
     [ApiExplorerSettings(GroupName = "system")]
     [Authorize(Policy = PermissionRequirement.Policy, Roles = "admin")]
     public class SysTimerController: ControllerBase
 	{
-		private readonly IScheduledTaskStore _storage;
-		private readonly IScheduledTaskFinder _finder;
-        private readonly IScheduledTaskManager _manager;
-        private readonly SchedulerTaskWrapperDictionary _dict;
+		private readonly IJobStorage _storage;
+		private readonly IJobFinder _finder;
+        private readonly IJobScheduler _scheduler;
 
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="storage"></param>
         /// <param name="finder"></param>
-        /// <param name="manager"></param>
-        /// <param name="dict"></param>
-        public SysTimerController(IScheduledTaskStore storage, IScheduledTaskFinder finder, IScheduledTaskManager manager, SchedulerTaskWrapperDictionary dict)
+        /// <param name="scheduler"></param>
+        public SysTimerController(IJobStorage storage, IJobFinder finder, IJobScheduler scheduler)
         {
             _storage = storage;
             _finder = finder;
-            _manager = manager;
-            _dict = dict;
+            _scheduler = scheduler;
         }
 
         /// <summary>
@@ -49,13 +46,13 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         [HttpGet("page")]
 		public async Task<CommonResult> PageAsync([FromQuery] SysTimerQuery req)
         {
-			var list = await _storage.GetTasksAsync();
+			var list = await _storage.GetJobsAsync();
 			var skip = req.PageNo > 1 ? req.PageNo * req.PageSize : 0;
-            list = list.WhereIf(!req.taskName.IsNullOrWhiteSpace(), x => x.TaskName.Contains(req.taskName))
+            list = list.WhereIf(!req.taskName.IsNullOrWhiteSpace(), x => x.Name.Contains(req.taskName))
                        .WhereIf(req.jobStatus.HasValue && req.jobStatus.Value == 0, x => x.IsEnable == false)
                        .WhereIf(req.jobStatus.HasValue && req.jobStatus.Value == 1, x => x.IsEnable == true)
                        .Skip(skip).Take(req.PageSize);
-            var res = new PageResult<IEnumerable<SchedulerTaskInfo>>(req.PageNo, req.PageSize, list.Count(), list);
+            var res = new PageResult<IEnumerable<JobInfo>>(req.PageNo, req.PageSize, list.Count(), list);
 			return CommonResult.Success(res);
 		}
 
@@ -84,7 +81,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         [HttpPost("stop")]
         public async Task<CommonResult> Stop([FromBody] SysTimerRequest req)
         {
-            var model = await _storage.FindAsync(req.Id.To<Guid>());
+            var model = await _storage.FindAsync(req.Id.To<long>());
             if (model == null)
                 return CommonResult.Fail("job.404", "定时任务不存在");
             if (!model.IsEnable)
@@ -104,7 +101,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         [HttpPost("start")]
         public async Task<CommonResult> Start([FromBody] SysTimerRequest req)
         {
-            var model = await _storage.FindAsync(req.Id.To<Guid>());
+            var model = await _storage.FindAsync(req.Id.To<long>());
             if (model == null || model.IsEnable)
                 return CommonResult.Fail("job.404", "定时任务不存在");
             if (model.IsEnable)
@@ -124,7 +121,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         [HttpPost("delete")]
         public async Task<CommonResult> Delete([FromBody] SysTimerRequest req)
         {
-            await _storage.DeleteAsync(req.Id.To<Guid>());
+            await _storage.DeleteAsync(req.Id.To<long>());
             return CommonResult.Success();
         }
 
@@ -140,22 +137,19 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             if (typeInfo == null)
                 return CommonResult.Fail("job.class.404", "定时任务class类不存在");
 
-            var taskInfo = new SchedulerTaskInfo
+            var taskInfo = new JobInfo
             {
                 CreateTime = DateTimeOffset.UtcNow.LocalDateTime,
                 CronExpress = req.CronExpress,
                 IsEnable = true,
                 IsSingle = false,
                 NextRunTime = Utils.Cron.GetNextOccurrence(req.CronExpress),
-                Id = Guid.NewGuid(),
-                TaskArgs = req.TaskArgs,
-                TaskName = req.TaskName,
-                TaskFullName = req.TaskFullName,
+                Id = Findx.Utils.SnowflakeId.Default().NextId(),
+                JsonParam = req.TaskArgs,
+                Name = req.TaskName,
+                FullName = req.TaskFullName,
                 TryCount = 0,
             };
-
-            var wrapper = new SchedulerTaskWrapper(typeInfo);
-            _dict.TryAdd(wrapper.TaskFullName, wrapper);
 
             await _storage.InsertAsync(taskInfo);
 
@@ -174,15 +168,15 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             if (typeInfo == null)
                 return CommonResult.Fail("job.class.404", "定时任务class类不存在");
 
-            var model = await _storage.FindAsync(req.Id.To<Guid>());
+            var model = await _storage.FindAsync(req.Id.To<long>());
             if (model == null)
                 return CommonResult.Fail("job.404", "定时任务不存在");
 
             model.CronExpress = req.CronExpress;
             model.NextRunTime = Utils.Cron.GetNextOccurrence(req.CronExpress);
-            model.TaskArgs = req.TaskArgs;
-            model.TaskName = req.TaskName;
-            model.TaskFullName = req.TaskFullName;
+            model.JsonParam = req.TaskArgs;
+            model.Name = req.TaskName;
+            model.FullName = req.TaskFullName;
 
             await _storage.UpdateAsync(model);
 

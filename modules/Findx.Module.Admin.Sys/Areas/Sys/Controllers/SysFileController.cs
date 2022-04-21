@@ -29,13 +29,13 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
     [Authorize(Policy = PermissionRequirement.Policy, Roles = "admin")]
     public class SysFileController : CrudControllerBase<SysFileInfo, SysFileInfo, SysFileInfo, SysFileInfo, SysFileQuery, long, long>
     {
-        private readonly IApplicationInstanceInfo _instanceInfo;
+        private readonly IApplicationContext _instanceInfo;
 
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="instanceInfo"></param>
-        public SysFileController(IApplicationInstanceInfo instanceInfo)
+        public SysFileController(IApplicationContext instanceInfo)
         {
             _instanceInfo = instanceInfo;
         }

@@ -1,9 +1,8 @@
 ﻿using Findx.Data;
-using Findx.Scheduling;
+using Findx.Jobs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
@@ -28,7 +27,7 @@ namespace Findx.WebHost.Controllers
         /// <param name="instance"></param>
         /// <returns></returns>
         [HttpGet("/applicationInfo")]
-        public CommonResult ApplicationInfo([FromServices] IApplicationInstanceInfo instance)
+        public CommonResult ApplicationInfo([FromServices] IApplicationContext instance)
         {
             return CommonResult.Success(instance);
         }
@@ -39,7 +38,7 @@ namespace Findx.WebHost.Controllers
         /// <param name="instance"></param>
         /// <returns></returns>
         [HttpGet("/configuration")]
-        public CommonResult Configuration([FromServices] IConfiguration configuration, [FromServices] IOptionsMonitor<SchedulerOptions> optionsMonitor)
+        public CommonResult Configuration([FromServices] IConfiguration configuration, [FromServices] IOptionsMonitor<JobOptions> optionsMonitor)
         {
             return CommonResult.Success<object>(optionsMonitor.CurrentValue.ToString());
         }

@@ -2,6 +2,6 @@
 {
     public interface IStorageProvider
     {
-        IStorage Get(string storageName = "Local");
+        IFileStorage Get(string storageName = null);
     }
 }

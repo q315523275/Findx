@@ -69,11 +69,15 @@ namespace Findx.AspNetCore.Mvc.Filters
         private string GetRateLimitKey(ActionExecutingContext context)
         {
             var currentUser = context.HttpContext.RequestServices.GetCurrentUser();
+
             var clientId = string.Empty;
+
             if (Type == RateLimitType.User && currentUser.Identity.IsAuthenticated)
                 clientId = $"{currentUser.Identity.GetUserId()}_";
+
             if (Type == RateLimitType.IP)
                 clientId = $"{context.HttpContext.GetClientIp()}_";
+
             return Key.IsNullOrWhiteSpace() ? $"RL:{clientId}{context.HttpContext.Request.Path}" : $"RL:{clientId}{Key}";
         }
     }

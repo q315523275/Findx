@@ -27,6 +27,7 @@ namespace Findx.AspNetCore.Extensions
             return string.Equals(request.Query["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal)
                 || string.Equals(request.Headers["X-Requested-With"], "XMLHttpRequest", StringComparison.Ordinal);
         }
+
         /// <summary>
         /// 确定指定的 HTTP 请求的 ContextType 是否为 Json 方式
         /// </summary>
@@ -43,6 +44,7 @@ namespace Findx.AspNetCore.Extensions
                 || request.Headers?["Accept"].ToString().IndexOf("text/json", StringComparison.OrdinalIgnoreCase) > -1;
             return flag;
         }
+
         /// <summary>
         /// 获取客户端IP地址
         /// </summary>
