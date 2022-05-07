@@ -24,6 +24,8 @@ namespace Findx.Storage
 
         Task<bool> SaveFileAsync(string path, Stream stream, CancellationToken cancellationToken = default);
 
+        Task<bool> SaveFileAsync(string path, byte[] byteArray, CancellationToken cancellationToken = default);
+
         Task<bool> RenameFileAsync(string path, string newPath, CancellationToken cancellationToken = default);
 
         Task<bool> CopyFileAsync(string path, string targetPath, CancellationToken cancellationToken = default);

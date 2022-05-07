@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Extensions;
 
 namespace Findx.Messaging
 {
     public class MessageSender : IMessageSender
     {
-        private static readonly ConcurrentDictionary<Type, object> _messageHandlers = new ConcurrentDictionary<Type, object>();
+        private static readonly IDictionary<Type, object> _messageHandlers = new ConcurrentDictionary<Type, object>();
 
         private readonly IServiceProvider _serviceProvider;
 

@@ -7,7 +7,6 @@ using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using FontStyle = SixLabors.Fonts.FontStyle;
@@ -18,7 +17,7 @@ namespace Findx.ImageSharp
         /// <summary>
         /// 字体缓存
         /// </summary>
-        private readonly static IDictionary<string, FontFamily> FontFamilyDict = new ConcurrentDictionary<string, FontFamily>();
+        private readonly static IDictionary<string, FontFamily> FontFamilyDict = new Dictionary<string, FontFamily>();
 
         /// <summary>
         /// 获取图片缩放形式
@@ -141,12 +140,12 @@ namespace Findx.ImageSharp
                 var fontFamily = FontFamilyDict.GetOrAdd(fontOptions.FontFamilyFilePath, () =>
                 {
                     var fonts = new FontCollection();
-                    return fonts.Install(fontOptions.FontFamilyFilePath);
+                    return fonts.Add(fontOptions.FontFamilyFilePath);
                 });
                 font = new Font(fontFamily, fontOptions.FontSize, ConvertToFontStyle(fontOptions.FontStyle));
             }
             // 获取文本绘制所需大小
-            var size = TextMeasurer.Measure(text, new RendererOptions(font));
+            // var size = TextMeasurer.Measure(text, new TextOptions(font));
             // 装载图片
             using (var originalImage = Image.Load(byteData, out IImageFormat imageFormat))
             {
@@ -255,12 +254,12 @@ namespace Findx.ImageSharp
                 var fontFamily = FontFamilyDict.GetOrAdd(fontOptions.FontFamilyFilePath, () =>
                 {
                     var fonts = new FontCollection();
-                    return fonts.Install(fontOptions.FontFamilyFilePath);
+                    return fonts.Add(fontOptions.FontFamilyFilePath);
                 });
                 font = new Font(fontFamily, fontOptions.FontSize, ConvertToFontStyle(fontOptions.FontStyle));
             }
             // 获取文本绘制所需大小
-            var size = TextMeasurer.Measure(text, new RendererOptions(font));
+            var size = TextMeasurer.Measure(text, new TextOptions(font));
             // 装载图片
             using (var originalImage = Image.Load(byteData, out IImageFormat imageFormat))
             {

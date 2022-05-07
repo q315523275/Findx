@@ -47,5 +47,20 @@ namespace Findx.Utils
             }
             return false;
         }
+
+        /// <summary>
+        /// 是否内网IP
+        /// </summary>
+        /// <param name="ipv4Address"></param>
+        /// <returns></returns>
+        public static bool IsInternalIP(IPAddress ipv4Address)
+        {
+            byte[] ipBytes = ipv4Address.GetAddressBytes();
+            if (ipBytes[0] == 10) return true;
+            if (ipBytes[0] == 127 && ipBytes[1] == 0) return true;
+            if (ipBytes[0] == 172 && ipBytes[1] >= 16 && ipBytes[1] <= 31) return true;
+            if (ipBytes[0] == 192 && ipBytes[1] == 168) return true;
+            return false;
+        }
     }
 }

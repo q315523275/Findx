@@ -2,49 +2,40 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Jobs.Local
 {
-    public class InMemoryJobDispatcher : IJobDispatcher
-    {
+	public class InMemorySchedulerWorker: BackgroundService, IJobSchedulerWorker
+	{
         private readonly IOptions<JobOptions> _options;
 
         private readonly IJobStorage _storage;
 
         private readonly ITriggerListener _trigger;
 
-        private Task _dispatchedTask;
-
-        public InMemoryJobDispatcher(IOptions<JobOptions> options, IJobStorage storage, ITriggerListener trigger)
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="storage"></param>
+        /// <param name="trigger"></param>
+        public InMemorySchedulerWorker(IOptions<JobOptions> options, IJobStorage storage, ITriggerListener trigger)
         {
             _options = options;
             _storage = storage;
             _trigger = trigger;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken = default)
+        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            if (_dispatchedTask != null)
-                return Task.CompletedTask;
-
-            _dispatchedTask = Task.Factory.StartNew(async () =>
+            while (!stoppingToken.IsCancellationRequested)
             {
-                while (!cancellationToken.IsCancellationRequested)
-                {
-                    await Task.Delay(_options.Value.Delay);
-                    await ExecuteOnceAsync(cancellationToken);
-                }
-            }, cancellationToken, TaskCreationOptions.LongRunning, TaskScheduler.Default);
+                await Task.Delay(TimeSpan.FromMilliseconds(_options.Value.Delay), stoppingToken);
 
-            return Task.CompletedTask;
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken = default)
-        {
-            _dispatchedTask?.Dispose();
-
-            return Task.CompletedTask;
+                await ExecuteOnceAsync(stoppingToken);
+            }
         }
 
         /// <summary>
@@ -72,7 +63,9 @@ namespace Findx.Jobs.Local
 
                 // 作业监听器包含节点执行的方式方法，单节点串行执行控制
                 // 作业执行者包含作业执行的参数构建等等
-                // 
+
+
+                // 当前使用最简单方式
 
                 await _trigger.TriggerFiredAsync(jobDetail, cancellationToken);
 

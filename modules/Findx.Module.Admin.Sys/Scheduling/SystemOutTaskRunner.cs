@@ -5,7 +5,7 @@ using Findx.Jobs;
 
 namespace Findx.Module.Admin.Scheduling
 {
-    [Job(Cron = "0 0 * * * ?", Name = "定时打印一句话")]
+    [Job(Cron = "0 0 2 30 * ?", Name = "定时打印一句话")]
     public class SystemOutTaskRunner : IJob
     {
         public Task<JobResult> RunAsync(IJobContext context, CancellationToken cancellationToken = default)

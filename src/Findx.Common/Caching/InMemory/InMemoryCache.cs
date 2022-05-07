@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Threading;
 
 namespace Findx.Caching.InMemory
 {
@@ -11,14 +11,29 @@ namespace Findx.Caching.InMemory
         public string Name => CacheType.DefaultMemory;
 
         private readonly ConcurrentDictionary<string, CacheItem> _cache;
-        private int _period = 60;
-        private Timer _taskTimer;
-        private bool _polling;
 
-        public InMemoryCache()
+        private FindxAsyncTimer Timer { get; }
+
+        public InMemoryCache(FindxAsyncTimer timer)
         {
             _cache = new ConcurrentDictionary<string, CacheItem>();
-            _taskTimer = new Timer(x => RemoveNotAlive(x), this, _period * 1000, _period * 1000);
+
+            Timer = timer;
+            Timer.Period = 1000 * 60; // 60 sec.
+            Timer.Elapsed = Timer_Elapsed;
+            Timer.RunOnStart = false;
+            Timer.Start();
+        }
+
+        protected async Task Timer_Elapsed(FindxAsyncTimer timer)
+        {
+            var now = DateTime.Now;
+            foreach (var item in _cache)
+            {
+                if (item.Value.ExpiredTime < now)
+                    Remove(item.Key);
+            }
+            await Task.CompletedTask;
         }
 
         public Task<bool> ExistsAsync(string key, CancellationToken token = default)
@@ -93,10 +108,10 @@ namespace Findx.Caching.InMemory
 
         public Task RemoveByPrefixAsync(string prefix, CancellationToken token = default)
         {
-            var keys = _cache.Keys.Where(it => it.StartsWith(prefix));
-            foreach (var key in keys)
+            foreach (var item in _cache)
             {
-                Remove(key);
+                if (item.Key.StartsWith(prefix))
+                    Remove(item.Key);
             }
             return Task.CompletedTask;
         }
@@ -171,10 +186,10 @@ namespace Findx.Caching.InMemory
 
         public void RemoveByPrefix(string prefix)
         {
-            var keys = _cache.Keys.Where(it => it.StartsWith(prefix));
-            foreach (var key in keys)
+            foreach (var item in _cache)
             {
-                Remove(key);
+                if (item.Key.StartsWith(prefix))
+                    Remove(item.Key);
             }
         }
 
@@ -187,26 +202,7 @@ namespace Findx.Caching.InMemory
         {
             _cache?.Clear();
 
-            _taskTimer?.Dispose();
-            _taskTimer = null;
-        }
-
-        public void RemoveNotAlive(object state)
-        {
-            if (_polling)
-            {
-                return;
-            }
-            _polling = true;
-
-            InMemoryCache memoryCache = (InMemoryCache)state;
-            var now = DateTime.Now;
-            foreach (var item in memoryCache._cache)
-            {
-                if (item.Value.ExpiredTime < now)
-                    Remove(item.Key);
-            }
-            _polling = false;
+            Timer.Stop();
         }
     }
     internal class CacheItem

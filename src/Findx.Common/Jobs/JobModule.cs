@@ -32,12 +32,11 @@ namespace Findx.Jobs
             services.Configure<JobOptions>(section);
 
             // 任务调度
-            services.AddSingleton<IJobDispatcher, InMemoryJobDispatcher>();
             services.AddSingleton<IJobListener, InMemoryJobListener>();
             services.AddSingleton<IJobScheduler, DefaultJobScheduler>();
             services.AddSingleton<IJobStorage, InMemoryJobStorage>();
             services.AddSingleton<ITriggerListener, InMemoryTriggerListener>();
-            services.AddScoped<IApplicationEventHandler<LocalJobRequest>, LocalJobHandler>();
+            services.AddScoped<IApplicationEventHandler<JobInfo>, LocalJobHandler>();
 
             // 自动注册作业
             var dict = new JobTypeDictionary();
@@ -49,6 +48,9 @@ namespace Findx.Jobs
                 dict.Add(jobType.FullName, jobType);
             }
             services.AddSingleton(dict);
+
+            // 调度工作者
+            services.AddHostedService<InMemorySchedulerWorker>();
 
             return services;
         }
@@ -75,8 +77,6 @@ namespace Findx.Jobs
                         }
                     }
 
-                    scheduler.StartAsync(cancellationToken.Token);
-
                 }, cancellationToken.Token);
                 base.UseModule(provider);
             }
@@ -87,10 +87,6 @@ namespace Findx.Jobs
             if (Options != null && Options.Enabled)
             {
                 cancellationToken.Cancel();
-
-                var scheduler = provider.GetRequiredService<IJobScheduler>();
-
-                scheduler?.StopAsync(cancellationToken.Token).ConfigureAwait(false).GetAwaiter();
             }
 
             base.OnShutdown(provider);

@@ -1,4 +1,4 @@
-using Findx.AspNetCore.Extensions;
+﻿using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Extensions;
 using Findx.Serialization;
@@ -20,7 +20,8 @@ namespace Findx.Module.WebHost
                     .AddJsonOptions(options =>
                     {
                         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-                        options.JsonSerializerOptions.Converters.Add(new DateTimeConverter());
+                        options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+                        options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
                         options.JsonSerializerOptions.Converters.Add(new LongConverter());
                     });
 

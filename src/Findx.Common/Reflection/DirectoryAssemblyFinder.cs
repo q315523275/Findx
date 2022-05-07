@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,7 +11,7 @@ namespace Findx.Reflection
     /// </summary>
     public class DirectoryAssemblyFinder : IAssemblyFinder
     {
-        private static readonly ConcurrentDictionary<string, IEnumerable<Assembly>> CacheDict = new ConcurrentDictionary<string, IEnumerable<Assembly>>();
+        private static readonly IDictionary<string, IEnumerable<Assembly>> CacheDict = new Dictionary<string, IEnumerable<Assembly>>();
         private readonly string _path;
 
         /// <summary>

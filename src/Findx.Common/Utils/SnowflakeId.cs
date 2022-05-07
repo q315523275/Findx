@@ -86,7 +86,7 @@ namespace Findx.Utils
                     return _snowflakeId;
                 }
 
-                if (!long.TryParse(Environment.GetEnvironmentVariable("CAP_WORKERID", EnvironmentVariableTarget.Machine), out var workerId))
+                if (!long.TryParse(Environment.GetEnvironmentVariable("WORKERID", EnvironmentVariableTarget.Machine), out var workerId))
                 {
                     workerId = Util.GenerateWorkerId(MaxWorkerId);
                 }

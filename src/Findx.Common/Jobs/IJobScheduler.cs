@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Findx.Jobs
 {
@@ -16,7 +17,7 @@ namespace Findx.Jobs
         /// <param name="jobArgs"></param>
         /// <param name="delay"></param>
         /// <returns></returns>
-        Task<long> EnqueueAsync<TJob>(object jobArgs, TimeSpan? delay = null) where TJob : IJob;
+        Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, object jobArgs = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个延时执行任务
@@ -25,7 +26,7 @@ namespace Findx.Jobs
         /// <param name="jobArgs"></param>
         /// <param name="dateTime"></param>
         /// <returns></returns>
-        Task<long> EnqueueAsync<TJob>(object jobArgs, DateTime? dateTime = null) where TJob : IJob;
+        Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, object jobArgs = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个循环执行任务
@@ -34,7 +35,7 @@ namespace Findx.Jobs
         /// <param name="taskArgs"></param>
         /// <param name="delay"></param>
         /// <returns></returns>
-        Task<long> ScheduleAsync<TJob>(object jobArgs, TimeSpan delay) where TJob : IJob;
+        Task<long> ScheduleAsync<TJob>([NotNull] TimeSpan delay, object jobArgs = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个循环执行任务
@@ -43,24 +44,14 @@ namespace Findx.Jobs
         /// <param name="taskArgs"></param>
         /// <param name="cronExpression"></param>
         /// <returns></returns>
-        Task<long> ScheduleAsync<TJob>(object jobArgs, string cronExpression) where TJob : IJob;
+        Task<long> ScheduleAsync<TJob>([NotNull] string cronExpression, object jobArgs = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个循环执行任务
         /// </summary>
         /// <param name="jobType"></param>
         /// <returns></returns>
-        Task<long> ScheduleAsync(Type jobType);
-
-        /// <summary>
-        /// 开始服务
-        /// </summary>
-        Task StartAsync(CancellationToken cancellationToken = default);
-
-        /// <summary>
-        /// 停止服务
-        /// </summary>
-        Task StopAsync(CancellationToken cancellationToken = default);
+        Task<long> ScheduleAsync([NotNull] Type jobType);
     }
 }
 

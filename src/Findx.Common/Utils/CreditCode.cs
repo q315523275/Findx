@@ -19,7 +19,7 @@ namespace Findx.Utils
     {
         private static readonly int[] WEIGHT = { 1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28 };
         private static readonly char[] BASE_CODE_ARRAY = "0123456789ABCDEFGHJKLMNPQRTUWXY".ToCharArray();
-        private static readonly IDictionary<char, int> CODE_INDEX_MAP = new ConcurrentDictionary<char, int>();
+        private static readonly IDictionary<char, int> CODE_INDEX_MAP = new Dictionary<char, int>();
 
         static CreditCode()
         {

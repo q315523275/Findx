@@ -38,7 +38,7 @@ namespace Findx.RabbitMQ
 
         protected FindxAsyncTimer Timer { get; }
 
-        public RabbitMqConsumer(IConnectionPool connectionPool, FindxAsyncTimer timer,IExceptionNotifier exceptionNotifier, ILogger<RabbitMqConsumer> logger)
+        public RabbitMqConsumer(IConnectionPool connectionPool, FindxAsyncTimer timer, IExceptionNotifier exceptionNotifier, ILogger<RabbitMqConsumer> logger)
         {
             ConnectionPool = connectionPool;
             Timer = timer;

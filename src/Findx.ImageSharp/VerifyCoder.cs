@@ -44,7 +44,7 @@ namespace Findx.ImageSharp
 
                     foreach (var name in names)
                     {
-                        fontList.Add(new Font(fontCollection.Install(assembly.GetManifestResourceStream(name)), fontSize));
+                        fontList.Add(new Font(fontCollection.Add(assembly.GetManifestResourceStream(name)), fontSize));
                     }
 
                     _fontArr = fontList.ToArray();

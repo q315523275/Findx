@@ -147,7 +147,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 user.NickName = user.Account;
             user.AdminType = AdminTypeEnum.None.To<int>();
             user.CreatedTime = DateTime.Now;
-            user.CreatorId = (long?)(currentUser?.UserId?.CastTo(user.CreatorId.GetType()));
+            user.CreatorId = (long?)(currentUser?.UserId?.CastTo<long>());
             user.SetEmptyKey();
 
             // 事物
@@ -241,7 +241,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
             var user = request.MapTo<SysUserInfo>();
             Check.NotNull(user, nameof(user));
             user.LastUpdatedTime = DateTime.Now;
-            user.LastUpdaterId = (long?)(currentUser?.UserId?.CastTo(user.LastUpdaterId.GetType()));
+            user.LastUpdaterId = (long?)(currentUser?.UserId?.CastTo<long>());
 
             // 事物
             var uow = repo.GetUnitOfWork();

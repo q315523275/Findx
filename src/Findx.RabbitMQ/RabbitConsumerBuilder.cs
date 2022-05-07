@@ -4,7 +4,6 @@ using Findx.Reflection;
 using Findx.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
@@ -26,8 +25,8 @@ namespace Findx.RabbitMQ
             _factory = factory;
             _serializer = serializer;
             Consumers = new List<IRabbitMqConsumer>();
-            MethodParameter = new ConcurrentDictionary<MethodInfo, Type>();
-            Handlers = new ConcurrentDictionary<MethodInfo, Func<object, object[], object>>();
+            MethodParameter = new Dictionary<MethodInfo, Type>();
+            Handlers = new Dictionary<MethodInfo, Func<object, object[], object>>();
         }
 
         public void Build()
@@ -75,7 +74,7 @@ namespace Findx.RabbitMQ
         }
 
         private List<IRabbitMqConsumer> Consumers { get; }
-        private ConcurrentDictionary<MethodInfo, Type> MethodParameter { get; }
-        private ConcurrentDictionary<MethodInfo, Func<object, object[], object>> Handlers { get; }
+        private IDictionary<MethodInfo, Type> MethodParameter { get; }
+        private IDictionary<MethodInfo, Func<object, object[], object>> Handlers { get; }
     }
 }

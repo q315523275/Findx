@@ -11,9 +11,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Findx.Storage
 {
-	public class FolderFileStorage: IFileStorage
-	{
-		
+    public class FolderFileStorage : IFileStorage
+    {
+
         /// <summary>
         /// 序列化工具
         /// </summary>
@@ -126,6 +126,7 @@ namespace Findx.Storage
 
             searchPattern = searchPattern.NormalizePath();
             string path = Path.Combine(MediaRootFoler, searchPattern);
+
             if (path[path.Length - 1] == Path.DirectorySeparatorChar || path.EndsWith(Path.DirectorySeparatorChar + "*"))
             {
                 string directory = Path.GetDirectoryName(path);
@@ -294,6 +295,35 @@ namespace Findx.Storage
         }
 
         /// <summary>
+        /// 保存文件
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="byteArray"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        public async Task<bool> SaveFileAsync(string path, byte[] byteArray, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(path, nameof(path));
+            Check.NotNull(byteArray, nameof(byteArray));
+
+            path = path.NormalizePath();
+            string file = Path.Combine(MediaRootFoler, path);
+
+            try
+            {
+                using var fileStream = CreateFileStream(file);
+                await fileStream.WriteAsync(byteArray, 0, byteArray.Length, cancellationToken);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error trying to save file: {Path}", path);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// 创建真实文件
         /// </summary>
         /// <param name="filePath"></param>
@@ -312,7 +342,6 @@ namespace Findx.Storage
 
             return File.Create(filePath);
         }
-
     }
 }
 

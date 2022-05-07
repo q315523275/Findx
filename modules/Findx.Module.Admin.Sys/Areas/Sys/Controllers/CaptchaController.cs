@@ -77,9 +77,9 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
 		/// <param name="height"></param>
 		/// <returns></returns>
 		[HttpGet("getImgCaptcha")]
-		public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder, int width = 150, int height = 50)
+		public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder, int width = 150, int height = 50, [Range(4, 6)] int count = 4)
 		{
-			var code = verifyCoder.GetCode(5, VerifyCodeType.NumberAndLetter);
+			var code = verifyCoder.GetCode(count, VerifyCodeType.NumberAndLetter);
 
 			var img = await verifyCoder.CreateImageAsync(code, width: width, height: height);
 

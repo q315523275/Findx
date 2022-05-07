@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -212,6 +214,55 @@ namespace Findx.Utils
                 fs.Seek(0, SeekOrigin.Begin);
             }
             return targetEncoding;
+        }
+
+        /// <summary>
+        /// 是否为图片文件
+        /// </summary>
+        /// <param name="fileExt">文件扩展名，不含“.”</param>
+        public static bool IsImage(string fileExt)
+        {
+            ArrayList al = new ArrayList();
+            al.Add("bmp");
+            al.Add("jpeg");
+            al.Add("jpg");
+            al.Add("gif");
+            al.Add("png");
+            if (al.Contains(fileExt.ToLower()))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 检查文件地址是否文件服务器地址
+        /// </summary>
+        /// <param name="url">文件地址</param>
+        public static bool IsExternalIPAddress(string url)
+        {
+            var uri = new Uri(url);
+            switch (uri.HostNameType)
+            {
+                case UriHostNameType.Dns:
+                    var ipHostEntry = Dns.GetHostEntry(uri.DnsSafeHost);
+                    foreach (IPAddress ipAddress in ipHostEntry.AddressList)
+                    {
+                        byte[] ipBytes = ipAddress.GetAddressBytes();
+                        if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
+                        {
+                            if (!NetUtil.IsInternalIP(ipAddress))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                    break;
+
+                case UriHostNameType.IPv4:
+                    return !NetUtil.IsInternalIP(IPAddress.Parse(uri.DnsSafeHost));
+            }
+            return false;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Findx.Utils;
+﻿using Findx.Extensions;
+using Findx.Utils;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -20,21 +21,25 @@ namespace Findx.ImageSharp
                 var textWidth = (containerWidth / text.Length);
                 var img2Size = Math.Min(textWidth, containerHeight);
                 var fontMiniSize = (int)(img2Size * 0.9);
-                var fontMaxSize = (int)(img2Size * 1.15);
+                var fontMaxSize = (int)(img2Size * 1.2);
                 Array fontStyleArr = Enum.GetValues(typeof(FontStyle));
 
                 for (int i = 0; i < text.Length; i++)
                 {
-                    using Image<Rgba32> img2 = new(img2Size, img2Size);
+                    using Image<Rgba32> img2 = new(img2Size, containerHeight);
                     Font scaledFont = new(fonts[RandomUtil.RandomInt(0, fonts.Length)], RandomUtil.RandomInt(fontMiniSize, fontMaxSize), (FontStyle)fontStyleArr.GetValue(RandomUtil.RandomInt(fontStyleArr.Length)));
-                    var point = new Point(i * textWidth, (containerHeight - img2.Height) / 2);
+                    var point = new Point(i * textWidth, 0);
                     var colorHex = colorHexArr[RandomUtil.RandomInt(0, colorHexArr.Length)];
-                    var drawingOptions = new DrawingOptions { TextOptions = new TextOptions { HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Top } };
+                  
+                    // 文字尺寸、位置
+                    var size = TextMeasurer.Measure(text[i].ToString(), new TextOptions(scaledFont));
+                    var offestLeft = ((img2.Width - size.Width) / 2).To<int>();
+                    var offestTop = ((img2.Height - size.Height) / 2).To<int>();
 
                     img2.Mutate(ctx =>
-                                ctx.DrawText(drawingOptions, text[i].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(0, 0))
+                                ctx.DrawText(text[i].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(offestLeft, offestTop))
                                    .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
-                                   // .Rotate(RandomUtil.RandomInt(-5, 5)) // 字体自带旋转，意思一下就行
+                                   .Rotate(RandomUtil.RandomInt(-15, 15)) // 字体自带旋转，意思一下就行
                                );
 
                     processingContext.DrawImage(img2, point, 1);

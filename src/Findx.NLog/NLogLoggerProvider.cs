@@ -1,13 +1,15 @@
-﻿using NLog;
+﻿using Findx.Extensions;
+using NLog;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Findx.NLog
 {
     public class NLogLoggerProvider : Microsoft.Extensions.Logging.ILoggerProvider
     {
-        private readonly ConcurrentDictionary<string, NLogLogger> _loggers = new ConcurrentDictionary<string, NLogLogger>();
+        private readonly IDictionary<string, NLogLogger> _loggers = new ConcurrentDictionary<string, NLogLogger>();
         private const string DefaultNLogFileName = "nlog.config";
 
         public NLogLoggerProvider(string nlogConfigFile)

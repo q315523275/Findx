@@ -10,18 +10,15 @@ namespace Findx.Jobs.Local
     {
         private readonly IJobStorage _storage;
 
-        private readonly IJobDispatcher _dispatcher;
-
         private readonly IJsonSerializer _serializer;
 
-        public DefaultJobScheduler(IJobStorage storage, IJobDispatcher dispatcher, IJsonSerializer serializer)
+        public DefaultJobScheduler(IJobStorage storage, IJsonSerializer serializer)
         {
             _storage = storage;
-            _dispatcher = dispatcher;
             _serializer = serializer;
         }
 
-        public async Task<long> EnqueueAsync<TJob>(object jobArgs, TimeSpan? delay = null) where TJob : IJob
+        public async Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, object jobArgs = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
             var jobDetail = CreateJobDetail(jobType, jobArgs);
@@ -34,7 +31,7 @@ namespace Findx.Jobs.Local
             return jobDetail.Id;
         }
 
-        public async Task<long> EnqueueAsync<TJob>(object jobArgs, DateTime? dateTime = null) where TJob : IJob
+        public async Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, object jobArgs = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
             var jobDetail = CreateJobDetail(jobType, jobArgs);
@@ -45,7 +42,7 @@ namespace Findx.Jobs.Local
             return jobDetail.Id;
         }
 
-        public async Task<long> ScheduleAsync<TJob>(object jobArgs, TimeSpan delay) where TJob : IJob
+        public async Task<long> ScheduleAsync<TJob>(TimeSpan delay, object jobArgs = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
             var jobDetail = CreateJobDetail(jobType, jobArgs);
@@ -57,7 +54,7 @@ namespace Findx.Jobs.Local
             return jobDetail.Id;
         }
 
-        public async Task<long> ScheduleAsync<TJob>(object jobArgs, string cronExpression) where TJob : IJob
+        public async Task<long> ScheduleAsync<TJob>(string cronExpression, object jobArgs = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
             var jobDetail = CreateJobDetail(jobType, jobArgs);
@@ -118,26 +115,6 @@ namespace Findx.Jobs.Local
             }
 
             return detail;
-        }
-
-        /// <summary>
-        /// 启动调度
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task StartAsync(CancellationToken cancellationToken = default)
-        {
-            return _dispatcher.StartAsync(cancellationToken);
-        }
-
-        /// <summary>
-        /// 停止调度
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public Task StopAsync(CancellationToken cancellationToken = default)
-        {
-            return _dispatcher.StopAsync(cancellationToken);
         }
     }
 }

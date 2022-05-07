@@ -1,12 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading;
-using Findx.Extensions;
 namespace Findx.RabbitMQ
 {
     public class ConnectionPool : IConnectionPool, IDisposable

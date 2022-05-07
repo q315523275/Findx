@@ -133,7 +133,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         [HttpPost("add")]
         public async Task<CommonResult> Add([FromBody] SysTimerRequest req)
         {
-            var typeInfo = _finder.FindAll(true).FirstOrDefault(x => x.FullName == req.TaskFullName);
+            var typeInfo = _finder.FindAll(true).FirstOrDefault(x => x.FullName == req.FullName);
             if (typeInfo == null)
                 return CommonResult.Fail("job.class.404", "定时任务class类不存在");
 
@@ -145,9 +145,9 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 IsSingle = false,
                 NextRunTime = Utils.Cron.GetNextOccurrence(req.CronExpress),
                 Id = Findx.Utils.SnowflakeId.Default().NextId(),
-                JsonParam = req.TaskArgs,
-                Name = req.TaskName,
-                FullName = req.TaskFullName,
+                JsonParam = req.JsonParam,
+                Name = req.Name,
+                FullName = req.FullName,
                 TryCount = 0,
             };
 
@@ -164,7 +164,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
         [HttpPost("edit")]
         public async Task<CommonResult> Edit([FromBody] SysTimerRequest req)
         {
-            var typeInfo = _finder.FindAll(true).FirstOrDefault(x => x.FullName == req.TaskFullName);
+            var typeInfo = _finder.FindAll(true).FirstOrDefault(x => x.FullName == req.FullName);
             if (typeInfo == null)
                 return CommonResult.Fail("job.class.404", "定时任务class类不存在");
 
@@ -174,9 +174,9 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
 
             model.CronExpress = req.CronExpress;
             model.NextRunTime = Utils.Cron.GetNextOccurrence(req.CronExpress);
-            model.JsonParam = req.TaskArgs;
-            model.Name = req.TaskName;
-            model.FullName = req.TaskFullName;
+            model.JsonParam = req.JsonParam;
+            model.Name = req.Name;
+            model.FullName = req.FullName;
 
             await _storage.UpdateAsync(model);
 

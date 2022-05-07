@@ -4,7 +4,7 @@ using System.Diagnostics.Metrics;
 
 namespace Findx.Metrics
 {
-    public class DiagnosticsMetrics : IMetrics
+    public class DiagnosticsMetrics : IMetricsClient
     {
         private readonly ConcurrentDictionary<string, Counter<long>> _counters = new();
         private readonly ConcurrentDictionary<string, GaugeInfo> _gauges = new();

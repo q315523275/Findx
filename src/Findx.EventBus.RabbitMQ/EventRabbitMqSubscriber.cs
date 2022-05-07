@@ -17,7 +17,7 @@ namespace Findx.EventBus.RabbitMQ
         private readonly IRabbitMqConsumerFactory _consumerFactory;
         private readonly IApplicationContext _application;
         private readonly EventBusRabbitMqOptions _options;
-        private ConcurrentDictionary<string, IRabbitMqConsumer> _consumers;
+        private IDictionary<string, IRabbitMqConsumer> _consumers;
 
         public EventRabbitMQSubscriber(IRabbitMqConsumerFactory consumerFactory, IEventSubscribeManager subscribeManager, IEventStore storage, IEventDispatcher dispatcher, IApplicationContext application, IOptions<EventBusRabbitMqOptions> options, ILogger<EventSubscriberBase> logger) : base(subscribeManager, storage, logger, dispatcher)
         {
@@ -25,7 +25,7 @@ namespace Findx.EventBus.RabbitMQ
             _options = options.Value;
             _application = application;
 
-            _consumers = new ConcurrentDictionary<string, IRabbitMqConsumer>();
+            _consumers = new Dictionary<string, IRabbitMqConsumer>();
         }
 
         protected override void DoInternalSubscribe(string eventName, string handlerName, int prefetchCount)

@@ -5,7 +5,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Nullable>disable</Nullable>
 		<LangVersion>10.0</LangVersion>
-		<Version>1.7.1</Version>
+		<Version>1.7.4</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Product />
@@ -43,10 +43,12 @@
 	  <None Remove="System.Diagnostics.DiagnosticSource" />
 	  <None Remove="Messaging\LocalBus\" />
 	  <None Remove="Jobs\Local\" />
+	  <None Remove="ConsistentHash\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Setting\" />
 	  <Folder Include="Jobs\" />
 	  <Folder Include="Jobs\Local\" />
+	  <Folder Include="ConsistentHash\" />
 	</ItemGroup>
 </Project>

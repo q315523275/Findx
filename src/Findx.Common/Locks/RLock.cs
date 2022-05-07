@@ -57,7 +57,7 @@ namespace Findx.Locks
 
             _renewalCount++;
 
-            Debug.WriteLine($"the resource ({Resource}) lock is renewed {_renewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            Debug.WriteLine($"the resource ({Resource}) lock ({_lock.LockType}) is renewed {_renewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
         }
 
         public async Task ReleaseAsync()

@@ -1,22 +1,27 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<Description>通用仓储-FreeSql实现</Description>
-		<Version>1.5.9</Version>
+		<Version>1.7.1</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.200" />
-		<PackageReference Include="FreeSql.Provider.Sqlite" Version="3.2.200" />
+		<PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.500" />
 		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+		<PackageReference Include="FreeSql.Provider.SqlServerForSystem" Version="3.2.500" />
+		<PackageReference Include="FreeSql.Provider.Sqlite" Version="3.2.500" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="FreeSql.Provider.SqlServerForSystem" />
+	  <None Remove="FreeSql.Provider.Sqlite" />
+	</ItemGroup>
 </Project>

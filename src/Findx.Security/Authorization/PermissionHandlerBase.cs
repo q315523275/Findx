@@ -28,7 +28,7 @@ namespace Findx.Security.Authorization
         /// <summary>
         /// 资源权限信息
         /// </summary>
-        private readonly ConcurrentDictionary<string, PermissionAccess> _permissionAccess;
+        private readonly IDictionary<string, PermissionAccess> _permissionAccess;
 
         /// <summary>
         /// Ctor
@@ -36,7 +36,7 @@ namespace Findx.Security.Authorization
         public PermissionHandlerBase()
         {
             _permissions = new List<Permission>();
-            _permissionAccess = new ConcurrentDictionary<string, PermissionAccess>();
+            _permissionAccess = new Dictionary<string, PermissionAccess>();
         }
 
         /// <summary>
@@ -76,14 +76,18 @@ namespace Findx.Security.Authorization
 
             foreach (Permission permission in _permissions)
             {
-                var roles = permission.Roles.IsNullOrWhiteSpace() ? new string[] { } : permission.Roles.Split(",");
+                var roles = permission.Roles.IsNullOrWhiteSpace() ? Array.Empty<string>() : permission.Roles.Split(",");
+                var key = $"{permission.Area}-{permission.Controller}-{permission.Action}";
 
-                _permissionAccess.AddOrUpdate($"{permission.Area}-{permission.Controller}-{permission.Action}", new PermissionAccess(permission.AccessType, roles), (key, old) =>
+                if (_permissionAccess.TryGetValue(key, out var access))
                 {
-                    old.AccessType = permission.AccessType;
-                    old.Roles = roles;
-                    return old;
-                });
+                    access.AccessType = permission.AccessType;
+                    access.Roles = roles;
+                }
+                else
+                {
+                    _permissionAccess.TryAdd(key, new PermissionAccess(permission.AccessType, roles));
+                }
             }
         }
 
@@ -106,8 +110,11 @@ namespace Findx.Security.Authorization
                 {
                     var typeInfo = item.ControllerTypeInfo;
                     AuthorizeAttribute authorize = typeInfo.GetAttribute<AuthorizeAttribute>();
-                    PermiessionAccessType typeAccessType = authorize == null ? PermiessionAccessType.Anonymous :
-                           authorize.Roles.IsNullOrWhiteSpace() ? PermiessionAccessType.Login : PermiessionAccessType.RoleLimit;
+                    PermiessionAccessType typeAccessType = authorize == null 
+                                                         ? PermiessionAccessType.Anonymous
+                                                         : authorize.Roles.IsNullOrWhiteSpace()
+                                                         ? PermiessionAccessType.Login
+                                                         : PermiessionAccessType.RoleLimit;
                     typePermission = new Permission()
                     {
                         Name = typeInfo.GetDescription(),

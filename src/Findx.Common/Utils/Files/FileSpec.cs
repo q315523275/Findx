@@ -49,7 +49,7 @@ namespace Findx.Utils.Files
         public string SaveName { get; set; }
 
         /// <summary>
-        /// 扩展名
+        /// 扩展名,不包含.
         /// </summary>
         public string Extension { get; }
 

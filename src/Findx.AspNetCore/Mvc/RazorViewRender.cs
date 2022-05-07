@@ -44,26 +44,21 @@ namespace Findx.AspNetCore.Mvc
         /// <returns></returns>
         public async Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model)
         {
-            var httpContext = new DefaultHttpContext { RequestServices = _serviceProvider };
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-
+            var actionContext = GetActionContext();
             var view = FindView(actionContext, viewName);
-            var viewData = new ViewDataDictionary<TModel>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
-            {
-                Model = model
-            };
 
             using (var output = new StringWriter())
             {
                 var viewContext = new ViewContext(
                     actionContext,
                     view,
-                    viewData,
-                    new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
+                    new ViewDataDictionary<TModel>(metadataProvider: new EmptyModelMetadataProvider(), modelState: new ModelStateDictionary()) { Model = model },
+                    new TempDataDictionary(actionContext.HttpContext, this._tempDataProvider),
                     output,
-                    new HtmlHelperOptions()
-                );
+                    new HtmlHelperOptions());
+
                 await view.RenderAsync(viewContext);
+
                 return output.ToString();
             }
         }
@@ -88,6 +83,13 @@ namespace Findx.AspNetCore.Mvc
                                 new[] { $"Unable to find view '{viewName}'. The following locations were searched:" }.Concat(searchedLocations));
 
             throw new InvalidOperationException(errorMessage);
+        }
+
+        private ActionContext GetActionContext()
+        {
+            var httpContext = new DefaultHttpContext();
+            httpContext.RequestServices = this._serviceProvider;
+            return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
         }
     }
 }

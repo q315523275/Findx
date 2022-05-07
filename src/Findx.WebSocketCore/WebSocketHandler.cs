@@ -11,10 +11,12 @@ namespace Findx.WebSocketCore
     public abstract class WebSocketHandler
     {
         protected WebSocketConnectionManager WebSocketConnectionManager { get; set; }
+
         public WebSocketHandler(WebSocketConnectionManager webSocketConnectionManager)
         {
             WebSocketConnectionManager = webSocketConnectionManager;
         }
+
         public virtual async Task OnConnected(WebSocket socket)
         {
             WebSocketConnectionManager.AddSocket(socket);
@@ -25,6 +27,7 @@ namespace Findx.WebSocketCore
                 Data = WebSocketConnectionManager.GetId(socket)
             }).ConfigureAwait(false);
         }
+
         public virtual async Task OnConnected(string socketId, WebSocket socket)
         {
             WebSocketConnectionManager.AddSocket(socketId, socket);
@@ -35,12 +38,14 @@ namespace Findx.WebSocketCore
                 Data = WebSocketConnectionManager.GetId(socket)
             }).ConfigureAwait(false);
         }
+
         public virtual async Task OnDisconnected(WebSocket socket)
         {
             var socketId = WebSocketConnectionManager.GetId(socket);
             if (!string.IsNullOrWhiteSpace(socketId))
                 await WebSocketConnectionManager.RemoveSocket(socketId).ConfigureAwait(false);
         }
+
         public async Task SendMessageAsync(WebSocket socket, WebSocketMessage message)
         {
             if (socket.State != WebSocketState.Open)
@@ -64,12 +69,14 @@ namespace Findx.WebSocketCore
                 }
             }
         }
+
         public async Task SendMessageAsync(string socketId, WebSocketMessage message)
         {
             var socket = WebSocketConnectionManager.GetSocketById(socketId);
             if (socket != null)
                 await SendMessageAsync(socket, message).ConfigureAwait(false);
         }
+
         public async Task SendMessageToAllAsync(WebSocketMessage message)
         {
             foreach (var pair in WebSocketConnectionManager.GetAll())
@@ -88,6 +95,7 @@ namespace Findx.WebSocketCore
                 }
             }
         }
+
         public async Task SendMessageToGroupAsync(string groupID, WebSocketMessage message)
         {
             var sockets = WebSocketConnectionManager.GetAllFromGroup(groupID);
@@ -99,6 +107,7 @@ namespace Findx.WebSocketCore
                 }
             }
         }
+
         public async Task SendMessageToGroupAsync(string groupID, WebSocketMessage message, string except)
         {
             var sockets = WebSocketConnectionManager.GetAllFromGroup(groupID);
@@ -111,6 +120,7 @@ namespace Findx.WebSocketCore
                 }
             }
         }
+
         public virtual async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, WebSocketMessage receivedMessage)
         {
             try

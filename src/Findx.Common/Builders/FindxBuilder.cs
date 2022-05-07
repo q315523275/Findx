@@ -83,7 +83,6 @@ namespace Findx.Builders
             _modules = _modules.OrderBy(m => m.Level).ThenBy(m => m.Order).ToList();
 
             var logName = typeof(FindxBuilder).FullName;
-            // tmpModules = _modules.Except(tmpModules).ToArray();
             foreach (var tmpModule in _modules.Except(tmpModules))
             {
                 var moduleType = tmpModule.GetType();

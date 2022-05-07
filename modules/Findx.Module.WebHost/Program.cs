@@ -1,7 +1,6 @@
-using Findx.AspNetCore.Extensions;
+﻿using Findx.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using EnvironmentName = Microsoft.AspNetCore.Hosting.EnvironmentName;
 
 namespace Findx.Module.WebHost
 {

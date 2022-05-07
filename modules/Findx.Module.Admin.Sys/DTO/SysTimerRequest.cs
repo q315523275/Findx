@@ -14,17 +14,17 @@ namespace Findx.Module.Admin.Sys.DTO
         /// <summary>
         /// 任务名
         /// </summary>
-        public string TaskName { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// 调度任务任务参数
         /// </summary>
-        public string TaskArgs { get; set; }
+        public string JsonParam { get; set; }
 
         /// <summary>
         /// 调度任务命名全路径
         /// </summary>
-        public string TaskFullName { get; set; }
+        public string FullName { get; set; }
 
         /// <summary>
         /// Cron表达式

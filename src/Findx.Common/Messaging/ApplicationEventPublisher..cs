@@ -1,9 +1,10 @@
 ﻿using Findx.DependencyInjection;
+using Findx.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -16,7 +17,7 @@ namespace Findx.Messaging
     /// </summary>
     public class ApplicationEventPublisher : IApplicationEventPublisher, IDisposable
     {
-        private readonly ConcurrentDictionary<Type, object> _eventHandlers = new ConcurrentDictionary<Type, object>();
+        private readonly IDictionary<Type, object> _eventHandlers = new Dictionary<Type, object>();
 
         private readonly IConfiguration _configuration;
         private readonly Channel<IApplicationEvent> _channel;

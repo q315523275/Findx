@@ -20,6 +20,7 @@ namespace Findx.Security.Authorization.Store
 
         public Task SyncToStoreAsync(List<Permission> permissions)
         {
+            _permissions.Clear();
             _permissions.AddRange(permissions);
             return Task.CompletedTask;
         }

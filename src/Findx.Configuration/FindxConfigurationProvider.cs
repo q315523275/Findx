@@ -2,7 +2,7 @@
 using Findx.Utils;
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
@@ -20,9 +20,9 @@ namespace Findx.Configuration
         private HttpClient _httpClient;
         public FindxConfigurationProvider(FindxConfigurationOptions options)
         {
-            Data = new ConcurrentDictionary<string, string>();
+            Data = new Dictionary<string, string>();
             _options = options;
-            _localBackupPath = Path.Combine(System.IO.Directory.GetCurrentDirectory(), $"local.cache.{options.Namespace}.setting.json");
+            _localBackupPath = Path.Combine(Directory.GetCurrentDirectory(), $"local.cache.{options.Namespace}.setting.json");
             _httpClient = new HttpClient { Timeout = new TimeSpan(0, 0, 30) };
         }
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();

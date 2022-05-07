@@ -1,9 +1,11 @@
-﻿using log4net;
+﻿using Findx.Extensions;
+using log4net;
 using log4net.Config;
 using log4net.Repository;
 using log4net.Repository.Hierarchy;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
@@ -12,7 +14,7 @@ namespace Findx.Log4Net
 {
     public class Log4NetLoggerProvider : ILoggerProvider
     {
-        private readonly ConcurrentDictionary<string, Log4NetLogger> _loggers = new ConcurrentDictionary<string, Log4NetLogger>();
+        private readonly IDictionary<string, Log4NetLogger> _loggers = new ConcurrentDictionary<string, Log4NetLogger>();
         private const string DefaultLog4NetFileName = "log4net.config";
         private readonly ILoggerRepository _loggerRepository;
         public Log4NetLoggerProvider(string log4NetConfigFile)

@@ -1,10 +1,12 @@
 ﻿using System;
+using Findx.Messaging;
+
 namespace Findx.Jobs
 {
 	/// <summary>
     /// 定义一个工作详细信息
     /// </summary>
-	public class JobInfo
+	public class JobInfo: IApplicationEvent
     {
         /// <summary>
         /// 作业编号

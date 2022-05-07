@@ -1,5 +1,4 @@
-﻿using Findx.Extensions;
-using System;
+﻿using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -8,7 +7,7 @@ namespace Findx.Serialization
     /// <summary>
     /// DateTime时间格式转换器
     /// </summary>
-    public class DateTimeConverter : JsonConverter<DateTime>
+    public class DateTimeJsonConverter : JsonConverter<DateTime>
     {
         /// <summary>
         /// 读取
@@ -19,7 +18,12 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return DateTime.Parse(reader.GetString());
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                if (DateTime.TryParse(reader.GetString(), out DateTime date))
+                    return date;
+            }
+            return reader.GetDateTime();
         }
 
         /// <summary>
@@ -30,13 +34,21 @@ namespace Findx.Serialization
         /// <param name="options"></param>
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value.ToString("yyyy-MM-dd HH:mm:ss"));
+            if (value.Hour == 0 && value.Minute == 0 && value.Second == 0)
+            {
+                writer.WriteStringValue(value.ToString("yyyy-MM-dd"));
+            }
+            else
+            {
+                writer.WriteStringValue(value.ToString("yyyy-MM-dd HH:mm:ss"));
+            }
         }
     }
+
     /// <summary>
     /// DateTime时间格式转换器
     /// </summary>
-    public class DateTimeNullableConverter : JsonConverter<DateTime?>
+    public class DateTimeNullableJsonConverter : JsonConverter<DateTime?>
     {
         /// <summary>
         /// 
@@ -47,7 +59,15 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return reader.GetString().IsNullOrWhiteSpace() ? default(DateTime?) : DateTime.Parse(reader.GetString());
+            if (reader.TokenType == JsonTokenType.Null)
+                return default;
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                if (DateTime.TryParse(reader.GetString() ?? string.Empty, out DateTime date))
+                    return date;
+            }
+            return reader.GetDateTime();
         }
 
         /// <summary>
@@ -58,9 +78,17 @@ namespace Findx.Serialization
         /// <param name="options"></param>
         public override void Write(Utf8JsonWriter writer, DateTime? value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value?.ToString("yyyy-MM-dd HH:mm:ss"));
+            if (value?.Hour == 0 && value?.Minute == 0 && value?.Second == 0)
+            {
+                writer.WriteStringValue(value?.ToString("yyyy-MM-dd"));
+            }
+            else
+            {
+                writer.WriteStringValue(value?.ToString("yyyy-MM-dd HH:mm:ss"));
+            }
         }
     }
+
     /// <summary>
     /// 长整型转换器
     /// </summary>

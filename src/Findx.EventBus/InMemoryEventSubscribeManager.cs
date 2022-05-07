@@ -15,8 +15,8 @@ namespace Findx.EventBus
 
         public InMemoryEventSubscribeManager()
         {
-            _handlers = new ConcurrentDictionary<string, List<SubscribeInfo>>();
-            _eventTypes = new ConcurrentDictionary<string, Type>();
+            _handlers = new Dictionary<string, List<SubscribeInfo>>();
+            _eventTypes = new Dictionary<string, Type>();
         }
 
         public bool IsEmpty => !_handlers.Keys.Any();

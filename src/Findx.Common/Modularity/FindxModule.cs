@@ -11,15 +11,18 @@ namespace Findx.Modularity
     public abstract class FindxModule
     {
         public virtual ModuleLevel Level => ModuleLevel.Business;
+
         /// <summary>
         /// 获取 模块启动顺序，模块启动的顺序先按级别启动，同一级别内部再按此顺序启动，
         /// 级别默认为0，表示无依赖，需要在同级别有依赖顺序的时候，再重写为>0的顺序值
         /// </summary>
         public virtual int Order => 0;
+
         /// <summary>
         /// 获取 是否已可用
         /// </summary>
         public bool IsEnabled { get; protected set; }
+
         /// <summary>
         /// 将模块服务添加到依赖注入服务容器中
         /// </summary>
@@ -29,6 +32,7 @@ namespace Findx.Modularity
         {
             return services;
         }
+
         /// <summary>
         /// 应用模块初始化
         /// </summary>
@@ -37,6 +41,7 @@ namespace Findx.Modularity
         {
             IsEnabled = true;
         }
+
         /// <summary>
         /// 应用模块注销
         /// </summary>
@@ -61,7 +66,7 @@ namespace Findx.Modularity
             {
                 return new Type[0];
             }
-            List<Type> dependTypes = new List<Type>();
+            List<Type> dependTypes = new();
             foreach (DependsOnModulesAttribute dependAttr in dependAttrs)
             {
                 Type[] packTypes = dependAttr.DependedModuleTypes;

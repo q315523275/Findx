@@ -11,6 +11,7 @@ namespace Findx.WebSocketCore
     public class WebSocketConnectionManager : IDisposable
     {
         private ConcurrentDictionary<string, WebSocket> _sockets = new();
+
         private ConcurrentDictionary<string, List<string>> _groups = new();
 
         public WebSocket GetSocketById(string id)

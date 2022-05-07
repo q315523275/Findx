@@ -17,8 +17,6 @@ namespace Findx.Aspect
 
         MethodInfo Method { get; }
 
-        bool IsAsyncMethod { get; }
-
         object ReturnValue { get; set; }
 
         Task ProceedAsync();

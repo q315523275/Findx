@@ -119,7 +119,7 @@ namespace Findx.Module.Admin.Areas.Sys.Controllers
                 FileObjectName = fileInfo.SaveName,
                 CreatedTime = System.DateTime.Now,
             };
-            sysFileInfo.CreatorId = (long?)(currentUser?.UserId?.CastTo(sysFileInfo .LastUpdaterId.GetType()));
+            sysFileInfo.CreatorId = (long?)(currentUser?.UserId?.CastTo<long>());
             sysFileInfo.SetEmptyKey(repo.GetDbType());
             await repo.InsertAsync(sysFileInfo);
             return CommonResult.Success(sysFileInfo);
