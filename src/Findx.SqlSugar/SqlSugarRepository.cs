@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -103,7 +104,7 @@ namespace Findx.SqlSugar
             return _sugar.Insertable<TEntity>(entity).AS(_tableName).ExecuteCommand();
         }
 
-        public int Insert(List<TEntity> entities)
+        public int Insert(IEnumerable<TEntity> entities)
         {
             Check.NotNull(entities, nameof(entities));
 
@@ -119,7 +120,7 @@ namespace Findx.SqlSugar
             return _sugar.Insertable<TEntity>(entity).AS(_tableName).ExecuteCommandAsync();
         }
 
-        public Task<int> InsertAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
+        public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
             Check.NotNull(entities, nameof(entities));
 
@@ -228,43 +229,36 @@ namespace Findx.SqlSugar
         #endregion
 
         #region 更新
-        public int Update(TEntity entity, bool ignoreNullColumns = false)
-        {
-            var updateable = _sugar.Updateable(entity).AS(_tableName);
 
-            if (ignoreNullColumns)
-                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
+        public int Update(IEnumerable<TEntity> entitys, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
+        {
+            var updateable = _sugar.Updateable(entitys.ToList()).AS(_tableName);
+
+            if (updateColumns != null)
+                updateable.UpdateColumns(updateColumns);
+
+            if (ignoreColumns != null)
+                updateable.IgnoreColumns(ignoreColumns);
 
             return updateable.ExecuteCommand();
         }
 
-        public Task<int> UpdateAsync(TEntity entity, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
+        public Task<int> UpdateAsync(IEnumerable<TEntity> entitys, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
         {
-            var updateable = _sugar.Updateable(entity).AS(_tableName);
+            var updateable = _sugar.Updateable(entitys.ToList()).AS(_tableName);
 
-            if (ignoreNullColumns)
-                updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
+            if (updateColumns != null)
+                updateable.UpdateColumns(updateColumns);
+
+            if (ignoreColumns != null)
+                updateable.IgnoreColumns(ignoreColumns);
 
             _sugar.Ado.CancellationToken = cancellationToken;
 
             return updateable.ExecuteCommandAsync();
         }
 
-        public int Update(List<TEntity> entitys)
-        {
-            var updateable = _sugar.Updateable(entitys).AS(_tableName);
-            return updateable.ExecuteCommand();
-        }
-
-        public Task<int> UpdateAsync(List<TEntity> entitys, CancellationToken cancellationToken = default)
-        {
-            var updateable = _sugar.Updateable(entitys).AS(_tableName);
-            _sugar.Ado.CancellationToken = cancellationToken;
-
-            return updateable.ExecuteCommandAsync();
-        }
-
-        public int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
+        public int Update(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
         {
             var updateable = _sugar.Updateable(entity).AS(_tableName);
 
@@ -277,13 +271,10 @@ namespace Findx.SqlSugar
             if (ignoreNullColumns)
                 updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
 
-            if (whereExpression != null)
-                updateable.Where(whereExpression);
-
             return updateable.ExecuteCommand();
         }
 
-        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
+        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
             var updateable = _sugar.Updateable(entity).AS(_tableName);
 
@@ -295,9 +286,6 @@ namespace Findx.SqlSugar
 
             if (ignoreNullColumns)
                 updateable.IgnoreColumns(ignoreAllNullColumns: true, ignoreAllDefaultValue: true);
-
-            if (whereExpression != null)
-                updateable.Where(whereExpression);
 
             _sugar.Ado.CancellationToken = cancellationToken;
 

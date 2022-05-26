@@ -5,7 +5,9 @@ using Findx.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
+using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 namespace Findx.Module.WebHost
@@ -16,7 +18,7 @@ namespace Findx.Module.WebHost
         {
             services.AddFindx().AddModules();
 
-            services.AddControllers(options => options.Filters.Add(typeof(ValidationModelAttribute)))
+            services.AddControllers(options => options.Filters.Add(typeof(FindxGlobalAttribute)))
                     .AddJsonOptions(options =>
                     {
                         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
@@ -44,6 +46,7 @@ namespace Findx.Module.WebHost
                 app.UseJsonExceptionHandler();
 
             app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions { RequestPath = "/storage", FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "storage")) });
 
             app.UseCors("CorsPolicy");
 

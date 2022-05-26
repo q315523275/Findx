@@ -26,7 +26,7 @@ namespace Findx.FreeSql
         /// <summary>
         /// 数据源列表
         /// </summary>
-        public Dictionary<string, FreeSqlConnectionConfig> DataSource { set; get; }
+        public Dictionary<string, FreeSqlConnectionConfig> DataSource { set; get; } = new Dictionary<string, FreeSqlConnectionConfig>();
 
         /// <summary>
         /// 是否打印SQL日志调试
@@ -47,6 +47,11 @@ namespace Findx.FreeSql
         /// 是否逻辑删除
         /// </summary>
         public bool SoftDeletable { set; get; }
+
+        /// <summary>
+        /// 是否多租户
+        /// </summary>
+        public bool MultiTenant { set; get; }
     }
     /// <summary>
     /// FreeSql数据库连接配置
@@ -61,6 +66,6 @@ namespace Findx.FreeSql
         /// <summary>
         /// 数据库类型
         /// </summary>
-        public DataType DataType { set; get; }
+        public DataType DbType { set; get; }
     }
 }

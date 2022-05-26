@@ -26,7 +26,7 @@ namespace Findx.WebHost
 
             services.AddHostedService<EventBusWorker>();
 
-            services.AddControllers(options => options.Filters.Add(typeof(ValidationModelAttribute)))
+            services.AddControllers(options => options.Filters.Add(typeof(FindxGlobalAttribute)))
                     .AddJsonOptions(options =>
                     {
                         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);

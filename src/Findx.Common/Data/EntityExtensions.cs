@@ -8,8 +8,11 @@ using Findx.Utils;
 
 namespace Findx.Data
 {
+    /// <summary>
+    /// 实体扩展
+    /// </summary>
 	public static class EntityExtensions
-	{
+    {
         /// <summary>
         /// 检测指定类型是否为<see cref="IEntity{TKey}"/>实体类型
         /// </summary>
@@ -36,9 +39,10 @@ namespace Findx.Data
         /// <summary>
         /// 检测并执行<see cref="ICreatedTime"/>接口的逻辑
         /// </summary>
-        public static TEntity CheckICreatedTime<TEntity, TKey>(this TEntity entity)
-            where TEntity : IEntity<TKey>
-            where TKey : IEquatable<TKey>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public static TEntity CheckICreatedTime<TEntity>(this TEntity entity) where TEntity : IEntity
         {
             if (entity is ICreatedTime entity1)
             {
@@ -57,9 +61,13 @@ namespace Findx.Data
         /// <summary>
         /// 检测并执行<see cref="ICreationAudited{TUserKey}"/>接口的处理
         /// </summary>
-        public static TEntity CheckICreationAudited<TEntity, TKey, TUserKey>(this TEntity entity, IPrincipal user)
-            where TEntity : IEntity<TKey>
-            where TKey : IEquatable<TKey>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TUserKey"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public static TEntity CheckICreationAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user)
+            where TEntity : IEntity
             where TUserKey : struct
         {
             if (entity is ICreationAudited<TUserKey> entity1)
@@ -78,17 +86,90 @@ namespace Findx.Data
         }
 
         /// <summary>
+        /// 检测并执行<see cref="IUpdateTime"/>接口的逻辑
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public static TEntity CheckIUpdateTime<TEntity>(this TEntity entity) where TEntity : IEntity
+        {
+            if (entity is IUpdateTime entity1)
+            {
+                if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime == default(DateTime))
+                {
+                    entity1.LastUpdatedTime = DateTime.Now;
+                }
+                return (TEntity)entity1;
+            }
+            else
+            {
+                return entity;
+            }
+        }
+
+        /// <summary>
         /// 检测并执行<see cref="IUpdateAudited{TUserKey}"/>接口的处理
         /// </summary>
-        public static TEntity CheckIUpdateAudited<TEntity, TKey, TUserKey>(this TEntity entity, IPrincipal user)
-            where TEntity : IEntity<TKey>
-            where TKey : IEquatable<TKey>
-            where TUserKey : struct, IEquatable<TUserKey>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TUserKey"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public static TEntity CheckIUpdateAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user)
+            where TEntity : IEntity
+            where TUserKey : struct
         {
             if (entity is IUpdateAudited<TUserKey> entity1)
             {
                 entity1.LastUpdaterId = user.Identity.IsAuthenticated ? user.Identity.GetUserId<TUserKey>() : default;
-                entity1.LastUpdatedTime = DateTime.Now;
+                if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime == default(DateTime))
+                {
+                    entity1.LastUpdatedTime = DateTime.Now;
+                }
+                return (TEntity)entity1;
+            }
+            else
+            {
+                return entity;
+            }
+        }
+
+        /// <summary>
+        /// 检测并执行<see cref="ITenant"/>接口的处理
+        /// <para>TenantI:默认int</para>
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public static TEntity CheckITenant<TEntity>(this TEntity entity, IPrincipal user) where TEntity : IEntity
+        {
+            if (entity is ITenant entity1 && user.Identity.IsAuthenticated && !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
+            {
+                entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<int>();
+                return (TEntity)entity1;
+            }
+            else
+            {
+                return entity;
+            }
+        }
+
+        /// <summary>
+        /// 检测并执行<see cref="ITenant{TTenantKey}"/>接口的处理
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <typeparam name="TTenantKey"></typeparam>
+        /// <param name="entity"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public static TEntity CheckITenant<TEntity, TTenantKey>(this TEntity entity, IPrincipal user)
+            where TEntity : IEntity
+            where TTenantKey : struct
+        {
+            if (entity is ITenant<TTenantKey> entity1)
+            {
+                entity1.TenantId = user.Identity.IsAuthenticated ? user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<TTenantKey>() : default;
                 return (TEntity)entity1;
             }
             else

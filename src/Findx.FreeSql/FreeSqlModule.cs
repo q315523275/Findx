@@ -39,11 +39,16 @@ namespace Findx.FreeSql
             {
                 // FreeSQL构建开始
                 FreeSqlConnectionConfig DbConnection = option.Value;
-                IFreeSql freeSql = new FreeSqlBuilder().UseConnectionString(DbConnection.DataType, DbConnection.ConnectionString).Build();
+                IFreeSql freeSql = new FreeSqlBuilder().UseConnectionString(DbConnection.DbType, DbConnection.ConnectionString).Build();
                 // 开启逻辑删除
                 if (FreeSqlOptions.SoftDeletable)
                 {
                     freeSql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
+                }
+                // 开启租户隔离
+                if (FreeSqlOptions.MultiTenant)
+                {
+                    freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => Tenant.TenantId.Value != 0, it => it.TenantId == Tenant.TenantId.Value);
                 }
                 // AOP
                 freeSql.Aop.CurdAfter += (s, e) =>
@@ -63,7 +68,8 @@ namespace Findx.FreeSql
                             }
                         }
                         sb.Append($"==>  ExecuteTime:{e.ElapsedMilliseconds:0.000}ms");
-                        ServiceLocator.GetService<ILogger<FreeSqlModule>>()?.LogInformation(sb.ToString());
+                        var logger = ServiceLocator.GetService<ILogger<FreeSqlModule>>();
+                        logger?.LogInformation(sb.ToString());
                     }
                     // 开启慢SQL记录
                     if (FreeSqlOptions.OutageDetection && e.ElapsedMilliseconds > (FreeSqlOptions.OutageDetectionInterval * 1000))

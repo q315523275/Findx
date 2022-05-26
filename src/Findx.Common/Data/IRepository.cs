@@ -13,7 +13,7 @@ namespace Findx.Data
     public interface IRepository<TEntity> where TEntity : class, new()
     {
         /// <summary>
-        /// 获取工作单元
+        /// 获取当前使用的工作单元
         /// </summary>
         IUnitOfWork GetUnitOfWork();
 
@@ -22,28 +22,28 @@ namespace Findx.Data
         /// 插入
         /// </summary>
         /// <param name="entity"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         int Insert(TEntity entity);
         /// <summary>
         /// 异步插入
         /// </summary>
         /// <param name="entity"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken = default);
         /// <summary>
         /// 批量插入
         /// </summary>
         /// <param name="entities"></param>
-        /// <returns></returns>
-        int Insert(List<TEntity> entities);
+        /// <returns>影响行数</returns>
+        int Insert(IEnumerable<TEntity> entities);
         /// <summary>
         /// 异步批量插入
         /// </summary>
         /// <param name="entities"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<int> InsertAsync(List<TEntity> entities, CancellationToken cancellationToken = default);
+        /// <returns>影响行数</returns>
+        Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
         #endregion
 
         #region 删除
@@ -51,93 +51,76 @@ namespace Findx.Data
         /// 删除
         /// </summary>
         /// <param name="key"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         int Delete(object key);
         /// <summary>
         /// 异步删除
         /// </summary>
         /// <param name="key"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         Task<int> DeleteAsync(object key, CancellationToken cancellationToken = default);
         /// <summary>
         /// 根据条件删除
         /// </summary>
         /// <param name="whereExpression"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         int Delete(Expression<Func<TEntity, bool>> whereExpression = null);
         /// <summary>
         /// 异步根据条件删除
         /// </summary>
         /// <param name="whereExpression"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default);
         #endregion
 
         #region 更新
         /// <summary>
-        /// 更新实体信息
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="ignoreNullColumns">过滤为NULL字段</param>
-        /// <returns></returns>
-        int Update(TEntity entity, bool ignoreNullColumns = false);
-        /// <summary>
-        /// 更新实体信息
-        /// </summary>
-        /// <param name="entity"></param>
-        /// <param name="ignoreNullColumns">过滤为NULL字段</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<int> UpdateAsync(TEntity entity, bool ignoreNullColumns = false, CancellationToken cancellationToken = default);
-        /// <summary>
-        /// 更新实体信息
-        /// </summary>
-        /// <param name="entitys"></param>
-        /// <returns></returns>
-        int Update(List<TEntity> entitys);
-        /// <summary>
-        /// 更新实体信息
-        /// </summary>
-        /// <param name="entitys"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<int> UpdateAsync(List<TEntity> entitys, CancellationToken cancellationToken = default);
-        /// <summary>
         /// 实体更新
         /// </summary>
         /// <param name="entity"></param>
-        /// <param name="whereExpression"></param>
         /// <param name="updateColumns"></param>
-        /// <param name="ignoreColumns"></param>
+        /// <param name="ignoreColumns">过滤字段(优先级大于ignoreNullColumns)</param>
         /// <param name="ignoreNullColumns">过滤为NULL字段(注意与ignoreColumns优先级)</param>
-        /// <returns></returns>
-        int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false);
+        /// <returns>影响行数</returns>
+        int Update(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false);
         /// <summary>
         /// 异步实体更新
         /// </summary>
         /// <param name="entity"></param>
-        /// <param name="whereExpression"></param>
         /// <param name="updateColumns"></param>
         /// <param name="ignoreColumns"></param>
         /// <param name="ignoreNullColumns">过滤为NULL字段(注意与ignoreColumns优先级)</param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default);
+        /// <returns>影响行数</returns>
+        Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 更新实体信息
+        /// </summary>
+        /// <param name="entitys"></param>
+        /// <returns>影响行数</returns>
+        int Update(IEnumerable<TEntity> entitys, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null);
+        /// <summary>
+        /// 更新实体信息
+        /// </summary>
+        /// <param name="entitys"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns>影响行数</returns>
+        Task<int> UpdateAsync(IEnumerable<TEntity> entitys, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default);
         /// <summary>
         /// 更新指定字段
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="whereExpression"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         int UpdateColumns(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression);
         /// <summary>
         /// 更新指定字段
         /// </summary>
         /// <param name="columns"></param>
         /// <param name="whereExpression"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         int UpdateColumns(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression);
         /// <summary>
         /// 更新指定字段
@@ -145,7 +128,7 @@ namespace Findx.Data
         /// <param name="columns"></param>
         /// <param name="whereExpression"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
         /// <summary>
         /// 更新指定字段
@@ -153,7 +136,7 @@ namespace Findx.Data
         /// <param name="columns"></param>
         /// <param name="whereExpression"></param>
         /// <param name="cancellationToken"></param>
-        /// <returns></returns>
+        /// <returns>影响行数</returns>
         Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
         #endregion
 

@@ -2,6 +2,7 @@
 using Findx.Logging;
 using Findx.Modularity;
 using Findx.Reflection;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -135,6 +136,21 @@ namespace Findx.Extensions
             }
 
             return instance;
+        }
+
+        public static IServiceProvider BuildServiceProviderFromFactory<TContainerBuilder>([NotNull] this IServiceCollection services, Action<TContainerBuilder> builderAction = null)
+        {
+            Check.NotNull(services, nameof(services));
+
+            var serviceProviderFactory = services.GetSingletonInstanceOrNull<IServiceProviderFactory<TContainerBuilder>>();
+            if (serviceProviderFactory == null)
+            {
+                throw new Exception($"Could not find {typeof(IServiceProviderFactory<TContainerBuilder>).FullName} in {services}.");
+            }
+
+            var builder = serviceProviderFactory.CreateBuilder(services);
+            builderAction?.Invoke(builder);
+            return serviceProviderFactory.CreateServiceProvider(builder);
         }
 
         #endregion

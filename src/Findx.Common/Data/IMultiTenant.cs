@@ -1,10 +1,22 @@
-﻿namespace Findx.Data
+﻿using System;
+
+namespace Findx.Data
 {
     /// <summary>
     /// 多租户
     /// </summary>
-    /// <typeparam name="TKey"></typeparam>
-    public interface IMultiTenant<TKey> where TKey : struct
+    public interface ITenant
+    {
+        /// <summary>
+        /// 租户ID
+        /// </summary>
+        int? TenantId { get; set; }
+    }
+
+    /// <summary>
+    /// 多租户
+    /// </summary>
+    public interface ITenant<TKey> where TKey : struct
     {
         /// <summary>
         /// 租户ID

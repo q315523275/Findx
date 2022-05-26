@@ -59,6 +59,13 @@ namespace Findx.AspNetCore.Mvc.Middlewares
                 context.Response.ContentType = "application/json;charset=utf-8";
                 await context.Response.WriteAsync(CommonResult.Fail(ex.ErrorCode ?? "500", ex.Message ?? "未知异常,请稍后再试").ToJson());
             }
+            catch (ValidationException ex)
+            {
+                context.Response.Clear();
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.ContentType = "application/json;charset=utf-8";
+                await context.Response.WriteAsync(CommonResult.Fail("4001", ex.Message ?? "参数校验不通过").ToJson());
+            }
             catch (BrokenCircuitException)
             {
                 context.Response.Clear();

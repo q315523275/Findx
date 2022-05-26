@@ -63,8 +63,8 @@ namespace Findx.Messaging
         /// <summary>
         /// 推送消息
         /// </summary>
-        /// <typeparam name="TMessage"></typeparam>
-        /// <param name="message"></param>
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="applicationEvent"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default) where TEvent : IApplicationEvent

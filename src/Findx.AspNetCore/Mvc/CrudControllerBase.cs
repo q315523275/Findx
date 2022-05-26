@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -107,40 +108,45 @@ namespace Findx.AspNetCore.Mvc
         /// 创建前操作
         /// </summary>
         /// <param name="model">实体</param>
-        protected virtual Task AddBeforeAsync(TModel model) => Task.CompletedTask;
+        /// <param name="request">入参</param>
+        /// <returns></returns>
+        protected virtual Task AddBeforeAsync(TModel model, TCreateRequest request) => Task.CompletedTask;
 
         /// <summary>
         /// 创建后操作
         /// </summary>
         /// <param name="model">实体</param>
+        /// <param name="request">入参</param>
         /// <param name="result">添加结果</param>
-        protected virtual Task AddAfterAsync(TModel model, int result) => Task.CompletedTask;
+        protected virtual Task AddAfterAsync(TModel model, TCreateRequest request, int result) => Task.CompletedTask;
 
         /// <summary>
         /// 修改前操作
         /// </summary>
         /// <param name="model">修改参数</param>
-        protected virtual Task EditBeforeAsync(TModel model) => Task.CompletedTask;
+        /// <param name="request">入参</param>
+        protected virtual Task EditBeforeAsync(TModel model, TUpdateRequest request) => Task.CompletedTask;
 
         /// <summary>
         /// 修改后操作
         /// </summary>
         /// <param name="model">修改参数</param>
+        /// <param name="request">入参</param>
         /// <param name="result">处理结果</param>
-        protected virtual Task EditAfterAsync(TModel model, int result) => Task.CompletedTask;
+        protected virtual Task EditAfterAsync(TModel model, TUpdateRequest request, int result) => Task.CompletedTask;
 
         /// <summary>
         /// 删除前前操作
         /// </summary>
         /// <param name="req">id集合</param>
-        protected virtual Task DeleteBeforeAsync(List<DeleteParam<TKey>> req) => Task.CompletedTask;
+        protected virtual Task DeleteBeforeAsync(List<TKey> req) => Task.CompletedTask;
 
         /// <summary>
         /// 删除后操作
         /// </summary>
         /// <param name="req">id集合</param>
         /// <param name="total">删除成功条数</param>
-        protected virtual Task DeleteAfterAsync(List<DeleteParam<TKey>> req, int total) => Task.CompletedTask;
+        protected virtual Task DeleteAfterAsync(List<TKey> req, int total) => Task.CompletedTask;
 
         /// <summary>
         /// 添加数据
@@ -154,6 +160,7 @@ namespace Findx.AspNetCore.Mvc
 
             var repo = GetRepository<TModel>();
             var principal = GetService<IPrincipal>();
+            var dbType = repo.GetDbType();
 
             Check.NotNull(repo, nameof(repo));
 
@@ -161,26 +168,14 @@ namespace Findx.AspNetCore.Mvc
 
             Check.NotNull(model, nameof(model));
 
-            model.CheckICreatedTime<TModel, TKey>();
-            model.CheckICreationAudited<TModel, TKey, TUserKey>(principal);
+            model.CheckICreatedTime<TModel>(); // 判断设置创建时间
+            model.CheckICreationAudited<TModel, TUserKey>(principal); // 判断设置创建人
+            model.CheckITenant<TModel>(principal); // 判断设置租户值
+            model.SetEmptyKey<TKey>(dbType); // 判断设置ID值
 
-            var keyType = typeof(TKey);
-            // 雪花长整形
-            if (typeof(long) == keyType && model.Id.Equals(default(long)))
-            {
-                model.Id = SnowflakeId.Default().NextId().CastTo<TKey>();
-            }
-
-            // 有序Guid
-            if (typeof(Guid) == keyType && model.Id.CastTo<Guid>() == Guid.Empty)
-            {
-                var dbType = repo.GetDbType();
-                model.Id = SequentialGuid.Instance.Create(dbType).CastTo<TKey>();
-            }
-
-            await AddBeforeAsync(model);
+            await AddBeforeAsync(model, request);
             var res = repo.Insert(model);
-            await AddAfterAsync(model, res);
+            await AddAfterAsync(model, request, res);
 
             if (res > 0)
                 return CommonResult.Success();
@@ -199,6 +194,7 @@ namespace Findx.AspNetCore.Mvc
             Check.NotNull(request, nameof(request));
 
             var repo = GetRepository<TModel>();
+            var principal = GetService<IPrincipal>();
             var currentUser = GetService<ICurrentUser>();
 
             Check.NotNull(repo, nameof(repo));
@@ -208,20 +204,12 @@ namespace Findx.AspNetCore.Mvc
 
             Check.NotNull(model, nameof(model));
 
-            // 修改时间
-            if (model is IUpdateTime updateTime)
-                updateTime.LastUpdatedTime = DateTime.Now;
+            model.CheckIUpdateTime<TModel>(); // 判断设置修改时间
+            model.CheckIUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
 
-            // 修改信息
-            if (model is IUpdateAudited<TUserKey> updateUser)
-            {
-                updateUser.LastUpdatedTime = DateTime.Now;
-                updateUser.LastUpdaterId = currentUser?.UserId?.CastTo<TUserKey>();
-            }
-
-            await EditBeforeAsync(model);
-            var res = repo.Update(model, true);
-            await EditAfterAsync(model, res);
+            await EditBeforeAsync(model, request);
+            var res = repo.Update(model, ignoreNullColumns: true);
+            await EditAfterAsync(model, request ,res);
 
             if (res > 0)
                 return CommonResult.Success();
@@ -235,7 +223,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("delete")]
-        public virtual async Task<CommonResult> DeleteAsync([FromBody] List<DeleteParam<TKey>> request)
+        public virtual async Task<CommonResult> DeleteAsync([FromBody, MinLength(1)] List<TKey> request)
         {
             Check.NotNull(request, nameof(request));
             if (request.Count == 0)
@@ -250,9 +238,9 @@ namespace Findx.AspNetCore.Mvc
             await DeleteBeforeAsync(request);
 
             int total = 0;
-            foreach (var item in request)
+            foreach (var id in request)
             {
-                if (repo.Delete(key: item.Id) > 0)
+                if (repo.Delete(key: id) > 0)
                     total++;
             }
 
@@ -260,17 +248,5 @@ namespace Findx.AspNetCore.Mvc
 
             return CommonResult.Success($"共删除{total}条数据,失败{request.Count - total}条");
         }
-    }
-
-    /// <summary>
-    /// 通用增删改查 - 删除入参
-    /// </summary>
-    /// <typeparam name="TTKey"></typeparam>
-    public class DeleteParam<TTKey> where TTKey : IEquatable<TTKey>
-    {
-        /// <summary>
-        /// 删除编号
-        /// </summary>
-        public TTKey Id { set; get; }
     }
 }

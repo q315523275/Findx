@@ -98,7 +98,7 @@ namespace Findx.FreeSql
             return _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
 
-        public int Insert(List<TEntity> entities)
+        public int Insert(IEnumerable<TEntity> entities)
         {
             return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
@@ -108,7 +108,7 @@ namespace Findx.FreeSql
             return _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
-        public Task<int> InsertAsync(List<TEntity> entities, CancellationToken cancellationToken = default)
+        public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
             return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
@@ -173,7 +173,7 @@ namespace Findx.FreeSql
         #endregion
 
         #region 更新
-        public int Update(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
+        public int Update(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
         {
             var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
 
@@ -188,13 +188,10 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            if (whereExpression != null)
-                update.Where(whereExpression);
-
             return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
 
-        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
+        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
             var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
 
@@ -209,46 +206,31 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            if (whereExpression != null)
-                update.Where(whereExpression);
-
             return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
         }
 
-        public int Update(TEntity entity, bool ignoreNullColumns = false)
+        public int Update(IEnumerable<TEntity> entitys, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
         {
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
+            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entitys);
 
-            if (ignoreNullColumns)
-                update.SetSourceIgnore(entity, col => col == null);
-            else
-                update.SetSource(entity);
+            if (updateColumns != null)
+                update.UpdateColumns(updateColumns);
+
+            if (ignoreColumns != null)
+                update.IgnoreColumns(ignoreColumns);
 
             return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
         }
 
-        public Task<int> UpdateAsync(TEntity entity, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
-        {
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
-
-            if (ignoreNullColumns)
-                update.SetSourceIgnore(entity, col => col == null);
-            else
-                update.SetSource(entity);
-
-            return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
-        }
-
-        public int Update(List<TEntity> entitys)
+        public Task<int> UpdateAsync(IEnumerable<TEntity> entitys, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
         {
             var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entitys);
 
-            return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
-        }
+            if (updateColumns != null)
+                update.UpdateColumns(updateColumns);
 
-        public Task<int> UpdateAsync(List<TEntity> entitys, CancellationToken cancellationToken = default)
-        {
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entitys);
+            if (ignoreColumns != null)
+                update.IgnoreColumns(ignoreColumns);
 
             return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync();
         }

@@ -30,6 +30,9 @@ namespace Findx.Mapster
             if (option.Value.IgnoreNullValues)
                 TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
 
+            // 设置指定属性的字段映射
+            TypeAdapterConfig.GlobalSettings.Default.IgnoreAttribute(typeof(IgnoreMappingAttribute));
+
             MapperExtensions.SetMapper(provider.GetRequiredService<IMapper>());
 
             base.UseModule(provider);

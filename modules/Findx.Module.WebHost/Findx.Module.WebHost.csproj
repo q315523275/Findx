@@ -24,5 +24,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Findx.NLog" />
+    <None Remove="FreeSql.Provider.MySqlConnector" />
+    <None Remove="FreeSql.Provider.SqlServer" />
+    <None Remove="FreeSql.Provider.SqlServerForSystem" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.610" />
   </ItemGroup>
 </Project>
