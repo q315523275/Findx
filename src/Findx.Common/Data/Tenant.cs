@@ -5,7 +5,7 @@ namespace Findx.Data
 {
 	public class Tenant
 	{
-		public static AsyncLocal<int> TenantId { get; set; } = new AsyncLocal<int>();
+		public static AsyncLocal<Guid> TenantId { get; set; } = new AsyncLocal<Guid>();
 	}
 }
 

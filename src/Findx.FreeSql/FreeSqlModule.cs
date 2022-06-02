@@ -1,4 +1,5 @@
-﻿using Findx.Data;
+﻿using System;
+using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Modularity;
@@ -48,7 +49,7 @@ namespace Findx.FreeSql
                 // 开启租户隔离
                 if (FreeSqlOptions.MultiTenant)
                 {
-                    freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => Tenant.TenantId.Value != 0, it => it.TenantId == Tenant.TenantId.Value);
+                    freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => Tenant.TenantId.Value != Guid.Empty, it => it.TenantId == Tenant.TenantId.Value);
                 }
                 // AOP
                 freeSql.Aop.CurdAfter += (s, e) =>

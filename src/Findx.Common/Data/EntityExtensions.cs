@@ -146,7 +146,7 @@ namespace Findx.Data
         {
             if (entity is ITenant entity1 && user.Identity.IsAuthenticated && !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
             {
-                entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<int>();
+                entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<Guid>();
                 return (TEntity)entity1;
             }
             else

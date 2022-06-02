@@ -10,7 +10,7 @@ namespace Findx.Data
         /// <summary>
         /// 租户ID
         /// </summary>
-        int? TenantId { get; set; }
+        Guid? TenantId { get; set; }
     }
 
     /// <summary>

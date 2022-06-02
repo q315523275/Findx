@@ -5,7 +5,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Nullable>disable</Nullable>
 		<LangVersion>10.0</LangVersion>
-		<Version>1.7.8</Version>
+		<Version>1.7.9</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Product />

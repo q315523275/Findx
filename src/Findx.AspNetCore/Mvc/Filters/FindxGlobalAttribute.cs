@@ -1,4 +1,5 @@
-﻿using Findx.Data;
+﻿using System;
+using Findx.Data;
 using Findx.Security;
 using Findx.Validations;
 using Findx.Extensions;
@@ -37,7 +38,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
             if (currentUser != null && currentUser.IsAuthenticated && !currentUser.TenantId.IsNullOrWhiteSpace())
             {
-                Findx.Data.Tenant.TenantId.Value = currentUser.TenantId.CastTo<int>();
+                Findx.Data.Tenant.TenantId.Value = currentUser.TenantId.CastTo<Guid>();
             }
 
             // 刷新Token
