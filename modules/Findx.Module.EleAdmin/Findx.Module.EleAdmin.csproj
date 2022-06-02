@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Areas\" />
+    <None Remove="Const\" />
+    <None Remove="DTO\" />
+    <None Remove="Enum\" />
+    <None Remove="Models\" />
+    <None Remove="Findx.AspNetCore" />
+    <None Remove="Findx.Security" />
+    <None Remove="Findx.FreeSql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Areas\" />
+    <Folder Include="Const\" />
+    <Folder Include="DTO\" />
+    <Folder Include="Enum\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Findx" Version="1.7.9" />
+    <PackageReference Include="Findx.AspNetCore" Version="1.7.5" />
+    <PackageReference Include="Findx.Security" Version="1.7.1" />
+    <PackageReference Include="Findx.FreeSql" Version="1.7.5" />
+  </ItemGroup>
+</Project>
