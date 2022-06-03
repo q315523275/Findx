@@ -1,14 +1,17 @@
 ﻿using System;
 namespace Findx.Module.EleAdmin.DTO
 {
+	/// <summary>
+	/// 角色菜单Dto模型
+	/// </summary>
 	public class RoleMenuDto
 	{
-		public Guid Id { get; set; }
+		public Guid Id { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 上级id, 0是顶级
 		/// </summary>
-		public Guid ParentId { get; set; }
+		public Guid ParentId { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 菜单名称

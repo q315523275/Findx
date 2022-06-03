@@ -3,9 +3,15 @@ using Findx.Data;
 
 namespace Findx.Module.EleAdmin.DTO
 {
+	/// <summary>
+	/// 设置字典类型入参
+	/// </summary>
 	public class SetDictTypeRequest: IRequest
 	{
-		public int Id { get; set; }
+		/// <summary>
+		/// 编号
+		/// </summary>
+		public Guid Id { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 字典标识

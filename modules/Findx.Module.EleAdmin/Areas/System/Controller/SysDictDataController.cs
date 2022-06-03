@@ -32,7 +32,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             }
 
             var whereExp = ExpressionBuilder.Create<SysDictDataInfo>()
-                                            .AndIF(typeId.HasValue && typeId != Guid.Empty, x => x.TypeId == typeId.Value)
+                                            .AndIF(typeId != Guid.Empty, x => x.TypeId == typeId)
                                             .AndIF(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords));
 
             return whereExp;

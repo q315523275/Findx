@@ -100,6 +100,13 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             }
         }
 
+        /// <summary>
+        /// 详情查询后
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         protected override Task DetailAfterAsync(SysUserInfo model, UserDto dto)
         {
             var roleRepo = GetRepository<SysUserRoleInfo>() ?? throw new ArgumentNullException("GetRepository<SysUserRoleInfo>()");

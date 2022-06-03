@@ -3,14 +3,20 @@ using Findx.Data;
 
 namespace Findx.Module.EleAdmin.DTO
 {
+	/// <summary>
+	/// 设置菜单入参
+	/// </summary>
 	public class SetMenuRequest: IRequest
 	{
-		public int Id { get; set; }
+		/// <summary>
+		/// 编号
+		/// </summary>
+		public Guid Id { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 上级id, 0是顶级
 		/// </summary>
-		public int ParentId { get; set; }
+		public Guid ParentId { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 菜单名称

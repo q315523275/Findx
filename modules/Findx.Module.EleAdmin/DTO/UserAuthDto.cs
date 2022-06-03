@@ -4,6 +4,9 @@ using Findx.Data;
 
 namespace Findx.Module.EleAdmin.DTO
 {
+	/// <summary>
+	/// 用户授权信息
+	/// </summary>
 	public class UserAuthDto: IResponse
 	{
 		/// <summary>
@@ -77,6 +80,9 @@ namespace Findx.Module.EleAdmin.DTO
 		public IEnumerable<MenuDto> Authorities { get; set; }
 	}
 
+	/// <summary>
+	/// ；角色模型
+	/// </summary>
 	public class RoleDto
     {
 		/// <summary>
@@ -100,6 +106,9 @@ namespace Findx.Module.EleAdmin.DTO
 		public string Comments { get; set; }
 	}
 
+	/// <summary>
+	/// 菜单Dto模型
+	/// </summary>
 	public class MenuDto
     {
 		/// <summary>

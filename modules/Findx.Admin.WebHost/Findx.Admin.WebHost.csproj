@@ -8,10 +8,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\modules\Findx.Admin.Module.System\Findx.Admin.Module.System.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+      <GlobalPropertiesToRemove />
     </ProjectReference>
     <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj">
-      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+      <GlobalPropertiesToRemove />
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

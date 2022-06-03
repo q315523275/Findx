@@ -3,25 +3,31 @@ using Findx.Data;
 
 namespace Findx.Module.EleAdmin.DTO
 {
+	/// <summary>
+	/// 设置字典数据Dto模型
+	/// </summary>
 	public class SetDictDataRequest: IRequest
 	{
-		public int Id { get; set; }
+		/// <summary>
+		/// 
+		/// </summary>
+		public Guid Id { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 字典id
 		/// </summary>
-		public int DictId { get; set; }
-
-		/// <summary>
-		/// 字典项标识
-		/// </summary>
-		public string Code { get; set; }
+		public Guid TypeId { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 字典项名称
 		/// </summary>
 		public string Name { get; set; }
-
+		
+		/// <summary>
+		/// 字典项值
+		/// </summary>
+		public string Value { get; set; }
+		
 		/// <summary>
 		/// 排序号
 		/// </summary>

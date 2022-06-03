@@ -3,8 +3,14 @@ using Findx.Module.EleAdmin.Models;
 
 namespace Findx.Module.EleAdmin.DTO
 {
+	/// <summary>
+	/// 用户Dto模型
+	/// </summary>
 	public class UserDto: IResponse
 	{
+		/// <summary>
+		/// 编号
+		/// </summary>
 		public Guid Id { get; set; }
 
 		/// <summary>

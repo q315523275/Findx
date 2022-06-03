@@ -3,9 +3,15 @@ using Findx.Data;
 
 namespace Findx.Module.EleAdmin.DTO
 {
+	/// <summary>
+	/// 设置角色信息Dto模型
+	/// </summary>
 	public class SetRoleRequest: IRequest
 	{
-		public int Id { get; set; }
+		/// <summary>
+		/// 编号
+		/// </summary>
+		public Guid Id { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 角色名称

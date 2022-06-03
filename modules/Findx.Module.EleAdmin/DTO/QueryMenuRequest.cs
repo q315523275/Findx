@@ -3,6 +3,9 @@ using Findx.Data;
 
 namespace Findx.Module.EleAdmin.DTO
 {
+	/// <summary>
+	/// 查询菜单入参
+	/// </summary>
 	public class QueryMenuRequest: PageBase
 	{
 		/// <summary>

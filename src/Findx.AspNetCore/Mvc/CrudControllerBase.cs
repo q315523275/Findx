@@ -55,6 +55,8 @@ namespace Findx.AspNetCore.Mvc
     /// </summary>
     /// <typeparam name="TModel"></typeparam>
     /// <typeparam name="TDto"></typeparam>
+    /// <typeparam name="TCreateRequest"></typeparam>
+    /// <typeparam name="TUpdateRequest"></typeparam>
     /// <typeparam name="TQueryParameter"></typeparam>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TUserKey"></typeparam>
