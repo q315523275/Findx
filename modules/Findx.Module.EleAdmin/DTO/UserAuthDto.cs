@@ -67,7 +67,7 @@ namespace Findx.Module.EleAdmin.DTO
 		/// <summary>
 		/// 机构id
 		/// </summary>
-		public int OrgId { get; set; }
+		public Guid? OrgId { get; set; }
 
 		/// <summary>
         /// 角色集合
@@ -93,12 +93,12 @@ namespace Findx.Module.EleAdmin.DTO
 		/// <summary>
 		/// 角色名称
 		/// </summary>
-		public string Name { get; set; }
+		public string RoleName { get; set; }
 
 		/// <summary>
 		/// 角色标识
 		/// </summary>
-		public string Code { get; set; }
+		public string RoleCode { get; set; }
 
 		/// <summary>
         /// 备注
@@ -114,7 +114,7 @@ namespace Findx.Module.EleAdmin.DTO
 		/// <summary>
 		/// 菜单id
 		/// </summary>
-		public Guid Id { get; set; }
+		public Guid MenuId { get; set; }
 
 		/// <summary>
 		/// 上级id, 0是顶级

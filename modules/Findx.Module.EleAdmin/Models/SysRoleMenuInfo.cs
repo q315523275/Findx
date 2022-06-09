@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdmin.Models
     /// 角色菜单
     /// </summary>
 	[Table(Name = "sys_role_menu")]
-	public class SysRoleMenuInfo : EntityBase<Guid>
+	public class SysRoleMenuInfo : EntityBase<Guid>, ITenant
 	{
 		/// <summary>
 		/// 主键id

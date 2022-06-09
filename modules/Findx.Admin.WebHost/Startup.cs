@@ -46,7 +46,7 @@ namespace Findx.Module.WebHost
                 app.UseJsonExceptionHandler();
 
             app.UseStaticFiles();
-            // app.UseStaticFiles(new StaticFileOptions { RequestPath = "/storage", FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "storage")) });
+            app.UseStaticFiles(new StaticFileOptions { RequestPath = "/storage", FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "storage")) });
 
             app.UseCors("CorsPolicy");
 

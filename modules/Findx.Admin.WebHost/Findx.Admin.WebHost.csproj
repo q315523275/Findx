@@ -7,27 +7,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\modules\Findx.Admin.Module.System\Findx.Admin.Module.System.csproj">
-      <GlobalPropertiesToRemove />
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj">
-      <GlobalPropertiesToRemove />
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Remove="Findx.AspNetCore" />
     <None Remove="Findx.Swagger" />
     <None Remove="Findx.ImageSharp" />
     <None Remove="FreeSql.Provider.MySqlConnector" />
     <None Remove="Findx.Mapster" />
     <None Remove="Findx.Security" />
+    <None Remove="storage\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Findx.AspNetCore" Version="1.7.2" />
+    <PackageReference Include="Findx.AspNetCore" Version="1.7.5" />
     <PackageReference Include="Findx.Swagger" Version="1.7.1" />
     <PackageReference Include="Findx.ImageSharp" Version="1.7.3" />
     <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.640" />
     <PackageReference Include="Findx.Mapster" Version="1.7.1" />
     <PackageReference Include="Findx.Security" Version="1.7.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Findx.Module.EleAdmin\Findx.Module.EleAdmin.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="storage\" />
   </ItemGroup>
 </Project>

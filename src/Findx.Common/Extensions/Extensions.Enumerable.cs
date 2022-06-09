@@ -168,28 +168,26 @@ namespace Findx.Extensions
         {
             if (maxActionsToRunInParallel.HasValue)
             {
-                using (var semaphoreSlim = new SemaphoreSlim(maxActionsToRunInParallel.Value, maxActionsToRunInParallel.Value))
+                using var semaphoreSlim = new SemaphoreSlim(maxActionsToRunInParallel.Value, maxActionsToRunInParallel.Value);
+                var tasksWithThrottler = new List<Task>();
+
+                foreach (var item in enumerable)
                 {
-                    var tasksWithThrottler = new List<Task>();
+                    // Increment the number of currently running tasks and wait if they are more than limit.
+                    await semaphoreSlim.WaitAsync();
 
-                    foreach (var item in enumerable)
+                    tasksWithThrottler.Add(Task.Run(async () =>
                     {
-                        // Increment the number of currently running tasks and wait if they are more than limit.
-                        await semaphoreSlim.WaitAsync();
-
-                        tasksWithThrottler.Add(Task.Run(async () =>
+                        await func(item).ContinueWith(res =>
                         {
-                            await func(item).ContinueWith(res =>
-                            {
-                                // action is completed, so decrement the number of currently running tasks
-                                semaphoreSlim.Release();
-                            });
-                        }));
-                    }
-
-                    // Wait for all of the provided tasks to complete.
-                    await Task.WhenAll(tasksWithThrottler);
+                            // action is completed, so decrement the number of currently running tasks
+                            semaphoreSlim.Release();
+                        });
+                    }));
                 }
+
+                // Wait for all of the provided tasks to complete.
+                await Task.WhenAll(tasksWithThrottler);
             }
             else
             {

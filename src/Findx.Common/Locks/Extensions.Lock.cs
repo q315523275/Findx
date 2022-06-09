@@ -47,30 +47,27 @@ namespace Findx.Locks
         /// 使用锁执行一个异步方法
         /// </summary>
         /// <typeparam name="T">返回值类型</typeparam>
+        /// <param name="lock"></param>
         /// <param name="key">锁的键</param>
-        /// <param name="value">当前占用值</param>
+        /// <param name="span">锁时长</param>
         /// <param name="executeAction">要执行的方法</param>
         /// <param name="defaultValue">默认返回</param>
         /// <returns></returns>
-        public static async Task<T> ExecuteWithLockAsync<T>(this ILock _lock, string key, TimeSpan span, Func<Task<T>> executeAction, T defaultValue = default)
+        public static async Task<T> ExecuteWithLockAsync<T>(this ILock @lock, string key, TimeSpan span, Func<Task<T>> executeAction, T defaultValue = default)
         {
             if (executeAction == null)
                 return defaultValue;
 
-            var rlock = await _lock.AcquireAsync(key, timeUntilExpires: span);
-            if (rlock.IsLocked())
+            var rlock = await @lock.AcquireAsync(key, timeUntilExpires: span);
+            if (!rlock.IsLocked()) return defaultValue;
+            try
             {
-                try
-                {
-                    return await executeAction();
-                }
-                finally
-                {
-                    await rlock.ReleaseAsync();
-                }
+                return await executeAction();
             }
-
-            return defaultValue;
+            finally
+            {
+                await rlock.ReleaseAsync();
+            }
         }
     }
 }

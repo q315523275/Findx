@@ -29,5 +29,11 @@ namespace Findx.Module.EleAdmin.DTO
         /// 租户
         /// </summary>
         public Guid TenantId { set; get; }
+        
+        /// <summary>
+        /// uuid
+        /// </summary>
+        [Required]
+        public string Uuid { set; get; }
     }
 }

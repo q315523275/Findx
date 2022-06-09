@@ -22,6 +22,11 @@ namespace Findx.Module.EleAdmin.DTO
         /// 权限标识
         /// </summary>
 		public string Authority { set; get; }
+		
+		/// <summary>
+		/// 父级id
+		/// </summary>
+		public Guid? ParentId { set; get; }
 	}
 }
 

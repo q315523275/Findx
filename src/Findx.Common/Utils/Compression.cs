@@ -18,16 +18,14 @@ namespace Findx.Utils
         /// <returns>压缩后的byte数组</returns>
         public static byte[] Compress(byte[] data)
         {
-            using (MemoryStream ms = new())
-            {
-                GZipStream zip = new(ms, CompressionMode.Compress, true);
-                zip.Write(data, 0, data.Length);
-                zip.Close();
-                byte[] buffer = new byte[ms.Length];
-                ms.Position = 0;
-                ms.Read(buffer, 0, buffer.Length);
-                return buffer;
-            }
+            using MemoryStream ms = new();
+            GZipStream zip = new(ms, CompressionMode.Compress, true);
+            zip.Write(data, 0, data.Length);
+            zip.Close();
+            var buffer = new byte[ms.Length];
+            ms.Position = 0;
+            ms.Read(buffer, 0, buffer.Length);
+            return buffer;
         }
 
         /// <summary>
@@ -37,16 +35,14 @@ namespace Findx.Utils
         /// <returns>解压后的byte数组</returns>
         public static byte[] Decompress(byte[] data)
         {
-            using (MemoryStream tmpMs = new MemoryStream())
+            using var tmpMs = new MemoryStream();
+            using (var ms = new MemoryStream(data))
             {
-                using (MemoryStream ms = new MemoryStream(data))
-                {
-                    GZipStream zip = new GZipStream(ms, CompressionMode.Decompress, true);
-                    zip.CopyTo(tmpMs);
-                    zip.Close();
-                }
-                return tmpMs.ToArray();
+                var zip = new GZipStream(ms, CompressionMode.Decompress, true);
+                zip.CopyTo(tmpMs);
+                zip.Close();
             }
+            return tmpMs.ToArray();
         }
 
         /// <summary>
@@ -60,7 +56,7 @@ namespace Findx.Utils
             {
                 return string.Empty;
             }
-            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            var bytes = Encoding.UTF8.GetBytes(value);
             bytes = Compress(bytes);
             return Convert.ToBase64String(bytes);
         }
@@ -76,7 +72,7 @@ namespace Findx.Utils
             {
                 return string.Empty;
             }
-            byte[] bytes = Convert.FromBase64String(value);
+            var bytes = Convert.FromBase64String(value);
             bytes = Decompress(bytes);
             return Encoding.UTF8.GetString(bytes);
         }

@@ -18,7 +18,7 @@ namespace Findx.Module.EleAdmin.Models
 		/// <summary>
 		/// 上级id, 0是顶级
 		/// </summary>
-		public int ParentId { get; set; }
+		public Guid ParentId { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 机构名称
@@ -43,7 +43,7 @@ namespace Findx.Module.EleAdmin.Models
 		/// <summary>
 		/// 负责人id
 		/// </summary>
-		public int LeaderId { get; set; }
+		public Guid LeaderId { get; set; } = Guid.Empty;
 
 		/// <summary>
 		/// 排序号

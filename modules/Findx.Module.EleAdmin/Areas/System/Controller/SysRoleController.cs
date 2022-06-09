@@ -69,7 +69,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 
 			repo.Delete(x => x.RoleId == roleId);
 
-			var list = req.Select(x => new SysRoleMenuInfo { MenuId = x, RoleId = roleId, TenantId = Findx.Data.Tenant.TenantId.Value });
+			var list = req.Select(x => new SysRoleMenuInfo { MenuId = x, RoleId = roleId, TenantId = Tenant.TenantId.Value });
 			if (list.Count() > 0)
 				repo.Insert(list);
 

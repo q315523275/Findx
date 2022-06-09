@@ -18,7 +18,7 @@ namespace Findx.Module.EleAdmin.Models
 		/// <summary>
 		/// 上级id, 0是顶级
 		/// </summary>
-		public int ParentId { get; set; }
+		public Guid ParentId { get; set; }
 
 		/// <summary>
 		/// 菜单名称

@@ -6,9 +6,9 @@ using Findx.Linq;
 using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
-using System.Security.Principal;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
+using Findx.Security;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -20,6 +20,31 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Authorize]
     public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
     {
+        private readonly ICurrentUser _currentUser;
+
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="currentUser"></param>
+        public SysUserController(ICurrentUser currentUser)
+        {
+            _currentUser = currentUser;
+        }
+
+        /// <summary>
+        /// 构建查询条件
+        /// </summary>
+        /// <param name="req"></param>
+        /// <returns></returns>
+        protected override Expressionable<SysUserInfo> CreatePageWhereExpression(QueryUserRequest req)
+        {
+            var whereExp = ExpressionBuilder.Create<SysUserInfo>()
+                                    .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
+                                    .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
+                                    .AndIF(req.Sex > 0, x => x.Sex == req.Sex);
+            return whereExp;
+        }
+
         /// <summary>
         /// 分页查询
         /// </summary>
@@ -28,12 +53,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         [HttpGet("page")]
         public override async Task<CommonResult> PageAsync([FromQuery] QueryUserRequest request)
         {
-            Check.NotNull(request, nameof(request));
-
             var repo = GetRepository<SysUserInfo>();
             var roleRepo = GetRepository<SysUserRoleInfo>();
-
-            Check.NotNull(repo, nameof(repo));
 
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
@@ -69,9 +90,10 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         [HttpPut("password")]
         public CommonResult Password([FromBody] SetUserPropertyRequest req)
         {
+            var userId = _currentUser.UserId.To<Guid>();
             var repo = GetRepository<SysUserInfo>();
             var pwd = Findx.Utils.Encrypt.Md5By32(req.Password);
-            repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == req.Id);
+            repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == userId);
             return CommonResult.Success();
         }
 
@@ -90,14 +112,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                                             .And(x => x.Id != id)
                                             .ToExpression();
             var repo = GetRepository<SysUserInfo>();
-            if (repo.Exist(whereExp))
-            {
-                return CommonResult.Success();
-            }
-            else
-            {
-                return CommonResult.Fail("404", "账号不存在");
-            }
+            return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
         }
 
         /// <summary>
@@ -109,7 +124,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <exception cref="ArgumentNullException"></exception>
         protected override Task DetailAfterAsync(SysUserInfo model, UserDto dto)
         {
-            var roleRepo = GetRepository<SysUserRoleInfo>() ?? throw new ArgumentNullException("GetRepository<SysUserRoleInfo>()");
+            var roleRepo = GetRepository<SysUserRoleInfo>();
             var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && x.UserId == model.Id);
             dto.Roles = roles.Where(x => x.RoleInfo != null).Select(x => x.RoleInfo);
             return Task.CompletedTask;
@@ -126,7 +141,6 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             {
                 model.Password = Findx.Utils.Encrypt.Md5By32(req.Password);
             }
-
             await base.AddBeforeAsync(model, req);
         }
 
@@ -142,13 +156,12 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             {
                 var repo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserInfo>>();
                 var roleRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserRoleInfo>>();
-                var principal = HttpContext.RequestServices.GetRequiredService<IPrincipal>();
 
-                var user = repo.First(x => x.UserName == req.UserName);
+                var user = await repo.FirstAsync(x => x.UserName == req.UserName);
                 if (user != null)
                 {
-                    var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = user.Id, TenantId = Findx.Data.Tenant.TenantId.Value });
-                    roleRepo.Insert(list);
+                    var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = user.Id, TenantId = Tenant.TenantId.Value });
+                    await roleRepo.InsertAsync(list);
                 }
             }
             await base.AddAfterAsync(model, req, result);
@@ -175,14 +188,12 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         {
             if (result > 0)
             {
-                var roleRepo = HttpContext.RequestServices.GetService<IRepository<SysUserRoleInfo>>();
-                var principal = HttpContext.RequestServices.GetService<IPrincipal>();
+                var roleRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserRoleInfo>>();
 
                 var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = model.Id, TenantId = Findx.Data.Tenant.TenantId.Value });
-                roleRepo.Delete(x => x.UserId == model.Id);
-                roleRepo.Insert(list);
+                await roleRepo.DeleteAsync(x => x.UserId == model.Id);
+                await roleRepo.InsertAsync(list);
             }
-            await base.EditAfterAsync(model, req, result);
         }
     }
 }

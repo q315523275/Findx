@@ -157,7 +157,7 @@ namespace Findx.AspNetCore.Mvc
         /// <returns></returns>
         protected IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, new()
         {
-            return Request?.HttpContext?.RequestServices.GetService<IRepository<TEntity>>();
+            return Request?.HttpContext?.RequestServices.GetRequiredService<IRepository<TEntity>>();
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace Findx.AspNetCore.Mvc
         /// <returns></returns>
         protected T GetService<T>()
         {
-            return Request.HttpContext.RequestServices.GetService<T>();
+            return Request.HttpContext.RequestServices.GetRequiredService<T>();
         }
     }
 }
