@@ -24,7 +24,7 @@
         /// <summary>
         /// 昵称
         /// </summary>
-        public static string NickName { get; set; } = "nick_name";
+        public static string Nickname { get; set; } = "nick_name";
 
         /// <summary>
         /// 电子邮件。默认：<see cref="System.Security.Claims.ClaimTypes.Email"/>

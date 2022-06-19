@@ -73,15 +73,15 @@ namespace Findx.Module.EleAdmin.DTO
 		/// </summary>
 		public string Introduction { get; set; }
 
-		// /// <summary>
-		// /// 机构id
-		// /// </summary>
-		// public Guid OrgId { get; set; }
+        /// <summary>
+        /// 机构id
+        /// </summary>
+        public Guid? OrgId { get; set; }
 
-		/// <summary>
-		/// 状态, 0正常, 1冻结
-		/// </summary>
-		public int Status { get; set; }
+        /// <summary>
+        /// 状态, 0正常, 1冻结
+        /// </summary>
+        public int Status { get; set; }
 
 		/// <summary>
 		/// 创建时间

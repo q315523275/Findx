@@ -117,7 +117,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             {
                 { ClaimTypes.UserId, accountInfo.Id.SafeString() },
                 { ClaimTypes.PhoneNumber, accountInfo.Phone.SafeString() },
-                { ClaimTypes.Name, accountInfo.RealName.SafeString() },
+                { ClaimTypes.Name, accountInfo.Nickname.SafeString() },
                 { ClaimTypes.TenantId, req.TenantId.ToString() }
             };
             var token = await _tokenBuilder.CreateAsync(payload, _options.Value);

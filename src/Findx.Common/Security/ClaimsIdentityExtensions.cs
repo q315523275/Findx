@@ -120,14 +120,14 @@ namespace Findx.Security
         /// <summary>
         /// 获取昵称
         /// </summary>
-        public static string GetNickName(this IIdentity identity)
+        public static string GetNickname(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
             if (!(identity is ClaimsIdentity claimsIdentity))
             {
                 return null;
             }
-            return claimsIdentity.FindFirst(ClaimTypes.NickName)?.Value;
+            return claimsIdentity.FindFirst(ClaimTypes.Nickname)?.Value;
         }
 
         /// <summary>

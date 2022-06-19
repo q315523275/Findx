@@ -27,7 +27,7 @@ namespace Findx.Module.EleAdmin.DTO
 		/// <summary>
 		/// 昵称
 		/// </summary>
-		public string NickName { get; set; }
+		public string Nickname { get; set; }
 
 		/// <summary>
 		/// 头像
@@ -68,6 +68,11 @@ namespace Findx.Module.EleAdmin.DTO
 		/// 个人简介
 		/// </summary>
 		public string Introduction { get; set; }
+
+		/// <summary>
+		/// 机构id
+		/// </summary>
+		public Guid? OrgId { get; set; }
 
 		/// <summary>
 		/// 角色列表

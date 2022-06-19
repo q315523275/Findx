@@ -1,4 +1,5 @@
-﻿using Findx.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Drawing;
@@ -29,15 +30,16 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 		}
 
 		/// <summary>
-        /// 获取验证码图片
-        /// </summary>
-        /// <param name="width"></param>
-        /// <param name="height"></param>
-        /// <returns></returns>
-        [HttpGet("/api/captcha")]
-        public async Task<CommonResult> GetCaptcha(int width = 150, int height = 50)
+		/// 获取验证码图片
+		/// </summary>
+		/// <param name="width"></param>
+		/// <param name="height"></param>
+		/// <param name="length"></param>
+		/// <returns></returns>
+		[HttpGet("/api/captcha")]
+        public async Task<CommonResult> GetCaptcha(int width = 150, int height = 50, [Range(3, 6)] int length = 4)
         {
-            var code = _verifyCoder.GetCode(4, VerifyCodeType.NumberAndLetter);
+            var code = _verifyCoder.GetCode(length, VerifyCodeType.NumberAndLetter);
             var st = await _verifyCoder.CreateImageAsync(code, width, height);
             var cache = _cacheProvider.Get();
             var uuid = Guid.NewGuid().ToString();

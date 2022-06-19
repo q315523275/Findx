@@ -7,6 +7,7 @@ namespace Findx.Module.EleAdmin.Models
     /// 操作日志
     /// </summary>
     [Table(Name = "sys_operation_record")]
+    [DataEntity(DataSource = "system")]
     public class SysOperationRecordInfo : EntityBase<Guid>, ICreationAudited<Guid>, ITenant, IResponse
     {
         /// <summary>

@@ -17,7 +17,7 @@ namespace Findx.Module.EleAdmin.DTO
 		/// <summary>
 		/// 昵称
 		/// </summary>
-		public string NickName { get; set; }
+		public string Nickname { get; set; }
 
 		/// <summary>
 		/// 头像
