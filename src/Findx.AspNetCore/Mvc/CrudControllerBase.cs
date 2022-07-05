@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -156,6 +157,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("add")]
+        [Description("新增")]
         public virtual async Task<CommonResult> AddAsync([FromBody] TCreateRequest request)
         {
             Check.NotNull(request, nameof(request));
@@ -170,10 +172,10 @@ namespace Findx.AspNetCore.Mvc
 
             Check.NotNull(model, nameof(model));
 
-            model.CheckICreatedTime<TModel>(); // 判断设置创建时间
+            model.CheckICreatedTime(); // 判断设置创建时间
             model.CheckICreationAudited<TModel, TUserKey>(principal); // 判断设置创建人
-            model.CheckITenant<TModel>(principal); // 判断设置租户值
-            model.SetEmptyKey<TKey>(dbType); // 判断设置ID值
+            model.CheckITenant(principal); // 判断设置租户值
+            model.SetEmptyKey(); // 判断设置ID值
 
             await AddBeforeAsync(model, request);
             var res = repo.Insert(model);
@@ -191,6 +193,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("edit")]
+        [Description("编辑")]
         public virtual async Task<CommonResult> EditAsync([FromBody] TUpdateRequest request)
         {
             Check.NotNull(request, nameof(request));
@@ -206,7 +209,7 @@ namespace Findx.AspNetCore.Mvc
 
             Check.NotNull(model, nameof(model));
 
-            model.CheckIUpdateTime<TModel>(); // 判断设置修改时间
+            model.CheckIUpdateTime(); // 判断设置修改时间
             model.CheckIUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
 
             await EditBeforeAsync(model, request);
@@ -225,6 +228,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpPost("delete")]
+        [Description("删除")]
         public virtual async Task<CommonResult> DeleteAsync([FromBody, MinLength(1)] List<TKey> request)
         {
             Check.NotNull(request, nameof(request));

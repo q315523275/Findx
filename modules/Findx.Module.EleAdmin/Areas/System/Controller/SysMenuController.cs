@@ -6,6 +6,7 @@ using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.ComponentModel;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -15,6 +16,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 	[Area("system")]
 	[Route("api/[area]/menu")]
     [Authorize]
+    [Description("系统-菜单")]
     public class SysMeunController: CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, Guid, Guid>
 	{
         /// <summary>

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Findx.AspNetCore.Mvc;
 using Findx.Extensions;
 using Findx.Linq;
@@ -14,6 +15,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller;
 [Area("system")]
 [Route("api/[area]/login-record")]
 [Authorize]
+[Description("系统-登录日志")]
 public class LoginRecordController :  QueryControllerBase<SysLoginRecordInfo, SysLoginRecordInfo, QueryLoginRecordRequest, Guid>
 {
     /// <summary>
@@ -24,9 +26,9 @@ public class LoginRecordController :  QueryControllerBase<SysLoginRecordInfo, Sy
     protected override Expressionable<SysLoginRecordInfo> CreatePageWhereExpression(QueryLoginRecordRequest req)
     {
         var whereExp = ExpressionBuilder.Create<SysLoginRecordInfo>()
-            .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
-            .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-            .AndIF(req.CreatedTimeStart.HasValue, x => x.CreatedTime >= req.CreatedTimeStart && x.CreatedTime < req.CreatedTimeEnd);
+                                        .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
+                                        .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
+                                        .AndIF(req.CreatedTimeStart.HasValue, x => x.CreatedTime >= req.CreatedTimeStart && x.CreatedTime < req.CreatedTimeEnd);
         return whereExp;
     }
 }

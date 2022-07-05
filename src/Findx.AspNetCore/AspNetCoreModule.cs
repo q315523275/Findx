@@ -38,7 +38,6 @@ namespace Findx.AspNetCore
             services.Replace<ICancellationTokenProvider, HttpContextCancellationTokenProvider>(ServiceLifetime.Singleton);
             services.Replace<IHybridServiceScopeFactory, HttpContextServiceScopeFactory>(ServiceLifetime.Singleton);
 
-            services.AddSingleton<IApiInterfaceService, DefaultApiInterfaceService>();
             services.AddSingleton<IFileUploadService, DefaultFileUploadService>();
 
             // 关闭模型自动化验证,实现自控

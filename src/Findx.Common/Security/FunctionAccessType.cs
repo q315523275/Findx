@@ -1,12 +1,13 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
-namespace Findx.Security.Authorization
+namespace Findx.Security
 {
     /// <summary>
-    /// 权限资方访问方式
+    /// 功能访问类型
     /// </summary>
-    public enum PermiessionAccessType
-    {
+	public enum FunctionAccessType
+	{
         /// <summary>
         /// 匿名用户可访问
         /// </summary>
@@ -26,3 +27,4 @@ namespace Findx.Security.Authorization
         RoleLimit = 2
     }
 }
+

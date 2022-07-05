@@ -7,6 +7,7 @@ using Findx.Pdf;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Findx.WebHost.Controllers
     /// <summary>
     /// 通用控制器
     /// </summary>
+    [Description("通用")]
     public class CommonController : ApiControllerBase
     {
         /// <summary>

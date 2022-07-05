@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Mvc;
+using Findx.Security;
 
 namespace Findx.WebHost.Controllers
 {
@@ -21,10 +23,9 @@ namespace Findx.WebHost.Controllers
         /// <param name="store"></param>
         /// <returns></returns>
         [HttpGet("/permission/list")]
-        public async Task<CommonResult> PermissionList([FromServices] IPermissionStore store)
+        public CommonResult PermissionList([FromServices] IFunctionStore<MvcFunction> store)
         {
-            var res = await store.GetFromStoreAsync();
-            return CommonResult.Success(res);
+            return CommonResult.Success(store.GetFromDatabase());
         }
 
         /// <summary>
@@ -60,10 +61,9 @@ namespace Findx.WebHost.Controllers
         /// <returns></returns>
         [HttpGet("verify")]
         [Authorize(Policy = PermissionRequirement.Policy, Roles = "admin")]
-        public async Task<CommonResult> VerifyPermission([FromServices] IPermissionStore store)
+        public async Task<CommonResult> VerifyPermission([FromServices] IFunctionStore<MvcFunction> store)
         {
-            var res = await store.GetFromStoreAsync();
-            return CommonResult.Success(res);
+            return CommonResult.Success(store.GetFromDatabase());
         }
     }
 }

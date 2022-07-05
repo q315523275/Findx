@@ -52,6 +52,11 @@ namespace Findx.FreeSql
         /// 是否多租户
         /// </summary>
         public bool MultiTenant { set; get; }
+
+        /// <summary>
+        /// 自动同步实体结构【开发环境必备】，FreeSql不会扫描程序集，只有CRUD时才会生成表。
+        /// </summary>
+        public bool UseAutoSyncStructure { set; get; }
     }
     /// <summary>
     /// FreeSql数据库连接配置

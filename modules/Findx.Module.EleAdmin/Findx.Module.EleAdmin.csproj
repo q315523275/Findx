@@ -5,7 +5,7 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <PackageVersion>1.0.4</PackageVersion>
+    <PackageVersion>1.0.5</PackageVersion>
   </PropertyGroup>
 
 
@@ -22,6 +22,8 @@
     <None Remove="Findx.AspNetCore" />
     <None Remove="Findx.Security" />
     <None Remove="Findx.FreeSql" />
+    <None Remove="FreeSql.Provider.MySqlConnector" />
+    <None Remove="FreeSql.Provider.MySql" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Areas\" />
@@ -31,9 +33,8 @@
     <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Findx" Version="1.7.9" />
-    <PackageReference Include="Findx.AspNetCore" Version="1.7.5" />
-    <PackageReference Include="Findx.Security" Version="1.7.1" />
-    <PackageReference Include="Findx.FreeSql" Version="1.7.5" />
+    <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
+    <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
   </ItemGroup>
 </Project>

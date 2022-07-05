@@ -14,7 +14,7 @@ namespace Findx.Security
         public static Claim GetClaimFirstOrDefault(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return null;
             }
@@ -27,7 +27,7 @@ namespace Findx.Security
         public static string GetClaimValueFirstOrDefault(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return null;
             }
@@ -40,7 +40,7 @@ namespace Findx.Security
         public static IEnumerable<Claim> GetClaims(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return new Claim[0];
             }
@@ -53,7 +53,7 @@ namespace Findx.Security
         public static IEnumerable<string> GetClaimValues(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return null;
             }
@@ -66,7 +66,7 @@ namespace Findx.Security
         public static T GetUserId<T>(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return default;
             }
@@ -84,7 +84,7 @@ namespace Findx.Security
         public static string GetUserId(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return null;
             }
@@ -97,7 +97,7 @@ namespace Findx.Security
         public static string GetUserName(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return null;
             }
@@ -110,7 +110,7 @@ namespace Findx.Security
         public static string GetEmail(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return null;
             }
@@ -123,11 +123,24 @@ namespace Findx.Security
         public static string GetNickname(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return null;
             }
             return claimsIdentity.FindFirst(ClaimTypes.Nickname)?.Value;
+        }
+
+        /// <summary>
+        /// 获取昵称
+        /// </summary>
+        public static string GetTenantId(this IIdentity identity)
+        {
+            Check.NotNull(identity, nameof(identity));
+            if (identity is not ClaimsIdentity claimsIdentity)
+            {
+                return null;
+            }
+            return claimsIdentity.FindFirst(ClaimTypes.TenantId)?.Value;
         }
 
         /// <summary>

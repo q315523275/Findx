@@ -5,6 +5,7 @@ using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.ComponentModel;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -14,6 +15,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 	[Area("system")]
 	[Route("api/[area]/dictData")]
     [Authorize]
+    [Description("系统-字典值")]
     public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest, Guid, Guid>
 	{
         /// <summary>

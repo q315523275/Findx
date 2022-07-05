@@ -1,4 +1,5 @@
-﻿using Findx.AspNetCore.Mvc;
+﻿using System.ComponentModel;
+using Findx.AspNetCore.Mvc;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -12,6 +13,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 	[Area("system")]
 	[Route("api/[area]/org")]
 	[Authorize]
+	[Description("系统-机构")]
 	public class SysOrgController: CrudControllerBase<SysOrgInfo, SetOrgRequest, QueryOrgRequest, Guid, Guid>
 	{
 

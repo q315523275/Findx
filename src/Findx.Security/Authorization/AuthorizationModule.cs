@@ -1,14 +1,11 @@
 ﻿using Findx.AspNetCore;
 using Findx.Extensions;
 using Findx.Modularity;
-using Findx.Security.Authorization.Store;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
 
 namespace Findx.Security.Authorization
 {
@@ -25,34 +22,19 @@ namespace Findx.Security.Authorization
             services.Configure<AuthorizationOptions>(section);
 
             Enabled = configuration.GetValue<bool>("Findx:Authorization:Enabled");
-            if (Enabled)
+            if (!Enabled) return services;
+            services.AddAuthorization(opts =>
             {
-                services.AddSingleton<IPermissionChecker, PermissionChecker>();
-                services.AddSingleton<IPermissionHandler, MvcPermissionHandler>();
-                services.AddSingleton<IPermissionStore, MemoryPermissionStore>();
-
-                services.AddAuthorization(opts =>
-                {
-                    opts.AddPolicy(PermissionRequirement.Policy, policy => policy.Requirements.Add(new PermissionRequirement()));
-                });
-                services.AddSingleton<IAuthorizationHandler, PermissionRequirementHandler>();
-            }
+                opts.AddPolicy(PermissionRequirement.Policy, policy => policy.Requirements.Add(new PermissionRequirement()));
+            });
+            services.AddSingleton<IAuthorizationHandler, PermissionRequirementHandler>();
             return services;
         }
         public override void UseModule(IApplicationBuilder app)
         {
-            if (Enabled)
-            {
-                app.UseAuthorization();
-
-                Task.Run(async () =>
-                {
-                    IServiceProvider provider = app.ApplicationServices;
-                    IPermissionHandler permissionHandler = provider.GetService<IPermissionHandler>();
-                    await permissionHandler?.InitializeAsync();
-                });
-                base.UseModule(app);
-            }
+            if (!Enabled) return;
+            app.UseAuthorization();
+            base.UseModule(app);
         }
     }
 }

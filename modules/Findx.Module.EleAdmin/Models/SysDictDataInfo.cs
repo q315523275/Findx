@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdmin.Models
     /// </summary>
     [Table(Name = "sys_dict_data")]
 	[DataEntity(DataSource = "system")]
-	public class SysDictDataInfo : EntityBaseFullAudited<Guid, Guid>, ISoftDeletable, ISort, IResponse
+	public class SysDictDataInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ISort, IResponse
 	{
 		/// <summary>
         /// 字典项id

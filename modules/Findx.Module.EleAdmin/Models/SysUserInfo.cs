@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdmin.Models
     /// </summary>
 	[Table(Name = "sys_user")]
 	[DataEntity(DataSource = "system")]
-	public class SysUserInfo: EntityBaseFullAudited<Guid, Guid>, ISoftDeletable, ITenant, IResponse
+	public class SysUserInfo: FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, IResponse
 	{
 		/// <summary>
 		/// 用户id

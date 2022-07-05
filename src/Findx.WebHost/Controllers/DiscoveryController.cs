@@ -2,11 +2,13 @@
 using Findx.Discovery;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
 {
+    [Description("服务发现")]
     public class DiscoveryController : Controller
     {
         /// <summary>

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using Findx.DependencyInjection;
+
 namespace Findx.Security.Authorization
 {
     /// <summary>
@@ -13,19 +15,29 @@ namespace Findx.Security.Authorization
         /// <summary>
         /// 获取正在执行的Action相关功能信息
         /// </summary>
-        public static PermissionAccess GetExecutePermissionAccess(this RouteEndpoint endpoint, HttpContext context)
+        public static IFunction GetExecuteFunction(this RouteEndpoint endpoint, HttpContext context)
         {
-            IServiceProvider provider = context.RequestServices;
+            var provider = context.RequestServices;
+            var dict = provider.GetRequiredService<ScopedDictionary>();
+            if (dict.Function != null)
+            {
+                return dict.Function;
+            }
 
-            string area = endpoint.GetAreaName(),
-                controller = endpoint.GetControllerName(),
-                action = endpoint.GetActionName();
-            IPermissionHandler permissionHandler = provider.GetService<IPermissionHandler>();
-            Check.NotNull(permissionHandler, nameof(permissionHandler));
+            string area = endpoint.GetAreaName(), controller = endpoint.GetControllerName(), action = endpoint.GetActionName();
+            var functionHandler = provider.GetService<IFunctionHandler>();
+            if (functionHandler == null)
+            {
+                return null;
+            }
 
-            PermissionAccess permissionAccess = permissionHandler.GetPermissionAccess(area, controller, action);
+            var function = functionHandler.GetFunction(area, controller, action);
+            if (function != null)
+            {
+                dict.Function = function;
+            }
 
-            return permissionAccess;
+            return function;
         }
 
         /// <summary>
@@ -51,7 +63,7 @@ namespace Findx.Security.Authorization
         /// </summary>
         public static string GetControllerName(this RouteEndpoint endpoint)
         {
-            return endpoint.RoutePattern.RequiredValues["controller"].ToString();
+            return endpoint.RoutePattern.RequiredValues["controller"]?.ToString();
         }
 
         /// <summary>
@@ -59,7 +71,7 @@ namespace Findx.Security.Authorization
         /// </summary>
         public static string GetActionName(this RouteEndpoint endpoint)
         {
-            return endpoint.RoutePattern.RequiredValues["action"].ToString();
+            return endpoint.RoutePattern.RequiredValues["action"]?.ToString();
         }
     }
 }

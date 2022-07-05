@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Findx.Security;
+using System.ComponentModel;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -18,6 +19,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Area("system")]
     [Route("api/[area]/user")]
     [Authorize]
+    [Description("系统-用户")]
     public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
     {
         private readonly ICurrentUser _currentUser;
@@ -39,9 +41,9 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         protected override Expressionable<SysUserInfo> CreatePageWhereExpression(QueryUserRequest req)
         {
             var whereExp = ExpressionBuilder.Create<SysUserInfo>()
-                                    .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
-                                    .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-                                    .AndIF(req.Sex > 0, x => x.Sex == req.Sex);
+                                            .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
+                                            .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
+                                            .AndIF(req.Sex > 0, x => x.Sex == req.Sex);
             return whereExp;
         }
 
@@ -75,6 +77,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <param name="req"></param>
         /// <returns></returns>
         [HttpPut("status")]
+        [Description("修改状态")]
         public CommonResult Status([FromBody] SetUserPropertyRequest req)
         {
             var repo = GetRepository<SysUserInfo>();
@@ -88,6 +91,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <param name="req"></param>
         /// <returns></returns>
         [HttpPut("password")]
+        [Description("修改密码")]
         public CommonResult Password([FromBody] SetUserPropertyRequest req)
         {
             var userId = _currentUser.UserId.To<Guid>();
@@ -105,6 +109,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("existence")]
+        [Description("检查是否存在")]
         public CommonResult Existence([Required] string field, [Required] string value, Guid id)
         {
             var whereExp = ExpressionBuilder.Create<SysUserInfo>()

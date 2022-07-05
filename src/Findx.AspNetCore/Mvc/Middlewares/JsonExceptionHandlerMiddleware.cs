@@ -10,6 +10,7 @@ using Polly.Timeout;
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -79,6 +80,13 @@ namespace Findx.AspNetCore.Mvc.Middlewares
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.ContentType = "application/json;charset=utf-8";
                 await context.Response.WriteAsync(CommonResult.Fail("500", "内部服务超时,请稍后再试").ToJson());
+            }
+            catch (HttpRequestException ex)
+            {
+                context.Response.Clear();
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
+                context.Response.ContentType = "application/json;charset=utf-8";
+                await context.Response.WriteAsync(CommonResult.Fail(ex.StatusCode?.ToString() ?? "500", "上游系统调用异常").ToJson());
             }
             catch (Exception ex)
             {

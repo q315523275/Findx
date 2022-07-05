@@ -1,4 +1,5 @@
-﻿using Findx.Data;
+﻿using System.ComponentModel;
+using Findx.Data;
 using Findx.Jobs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -9,6 +10,7 @@ namespace Findx.WebHost.Controllers
     /// <summary>
     /// 应用信息
     /// </summary>
+    [Description("应用信息")]
     public class ApplicationController : Controller
     {
         /// <summary>

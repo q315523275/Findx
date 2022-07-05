@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdmin.Models
 	/// </summary>
 	[Table(Name = "sys_tenant")]
 	[DataEntity(DataSource = "system")]
-	public class SysTenantInfo : EntityBaseFullAudited<int, int>, ISoftDeletable
+	public class SysTenantInfo : FullAuditedBase<int, int>, ISoftDeletable
 	{
 		/// <summary>
 		/// 租户id

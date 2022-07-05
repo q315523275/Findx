@@ -57,14 +57,11 @@ namespace Findx.Modularity
         /// <returns></returns>
         internal IEnumerable<Type> GetDependModuleTypes(Type moduleType = null)
         {
-            if (moduleType == null)
-            {
-                moduleType = GetType();
-            }
+            moduleType ??= GetType();
             var dependAttrs = moduleType.GetAttributes<DependsOnModulesAttribute>();
-            if (dependAttrs.Count() == 0)
+            if (!dependAttrs.Any())
             {
-                return new Type[0];
+                return Type.EmptyTypes;
             }
             List<Type> dependTypes = new();
             foreach (DependsOnModulesAttribute dependAttr in dependAttrs)
@@ -75,7 +72,7 @@ namespace Findx.Modularity
                     continue;
                 }
                 dependTypes.AddRange(packTypes);
-                foreach (Type type in packTypes)
+                foreach (var type in packTypes)
                 {
                     dependTypes.AddRange(GetDependModuleTypes(type));
                 }

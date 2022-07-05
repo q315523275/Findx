@@ -5,7 +5,7 @@ namespace Findx.Data
     /// 实体类审计基类
     /// </summary>
     /// <typeparam name="TUserKey"></typeparam>
-    public abstract class EntityBaseFullAudited<TUserKey> : IFullAudited<TUserKey> where TUserKey : struct
+    public abstract class FullAuditedBase<TUserKey> : IFullAudited<TUserKey> where TUserKey : struct
     {
         /// <summary>
         /// 创建人编号
@@ -33,7 +33,7 @@ namespace Findx.Data
     /// </summary>
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TUserKey"></typeparam>
-    public abstract class EntityBaseFullAudited<TKey, TUserKey> : EntityBase<TKey>, IFullAudited<TUserKey>
+    public abstract class FullAuditedBase<TKey, TUserKey> : EntityBase<TKey>, IFullAudited<TUserKey>
         where TUserKey : struct
         where TKey : IEquatable<TKey>
     {

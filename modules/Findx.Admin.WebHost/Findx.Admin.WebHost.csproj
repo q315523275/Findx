@@ -14,14 +14,14 @@
     <None Remove="Findx.Mapster" />
     <None Remove="Findx.Security" />
     <None Remove="storage\" />
+    <None Remove="Findx.NLog" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Findx.AspNetCore" Version="1.7.5" />
     <PackageReference Include="Findx.Swagger" Version="1.7.1" />
     <PackageReference Include="Findx.ImageSharp" Version="1.7.3" />
-    <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.640" />
     <PackageReference Include="Findx.Mapster" Version="1.7.1" />
-    <PackageReference Include="Findx.Security" Version="1.7.1" />
+    <PackageReference Include="Findx.NLog" Version="1.5.1" />
+    <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.664" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Findx.Module.EleAdmin\Findx.Module.EleAdmin.csproj">
@@ -30,5 +30,15 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="storage\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="nlog.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="nlog.config">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
   </ItemGroup>
 </Project>

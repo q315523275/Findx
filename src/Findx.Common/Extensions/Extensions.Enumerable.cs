@@ -155,10 +155,11 @@ namespace Findx.Extensions
         }
 
         /// <summary>
-        /// Concurrently Executes async actions for each item of <see cref="IEnumerable<typeparamref name="T"/>
+        /// Concurrently Executes async actions for each item of IEnumerable
         /// </summary>
         /// <typeparam name="T">Type of IEnumerable</typeparam>
-        /// <param name="enumerable">instance of <see cref="IEnumerable<typeparamref name="T"/>"/></param>
+        /// <param name="enumerable">instance of <see>
+        ///     <cref>IEnumerable/&gt;</cref></see><typeparamref name="T"/>"/></param>
         /// <param name="func">an async <see cref="Func{T, TResult}" /> to execute</param>
         /// <param name="maxActionsToRunInParallel">Optional, max numbers of the actions to run in parallel,
         /// Must be grater than 0</param>

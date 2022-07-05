@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading;
 
@@ -86,7 +87,7 @@ namespace Findx.Utils
                     return _snowflakeId;
                 }
 
-                if (!long.TryParse(Environment.GetEnvironmentVariable("WORKERID", EnvironmentVariableTarget.Machine), out var workerId))
+                if (!long.TryParse(Environment.GetEnvironmentVariable("CAP_WORKERID", EnvironmentVariableTarget.Machine), out var workerId))
                 {
                     workerId = Util.GenerateWorkerId(MaxWorkerId);
                 }
@@ -166,14 +167,13 @@ namespace Findx.Utils
         private static long GenerateWorkerIdBaseOnMac()
         {
             NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
-
-            if (nics == null || nics.Length < 1)
+            //exclude virtual and Loopback
+            var firstUpInterface = nics.OrderByDescending(x => x.Speed).FirstOrDefault(x => !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up);
+            if (firstUpInterface == null)
             {
                 throw new Exception("no available mac found");
             }
-
-            var adapter = nics[0];
-            PhysicalAddress address = adapter.GetPhysicalAddress();
+            PhysicalAddress address = firstUpInterface.GetPhysicalAddress();
             byte[] mac = address.GetAddressBytes();
 
             return ((mac[4] & 0B11) << 8) | (mac[5] & 0xFF);

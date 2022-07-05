@@ -1,5 +1,6 @@
 ﻿using Findx.Drawing;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel;
 using System.Threading.Tasks;
 
 namespace Findx.WebHost.Controllers
@@ -7,6 +8,7 @@ namespace Findx.WebHost.Controllers
     /// <summary>
     /// 图片
     /// </summary>
+    [Description("图片处理")]
     public class ImageController : Controller
     {
         /// <summary>

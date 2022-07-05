@@ -38,7 +38,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
             if (currentUser != null && currentUser.IsAuthenticated && !currentUser.TenantId.IsNullOrWhiteSpace())
             {
-                Findx.Data.Tenant.TenantId.Value = currentUser.TenantId.CastTo<Guid>();
+                Tenant.TenantId.Value = currentUser.TenantId.CastTo<Guid>();
             }
 
             // 刷新Token

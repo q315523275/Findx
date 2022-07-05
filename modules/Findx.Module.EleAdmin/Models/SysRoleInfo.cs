@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdmin.Models
 	/// </summary>
 	[Table(Name = "sys_role")]
 	[DataEntity(DataSource = "system")]
-	public class SysRoleInfo : EntityBaseFullAudited<Guid, Guid>, ISoftDeletable, ITenant, IResponse
+	public class SysRoleInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, IResponse
 	{
 		/// <summary>
 		/// 角色id

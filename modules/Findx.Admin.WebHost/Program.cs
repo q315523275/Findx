@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Findx.AspNetCore.Extensions;
+﻿using Findx.AspNetCore.Extensions;
 namespace Findx.Module.WebHost
 {
     public class Program
@@ -12,9 +10,10 @@ namespace Findx.Module.WebHost
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+                .ConfigureWebHostDefaults(build =>
                 {
-                    webBuilder.UseFindxStartup<Startup>();
+                    // build.ConfigureLogging(x => { x.ClearProviders(); });
+                    build.UseFindxStartup<Startup>();
                 });
     }
 }

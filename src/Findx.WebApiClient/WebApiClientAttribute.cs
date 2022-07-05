@@ -55,6 +55,6 @@ namespace Findx.WebApiClient
         /// <summary>
         /// 负载均衡器名称
         /// </summary>
-        public LoadBalancerType LoadBalancerType { set; get; }
+        public LoadBalancerType LoadBalancerType { set; get; } = LoadBalancerType.Random;
     }
 }

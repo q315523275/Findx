@@ -27,11 +27,11 @@ namespace Findx.FreeSql
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             // 配置服务
-            IConfiguration configuration = services.GetConfiguration();
+            var configuration = services.GetConfiguration();
             var section = configuration.GetSection("Findx:FreeSql");
             services.Configure<FreeSqlOptions>(section);
             FreeSqlOptions = section.Get<FreeSqlOptions>();
-            if (FreeSqlOptions == null || !FreeSqlOptions.Enabled)
+            if (!(FreeSqlOptions is { Enabled: true }))
                 return services;
 
             var freeSqlClient = services.GetOrAddSingletonInstance(() => new FreeSqlClient());
@@ -39,8 +39,8 @@ namespace Findx.FreeSql
             foreach (var option in FreeSqlOptions.DataSource)
             {
                 // FreeSQL构建开始
-                FreeSqlConnectionConfig DbConnection = option.Value;
-                IFreeSql freeSql = new FreeSqlBuilder().UseConnectionString(DbConnection.DbType, DbConnection.ConnectionString).Build();
+                var dbConnection = option.Value;
+                var freeSql = new FreeSqlBuilder().UseConnectionString(dbConnection.DbType, dbConnection.ConnectionString).UseAutoSyncStructure(FreeSqlOptions.UseAutoSyncStructure).Build();
                 // 开启逻辑删除
                 if (FreeSqlOptions.SoftDeletable)
                 {
@@ -57,16 +57,18 @@ namespace Findx.FreeSql
                     // 开启SQL打印
                     if (FreeSqlOptions.PrintSQL)
                     {
-                        StringBuilder sb = new StringBuilder();
+                        var sb = new StringBuilder();
                         sb.AppendLine("Creating a new SqlSession");
                         sb.AppendLine("==>  Preparing:" + e.Sql);
-                        if (e != null && e.DbParms.Length > 0)
+                        if (e.DbParms.Length > 0)
                         {
                             sb.AppendLine("==>  Parameters:" + e.DbParms?.Length);
-                            foreach (var pa in e.DbParms)
-                            {
-                                sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value?.ToString());
-                            }
+                            if (e.DbParms != null)
+                                foreach (var pa in e.DbParms)
+                                {
+                                    sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" +
+                                                  pa?.Value?.ToString());
+                                }
                         }
                         sb.Append($"==>  ExecuteTime:{e.ElapsedMilliseconds:0.000}ms");
                         var logger = ServiceLocator.GetService<ILogger<FreeSqlModule>>();
@@ -85,10 +87,10 @@ namespace Findx.FreeSql
             }
 
             // 添加仓储实现
-            ServiceDescriptor descriptor = new ServiceDescriptor(typeof(IRepository<>), typeof(FreeSqlRepository<>), ServiceLifetime.Scoped);
+            var descriptor = new ServiceDescriptor(typeof(IRepository<>), typeof(FreeSqlRepository<>), ServiceLifetime.Scoped);
             services.Replace(descriptor);
 
-            ServiceDescriptor descriptor2 = new ServiceDescriptor(typeof(IUnitOfWorkManager), typeof(FreeSqlUnitOfWorkManager), ServiceLifetime.Scoped);
+            var descriptor2 = new ServiceDescriptor(typeof(IUnitOfWorkManager), typeof(FreeSqlUnitOfWorkManager), ServiceLifetime.Scoped);
             services.Replace(descriptor2);
 
             return services;

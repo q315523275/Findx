@@ -190,38 +190,13 @@ namespace Findx.Data
             // 雪花长整形
             if (typeof(long) == keyType && entity.Id.Equals(default(long)))
             {
-                entity.Id = SnowflakeId.Default().NextId().CastTo<TKey>();
+                entity.Id = ServiceLocator.GetService<IKeyGenerator<long>>().Create().CastTo<TKey>();
             }
 
             // 有序Guid
             if (typeof(Guid) == keyType && entity.Id.CastTo<Guid>() == Guid.Empty)
             {
-                entity.Id = ServiceLocator.GetService<IGuidGenerator>().Create().CastTo<TKey>();
-            }
-
-            return entity;
-        }
-
-        /// <summary>
-        /// 设置实体id默认值
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <param name="entity"></param>
-        /// <param name="dbType"></param>
-        /// <returns></returns>
-        public static IEntity<TKey> SetEmptyKey<TKey>(this IEntity<TKey> entity, DatabaseType dbType)
-        {
-            var keyType = typeof(TKey);
-            // 雪花长整形
-            if (typeof(long) == keyType && entity.Id.Equals(default(long)))
-            {
-                entity.Id = SnowflakeId.Default().NextId().CastTo<TKey>();
-            }
-
-            // 有序Guid
-            if (typeof(Guid) == keyType && entity.Id.CastTo<Guid>() == Guid.Empty)
-            {
-                entity.Id = SequentialGuid.Instance.Create(dbType).CastTo<TKey>();
+                entity.Id = ServiceLocator.GetService<IKeyGenerator<Guid>>().Create().CastTo<TKey>();
             }
 
             return entity;

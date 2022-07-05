@@ -5,10 +5,12 @@ using Findx.RabbitMQ;
 using Findx.WebHost.EventBus;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Findx.WebHost.Controllers
 {
+    [Description("事件总线")]
     public class EventBusController : Controller
     {
         /// <summary>

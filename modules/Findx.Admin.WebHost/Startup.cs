@@ -2,12 +2,7 @@
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Extensions;
 using Findx.Serialization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 namespace Findx.Module.WebHost
@@ -36,6 +31,11 @@ namespace Findx.Module.WebHost
                     .SetIsOriginAllowed(_ => true)
                 );
             });
+
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -49,6 +49,8 @@ namespace Findx.Module.WebHost
             app.UseStaticFiles(new StaticFileOptions { RequestPath = "/storage", FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "storage")) });
 
             app.UseCors("CorsPolicy");
+
+            app.UseResponseCompression();
 
             app.UseRouting();
 

@@ -11,7 +11,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-		<PackageReference Include="FreeSql" Version="3.2.610" />
+		<PackageReference Include="FreeSql" Version="3.2.664" />
 	</ItemGroup>
 
 	<ItemGroup>

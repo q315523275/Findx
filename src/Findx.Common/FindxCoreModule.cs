@@ -17,21 +17,39 @@ using Findx.Setting;
 using Findx.Sms;
 using Findx.Storage;
 using Findx.Threading;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System.ComponentModel;
+using Findx.Security;
+using System;
 
 namespace Findx.Builders
 {
+    /// <summary>
+    /// Findx-基础模块
+    /// </summary>
     [Description("Findx-基础模块")]
     public class FindxCoreModule : FindxModule
     {
+        /// <summary>
+        /// 等级
+        /// </summary>
         public override ModuleLevel Level => ModuleLevel.Framework;
+        
+        /// <summary>
+        /// 排序
+        /// 模块启动顺序，模块启动的顺序先按级别启动，同一级别内部再按此顺序启动，
+        /// </summary>
         public override int Order => 0;
+        
+        /// <summary>
+        /// 注册服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            IConfiguration configuration = services.GetConfiguration();
+            var configuration = services.GetConfiguration();
 
             // 配置
             services.AddSingleton<ISettingProvider, ConfigurationSettingProvider>();
@@ -89,6 +107,16 @@ namespace Findx.Builders
 
             // 有序Guid
             services.Configure<SequentialGuidOptions>(configuration.GetSection("Findx:SequentialGuid"));
+
+            // 功能权限
+            services.AddSingleton<IFunctionAuthorization, FunctionAuthorization>();
+
+            // 主键生成器
+            services.AddSingleton<IKeyGenerator<long>, SnowflakeIdGenerator>();
+            services.AddSingleton<IKeyGenerator<Guid>, Findx.Data.SequentialGuidGenerator>();
+            
+            // 审计配置
+            services.Configure<Findx.Data.AuditingOptions>(configuration.GetSection("Findx:Auditing"));
 
             return services;
         }

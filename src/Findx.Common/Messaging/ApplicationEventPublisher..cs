@@ -19,7 +19,6 @@ namespace Findx.Messaging
     {
         private readonly IDictionary<Type, object> _eventHandlers = new Dictionary<Type, object>();
 
-        private readonly IConfiguration _configuration;
         private readonly Channel<IApplicationEvent> _channel;
         private readonly ILogger<ApplicationEventPublisher> _logger;
         private readonly CancellationTokenSource _cts;
@@ -31,16 +30,12 @@ namespace Findx.Messaging
         /// <param name="logger"></param>
         public ApplicationEventPublisher(IConfiguration configuration, ILogger<ApplicationEventPublisher> logger)
         {
-            _configuration = configuration;
             _logger = logger;
 
-            var _queueCapacity = _configuration.GetValue<int>("Findx:MessageQueueCapacity");
-            if (_queueCapacity > 0)
-                _channel = Channel.CreateBounded<IApplicationEvent>(new BoundedChannelOptions(_queueCapacity) { FullMode = BoundedChannelFullMode.Wait });
-            else
-                _channel = Channel.CreateUnbounded<IApplicationEvent>();
+            var queueCapacity = configuration.GetValue<int>("Findx:MessageQueueCapacity");
+            _channel = queueCapacity > 0 ? Channel.CreateBounded<IApplicationEvent>(new BoundedChannelOptions(queueCapacity) { FullMode = BoundedChannelFullMode.Wait }) : Channel.CreateUnbounded<IApplicationEvent>();
 
-            var consumerThreadCount = _configuration.GetValue<int>("Findx:MessageHanderMaxTaskCount");
+            var consumerThreadCount = configuration.GetValue<int>("Findx:MessageHandlerMaxTaskCount");
             consumerThreadCount = consumerThreadCount == 0 ? Environment.ProcessorCount + 1 : consumerThreadCount;
             consumerThreadCount = consumerThreadCount <= 0 ? 1 : consumerThreadCount;
 

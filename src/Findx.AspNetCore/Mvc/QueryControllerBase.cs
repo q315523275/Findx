@@ -63,6 +63,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet("page")]
+        [Description("分页")]
         public virtual async Task<CommonResult> PageAsync([FromQuery] TQueryParameter request)
         {
             Check.NotNull(request, nameof(request));
@@ -85,6 +86,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet("list")]
+        [Description("列表")]
         public virtual async Task<CommonResult> ListAsync([FromQuery] TQueryParameter request)
         {
             var js = DateTime.Now;
@@ -111,6 +113,7 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="id"></param>
         /// <returns></returns>
         [HttpGet("detail")]
+        [Description("详情")]
         public virtual async Task<CommonResult> Detail(TKey id)
         {
             Check.NotNull(id, nameof(id));
