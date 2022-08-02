@@ -1,4 +1,7 @@
-﻿using Findx.AspNetCore;
+﻿using System;
+using System.ComponentModel;
+using System.Text;
+using Findx.AspNetCore;
 using Findx.Extensions;
 using Findx.Modularity;
 using Findx.Security.Authentication.Cookie;
@@ -10,55 +13,83 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.ComponentModel;
-using System.Text;
-namespace Findx.Authorization.Authentication
+
+namespace Findx.Security.Authentication
 {
-    [Description("Findex-认证模块")]
-    public class AuthenticationModule : AspNetCoreModuleBase
+    /// <summary>
+    /// Findx-认证模块
+    /// </summary>
+    [Description("Findx-认证模块")]
+    public sealed class AuthenticationModule : AspNetCoreModuleBase
     {
+        /// <summary>
+        /// 等级
+        /// </summary>
         public override ModuleLevel Level => ModuleLevel.Application;
+        
+        /// <summary>
+        /// 排序
+        /// </summary>
         public override int Order => 10;
-        private bool Enabled;
+        
+        /// <summary>
+        /// 是否启用
+        /// </summary>
+        private bool _enabled;
+        
+        /// <summary>
+        /// 添加服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            IConfiguration configuration = services.GetConfiguration();
-            Enabled = configuration.GetValue<bool>("Findx:Authentication:Enabled");
-            if (Enabled)
-            {
-                services.AddScoped<FindxCookieAuthenticationEvents>();
-                services.AddScoped<FindxJwtBearerEvents>();
-                services.AddScoped<IJwtTokenBuilder, DefaultJwtTokenBuilder>();
+            var configuration = services.GetConfiguration();
+            _enabled = configuration.GetValue<bool>("Findx:Authentication:Enabled");
+            if (!_enabled) return services;
+            
+            services.AddScoped<FindxCookieAuthenticationEvents>();
+            services.AddScoped<FindxJwtBearerEvents>();
+            services.AddScoped<IJwtTokenBuilder, DefaultJwtTokenBuilder>();
 
-                var defaultScheme = configuration.GetValue<string>("Findx:Authentication:DefaultScheme");
+            var defaultScheme = configuration.GetValue<string>("Findx:Authentication:DefaultScheme");
 
-                AuthenticationBuilder builder = services.AddAuthentication(defaultScheme ?? JwtBearerDefaults.AuthenticationScheme);
+            var builder = services.AddAuthentication(defaultScheme ?? JwtBearerDefaults.AuthenticationScheme);
 
-                AddJwtBearer(services, builder);
-                AddCookie(services, builder);
-            }
+            AddJwtBearer(services, builder);
+            AddCookie(services, builder);
+            
             return services;
         }
+        
+        /// <summary>
+        /// 使用模块
+        /// </summary>
+        /// <param name="app"></param>
         public override void UseModule(IApplicationBuilder app)
         {
-            if (Enabled)
-            {
-                app.UseAuthentication();
-                base.UseModule(app);
-            }
+            if (!_enabled) return;
+            
+            app.UseAuthentication().UseMiddleware<JwtTokenRenewalMiddleware>();
+
+            base.UseModule(app);
         }
 
-
-        protected virtual AuthenticationBuilder AddJwtBearer(IServiceCollection services, AuthenticationBuilder builder)
+        /// <summary>
+        /// 添加Jwt认证
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        private static void AddJwtBearer(IServiceCollection services, AuthenticationBuilder builder)
         {
-            IConfiguration configuration = services.GetConfiguration();
+            var configuration = services.GetConfiguration();
             var section = configuration.GetSection("Findx:Authentication:Jwt");
-            JwtOptions jwt = section.Get<JwtOptions>();
             services.Configure<JwtOptions>(section);
+            var jwt = section.Get<JwtOptions>();
             if (!jwt.Enabled)
             {
-                return builder;
+                return;
             }
 
             Check.NotNull(jwt.Secret, nameof(jwt.Secret));
@@ -74,17 +105,22 @@ namespace Findx.Authorization.Authentication
                 };
                 opts.Events = new FindxJwtBearerEvents();
             });
-
-            return builder;
         }
-        protected virtual AuthenticationBuilder AddCookie(IServiceCollection services, AuthenticationBuilder builder)
+
+        /// <summary>
+        /// 添加Cookie认证
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="builder"></param>
+        /// <returns></returns>
+        private static void AddCookie(IServiceCollection services, AuthenticationBuilder builder)
         {
-            IConfiguration configuration = services.GetConfiguration();
+            var configuration = services.GetConfiguration();
             CookieOptions cookie = new();
             configuration.Bind("Findx:Authentication:Cookie", cookie);
             if (!cookie.Enabled)
             {
-                return builder;
+                return;
             }
 
             builder.AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, opts =>
@@ -107,7 +143,6 @@ namespace Findx.Authorization.Authentication
 
                     opts.EventsType = typeof(FindxCookieAuthenticationEvents);
                 });
-            return builder;
         }
     }
 }

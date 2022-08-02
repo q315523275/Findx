@@ -17,7 +17,7 @@ namespace Findx.Security.Authentication.Jwt
         /// 转换为声明列表
         /// </summary>
         /// <param name="dictionary">字典</param>
-        public static IEnumerable<Claim> ToClaims(IDictionary<string, string> dictionary) => dictionary.Keys.Select(key => new Claim(key, dictionary[key]?.ToString()));
+        public static IEnumerable<Claim> ToClaims(IDictionary<string, string> dictionary) => dictionary.Keys.Select(key => new Claim(key, dictionary[key]?.ToString() ?? string.Empty));
 
         /// <summary>
         /// 创建令牌
@@ -32,7 +32,7 @@ namespace Findx.Security.Authentication.Jwt
             Check.NotNull(secret, nameof(secret));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var now = DateTime.UtcNow;
             var minutes = tokenType == JsonWebTokenType.AccessToken
                 ? options.AccessExpireMinutes > 0 ? options.AccessExpireMinutes : 5 // 默认5分钟

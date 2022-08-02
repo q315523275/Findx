@@ -4,8 +4,14 @@ using System.Collections.Generic;
 
 namespace Findx.FreeSql
 {
+    /// <summary>
+    /// FreeSql参数
+    /// </summary>
     public class FreeSqlOptions : IOptions<FreeSqlOptions>
     {
+        /// <summary>
+        /// this
+        /// </summary>
         public FreeSqlOptions Value => this;
 
         /// <summary>
@@ -21,7 +27,7 @@ namespace Findx.FreeSql
         /// <summary>
         /// 严格匹配数据源,默认false. true未匹配到指定数据源时抛异常,false使用默认数据源
         /// </summary>
-        public bool Strict { set; get; } = false;
+        public bool Strict { set; get; }
 
         /// <summary>
         /// 数据源列表
@@ -31,7 +37,7 @@ namespace Findx.FreeSql
         /// <summary>
         /// 是否打印SQL日志调试
         /// </summary>
-        public bool PrintSQL { set; get; }
+        public bool PrintSql { set; get; }
 
         /// <summary>
         /// 是否开启慢SQL记录

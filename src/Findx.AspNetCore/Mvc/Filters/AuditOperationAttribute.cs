@@ -58,6 +58,13 @@ namespace Findx.AspNetCore.Mvc.Filters
             operation.Ip = actionContext.HttpContext.GetClientIp();
             operation.UserAgent = actionContext.HttpContext.Request.Headers["User-Agent"].FirstOrDefault();
             operation.Message = actionContext.Exception?.FormatMessage();
+            if (operation.Message.IsNullOrWhiteSpace() && actionContext.Result is CommonResult commonResult)
+            {
+                if (!commonResult.IsSuccess())
+                {
+                    operation.Message = commonResult.Msg;
+                }
+            }
             if (context.HttpContext.User.Identity is { IsAuthenticated: true } and ClaimsIdentity identity)
             {
                 operation.UserId = identity.GetUserId();

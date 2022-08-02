@@ -30,7 +30,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 			var whereExp = ExpressionBuilder.Create<SysRoleInfo>()
 											.AndIF(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
 											.AndIF(!request.Code.IsNullOrWhiteSpace(), x => x.Code.Contains(request.Code))
-											.AndIF(!request.Comments.IsNullOrWhiteSpace(), x => x.Comments.Contains(request.Comments));
+											.AndIF(!request.Comments.IsNullOrWhiteSpace(), x => x.Comments.Contains(request.Comments))
+											.AndIF(!request.ApplicationCode.IsNullOrWhiteSpace(), x => x.ApplicationCode == request.ApplicationCode);
 			return whereExp;
 		}
 
@@ -38,16 +39,17 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 		/// 查询角色对应菜单
 		/// </summary>
 		/// <param name="roleId"></param>
+		/// <param name="applicationCode"></param>
 		/// <returns></returns>
 		[HttpGet("menu/{roleId}")]
 		[Description("系统-查看角色菜单")]
-		public CommonResult Menu(Guid roleId)
+		public CommonResult Menu(Guid roleId, string applicationCode)
         {
 			var repo = HttpContext.RequestServices.GetRequiredService<IRepository<SysRoleMenuInfo>>();
 			var menuRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysMenuInfo>>();
-
+			
 			var menuIdArray = repo.Select(whereExpression: x => x.RoleId == roleId, selectExpression: x => x.MenuId).Distinct();
-			var menuList = menuRepo.Select<RoleMenuDto>();
+			var menuList = applicationCode.IsNullOrWhiteSpace() ? menuRepo.Select<RoleMenuDto>() : menuRepo.Select<RoleMenuDto>(x => x.ApplicationCode == applicationCode);
 
 			menuList.ForEach(x =>
 			{

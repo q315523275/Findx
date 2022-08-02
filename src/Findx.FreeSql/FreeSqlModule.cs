@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Extensions;
@@ -12,11 +13,25 @@ using System.Text;
 
 namespace Findx.FreeSql
 {
+    /// <summary>
+    /// Findx-FreeSql模块
+    /// </summary>
+    [Description("Findx-FreeSql模块")]
     public class FreeSqlModule : FindxModule
     {
-        public override ModuleLevel Level => ModuleLevel.Application;
+        /// <summary>
+        /// 模块等级
+        /// </summary>
+        public override ModuleLevel Level => ModuleLevel.Framework;
+        
+        /// <summary>
+        /// 模块排序
+        /// </summary>
         public override int Order => 100;
 
+        /// <summary>
+        /// Option
+        /// </summary>
         private FreeSqlOptions FreeSqlOptions { set; get; }
 
         /// <summary>
@@ -36,11 +51,10 @@ namespace Findx.FreeSql
 
             var freeSqlClient = services.GetOrAddSingletonInstance(() => new FreeSqlClient());
 
-            foreach (var option in FreeSqlOptions.DataSource)
+            foreach (var item in FreeSqlOptions.DataSource)
             {
                 // FreeSQL构建开始
-                var dbConnection = option.Value;
-                var freeSql = new FreeSqlBuilder().UseConnectionString(dbConnection.DbType, dbConnection.ConnectionString).UseAutoSyncStructure(FreeSqlOptions.UseAutoSyncStructure).Build();
+                var freeSql = new FreeSqlBuilder().UseConnectionString(item.Value.DbType, item.Value.ConnectionString).UseAutoSyncStructure(FreeSqlOptions.UseAutoSyncStructure).Build();
                 // 开启逻辑删除
                 if (FreeSqlOptions.SoftDeletable)
                 {
@@ -55,7 +69,7 @@ namespace Findx.FreeSql
                 freeSql.Aop.CurdAfter += (s, e) =>
                 {
                     // 开启SQL打印
-                    if (FreeSqlOptions.PrintSQL)
+                    if (FreeSqlOptions.PrintSql)
                     {
                         var sb = new StringBuilder();
                         sb.AppendLine("Creating a new SqlSession");
@@ -81,8 +95,8 @@ namespace Findx.FreeSql
                     }
                 };
                 // 注入
-                freeSqlClient.TryAdd(option.Key, freeSql);
-                if (option.Key == FreeSqlOptions.Primary)
+                freeSqlClient.TryAdd(item.Key, freeSql);
+                if (item.Key == FreeSqlOptions.Primary)
                     services.AddSingleton(freeSql);
             }
 

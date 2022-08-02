@@ -48,6 +48,40 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         }
 
         /// <summary>
+        /// 构建排序
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        protected override List<OrderByParameter<SysUserInfo>> CreatePageOrderExpression(QueryUserRequest request)
+        {
+            var multiOrderBy = new List<OrderByParameter<SysUserInfo>>();
+
+            switch (request.SortField)
+            {
+                case "userName":
+                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.UserName, SortDirection = request.SortDirection });
+                    break;
+                case "nickname":
+                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Nickname, SortDirection = request.SortDirection });
+                    break;
+                case "sex":
+                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Sex, SortDirection = request.SortDirection });
+                    break;
+                case "phone":
+                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Phone, SortDirection = request.SortDirection });
+                    break;
+                case "createdTime":
+                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.CreatedTime, SortDirection = request.SortDirection });
+                    break;
+                case "status":
+                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Status, SortDirection = request.SortDirection });
+                    break;
+            }
+            multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Id, SortDirection = ListSortDirection.Descending });
+            return multiOrderBy;
+        }
+
+        /// <summary>
         /// 分页查询
         /// </summary>
         /// <param name="request"></param>

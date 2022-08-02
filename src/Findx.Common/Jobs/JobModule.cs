@@ -1,32 +1,44 @@
-﻿using System;
-using System.ComponentModel;
-using System.Threading;
+﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using Findx.Extensions;
 using Findx.Jobs.Local;
 using Findx.Messaging;
 using Findx.Modularity;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.Jobs
 {
+    /// <summary>
+    /// Findx-Job内存版本模块
+    /// </summary>
 	[Description("Findx-Job内存版本模块")]
 	public class JobModule : FindxModule
 	{
+        /// <summary>
+        /// 等级
+        /// </summary>
 		public override ModuleLevel Level => ModuleLevel.Framework;
 
-		public override int Order => 100;
+        /// <summary>
+        /// 排序
+        /// </summary>
+		public override int Order => 20;
 
-        private JobOptions Options;
+        /// <summary>
+        /// Job配置
+        /// </summary>
+        private JobOptions _options;
 
+        /// <summary>
+        /// 配置服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            // 配置服务
-            IConfiguration configuration = services.GetConfiguration();
+            var configuration = services.GetConfiguration();
             var section = configuration.GetSection("Findx:Jobs");
-            Options = section.Get<JobOptions>();
-            if (Options == null || !Options.Enabled)
+            _options = section.Get<JobOptions>();
+            if (_options is not { Enabled: true })
                 return services;
 
             services.Configure<JobOptions>(section);
@@ -40,12 +52,13 @@ namespace Findx.Jobs
 
             // 自动注册作业
             var dict = new JobTypeDictionary();
-            IJobFinder jobFinder = services.GetOrAddTypeFinder<IJobFinder>(assemblyFinder => new JobFinder(assemblyFinder));
+            var jobFinder = services.GetOrAddTypeFinder<IJobFinder>(assemblyFinder => new JobFinder(assemblyFinder));
             var jobTypes = jobFinder.FindAll(true);
-            foreach (Type jobType in jobTypes)
+            foreach (var jobType in jobTypes)
             {
                 services.AddTransient(jobType);
-                dict.Add(jobType.FullName, jobType);
+                if (jobType.FullName != null) 
+                    dict.Add(jobType.FullName, jobType);
             }
             services.AddSingleton(dict);
 
@@ -54,44 +67,51 @@ namespace Findx.Jobs
 
             return services;
         }
+        
+        /// <summary>
+        /// 线程通知
+        /// </summary>
+        private CancellationTokenSource CancellationToken { get; set; }
 
-        protected CancellationTokenSource cancellationToken { get; private set; }
-
+        /// <summary>
+        /// 启用模块
+        /// </summary>
+        /// <param name="provider"></param>
         public override void UseModule(IServiceProvider provider)
         {
-            if (Options != null && Options.Enabled)
+            if (_options is not { Enabled: true }) return;
+            CancellationToken = new CancellationTokenSource();
+            Task.Run(() =>
             {
-                cancellationToken = new CancellationTokenSource();
-                Task.Run(() =>
+                var scheduler = provider.GetRequiredService<IJobScheduler>();
+                var jobFinder = provider.GetRequiredService<IJobFinder>();
+                var jobTypes = jobFinder.FindAll(true);
+
+                foreach (var jobType in jobTypes)
                 {
-                    var scheduler = provider.GetRequiredService<IJobScheduler>();
-                    IJobFinder jobFinder = provider.GetRequiredService<IJobFinder>();
-                    var jobTypes = jobFinder.FindAll(true);
-
-                    foreach (Type jobType in jobTypes)
+                    // 需要自动载入执行的任务
+                    if (jobType.HasAttribute<JobAttribute>())
                     {
-                        // 需要自动载入执行的任务
-                        if (jobType.HasAttribute<JobAttribute>())
-                        {
-                            scheduler.ScheduleAsync(jobType);
-                        }
+                        scheduler.ScheduleAsync(jobType);
                     }
+                }
 
-                }, cancellationToken.Token);
-                base.UseModule(provider);
-            }
+            }, CancellationToken.Token);
+            base.UseModule(provider);
         }
 
+        /// <summary>
+        /// 应用销毁
+        /// </summary>
+        /// <param name="provider"></param>
         public override void OnShutdown(IServiceProvider provider)
         {
-            if (Options != null && Options.Enabled)
+            if (_options is { Enabled: true })
             {
-                cancellationToken.Cancel();
+                CancellationToken.Cancel();
             }
-
             base.OnShutdown(provider);
         }
-
     }
 }
 

@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Security.Principal;
 
 namespace Findx.DependencyInjection
@@ -9,7 +6,7 @@ namespace Findx.DependencyInjection
     /// <summary>
     /// 服务提供者定位器
     /// </summary>
-    public sealed class ServiceLocator
+    public static class ServiceLocator
     {
         /// <summary>
         /// 服务提供器

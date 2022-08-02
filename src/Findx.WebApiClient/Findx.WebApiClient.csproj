@@ -6,6 +6,7 @@
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Description>WebApiClient Http请求接口组件,服务发现、负载均衡、熔断、降级、重试等</Description>
+		<PackageVersion>1.8.0-beta1</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,6 +17,12 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
 		<ProjectReference Include="..\Findx.Discovery\Findx.Discovery.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="Microsoft.AspNetCore.Http.Abstractions">
+	    <HintPath>..\..\..\..\..\..\usr\local\share\dotnet\shared\Microsoft.AspNetCore.App\6.0.6\Microsoft.AspNetCore.Http.Abstractions.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

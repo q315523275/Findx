@@ -1,5 +1,8 @@
 ﻿namespace Findx.Security.Authentication.Cookie
 {
+    /// <summary>
+    /// Cookie认证配置
+    /// </summary>
     public class CookieOptions
     {
         /// <summary>

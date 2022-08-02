@@ -21,14 +21,26 @@ namespace Findx.Data
         /// 获取指定库工作单元
         /// </summary>
         /// <param name="dbPrimary"></param>
+        /// <param name="enableTransaction">是否启用事务</param>
         /// <returns></returns>
-        public IUnitOfWork GetConnUnitOfWork(string dbPrimary)
+        public IUnitOfWork GetConnUnitOfWork(string dbPrimary = default, bool enableTransaction = false)
         {
-            IUnitOfWork unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary);
-            if (unitOfWork != null) return unitOfWork;
+            var unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary ?? "default_0");
+            if (unitOfWork != null)
+            {
+                if (enableTransaction)
+                {
+                    unitOfWork.EnableTransaction();
+                }
+                return unitOfWork;
+            }
 
             unitOfWork = CreateConnUnitOfWork(dbPrimary);
-            _scopedDictionary.SetConnUnitOfWork(dbPrimary, unitOfWork);
+            _scopedDictionary.SetConnUnitOfWork(dbPrimary ?? "default_0", unitOfWork);
+            if (enableTransaction)
+            {
+                unitOfWork.EnableTransaction();
+            }
 
             return unitOfWork;
         }
@@ -38,6 +50,6 @@ namespace Findx.Data
         /// </summary>
         /// <param name="dbPrimary"></param>
         /// <returns></returns>
-        public abstract IUnitOfWork CreateConnUnitOfWork(string dbPrimary);
+        protected abstract IUnitOfWork CreateConnUnitOfWork(string dbPrimary);
     }
 }

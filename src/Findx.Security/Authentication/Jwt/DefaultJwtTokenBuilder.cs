@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
+
 namespace Findx.Security.Authentication.Jwt
 {
     /// <summary>
@@ -35,16 +36,19 @@ namespace Findx.Security.Authentication.Jwt
             Check.NotNull(jwtOption, nameof(jwtOption));
             Check.NotNull(jwtOption.Secret, nameof(jwtOption.Secret));
 
-            var clientId = payload.ContainsKey(ClaimTypes.ClientId) ? payload[ClaimTypes.ClientId] : Guid.NewGuid().ToString();
-            var clientType = payload.ContainsKey(ClaimTypes.ClientType) ? payload[ClaimTypes.ClientType] : "admin";
+            // 客户端信息
+            // var clientId = payload.ContainsKey(ClaimTypes.ClientId) ? payload[ClaimTypes.ClientId] : Guid.NewGuid().ToString();
+            // var clientType = payload.ContainsKey(ClaimTypes.ClientType) ? payload[ClaimTypes.ClientType] : "admin";
 
             if (!payload.ContainsKey(ClaimTypes.UserId))
                 throw new ArgumentException("不存在用户标识");
 
             var claims = Helper.ToClaims(payload);
 
+            // 不支持刷新
             // 生成刷新令牌
-            var (refreshToken, refreshExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.RefreshToken);
+            // var (refreshToken, refreshExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.RefreshToken);
+            
             // 生成访问令牌
             var (token, accessExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.AccessToken);
 
@@ -52,12 +56,9 @@ namespace Findx.Security.Authentication.Jwt
             {
                 AccessToken = token,
                 AccessTokenUtcExpires = accessExpires.ToJsGetTime().To<long>(),
-                RefreshToken = refreshToken,
-                RefreshUtcExpires = refreshExpires.ToJsGetTime().To<long>()
+                // RefreshToken = refreshToken,
+                // RefreshUtcExpires = refreshExpires.ToJsGetTime().To<long>()
             };
-            // 状态存储
-
-
             return Task.FromResult(accessToken);
         }
     }

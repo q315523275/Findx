@@ -5,7 +5,7 @@ namespace Findx.Security.Authorization
     /// <summary>
     /// 权限授权配置信息
     /// </summary>
-    public class PermissionRequirement : IAuthorizationRequirement
+    public class FunctionRequirement : IAuthorizationRequirement
     {
         /// <summary>
         /// 授权策略名称

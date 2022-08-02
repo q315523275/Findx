@@ -12,7 +12,7 @@ namespace Findx.SqlSugar
             _sqlSugar = sqlSugarClient;
         }
 
-        public override IUnitOfWork CreateConnUnitOfWork(string dbPrimary)
+        protected override IUnitOfWork CreateConnUnitOfWork(string dbPrimary)
         {
             var provider = _sqlSugar.GetConnection(dbPrimary);
             Check.NotNull(provider, nameof(provider));

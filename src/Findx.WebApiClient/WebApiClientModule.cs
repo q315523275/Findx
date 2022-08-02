@@ -7,15 +7,30 @@ using System.ComponentModel;
 
 namespace Findx.WebApiClient
 {
+    /// <summary>
+    /// Findx-WebApiClient模块
+    /// </summary>
     [Description("Findx-WebApiClient模块")]
     public class WebApiClientModule : FindxModule
     {
+        /// <summary>
+        /// 模块等级
+        /// </summary>
         public override ModuleLevel Level => ModuleLevel.Application;
+        
+        /// <summary>
+        /// 模块排序
+        /// </summary>
         public override int Order => 30;
 
+        /// <summary>
+        /// 模块配置服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            IConfiguration configuration = services.GetConfiguration();
+            var configuration = services.GetConfiguration();
 
             var webApiFinder = services.GetOrAddTypeFinder<IWebApiFinder>(assemblyFinder => new WebApiFinder(assemblyFinder));
             var types = webApiFinder.FindAll();

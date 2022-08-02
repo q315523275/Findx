@@ -148,6 +148,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 
             var roleRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserRoleInfo>>();
             var menuRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysRoleMenuInfo>>();
+            var appRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysAppInfo>>();
 
             var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, selectExpression: x => new RoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }).DistinctBy(x => x.Id);
             var roleIds = roles.Select(x => x.Id);
@@ -155,9 +156,13 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, selectExpression: x => new MenuDto { MenuId = x.MenuId })
                                : new List<MenuDto>();
 
+            var appCodes = menus.Select(x => x.ApplicationCode).Distinct();
+            var appList = appRepo.Select(x => appCodes.Contains(x.Code), x => new AppDto());
+
             var result = userInfo.MapTo<UserAuthDto>();
             result.Roles = roles;
             result.Authorities = menus.DistinctBy(x => x.MenuId).OrderBy(x => x.Sort);
+            result.Apps = appList;
 
             return CommonResult.Success(result);
         }

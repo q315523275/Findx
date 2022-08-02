@@ -39,8 +39,6 @@ namespace Findx.AspNetCore.Mvc.Middlewares
             _exceptionNotifier = exceptionNotifier;
         }
 
-
-
         /// <summary>
         /// 执行中间件拦截逻辑
         /// </summary>

@@ -12,6 +12,16 @@ namespace Findx.Module.EleAdmin.DTO
 		/// 编号
 		/// </summary>
 		public Guid Id { get; set; } = Guid.Empty;
+		
+		/// <summary>
+		/// 应用编号
+		/// </summary>
+		public string ApplicationCode { get; set; }
+		
+		/// <summary>
+		/// 应用名称
+		/// </summary>
+		public string ApplicationName { get; set; }
 
 		/// <summary>
 		/// 角色名称

@@ -30,7 +30,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                                             .AndIF(!request.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(request.Title))
                                             .AndIF(!request.Path.IsNullOrWhiteSpace(), x => x.Path.Contains(request.Path))
                                             .AndIF(request.ParentId.HasValue , x => x.ParentId == request.ParentId)
-                                            .AndIF(!request.Authority.IsNullOrWhiteSpace(), x => x.Authority.Contains(request.Authority));
+                                            .AndIF(!request.Authority.IsNullOrWhiteSpace(), x => x.Authority.Contains(request.Authority))
+                                            .AndIF(!request.ApplicationCode.IsNullOrWhiteSpace(), x => x.ApplicationCode == request.ApplicationCode);
             return whereExp;
         }
 

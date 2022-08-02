@@ -8,15 +8,25 @@ using System.Threading;
 
 namespace Findx.Security
 {
+    /// <summary>
+    /// 当前用户
+    /// </summary>
     public class CurrentUser : ICurrentUser, ITransientDependency
     {
         private readonly IPrincipal _principal;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="principal"></param>
         public CurrentUser(IPrincipal principal)
         {
             _principal = principal;
         }
 
+        /// <summary>
+        /// 是否认证通过
+        /// </summary>
         public bool IsAuthenticated => _principal?.Identity?.IsAuthenticated ?? false;
 
         public string UserId => _principal?.Identity?.GetUserId();

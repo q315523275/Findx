@@ -15,6 +15,16 @@ namespace Findx.Module.EleAdmin.Models
 		/// </summary>
 		[Column(IsPrimary = true, IsIdentity = true)]
 		public override Guid Id { get; set; }
+		
+		/// <summary>
+		/// 应用编号
+		/// </summary>
+		public string ApplicationCode { get; set; }
+		
+		/// <summary>
+		/// 应用名称
+		/// </summary>
+		public string ApplicationName { get; set; }
 
 		/// <summary>
 		/// 角色名称

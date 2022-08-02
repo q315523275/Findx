@@ -16,6 +16,13 @@ namespace Findx.SqlSugar
             _provider = provider;
         }
 
+        public bool HasCommitted { get; }
+        public void EnableTransaction()
+        {
+            
+        }
+
+        public bool IsEnabledTransaction { get; }
         public DbConnection Connection { get { return (DbConnection)_provider.Ado.Connection; } }
 
         public DbTransaction Transaction

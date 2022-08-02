@@ -6,6 +6,9 @@ using System.Security.Claims;
 using System.Security.Principal;
 namespace Findx.Security
 {
+    /// <summary>
+    /// 身份标识 - 扩展
+    /// </summary>
     public static class ClaimsIdentityExtensions
     {
         /// <summary>
@@ -14,11 +17,7 @@ namespace Findx.Security
         public static Claim GetClaimFirstOrDefault(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return null;
-            }
-            return claimsIdentity.FindFirst(type);
+            return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(type);
         }
 
         /// <summary>
@@ -27,11 +26,7 @@ namespace Findx.Security
         public static string GetClaimValueFirstOrDefault(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return null;
-            }
-            return claimsIdentity.FindFirst(type)?.Value;
+            return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(type)?.Value;
         }
 
         /// <summary>
@@ -40,11 +35,7 @@ namespace Findx.Security
         public static IEnumerable<Claim> GetClaims(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return new Claim[0];
-            }
-            return claimsIdentity.Claims.Where(m => m.Type == type);
+            return identity is not ClaimsIdentity claimsIdentity ? Array.Empty<Claim>() : claimsIdentity.Claims.Where(m => m.Type == type);
         }
 
         /// <summary>
@@ -53,11 +44,7 @@ namespace Findx.Security
         public static IEnumerable<string> GetClaimValues(this IIdentity identity, string type)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return null;
-            }
-            return claimsIdentity.Claims.Where(m => m.Type == type).Select(m => m.Value);
+            return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.Claims.Where(m => m.Type == type).Select(m => m.Value);
         }
 
         /// <summary>
@@ -70,12 +57,8 @@ namespace Findx.Security
             {
                 return default;
             }
-            string value = claimsIdentity.FindFirst(ClaimTypes.UserId)?.Value;
-            if (value == null)
-            {
-                return default;
-            }
-            return value.CastTo<T>();
+            var value = claimsIdentity.FindFirst(ClaimTypes.UserId)?.Value;
+            return value == null ? default : value.CastTo<T>();
         }
 
         /// <summary>
@@ -84,11 +67,7 @@ namespace Findx.Security
         public static string GetUserId(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return null;
-            }
-            return claimsIdentity.FindFirst(ClaimTypes.UserId)?.Value;
+            return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.UserId)?.Value;
         }
 
         /// <summary>
@@ -97,11 +76,7 @@ namespace Findx.Security
         public static string GetUserName(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return null;
-            }
-            return claimsIdentity.FindFirst(ClaimTypes.UserName)?.Value;
+            return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.UserName)?.Value;
         }
 
         /// <summary>
@@ -110,11 +85,7 @@ namespace Findx.Security
         public static string GetEmail(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return null;
-            }
-            return claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
+            return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
         }
 
         /// <summary>
@@ -123,11 +94,7 @@ namespace Findx.Security
         public static string GetNickname(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return null;
-            }
-            return claimsIdentity.FindFirst(ClaimTypes.Nickname)?.Value;
+            return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.Nickname)?.Value;
         }
 
         /// <summary>
@@ -136,11 +103,7 @@ namespace Findx.Security
         public static string GetTenantId(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (identity is not ClaimsIdentity claimsIdentity)
-            {
-                return null;
-            }
-            return claimsIdentity.FindFirst(ClaimTypes.TenantId)?.Value;
+            return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.TenantId)?.Value;
         }
 
         /// <summary>
@@ -149,11 +112,11 @@ namespace Findx.Security
         public static void RemoveClaim(this IIdentity identity, string claimType)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
                 return;
             }
-            Claim claim = claimsIdentity.FindFirst(claimType);
+            var claim = claimsIdentity.FindFirst(claimType);
             if (claim == null)
             {
                 return;
@@ -167,15 +130,14 @@ namespace Findx.Security
         public static IEnumerable<string> GetRoles(this IIdentity identity)
         {
             Check.NotNull(identity, nameof(identity));
-            if (!(identity is ClaimsIdentity claimsIdentity))
+            if (identity is not ClaimsIdentity claimsIdentity)
             {
-                return new string[0];
+                return Array.Empty<string>();
             }
             // 不知道什么原因，netcore认证组建会自动将自定义role key转换为 System.Security.Claims.ClaimTypes.Role key
             return claimsIdentity.FindAll(System.Security.Claims.ClaimTypes.Role).SelectMany(m =>
             {
-                string[] roles = m.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                return roles;
+                return m.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
             });
         }
     }

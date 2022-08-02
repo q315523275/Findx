@@ -23,18 +23,22 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// 业务标识
         /// </summary>
         public string Key { get; set; }
+        
         /// <summary>
         /// 限定请求时长
         /// </summary>
         public string Period { get; set; } = "30s";
+        
         /// <summary>
         /// 限定时长内请求次数
         /// </summary>
         public int Limit { get; set; } = 30;
+        
         /// <summary>
         /// 限速类型
         /// </summary>
-        public RateLimitType Type { get; set; } = RateLimitType.IP;
+        public RateLimitType Type { get; set; } = RateLimitType.Ip;
+        
         /// <summary>
         /// 执行
         /// </summary>
@@ -47,15 +51,14 @@ namespace Findx.AspNetCore.Mvc.Filters
 
             // 本地缓存相当于是字典，存储使用均为同一个对象
             // 如果使用分布式缓存，需做好计数器
-
-            ICancellationTokenProvider cancellationTokenProvider = context.HttpContext.RequestServices.GetService<ICancellationTokenProvider>();
-            ICache cache = context.HttpContext.RequestServices.GetService<ICacheProvider>().Get(CacheType.DefaultMemory);
-            string rateLimitKey = GetRateLimitKey(context);
-            AtomicInteger atomic = await cache.GetAsync<AtomicInteger>(rateLimitKey, cancellationTokenProvider.Token);
+            
+            var cache = context.HttpContext.RequestServices.GetRequiredService<ICacheProvider>().Get(CacheType.DefaultMemory);
+            var rateLimitKey = GetRateLimitKey(context);
+            var atomic = await cache.GetAsync<AtomicInteger>(rateLimitKey);
             if (atomic == default)
             {
                 atomic = new AtomicInteger(Limit);
-                await cache.AddAsync(rateLimitKey, atomic, expiration: Time.ToTimeSpan(Period), token: cancellationTokenProvider.Token);
+                await cache.AddAsync(rateLimitKey, atomic, expiration: Time.ToTimeSpan(Period));
             }
             if (atomic.DecrementAndGet() < 0)
             {
@@ -72,10 +75,10 @@ namespace Findx.AspNetCore.Mvc.Filters
 
             var clientId = string.Empty;
 
-            if (Type == RateLimitType.User && currentUser.Identity.IsAuthenticated)
+            if (currentUser.Identity != null && Type == RateLimitType.User && currentUser.Identity.IsAuthenticated)
                 clientId = $"{currentUser.Identity.GetUserId()}_";
 
-            if (Type == RateLimitType.IP)
+            if (Type == RateLimitType.Ip)
                 clientId = $"{context.HttpContext.GetClientIp()}_";
 
             return Key.IsNullOrWhiteSpace() ? $"RL:{clientId}{context.HttpContext.Request.Path}" : $"RL:{clientId}{Key}";
@@ -94,7 +97,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// <summary>
         /// IP级别限速,同一IP只能在指定速率规则进行请求
         /// </summary>
-        IP = 1,
+        Ip = 1,
 
         /// <summary>
         /// 全局级别限速，全局只能在指定速率规则进行请求

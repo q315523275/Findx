@@ -31,17 +31,17 @@ namespace Findx.WebHost.Controllers
         /// <summary>
         /// 权限数据查询示例接口
         /// </summary>
-        /// <param name="store"></param>
+        /// <param name="actionProvider"></param>
         /// <returns></returns>
         [HttpGet("/permission/action")]
-        public async Task<CommonResult> ActionList([FromServices] IActionDescriptorCollectionProvider actionProvider)
+        public CommonResult ActionList([FromServices] IActionDescriptorCollectionProvider actionProvider)
         {
-            var actionDescs = actionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>().Select(x => new
+            var actionDesc = actionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>().Select(x => new
             {
                 ControllerName = x.ControllerName,
                 ActionName = x.ActionName,
                 DisplayName = x.DisplayName,
-                RouteTemplate = x.AttributeRouteInfo.Template,
+                RouteTemplate = x.AttributeRouteInfo?.Template,
                 ActionRoles = x.MethodInfo.GetAttribute<AuthorizeAttribute>()?.Roles,
                 ControllerRoles = x.ControllerTypeInfo.GetAttribute<AuthorizeAttribute>()?.Roles,          
                 ActionId = x.Id,
@@ -51,7 +51,7 @@ namespace Findx.WebHost.Controllers
                     TypeName = z.ParameterType.Name,
                 })
             });
-            return CommonResult.Success(actionDescs);
+            return CommonResult.Success(actionDesc);
         }
 
         /// <summary>
@@ -60,8 +60,8 @@ namespace Findx.WebHost.Controllers
         /// <param name="store"></param>
         /// <returns></returns>
         [HttpGet("verify")]
-        [Authorize(Policy = PermissionRequirement.Policy, Roles = "admin")]
-        public async Task<CommonResult> VerifyPermission([FromServices] IFunctionStore<MvcFunction> store)
+        [Authorize(Policy = FunctionRequirement.Policy, Roles = "admin")]
+        public CommonResult VerifyPermission([FromServices] IFunctionStore<MvcFunction> store)
         {
             return CommonResult.Success(store.GetFromDatabase());
         }

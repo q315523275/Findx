@@ -9,6 +9,21 @@ namespace Findx.Data
     public interface IUnitOfWork
     {
         /// <summary>
+        /// 获取 是否已提交
+        /// </summary>
+        bool HasCommitted { get; }
+        
+        /// <summary>
+        /// 启用事务，事务代码写在 UnitOfWork.EnableTransaction() 与 UnitOfWork.Commit() 之间
+        /// </summary>
+        void EnableTransaction();
+
+        /// <summary>
+        /// 获取 是否启用事务
+        /// </summary>
+        bool IsEnabledTransaction { get; }
+        
+        /// <summary>
 		/// 数据库连接
 		/// </summary>
 		DbConnection Connection { get; }

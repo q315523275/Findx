@@ -8,13 +8,27 @@ using System.Linq;
 
 namespace Findx.DependencyInjection
 {
+    /// <summary>
+    /// Findx-自动注入模块
+    /// </summary>
     [Description("Findx-自动注入模块")]
     public class DependencyModule : FindxModule
     {
-        public override ModuleLevel Level => ModuleLevel.Application;
+        /// <summary>
+        /// 等级
+        /// </summary>
+        public override ModuleLevel Level => ModuleLevel.Framework;
 
-        public override int Order => 1;
+        /// <summary>
+        /// 排序
+        /// </summary>
+        public override int Order => 10;
 
+        /// <summary>
+        /// 配置模块服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             // 查找所有自动注册的服务实现类型
@@ -29,6 +43,10 @@ namespace Findx.DependencyInjection
             return services;
         }
 
+        /// <summary>
+        /// 启用模块
+        /// </summary>
+        /// <param name="provider"></param>
         public override void UseModule(IServiceProvider provider)
         {
             ServiceLocator.ServiceProvider = provider;
@@ -36,6 +54,11 @@ namespace Findx.DependencyInjection
             base.UseModule(provider);
         }
 
+        /// <summary>
+        /// 配置服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="implementationType"></param>
         protected virtual void ConfigureServices(IServiceCollection services, Type implementationType)
         {
             if (implementationType.IsAbstract || implementationType.IsInterface)
@@ -103,6 +126,11 @@ namespace Findx.DependencyInjection
             }
         }
 
+        /// <summary>
+        /// 获取服务生命周期
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         protected virtual ServiceLifetime? GetLifetimeOrNull(Type type)
         {
             DependencyAttribute attribute = type.GetAttribute<DependencyAttribute>();
@@ -129,6 +157,11 @@ namespace Findx.DependencyInjection
             return null;
         }
 
+        /// <summary>
+        /// 获取依赖接口类型集合
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         protected virtual Type[] GetImplementedInterfaces(Type type)
         {
             Type[] exceptInterfaces = { typeof(IDisposable) };
@@ -144,6 +177,12 @@ namespace Findx.DependencyInjection
             return interfaceTypes;
         }
 
+        /// <summary>
+        /// 添加单例服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="descriptor"></param>
+        /// <param name="dependencyAttribute"></param>
         private static void AddSingleService(IServiceCollection services, ServiceDescriptor descriptor, DependencyAttribute dependencyAttribute)
         {
             if (dependencyAttribute?.ReplaceServices == true)

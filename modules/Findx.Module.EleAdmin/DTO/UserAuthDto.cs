@@ -78,7 +78,12 @@ namespace Findx.Module.EleAdmin.DTO
         /// 权限集合
         /// </summary>
 		public IEnumerable<MenuDto> Authorities { get; set; }
-	}
+
+		/// <summary>
+        /// 应用集合
+        /// </summary>
+		public IEnumerable<AppDto> Apps { get; set; }
+    }
 
 	/// <summary>
 	/// ；角色模型
@@ -180,6 +185,11 @@ namespace Findx.Module.EleAdmin.DTO
 		/// 其它路由元信息
 		/// </summary>
 		public string Meta { get; set; }
-	}
+
+        /// <summary>
+        /// 应用名称
+        /// </summary>
+        public string ApplicationCode { get; set; }
+    }
 }
 

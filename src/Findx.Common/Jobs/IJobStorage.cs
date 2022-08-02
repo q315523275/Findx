@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Jobs
 {
-	/// <summary>
+    /// <summary>
     /// 定义一个工作存储器
     /// </summary>
-	public interface IJobStorage
+    public interface IJobStorage
 	{
         /// <summary>
         /// 存储任务信息
@@ -26,7 +24,7 @@ namespace Findx.Jobs
         /// <summary>
         /// 更新任务信息
         /// </summary>
-        /// <param name="taskInfo"></param>
+        /// <param name="detail"></param>
         /// <returns></returns>
         Task UpdateAsync(JobInfo detail);
 

@@ -6,25 +6,37 @@ using Microsoft.Extensions.Logging;
 
 namespace Findx.Jobs.Local
 {
+    /// <summary>
+    /// 内存工作任务监听
+    /// </summary>
     public class InMemoryJobListener : IJobListener
     {
         private readonly ILogger<InMemoryJobListener> _logger;
         private readonly JobTypeDictionary _dict;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="dict"></param>
         public InMemoryJobListener(ILogger<InMemoryJobListener> logger, JobTypeDictionary dict)
         {
             _logger = logger;
             _dict = dict;
         }
 
+        /// <summary>
+        /// 作业任务执行
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="cancellationToken"></param>
         public async Task JobToRunAsync([NotNull] IJobContext context, CancellationToken cancellationToken = default)
         {
             if (!_dict.TryGetValue(context.FullName, out var jobType))
                 return;
 
-            // 当前为内存版本
-            // 直接执行任务
-
+            // TODO 当前为内存版本,直接执行任务
+            
             // 分布式情况
             // 任务节点
             // 作业监听器决定作业是推队列、推线程池、直接执行

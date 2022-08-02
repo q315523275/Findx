@@ -5,7 +5,7 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
-    <PackageVersion>1.0.5</PackageVersion>
+    <PackageVersion>1.0.6</PackageVersion>
   </PropertyGroup>
 
 
@@ -35,6 +35,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
+    <ProjectReference Include="..\..\src\Findx.MailKit\Findx.MailKit.csproj" />
     <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
   </ItemGroup>
 </Project>

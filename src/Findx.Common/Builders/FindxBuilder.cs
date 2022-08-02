@@ -8,11 +8,18 @@ using System.Linq;
 
 namespace Findx.Builders
 {
+    /// <summary>
+    /// Findx框架构造者
+    /// </summary>
     public class FindxBuilder : IFindxBuilder
     {
         private readonly IEnumerable<FindxModule> _sourceModules;
         private List<FindxModule> _modules;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="services"></param>
         public FindxBuilder(IServiceCollection services)
         {
             Services = services;
@@ -22,30 +29,55 @@ namespace Findx.Builders
             _modules = new List<FindxModule>();
         }
 
+        /// <summary>
+        /// 服务
+        /// </summary>
         public IServiceCollection Services { get; }
 
+        /// <summary>
+        /// 配置
+        /// </summary>
         public IConfiguration Configuration { get; }
 
+        /// <summary>
+        /// 模块集合
+        /// </summary>
         public IEnumerable<FindxModule> Modules => _modules;
 
+        /// <summary>
+        /// 添加泛型模块
+        /// </summary>
+        /// <typeparam name="TModule"></typeparam>
+        /// <returns></returns>
         public IFindxBuilder AddModule<TModule>() where TModule : FindxModule
         {
             Type type = typeof(TModule);
             return AddModule(type);
         }
 
+        /// <summary>
+        /// 添加全部模块
+        /// </summary>
+        /// <param name="exceptModuleTypes">不加载模块</param>
+        /// <returns></returns>
         public IFindxBuilder AddModules(params Type[] exceptModuleTypes)
         {
             var source = _sourceModules;
             var exceptModules = source.Where(m => exceptModuleTypes.Contains(m.GetType()));
             source = source.Except(exceptModules);
-            foreach (FindxModule module in source)
+            foreach (var module in source)
             {
                 AddModule(module.GetType());
             }
             return this;
         }
 
+        /// <summary>
+        /// 添加单个模块
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         private IFindxBuilder AddModule(Type type)
         {
             if (!type.IsBaseOn(typeof(FindxModule)))
@@ -87,18 +119,24 @@ namespace Findx.Builders
             {
                 var moduleType = tmpModule.GetType();
                 var moduleName = moduleType.GetDescription();
-                var tmp = Services;
+                var tmpCount = Services.Count;
                 AddModule(Services, tmpModule);
-                Services.LogInformation($"模块《{moduleName}》的服务添加完毕,添加了 {Services.Count - tmp.Count()} 个服务", logName);
+                Services.LogInformation($"模块《{moduleName}》的服务添加完毕,添加了 {Services.Count - tmpCount} 个服务", logName);
             }
 
             return this;
         }
 
+        /// <summary>
+        /// 添加模块配置服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="module"></param>
+        /// <returns></returns>
         private static IServiceCollection AddModule(IServiceCollection services, FindxModule module)
         {
-            Type type = module.GetType();
-            Type serviceType = typeof(FindxModule);
+            var type = module.GetType();
+            var serviceType = typeof(FindxModule);
 
             if (type.BaseType?.IsAbstract == false)
             {
@@ -111,18 +149,24 @@ namespace Findx.Builders
                 }
             }
 
-            if (!services.Any(m => m.Lifetime == ServiceLifetime.Singleton && m.ServiceType == serviceType && m.ImplementationInstance?.GetType() == type))
-            {
-                services.AddSingleton(typeof(FindxModule), module);
-                module.ConfigureServices(services);
-            }
+            if (services.Any(m =>
+                    m.Lifetime == ServiceLifetime.Singleton && m.ServiceType == serviceType &&
+                    m.ImplementationInstance?.GetType() == type)) return services;
+            
+            services.AddSingleton(typeof(FindxModule), module);
+            module.ConfigureServices(services);
 
             return services;
         }
 
+        /// <summary>
+        /// 获取应用程序所有模块
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         private static IEnumerable<FindxModule> GetAllModules(IServiceCollection services)
         {
-            IFindxModuleTypeFinder moduleTypeFinder = services.GetOrAddTypeFinder<IFindxModuleTypeFinder>(assemblyFinder => new FindxModuleTypeFinder(assemblyFinder));
+            var moduleTypeFinder = services.GetOrAddTypeFinder<IFindxModuleTypeFinder>(assemblyFinder => new FindxModuleTypeFinder(assemblyFinder));
             var moduleTypes = moduleTypeFinder.FindAll();
             return moduleTypes.Select(m => (FindxModule)Activator.CreateInstance(m))
                               .OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName);

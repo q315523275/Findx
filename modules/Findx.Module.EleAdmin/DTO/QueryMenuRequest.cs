@@ -27,6 +27,11 @@ namespace Findx.Module.EleAdmin.DTO
 		/// 父级id
 		/// </summary>
 		public Guid? ParentId { set; get; }
-	}
+
+        /// <summary>
+        /// 应用名称
+        /// </summary>
+        public string ApplicationCode { get; set; }
+    }
 }
 

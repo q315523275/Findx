@@ -17,18 +17,17 @@ namespace Findx.AspNetCore.Mvc.Filters
     /// </summary>
     public class FindxGlobalAttribute : IActionFilter
     {
-        public void OnActionExecuted(ActionExecutedContext context)
-        {
-
-        }
-
+        /// <summary>
+        /// Action执行前
+        /// </summary>
+        /// <param name="context"></param>
         public void OnActionExecuting(ActionExecutingContext context)
         {
             // 模型判断
             if (!context.ModelState.IsValid)
             {
                 var errors = context.ModelState
-                                    .Where(e => e.Value.Errors.Count > 0)
+                                    .Where(e => e.Value != null && e.Value.Errors.Any())
                                     .Select(e => new ErrorMember() { ErrorMemberName = e.Key, ErrorMessage = e.Value.Errors.First().ErrorMessage });
 
                 context.Result = new JsonResult(CommonResult.Fail("4001", $"参数校验不通过:{string.Join(';', errors.Select(x => $"{ x.ErrorMessage }"))}"));
@@ -36,13 +35,22 @@ namespace Findx.AspNetCore.Mvc.Filters
 
             // 租户赋值
             var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
-            if (currentUser != null && currentUser.IsAuthenticated && !currentUser.TenantId.IsNullOrWhiteSpace())
+            if (currentUser is { IsAuthenticated: true } && !currentUser.TenantId.IsNullOrWhiteSpace())
             {
                 Tenant.TenantId.Value = currentUser.TenantId.CastTo<Guid>();
             }
 
             // 刷新Token
+            // 已迁移组建内置实现
 
+        }
+
+        /// <summary>
+        /// Action执行后
+        /// </summary>
+        /// <param name="context"></param>
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
         }
     }
 }

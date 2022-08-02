@@ -1,12 +1,5 @@
 ﻿using Findx.DependencyInjection;
 using Findx.Extensions;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
@@ -79,34 +72,43 @@ namespace Findx.Messaging
         {
             try
             {
-                while (await channel.Reader.WaitToReadAsync(cancellationToken))
+                //while (await channel.Reader.WaitToReadAsync(cancellationToken))
+                //{
+                //    while (channel.Reader.TryRead(out var message))
+                //    {
+                //        var messageType = message.GetType();
+                //        var handler = (ApplicationEventHandlerWrapper)_eventHandlers.GetOrAdd(messageType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
+                //        try
+                //        {
+                //            using var scope = ServiceLocator.ServiceProvider.CreateScope();
+                //            await handler.Handle(message, scope.ServiceProvider, cancellationToken);
+                //        }
+                //        catch (Exception ex)
+                //        {
+                //            _logger.LogError(ex, $"执行应用事件“{messageType.Name}”的处理器“{handler.GetType()}”时引发异常：{ex.Message}");
+                //        }
+                //    }
+                //}
+                // 异步流方式
+                await foreach (var message in channel.Reader.ReadAllAsync(cancellationToken))
                 {
-                    while (channel.Reader.TryRead(out var message))
+                    var messageType = message.GetType();
+                    var handler = (ApplicationEventHandlerWrapper)_eventHandlers.GetOrAdd(messageType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
+                    try
                     {
-                        try
-                        {
-                            var messageType = message.GetType();
-
-                            using (var scope = ServiceLocator.ServiceProvider.CreateScope())
-                            {
-                                var handler = (ApplicationEventHandlerWrapper)_eventHandlers.GetOrAdd(messageType, t => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
-                                await handler.Handle(message, scope.ServiceProvider, cancellationToken);
-                            }
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            //expected
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.LogError(e, $"An exception occurred when invoke notify subscriber");
-                        }
+                        using var scope = ServiceLocator.ServiceProvider.CreateScope();
+                        await handler.Handle(message, scope.ServiceProvider, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"执行应用事件“{messageType.Name}”的处理器“{handler.GetType()}”时引发异常：{ex.Message}");
                     }
                 }
             }
-            catch (OperationCanceledException)
+            catch (Exception ex)
             {
-                // expected
+                // 通道关闭时，再读取信息会报ChannelClosedException错误
+                _logger.LogError(ex, $"应用事件监听时引发异常：{ex.FormatMessage()}");
             }
         }
     }

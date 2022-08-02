@@ -14,23 +14,33 @@ using System.Security.Principal;
 
 namespace Findx.AspNetCore
 {
+    /// <summary>
+    /// Findx-AspNetCore模块
+    /// </summary>
     [Description("Findx-AspNetCore模块")]
     public class AspNetCoreModule : FindxModule
     {
+        /// <summary>
+        /// 等级
+        /// </summary>
         public override ModuleLevel Level => ModuleLevel.Application;
 
+        /// <summary>
+        /// 排序
+        /// </summary>
         public override int Order => 60;
 
+        /// <summary>
+        /// 配置服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services.AddMemoryCache();
 
             services.AddHttpContextAccessor();
-            services.TryAddTransient<IPrincipal>(provider =>
-            {
-                IHttpContextAccessor accessor = provider.GetService<IHttpContextAccessor>();
-                return accessor?.HttpContext?.User;
-            });
+            services.TryAddTransient<IPrincipal>(provider => provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
             services.TryAddSingleton<ICurrentUser, CurrentUser>();
 
             services.TryAddSingleton<IScopedServiceResolver, HttpContextServiceScopeResolver>();

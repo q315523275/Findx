@@ -17,28 +17,20 @@
     <None Remove="Findx.NLog" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Findx.Swagger" Version="1.7.1" />
-    <PackageReference Include="Findx.ImageSharp" Version="1.7.3" />
-    <PackageReference Include="Findx.Mapster" Version="1.7.1" />
-    <PackageReference Include="Findx.NLog" Version="1.5.1" />
-    <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.664" />
+    <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.665" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Findx.ImageSharp\Findx.ImageSharp.csproj" />
+    <ProjectReference Include="..\..\src\Findx.NLog\Findx.NLog.csproj" />
+    <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
     <ProjectReference Include="..\Findx.Module.EleAdmin\Findx.Module.EleAdmin.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\Findx.Mapster\Findx.Mapster.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="storage\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Remove="nlog.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="nlog.config">
-      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </None>
   </ItemGroup>
 </Project>

@@ -20,6 +20,16 @@ namespace Findx.Module.EleAdmin.Models
 		/// 上级id, 0是顶级
 		/// </summary>
 		public Guid ParentId { get; set; }
+		
+		/// <summary>
+		/// 应用编号
+		/// </summary>
+		public string ApplicationCode { get; set; }
+		
+		/// <summary>
+		/// 应用名称
+		/// </summary>
+		public string ApplicationName { get; set; }
 
 		/// <summary>
 		/// 菜单名称

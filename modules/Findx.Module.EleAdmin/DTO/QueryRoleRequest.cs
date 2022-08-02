@@ -22,6 +22,11 @@ namespace Findx.Module.EleAdmin.DTO
 		/// 备注
 		/// </summary>
 		public string Comments { set; get; }
+		
+		/// <summary>
+		/// 应用名称
+		/// </summary>
+		public string ApplicationCode { get; set; }
 	}
 }
 

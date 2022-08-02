@@ -7,7 +7,7 @@ namespace Findx.Security.Authorization
     /// <summary>
     /// 授权处理器
     /// </summary>
-    public sealed class PermissionRequirementHandler : AuthorizationHandler<PermissionRequirement>
+    public sealed class FunctionRequirementHandler : AuthorizationHandler<FunctionRequirement>
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IFunctionAuthorization _functionAuthorization;
@@ -17,7 +17,7 @@ namespace Findx.Security.Authorization
         /// </summary>
         /// <param name="httpContextAccessor"></param>
         /// <param name="functionAuthorization"></param>
-        public PermissionRequirementHandler(IHttpContextAccessor httpContextAccessor, IFunctionAuthorization functionAuthorization)
+        public FunctionRequirementHandler(IHttpContextAccessor httpContextAccessor, IFunctionAuthorization functionAuthorization)
         {
             _httpContextAccessor = httpContextAccessor;
             _functionAuthorization = functionAuthorization;
@@ -29,7 +29,7 @@ namespace Findx.Security.Authorization
         /// <param name="context"></param>
         /// <param name="requirement"></param>
         /// <returns></returns>
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FunctionRequirement requirement)
         {
             RouteEndpoint endpoint = null;
             HttpContext httpContext = null;

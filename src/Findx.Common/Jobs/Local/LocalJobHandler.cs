@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Findx.Extensions;
 using Findx.Messaging;
 
@@ -19,7 +16,7 @@ namespace Findx.Jobs.Local
             _listener = listener;
         }
 
-        public Task HandleAsync(JobInfo message, CancellationToken cancellationToken = default)
+        public async Task HandleAsync(JobInfo message, CancellationToken cancellationToken = default)
         {
             Check.NotNull(message, nameof(message));
 
@@ -29,7 +26,12 @@ namespace Findx.Jobs.Local
                 JobName = message.Name
             };
 
-            return _listener.JobToRunAsync(context, cancellationToken);
+            await _listener.JobToRunAsync(context, cancellationToken);
+
+            // TODO 进程内存版本可以使用，分布式需改为执行节点上报
+            // 固定间隔时间任务，上报执行结果
+            if (message.FixedDelay > 0)
+                message.Increment();
         }
     }
 }

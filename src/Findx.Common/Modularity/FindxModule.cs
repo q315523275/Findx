@@ -1,8 +1,5 @@
 ﻿using Findx.Extensions;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+
 namespace Findx.Modularity
 {
     /// <summary>
@@ -10,6 +7,9 @@ namespace Findx.Modularity
     /// </summary>
     public abstract class FindxModule
     {
+        /// <summary>
+        /// 获取或设置 模块等级
+        /// </summary>
         public virtual ModuleLevel Level => ModuleLevel.Business;
 
         /// <summary>
@@ -64,9 +64,9 @@ namespace Findx.Modularity
                 return Type.EmptyTypes;
             }
             List<Type> dependTypes = new();
-            foreach (DependsOnModulesAttribute dependAttr in dependAttrs)
+            foreach (var dependAttr in dependAttrs)
             {
-                Type[] packTypes = dependAttr.DependedModuleTypes;
+                var packTypes = dependAttr.DependedModuleTypes;
                 if (packTypes.Length == 0)
                 {
                     continue;

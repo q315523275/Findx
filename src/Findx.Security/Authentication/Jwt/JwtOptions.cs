@@ -2,6 +2,9 @@
 
 namespace Findx.Security.Authentication.Jwt
 {
+    /// <summary>
+    /// Jwt认证配置
+    /// </summary>
     public class JwtOptions : IOptions<JwtOptions>
     {
         /// <summary>
@@ -35,10 +38,18 @@ namespace Findx.Security.Authentication.Jwt
         public bool IsRefreshAbsoluteExpired { get; set; } = true;
 
         /// <summary>
+        /// 获取或设置 开始续期分钟数
+        /// </summary>
+        public double RenewalMinutes { get; set; }
+
+        /// <summary>
         /// 获取或设置 是否启用
         /// </summary>
-        public bool Enabled { get; set; } = false;
+        public bool Enabled { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public JwtOptions Value => this;
     }
 }

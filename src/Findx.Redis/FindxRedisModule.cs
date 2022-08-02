@@ -3,23 +3,35 @@ using Findx.Caching;
 using Findx.Extensions;
 using Findx.Locks;
 using Findx.Modularity;
-using Findx.Redis.StackExchangeRedis;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.Redis
 {
+    /// <summary>
+    /// Findx-Redis缓存模块
+    /// </summary>
 	[Description("Findx-Redis缓存模块")]
 	public class FindxRedisModule : FindxModule
 	{
+        /// <summary>
+        /// 模块等级
+        /// </summary>
         public override ModuleLevel Level => ModuleLevel.Framework;
 
-        public override int Order => 20;
+        /// <summary>
+        /// 模块排序
+        /// </summary>
+        public override int Order => 40;
 
+        /// <summary>
+        /// 配置模块服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             // 配置服务
-            IConfiguration configuration = services.GetConfiguration();
+            var configuration = services.GetConfiguration();
             services.Configure<FindxRedisOptions>(configuration.GetSection("Findx:Redis"));
 
             // redis 连接池

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Collections.Generic;
 namespace Findx.Data
 {
+    /// <summary>
+    /// 作用域词典
+    /// </summary>
     public static class ScopedDictionaryExtensions
     {
         /// <summary>
@@ -11,8 +14,7 @@ namespace Findx.Data
         /// </summary>
         public static IUnitOfWork GetConnUnitOfWork(this ScopedDictionary dict, string connPrimary)
         {
-            string key = $"UnitOfWork_ConnPrimary_{connPrimary}";
-            return dict.TryGetValue<IUnitOfWork>(key, out var uow) ? uow : default;
+            return dict.TryGetValue<IUnitOfWork>($"UnitOfWork_ConnPrimary_{connPrimary}", out var uow) ? uow : default;
         }
 
         /// <summary>
@@ -28,8 +30,7 @@ namespace Findx.Data
         /// </summary>
         public static void SetConnUnitOfWork(this ScopedDictionary dict, string connString, IUnitOfWork unitOfWork)
         {
-            string key = $"UnitOfWork_ConnPrimary_{connString}";
-            dict.TryAdd(key, unitOfWork);
+            dict.TryAdd($"UnitOfWork_ConnPrimary_{connString}", unitOfWork);
         }
     }
 }

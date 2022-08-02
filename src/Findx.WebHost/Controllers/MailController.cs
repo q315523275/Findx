@@ -22,7 +22,6 @@ namespace Findx.WebHost.Controllers
         public async Task<string> EmailSend([FromServices] IEmailSender sender, [Required] string mailAddress, [Required] string subject, [Required] string body)
         {
             await sender.SendAsync(mailAddress, subject, body, isBodyHtml: false);
-
             return "ok";
         }
     }
