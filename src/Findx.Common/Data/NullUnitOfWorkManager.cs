@@ -2,7 +2,7 @@
 {
     internal class NullUnitOfWorkManager : IUnitOfWorkManager
     {
-        public IUnitOfWork GetConnUnitOfWork(string dbPrimary = default, bool enableTransaction = false)
+        public IUnitOfWork GetConnUnitOfWork(bool enableTransaction = false, string dbPrimary = null)
         {
             throw new NotImplementedException();
         }

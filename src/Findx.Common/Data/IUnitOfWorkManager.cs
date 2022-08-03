@@ -11,6 +11,6 @@
         /// <param name="dbPrimary">连接Key</param>
         /// <param name="enableTransaction">是否启用事务</param>
         /// <returns></returns>
-        IUnitOfWork GetConnUnitOfWork(string dbPrimary = default, bool enableTransaction = false);
+        IUnitOfWork GetConnUnitOfWork(bool enableTransaction = false, string dbPrimary = default);
     }
 }

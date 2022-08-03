@@ -22,7 +22,9 @@ namespace Findx.AspNetCore.Mvc.Filters
 		public override void OnActionExecuting(ActionExecutingContext context)
 		{
 			// 初始化工作单元
-			context.HttpContext.RequestServices.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWork(DbKey, true);
+			context.HttpContext.RequestServices.GetService<IUnitOfWorkManager>()
+				?.GetConnUnitOfWork(true, DbKey)
+				?.BeginOrUseTransaction();
 		}
 
 		/// <summary>
@@ -31,7 +33,7 @@ namespace Findx.AspNetCore.Mvc.Filters
 		/// <param name="context"></param>
 		public override void OnActionExecuted(ActionExecutedContext context)
 		{
-		    var unitOfWork = context.HttpContext.RequestServices.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWork(DbKey);
+		    var unitOfWork = context.HttpContext.RequestServices.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWork(false, DbKey);
 
 		    if (context.Result is JsonResult result1)
 			{

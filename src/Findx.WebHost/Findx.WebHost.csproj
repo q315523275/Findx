@@ -15,10 +15,8 @@
 		<ProjectReference Include="..\Findx.ImageSharp\Findx.ImageSharp.csproj" />
 		<ProjectReference Include="..\Findx.MailKit\Findx.MailKit.csproj" />
 		<ProjectReference Include="..\Findx.Mapster\Findx.Mapster.csproj" />
-		<ProjectReference Include="..\Findx.NLog\Findx.NLog.csproj" />
 		<ProjectReference Include="..\Findx.Redis\Findx.Redis.csproj" />
 		<ProjectReference Include="..\Findx.Security\Findx.Security.csproj" />
-		<ProjectReference Include="..\Findx.SqlSugar\Findx.SqlSugar.csproj" />
 		<ProjectReference Include="..\Findx.Swagger\Findx.Swagger.csproj" />
 		<ProjectReference Include="..\Findx.WebApiClient\Findx.WebApiClient.csproj" />
 		<ProjectReference Include="..\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
@@ -41,6 +39,10 @@
 	  <None Remove="EventHandlers\" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="Audit" />
 	  <Folder Include="EventHandlers\" />
+	</ItemGroup>
+	<ItemGroup>
+	  <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.665" />
 	</ItemGroup>
 </Project>

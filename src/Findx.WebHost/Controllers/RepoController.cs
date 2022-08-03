@@ -3,15 +3,16 @@ using Findx.WebHost.Model;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Mvc.Filters;
 
 namespace Findx.WebHost.Controllers
 {
     public class RepoController : Controller
     {
         [HttpGet("/repo/test")]
-        public async Task<string> RepoTest([FromServices] IRepository<TestNewsInfo> repo1, [FromServices] IRepository<TestUserInfo> repo2)
+        public async Task<string> RepoTest([FromServices] IRepository<TestNewsInfo> repo1, [FromServices] IRepository<TestUserInfo> repo2, [FromServices] IUnitOfWorkManager uowManager)
         {
-            var uow = repo1.GetUnitOfWork();
+            var uow =  uowManager.GetConnUnitOfWork(true);
 
             uow.BeginOrUseTransaction();
 

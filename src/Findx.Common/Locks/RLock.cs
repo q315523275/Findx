@@ -1,13 +1,14 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using Findx.DependencyInjection;
 using Findx.ExceptionHandling;
 using Findx.Threading;
-using Microsoft.Extensions.Logging;
 
 namespace Findx.Locks
 {
+    /// <summary>
+    /// 续期锁
+    /// </summary>
 	public class RLock: IAsyncDisposable
 	{
         private readonly object _lockObj = new();
@@ -20,6 +21,15 @@ namespace Findx.Locks
         private int _period;
         private bool _isReleased;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <param name="lockId"></param>
+        /// <param name="lock"></param>
+        /// <param name="timeUntilExpires"></param>
+        /// <param name="autoRenew"></param>
+        /// <param name="period"></param>
         public RLock(string resource, string lockId, ILock @lock, TimeSpan? timeUntilExpires, bool autoRenew = false, int period = 10000)
         {
             _lock = @lock;
@@ -43,23 +53,42 @@ namespace Findx.Locks
             }
         }
 
+        /// <summary>
+        /// 资源
+        /// </summary>
         public string Resource { get; }
 
+        /// <summary>
+        /// 锁id
+        /// </summary>
         public string LockId { get; }
 
+        /// <summary>
+        /// 续期次数
+        /// </summary>
         public int RenewalCount => _renewalCount;
 
+        /// <summary>
+        /// 是否续期
+        /// </summary>
         public bool Renewal => _isRenewal;
 
+        /// <summary>
+        /// 续期操作
+        /// </summary>
+        /// <param name="lockExtension"></param>
         public async Task RenewAsync(TimeSpan? lockExtension = null)
         {
             await _lock.RenewAsync(Resource, LockId, lockExtension);
 
             _renewalCount++;
 
-            Debug.WriteLine($"the resource ({Resource}) lock ({_lock.LockType}) is renewed {_renewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            ServiceLocator.GetService<ILogger<RLock>>()?.LogDebug($"the resource ({Resource}) lock ({_lock.LockType}) is renewed {_renewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
         }
 
+        /// <summary>
+        /// 释放锁
+        /// </summary>
         public async Task ReleaseAsync()
         {
             
@@ -74,11 +103,17 @@ namespace Findx.Locks
             _timer = null;
         }
 
+        /// <summary>
+        /// 释放类
+        /// </summary>
         public async ValueTask DisposeAsync()
         {
             await ReleaseAsync();
         }
 
+        /// <summary>
+        /// 执行定期续期
+        /// </summary>
         public void RunAutoRenew()
         {
             _timer?.Stop();
@@ -92,6 +127,10 @@ namespace Findx.Locks
             _timer.Start();
         }
 
+        /// <summary>
+        /// 定时续期方法
+        /// </summary>
+        /// <param name="timer"></param>
         protected async Task Timer_Elapsed(FindxAsyncTimer timer)
         {
             await RenewAsync(_timeUntilExpires);

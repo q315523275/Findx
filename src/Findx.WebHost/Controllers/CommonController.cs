@@ -26,9 +26,9 @@ namespace Findx.WebHost.Controllers
         /// <param name="instance"></param>
         /// <returns></returns>
         [HttpGet("/snowflakeId")]
-        public long SnowflakeId()
+        public string SnowflakeId()
         {
-            return Findx.Utils.SnowflakeId.Default().NextId();
+            return Findx.Utils.SnowflakeId.Default().NextId().ToString();
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("/antiDuplicateRequest")]
-        [AntiDuplicateRequest]
+        [AntiDuplicateRequest(Interval = "10s", Type = LockType.IP)]
         public object AntiDuplicateRequest()
         {
             var rng = new Random();

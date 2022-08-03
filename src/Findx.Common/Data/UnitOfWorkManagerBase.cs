@@ -23,7 +23,7 @@ namespace Findx.Data
         /// <param name="dbPrimary"></param>
         /// <param name="enableTransaction">是否启用事务</param>
         /// <returns></returns>
-        public IUnitOfWork GetConnUnitOfWork(string dbPrimary = default, bool enableTransaction = false)
+        public IUnitOfWork GetConnUnitOfWork(bool enableTransaction = false, string dbPrimary = default)
         {
             var unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary ?? "default_0");
             if (unitOfWork != null)

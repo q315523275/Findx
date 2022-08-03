@@ -53,7 +53,7 @@ namespace Findx.FreeSql
             }
 
             // 获取工作单元
-            _unitOfWork = uowManager.GetConnUnitOfWork(primary);
+            _unitOfWork = uowManager.GetConnUnitOfWork(true, (primary == Options.Primary ? null : primary));
 
             // 基类标记
             var baseOns = BaseOnMap.GetOrAdd(_entityType , () =>

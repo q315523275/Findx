@@ -95,7 +95,7 @@ namespace Findx.AspNetCore.Mvc.Filters
 
             var userId = string.Empty;
 
-            if (Type == LockType.User && currentUser.Identity.IsAuthenticated)
+            if (currentUser.Identity != null && Type == LockType.User && currentUser.Identity.IsAuthenticated)
                 userId = $"{currentUser.Identity.GetUserId()}_";
 
             if (Type == LockType.IP)
