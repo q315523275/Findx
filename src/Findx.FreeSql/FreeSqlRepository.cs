@@ -1,25 +1,23 @@
 ﻿using Findx.Data;
 using Findx.Extensions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Security.Principal;
+using Findx.Security;
 
 namespace Findx.FreeSql
 {
-    public class FreeSqlRepository<TEntity> : IRepository<TEntity> where TEntity : class, new()
+    public class FreeSqlRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity, new()
     {
-        private static IDictionary<Type, DataEntityAttribute> DataEntityMap = new ConcurrentDictionary<Type, DataEntityAttribute>();
-        private static IDictionary<Type, (bool softDeletable, bool customSharding)> BaseOnMap = new ConcurrentDictionary<Type, (bool softDeletable, bool customSharding)>();
-
+        private readonly IPrincipal _principal;
         private readonly IFreeSql _fsql;
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IOptionsMonitor<FreeSqlOptions> _options;
         private readonly bool _softDeletable;
 
@@ -27,36 +25,34 @@ namespace Findx.FreeSql
         private Func<string, string> AsTableValueInternal { get; set; }
         private Func<Type, string, string> AsTableSelectValueInternal { get; set; }
 
-        public FreeSqlRepository(FreeSqlClient clients, IUnitOfWorkManager uowManager, IOptionsMonitor<FreeSqlOptions> options)
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        public FreeSqlRepository(IServiceProvider serviceProvider)
         {
-            var js = DateTime.Now;
+            // 服务
+            var clients = serviceProvider.GetRequiredService<FreeSqlClient>();
+            _options = serviceProvider.GetRequiredService<IOptionsMonitor<FreeSqlOptions>>();
+            _principal = serviceProvider.GetService<IPrincipal>();
 
-            Check.NotNull(options.CurrentValue, "FreeSqlOptions");
-
-            _options = options;
-
-            var attribute = DataEntityMap.GetOrAdd(_entityType , () => _entityType .GetAttribute<DataEntityAttribute>());
-
-            var primary = attribute?.DataSource ?? Options.Primary ?? "";
-
-            clients.TryGetValue(primary, out _fsql);
-
-            // Check异常
-            if (Options.Strict) Check.NotNull(_fsql, nameof(_fsql));
-
-            // 使用默认库
+            // 实体属性
+            var extensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(_entityType, () => _entityType.GetAttribute<EntityExtensionAttribute>());
+            // 数据库连接标识
+            var dataSource = extensionAttribute?.DataSource ?? Options.Primary ?? "";
+            // Orm实例
+            clients.TryGetValue(dataSource, out _fsql);
+            // Orm实例检查
+            if (Options.Strict)
+                Check.NotNull(_fsql, nameof(_fsql));
+            // 默认数据库连接标识
             if (_fsql == null)
             {
-                primary = Options.Primary;
                 clients.TryGetValue(Options.Primary, out _fsql);
                 Check.NotNull(_fsql, nameof(_fsql));
             }
-
-            // 获取工作单元
-            _unitOfWork = uowManager.GetConnUnitOfWork(true, (primary == Options.Primary ? null : primary));
-
-            // 基类标记
-            var baseOns = BaseOnMap.GetOrAdd(_entityType , () =>
+            // 实体实现接口集合
+            var baseOns = SingletonDictionary<Type, (bool softDeletable, bool customSharding)>.Instance.GetOrAdd(_entityType, () =>
             {
                 // 是否标记实体逻辑删除
                 var softDeletable = _entityType.IsBaseOn(typeof(ISoftDeletable));
@@ -64,45 +60,49 @@ namespace Findx.FreeSql
                 var customSharding = _entityType.IsBaseOn(typeof(ITableSharding));
                 return (softDeletable, customSharding);
             });
+            // 是否逻辑删除
             _softDeletable = baseOns.softDeletable;
-            // _customSharding = baseOns.customSharding;
-
-            // 初始化分表计算
-            if (attribute?.TableShardingType == ShardingType.Time)
+            // 固定时间规则分表计算
+            if (extensionAttribute?.TableShardingType == ShardingType.Time)
             {
-                AsTableValueInternal = (oldName) => $"{oldName}_{DateTime.Now.ToString(attribute.TableShardingExt)}";
-                AsTableSelectValueInternal = (type, oldName) => $"{oldName}_{DateTime.Now.ToString(attribute.TableShardingExt)}";
+                AsTableValueInternal = (oldName) => $"{oldName}_{DateTime.Now.ToString(extensionAttribute.TableShardingExt)}";
+                AsTableSelectValueInternal = (type, oldName) => $"{oldName}_{DateTime.Now.ToString(extensionAttribute.TableShardingExt)}";
             }
-
-            Debug.WriteLine($"仓储构造函数耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
         }
 
+        /// <summary>
+        /// 获取Orm配置
+        /// </summary>
         private FreeSqlOptions Options => _options?.CurrentValue;
 
-        public IUnitOfWork GetUnitOfWork()
-        {
-            return _unitOfWork;
-        }
+        /// <summary>
+        /// 获取或设置：工作单元
+        /// </summary>
+        public IUnitOfWork UnitOfWork { set; get; }
 
         #region 插入
         public int Insert(TEntity entity)
         {
-            return _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+            entity = CheckInsert(entity)[0];
+            return _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public int Insert(IEnumerable<TEntity> entities)
         {
-            return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+            entities = CheckInsert(entities);
+            return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
-            return _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            entity = CheckInsert(entity)[0];
+            return _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
         public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
-            return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            entities = CheckInsert(entities);
+            return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
         #endregion
 
@@ -111,62 +111,64 @@ namespace Findx.FreeSql
         {
             if (_softDeletable)
             {
-                return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+                return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             }
 
-            return _fsql.Delete<TEntity>(key).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+            return _fsql.Delete<TEntity>(key).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public Task<int> DeleteAsync(object key, CancellationToken cancellationToken = default)
         {
             if (_softDeletable)
             {
-                return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+                return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
 
-            return _fsql.Delete<TEntity>(key).AsTable(AsTableValueInternal).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            return _fsql.Delete<TEntity>(key).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
         public int Delete(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (_softDeletable && whereExpression == null)
             {
-                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             }
 
             if (_softDeletable && whereExpression != null)
             {
-                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             }
 
             if (whereExpression == null)
-                return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(it => true).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+                return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(it => true).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             else
-                return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+                return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
             if (_softDeletable && whereExpression == null)
             {
-                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
 
             if (_softDeletable && whereExpression != null)
             {
-                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+                return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
 
             if (whereExpression == null)
-                return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(it => true).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+                return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(it => true).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             else
-                return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+                return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
         #endregion
 
         #region 更新
         public int Update(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
         {
+            entity = CheckUpdate(entity)[0];
+
             var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
 
             if (ignoreNullColumns)
@@ -180,11 +182,13 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
+            entity = CheckUpdate(entity)[0];
+
             var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
 
             if (ignoreNullColumns)
@@ -198,12 +202,14 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
-        public int Update(IEnumerable<TEntity> entityList, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
+        public int Update(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
         {
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entityList);
+            entities = CheckUpdate(entities);
+
+            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entities);
 
             if (updateColumns != null)
                 update.UpdateColumns(updateColumns);
@@ -211,12 +217,14 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
-        public Task<int> UpdateAsync(IEnumerable<TEntity> entityList, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
+        public Task<int> UpdateAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
         {
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entityList);
+            entities = CheckUpdate(entities);
+
+            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entities);
 
             if (updateColumns != null)
                 update.UpdateColumns(updateColumns);
@@ -224,17 +232,17 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            return update.WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
         public int UpdateColumns(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression)
         {
-            return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(columns).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+            return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(columns).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
         {
-            return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(columns).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(columns).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
         public int UpdateColumns(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression)
@@ -249,7 +257,7 @@ namespace Findx.FreeSql
                 update.Set(item);
             }
 
-            return update.Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrows();
+            return update.Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
@@ -264,7 +272,7 @@ namespace Findx.FreeSql
                 update.Set(item);
             }
 
-            return update.Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            return update.Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
         #endregion
@@ -272,28 +280,28 @@ namespace Findx.FreeSql
         #region 查询
         public TEntity Get(object key)
         {
-            return _fsql.Select<TEntity>(key).AsTable(AsTableSelectValueInternal).WithTransaction(_unitOfWork?.Transaction).First();
+            return _fsql.Select<TEntity>(key).AsTable(AsTableSelectValueInternal).WithTransaction(UnitOfWork?.Transaction).First();
         }
 
         public Task<TEntity> GetAsync(object key, CancellationToken cancellationToken = default)
         {
-            return _fsql.Select<TEntity>(key).AsTable(AsTableSelectValueInternal).WithTransaction(_unitOfWork?.Transaction).FirstAsync(cancellationToken);
+            return _fsql.Select<TEntity>(key).AsTable(AsTableSelectValueInternal).WithTransaction(UnitOfWork?.Transaction).FirstAsync(cancellationToken);
         }
 
         public TEntity First(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (whereExpression == null)
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(_unitOfWork?.Transaction).First();
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(UnitOfWork?.Transaction).First();
             else
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).First();
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).First();
         }
 
         public Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
             if (whereExpression == null)
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(_unitOfWork?.Transaction).FirstAsync(cancellationToken);
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(UnitOfWork?.Transaction).FirstAsync(cancellationToken);
             else
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).FirstAsync(cancellationToken);
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).FirstAsync(cancellationToken);
         }
 
 
@@ -315,7 +323,7 @@ namespace Findx.FreeSql
                 }
             }
 
-            return queryable.WithTransaction(_unitOfWork?.Transaction).ToList();
+            return queryable.WithTransaction(UnitOfWork?.Transaction).ToList();
         }
 
         public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
@@ -336,7 +344,7 @@ namespace Findx.FreeSql
                 }
             }
 
-            return queryable.WithTransaction(_unitOfWork?.Transaction).ToListAsync(cancellationToken);
+            return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync(cancellationToken);
         }
 
         public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, params OrderByParameter<TEntity>[] orderParameters)
@@ -358,9 +366,9 @@ namespace Findx.FreeSql
             }
 
             if (selectExpression == null)
-                return select.WithTransaction(_unitOfWork?.Transaction).ToList<TObject>();
+                return select.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>();
             else
-                return select.WithTransaction(_unitOfWork?.Transaction).ToList(selectExpression);
+                return select.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
         }
 
         public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
@@ -382,9 +390,9 @@ namespace Findx.FreeSql
             }
 
             if (selectExpression == null)
-                return select.WithTransaction(_unitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
+                return select.WithTransaction(UnitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
             else
-                return select.WithTransaction(_unitOfWork?.Transaction).ToListAsync(selectExpression, cancellationToken);
+                return select.WithTransaction(UnitOfWork?.Transaction).ToListAsync(selectExpression, cancellationToken);
         }
 
 
@@ -406,7 +414,7 @@ namespace Findx.FreeSql
                 }
             }
 
-            return queryable.WithTransaction(_unitOfWork?.Transaction).Take(topSize).ToList();
+            return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToList();
         }
 
         public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
@@ -427,7 +435,7 @@ namespace Findx.FreeSql
                 }
             }
 
-            return queryable.WithTransaction(_unitOfWork?.Transaction).Take(topSize).ToListAsync(cancellationToken);
+            return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToListAsync(cancellationToken);
         }
 
         public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, params OrderByParameter<TEntity>[] orderParameters)
@@ -451,9 +459,9 @@ namespace Findx.FreeSql
             queryable.Take(topSize);
 
             if (selectExpression == null)
-                return queryable.WithTransaction(_unitOfWork?.Transaction).ToList<TObject>();
+                return queryable.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>();
             else
-                return queryable.WithTransaction(_unitOfWork?.Transaction).ToList(selectExpression);
+                return queryable.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
         }
 
         public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
@@ -477,9 +485,9 @@ namespace Findx.FreeSql
             queryable.Take(topSize);
 
             if (selectExpression == null)
-                return queryable.WithTransaction(_unitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
+                return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
             else
-                return queryable.WithTransaction(_unitOfWork?.Transaction).ToListAsync(selectExpression, cancellationToken);
+                return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync(selectExpression, cancellationToken);
         }
 
 
@@ -501,7 +509,7 @@ namespace Findx.FreeSql
                 }
             }
 
-            var result = queryable.WithTransaction(_unitOfWork?.Transaction).Count(out var totalRows).Page(pageNumber, pageSize).ToList();
+            var result = queryable.WithTransaction(UnitOfWork?.Transaction).Count(out var totalRows).Page(pageNumber, pageSize).ToList();
 
             return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
         }
@@ -524,7 +532,7 @@ namespace Findx.FreeSql
                 }
             }
 
-            var result = await queryable.WithTransaction(_unitOfWork?.Transaction).Count(out var totalRows).Page(pageNumber, pageSize).ToListAsync(cancellationToken);
+            var result = await queryable.WithTransaction(UnitOfWork?.Transaction).Count(out var totalRows).Page(pageNumber, pageSize).ToListAsync(cancellationToken);
 
             return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
         }
@@ -550,8 +558,8 @@ namespace Findx.FreeSql
             queryable.Count(out var totalRows).Page(pageNumber, pageSize);
 
             var result = selectExpression == null ? 
-                queryable.WithTransaction(_unitOfWork?.Transaction).ToList<TObject>() 
-                : queryable.WithTransaction(_unitOfWork?.Transaction).ToList(selectExpression);
+                queryable.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>() 
+                : queryable.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
 
             return new PageResult<List<TObject>>(pageNumber, pageSize, (int)totalRows, result);
         }
@@ -579,9 +587,9 @@ namespace Findx.FreeSql
             List<TObject> result;
 
             if (selectExpression == null)
-                result = await queryable.WithTransaction(_unitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
+                result = await queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
             else
-                result = await queryable.WithTransaction(_unitOfWork?.Transaction).ToListAsync(selectExpression, cancellationToken);
+                result = await queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync(selectExpression, cancellationToken);
 
             return new PageResult<List<TObject>>(pageNumber, pageSize, (int)totalRows, result);
         }
@@ -591,33 +599,33 @@ namespace Findx.FreeSql
         public int Count(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (whereExpression == null)
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(_unitOfWork?.Transaction).Count().To<int>();
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(UnitOfWork?.Transaction).Count().To<int>();
             else
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).Count().To<int>();
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).Count().To<int>();
         }
 
         public async Task<int> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
             if (whereExpression == null)
-                return (await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(_unitOfWork?.Transaction).CountAsync(cancellationToken)).To<int>();
+                return (await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(UnitOfWork?.Transaction).CountAsync(cancellationToken)).To<int>();
             else
-                return (await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).CountAsync(cancellationToken)).To<int>();
+                return (await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).CountAsync(cancellationToken)).To<int>();
         }
 
         public bool Exist(Expression<Func<TEntity, bool>> whereExpression = null)
         {
             if (whereExpression == null)
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(_unitOfWork?.Transaction).Any();
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(UnitOfWork?.Transaction).Any();
             else
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).Any();
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).Any();
         }
 
         public Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
             if (whereExpression == null)
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(_unitOfWork?.Transaction).AnyAsync(cancellationToken);
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).WithTransaction(UnitOfWork?.Transaction).AnyAsync(cancellationToken);
             else
-                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(_unitOfWork?.Transaction).AnyAsync(cancellationToken);
+                return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).AnyAsync(cancellationToken);
         }
         #endregion
 
@@ -647,6 +655,144 @@ namespace Findx.FreeSql
             var dataType = _fsql.Ado.DataType.ToString();
             return dataType.CastTo<DatabaseType>();
         }
+        #endregion
+
+        #region 私有服务
+        private TEntity[] CheckInsert(params TEntity[] entities)
+        {
+            if (!Options.CheckInsert)
+            {
+                return entities;
+            }
+
+            var userIdTypeName = _principal?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.UserIdTypeName);
+            for (var i = 0; i < entities.Length; i++)
+            {
+                var entity = entities[i];
+                entities[i] = entity.CheckCreatedTime();
+
+                if (userIdTypeName == null)
+                {
+                    continue;
+                }
+                entity = entities[i];
+                if (userIdTypeName == typeof(int).FullName)
+                {
+                    entities[i] = entity.CheckCreationAudited<TEntity, int>(_principal);
+                }
+                else if (userIdTypeName == typeof(Guid).FullName)
+                {
+                    entities[i] = entity.CheckCreationAudited<TEntity, Guid>(_principal);
+                }
+                else
+                {
+                    entities[i] = entity.CheckCreationAudited<TEntity, long>(_principal);
+                }
+            }
+
+            return entities;
+        }
+
+        private TEntity[] CheckUpdate(params TEntity[] entities)
+        {
+            if (!Options.CheckUpdate)
+            {
+                return entities;
+            }
+
+            var userIdTypeName = _principal?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.UserIdTypeName);
+            for (var i = 0; i < entities.Length; i++)
+            {
+                var entity = entities[i];
+                entities[i] = entity.CheckUpdateTime();
+
+                if (userIdTypeName == null)
+                {
+                    continue;
+                }
+                if (userIdTypeName == typeof(int).FullName)
+                {
+                    entities[i] = entity.CheckUpdateAudited<TEntity, int>(_principal);
+                }
+                else if (userIdTypeName == typeof(Guid).FullName)
+                {
+                    entities[i] = entity.CheckUpdateAudited<TEntity, Guid>(_principal);
+                }
+                else
+                {
+                    entities[i] = entity.CheckUpdateAudited<TEntity, long>(_principal);
+                }
+            }
+
+            return entities;
+        }
+
+        private IEnumerable<TEntity> CheckInsert(IEnumerable<TEntity> entities)
+        {
+            if (!Options.CheckInsert)
+            {
+                return entities;
+            }
+
+            var userIdTypeName = _principal?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.UserIdTypeName);
+            foreach (var entity in entities)
+            {
+                entity.CheckCreatedTime();
+
+                if (userIdTypeName == null)
+                {
+                    continue;
+                }
+                if (userIdTypeName == typeof(int).FullName)
+                {
+                    entity.CheckCreationAudited<TEntity, int>(_principal);
+                }
+                else if (userIdTypeName == typeof(Guid).FullName)
+                {
+                    entity.CheckCreationAudited<TEntity, Guid>(_principal);
+                }
+                else
+                {
+                    entity.CheckCreationAudited<TEntity, long>(_principal);
+                }
+            }
+
+            return entities;
+        }
+
+        private IEnumerable<TEntity> CheckUpdate(IEnumerable<TEntity> entities)
+        {
+            if (!Options.CheckUpdate)
+            {
+                return entities;
+            }
+
+            var userIdTypeName = _principal?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.UserIdTypeName);
+            foreach (var entity in entities)
+            {
+                entity.CheckUpdateTime();
+
+                if (userIdTypeName == null)
+                {
+                    continue;
+                }
+                if (userIdTypeName == typeof(int).FullName)
+                {
+                    entity.CheckUpdateAudited<TEntity, int>(_principal);
+                }
+                else if (userIdTypeName == typeof(Guid).FullName)
+                {
+                    entity.CheckUpdateAudited<TEntity, Guid>(_principal);
+                }
+                else
+                {
+                    entity.CheckUpdateAudited<TEntity, long>(_principal);
+                }
+            }
+
+            return entities;
+        }
+
         #endregion
     }
 }

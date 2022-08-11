@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdmin.Models
     /// 登录日志
     /// </summary>
     [Table(Name = "sys_login_record")]
-    [DataEntity(DataSource = "system")]
+    [EntityExtension(DataSource = "system")]
     public class SysLoginRecordInfo : EntityBase<Guid>, ICreationAudited<Guid>, ITenant, IResponse
     {
         /// <summary>

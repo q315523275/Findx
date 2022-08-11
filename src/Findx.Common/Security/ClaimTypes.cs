@@ -12,6 +12,11 @@
         public static string UserId { get; set; } = System.Security.Claims.ClaimTypes.NameIdentifier;
 
         /// <summary>
+        /// 用户标识数据类型。默认："user_id_type_name"
+        /// </summary>
+        public static string UserIdTypeName { get; set; } = "user_id_type_name";
+
+        /// <summary>
         /// 用户名。默认：<see cref="System.Security.Claims.ClaimTypes.Name"/>
         /// </summary>
         public static string UserName { get; set; } = System.Security.Claims.ClaimTypes.Name;

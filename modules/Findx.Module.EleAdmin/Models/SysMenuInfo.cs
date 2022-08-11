@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdmin.Models
 	/// 菜单
 	/// </summary>
 	[Table(Name = "sys_menu")]
-	[DataEntity(DataSource = "system")]
+	[EntityExtension(DataSource = "system")]
 	public class SysMenuInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, ISort, IResponse
 	{
 		/// <summary>

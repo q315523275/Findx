@@ -6,7 +6,7 @@ namespace Findx.Data
     /// 定义一个数据源配置属性
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public class DataEntityAttribute : Attribute
+    public class EntityExtensionAttribute : Attribute
     {
         /// <summary>
         /// 数据源

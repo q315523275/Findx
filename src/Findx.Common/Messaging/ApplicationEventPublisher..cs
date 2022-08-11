@@ -96,7 +96,7 @@ namespace Findx.Messaging
                     var handler = (ApplicationEventHandlerWrapper)_eventHandlers.GetOrAdd(messageType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
                     try
                     {
-                        using var scope = ServiceLocator.ServiceProvider.CreateScope();
+                        using var scope = ServiceLocator.Instance.CreateScope();
                         await handler.Handle(message, scope.ServiceProvider, cancellationToken);
                     }
                     catch (Exception ex)

@@ -12,5 +12,12 @@
         /// <param name="enableTransaction">是否启用事务</param>
         /// <returns></returns>
         IUnitOfWork GetConnUnitOfWork(bool enableTransaction = false, string dbPrimary = default);
+
+        /// <summary>
+        /// 根据实体获取工作单元
+        /// </summary>
+        /// <param name="enableTransaction">是否启用事务</param>
+        /// <returns></returns>
+        IUnitOfWork GetEntityUnitOfWork<TEntity>(bool enableTransaction = false);
     }
 }

@@ -6,5 +6,10 @@
         {
             throw new NotImplementedException();
         }
+
+        public IUnitOfWork GetEntityUnitOfWork<TEntity>(bool enableTransaction = false)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

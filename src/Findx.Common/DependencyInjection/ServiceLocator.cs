@@ -11,7 +11,7 @@ namespace Findx.DependencyInjection
         /// <summary>
         /// 服务提供器
         /// </summary>
-        public static IServiceProvider ServiceProvider { get; set; }
+        public static IServiceProvider Instance { get; set; }
 
         /// <summary>
         /// 获取单个泛型实例
@@ -20,14 +20,14 @@ namespace Findx.DependencyInjection
         /// <returns></returns>
         public static T GetService<T>()
         {
-            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
+            Check.NotNull(Instance, nameof(Instance));
 
-            IScopedServiceResolver scopedResolver = ServiceProvider.GetService<IScopedServiceResolver>();
-            if (scopedResolver != null && scopedResolver.ResolveEnabled)
+            var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+            if (scopedResolver is { ResolveEnabled: true })
             {
                 return scopedResolver.GetService<T>() ?? default;
             }
-            return ServiceProvider.GetService<T>() ?? default;
+            return Instance.GetService<T>() ?? default;
         }
         /// <summary>
         /// 获取单个实例对象
@@ -36,15 +36,15 @@ namespace Findx.DependencyInjection
         /// <returns></returns>
         public static object GetService(Type serviceType)
         {
-            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
+            Check.NotNull(Instance, nameof(Instance));
             Check.NotNull(serviceType, nameof(serviceType));
 
-            IScopedServiceResolver scopedResolver = ServiceProvider.GetService<IScopedServiceResolver>();
-            if (scopedResolver != null && scopedResolver.ResolveEnabled)
+            var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+            if (scopedResolver is { ResolveEnabled: true })
             {
                 return scopedResolver.GetService(serviceType) ?? default;
             }
-            return ServiceProvider.GetService(serviceType) ?? default;
+            return Instance.GetService(serviceType) ?? default;
         }
         /// <summary>
         /// 获取泛型实例集合
@@ -53,14 +53,14 @@ namespace Findx.DependencyInjection
         /// <returns></returns>
         public static IEnumerable<T> GetServices<T>()
         {
-            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
+            Check.NotNull(Instance, nameof(Instance));
 
-            IScopedServiceResolver scopedResolver = ServiceProvider.GetService<IScopedServiceResolver>();
-            if (scopedResolver != null && scopedResolver.ResolveEnabled)
+            var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+            if (scopedResolver is { ResolveEnabled: true })
             {
                 return scopedResolver.GetServices<T>() ?? default;
             }
-            return ServiceProvider.GetServices<T>() ?? default;
+            return Instance.GetServices<T>() ?? default;
         }
         /// <summary>
         /// 获取泛型实例对象集合
@@ -69,15 +69,15 @@ namespace Findx.DependencyInjection
         /// <returns></returns>
         public static IEnumerable<object> GetServices(Type serviceType)
         {
-            Check.NotNull(ServiceProvider, nameof(ServiceProvider));
+            Check.NotNull(Instance, nameof(Instance));
             Check.NotNull(serviceType, nameof(serviceType));
 
-            IScopedServiceResolver scopedResolver = ServiceProvider.GetService<IScopedServiceResolver>();
-            if (scopedResolver != null && scopedResolver.ResolveEnabled)
+            var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+            if (scopedResolver is { ResolveEnabled: true })
             {
                 return scopedResolver.GetServices(serviceType) ?? default;
             }
-            return ServiceProvider.GetServices(serviceType) ?? default;
+            return Instance.GetServices(serviceType) ?? default;
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Findx.DependencyInjection
         {
             try
             {
-                IPrincipal user = GetService<IPrincipal>();
+                var user = GetService<IPrincipal>();
                 return user as ClaimsPrincipal;
             }
             catch (Exception)

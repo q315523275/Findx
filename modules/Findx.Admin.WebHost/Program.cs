@@ -12,6 +12,9 @@ namespace Findx.Module.WebHost
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(build =>
                 {
+                    //build.ConfigureAppConfiguration(buildConfig => {
+                    //    buildConfig.HostingEnvironment
+                    //});
                     // build.ConfigureLogging(x => { x.ClearProviders(); });
                     build.UseFindxStartup<Startup>();
                 });

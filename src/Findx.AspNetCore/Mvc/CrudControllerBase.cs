@@ -172,9 +172,9 @@ namespace Findx.AspNetCore.Mvc
 
             Check.NotNull(model, nameof(model));
 
-            model.CheckICreatedTime(); // 判断设置创建时间
-            model.CheckICreationAudited<TModel, TUserKey>(principal); // 判断设置创建人
-            model.CheckITenant(principal); // 判断设置租户值
+            model.CheckCreatedTime(); // 判断设置创建时间
+            model.CheckCreationAudited<TModel, TUserKey>(principal); // 判断设置创建人
+            model.CheckTenant(principal); // 判断设置租户值
             model.SetEmptyKey(); // 判断设置ID值
 
             await AddBeforeAsync(model, request);
@@ -209,8 +209,8 @@ namespace Findx.AspNetCore.Mvc
 
             Check.NotNull(model, nameof(model));
 
-            model.CheckIUpdateTime(); // 判断设置修改时间
-            model.CheckIUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
+            model.CheckUpdateTime(); // 判断设置修改时间
+            model.CheckUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
 
             await EditBeforeAsync(model, request);
             var res = repo.Update(model, ignoreNullColumns: true);

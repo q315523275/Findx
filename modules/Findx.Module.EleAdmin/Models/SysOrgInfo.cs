@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdmin.Models
 	/// 组织
 	/// </summary>
 	[Table(Name = "sys_org")]
-	[DataEntity(DataSource = "system")]
+	[EntityExtension(DataSource = "system")]
 	public class SysOrgInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, IResponse
 	{
 		/// <summary>

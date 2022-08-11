@@ -26,7 +26,7 @@ namespace Findx.EventBus.RabbitMQ
             services.Configure<EventBusRabbitMqOptions>(section);
 
             services.AddSingleton<IEventDispatcher, LocalEventDispatcher>();
-            services.AddSingleton<IEventExecuter, EventExecuter>();
+            services.AddSingleton<IEventExecutor, EventExecutor>();
             services.AddSingleton<IEventPublisher, EventPublisher>();
             services.AddSingleton<IEventSerializer, EventSerializer>();
             services.AddSingleton<IEventStore, LocalEventStore>();

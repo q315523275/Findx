@@ -11,7 +11,7 @@
 		<Product />
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<Description>模块化、缓存、Cron、仓储工作单元实体约束、自动注入、图片处理、邮件发送、异常订阅、扩展集合、锁、实体映射、进程消息、指标计数器、认证、序列化、短信、存储、调度任务、验证、应用信息、工具类集合等组件核心库</Description>
-		<PackageVersion>1.8.0-beta2</PackageVersion>
+		<PackageVersion>1.8.1</PackageVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -28,9 +28,9 @@
 		<PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
 		<PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
 		<PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
-		<PackageReference Include="System.Threading.Channels" Version="7.0.0-preview.2.22152.2" />
 		<PackageReference Include="JetBrains.Annotations" Version="2022.1.0" />
-		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="7.0.0-preview.2.22152.2" />
+		<PackageReference Include="System.Diagnostics.DiagnosticSource" Version="6.0.0" />
+		<PackageReference Include="System.Threading.Channels" Version="6.0.0" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="JetBrains.Annotations" />
@@ -46,6 +46,7 @@
 	  <None Remove="Data\Audit\" />
 	  <None Remove="Data\KeyGenerate\" />
 	  <None Remove="Extensions\Extensions.TimeSpan" />
+	  <None Remove="System.Threading.Channels" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Folder Include="Setting\" />

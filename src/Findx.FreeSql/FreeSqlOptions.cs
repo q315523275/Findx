@@ -63,6 +63,16 @@ namespace Findx.FreeSql
         /// 自动同步实体结构【开发环境必备】，FreeSql不会扫描程序集，只有CRUD时才会生成表。
         /// </summary>
         public bool UseAutoSyncStructure { set; get; }
+
+        /// <summary>
+        /// 检查插入属性
+        /// </summary>
+        public bool CheckInsert { set; get; }
+
+        /// <summary>
+        /// 检查更新属性
+        /// </summary>
+        public bool CheckUpdate { set; get; }
     }
     /// <summary>
     /// FreeSql数据库连接配置

@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdmin.Models;
 /// 字典值
 /// </summary>
 [Table(Name = "sys_app")]
-[DataEntity(DataSource = "system")]
+[EntityExtension(DataSource = "system")]
 public class SysAppInfo: FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, ISort, IResponse
 {
     /// <summary>

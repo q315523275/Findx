@@ -1,13 +1,19 @@
 ﻿using System;
 using System.Data.Common;
+using System.Threading.Tasks;
 
 namespace Findx.Data
 {
     /// <summary>
     /// 工作单元
     /// </summary>
-    public interface IUnitOfWork
+    public interface IUnitOfWork: IDisposable
     {
+        /// <summary>
+        /// 服务提供起
+        /// </summary>
+        IServiceProvider ServiceProvider { get; }
+
         /// <summary>
         /// 获取 是否已提交
         /// </summary>
@@ -47,17 +53,25 @@ namespace Findx.Data
         /// 回滚
         /// </summary>
         void Rollback();
-    }
-    /// <summary>
-    /// 泛型工作单元
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public interface IUnitOfWork<T> : IUnitOfWork
-    {
+
         /// <summary>
-        /// 获取泛型实例
+        /// 对数据库连接开启事务
+        /// </summary>
+        /// <param name="context">数据上下文</param>
+        /// <param name="cancellationToken">异步取消标记</param>
+        /// <returns></returns>
+        Task BeginOrUseTransactionAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 异步提交当前上下文的事务更改
         /// </summary>
         /// <returns></returns>
-        T GetInstance();
+        Task CommitAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 异步回滚所有事务
+        /// </summary>
+        /// <returns></returns>
+        Task RollbackAsync(CancellationToken cancellationToken = default);
     }
 }

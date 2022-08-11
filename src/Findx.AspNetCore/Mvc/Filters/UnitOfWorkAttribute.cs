@@ -35,7 +35,12 @@ namespace Findx.AspNetCore.Mvc.Filters
 		{
 		    var unitOfWork = context.HttpContext.RequestServices.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWork(false, DbKey);
 
-		    if (context.Result is JsonResult result1)
+			if (context.Exception != null)
+            {
+				return;
+            }
+			
+			if (context.Result is JsonResult result1)
 			{
 				if (result1.Value is CommonResult ajax)
 				{

@@ -10,12 +10,12 @@ namespace Findx.Data
     /// 泛型仓储
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public interface IRepository<TEntity> where TEntity : class, new()
+    public interface IRepository<TEntity> where TEntity : class, IEntity, new()
     {
         /// <summary>
-        /// 获取当前使用的工作单元
+        /// 获取或设置：工作单元
         /// </summary>
-        IUnitOfWork GetUnitOfWork();
+        IUnitOfWork UnitOfWork { set; get; }
 
         #region 插入
         /// <summary>

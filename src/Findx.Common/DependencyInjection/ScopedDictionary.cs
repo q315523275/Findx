@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -40,6 +40,13 @@ namespace Findx.DependencyInjection
             Function = null;
             AuditOperation = null;
             Identity = null;
+
+            foreach(var key in this.Keys)
+            {
+                if (this[key] is IDisposable s1)
+                    s1?.Dispose();
+            }
+
             this.Clear();
         }
     }

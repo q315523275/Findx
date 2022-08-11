@@ -81,7 +81,7 @@ namespace Findx.FreeSql
                                 foreach (var pa in e.DbParms)
                                 {
                                     sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" +
-                                                  pa?.Value?.ToString());
+                                                  pa?.Value);
                                 }
                         }
                         sb.Append($"==>  ExecuteTime:{e.ElapsedMilliseconds:0.000}ms");

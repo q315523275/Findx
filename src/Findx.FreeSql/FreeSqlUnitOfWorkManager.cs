@@ -2,17 +2,22 @@
 using Findx.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Findx.FreeSql
 {
     public class FreeSqlUnitOfWorkManager : UnitOfWorkManagerBase
     {
+        private readonly IServiceProvider _serviceProvider;
         private readonly FreeSqlClient _clients;
         private readonly IOptionsMonitor<FreeSqlOptions> _options;
-        public FreeSqlUnitOfWorkManager(FreeSqlClient clients, ScopedDictionary scopedDictionary, IOptionsMonitor<FreeSqlOptions> options) : base(scopedDictionary)
+
+        public FreeSqlUnitOfWorkManager(IServiceProvider serviceProvider, ScopedDictionary scopedDictionary) : base(scopedDictionary)
         {
-            _clients = clients;
-            _options = options;
+            _serviceProvider = serviceProvider;
+            _clients = serviceProvider.GetRequiredService<FreeSqlClient>();
+            _options = serviceProvider.GetRequiredService<IOptionsMonitor<FreeSqlOptions>>();
         }
 
         protected override IUnitOfWork CreateConnUnitOfWork(string dbPrimary)
@@ -23,7 +28,7 @@ namespace Findx.FreeSql
 
             Check.NotNull(fsql, nameof(fsql));
 
-            return new FreeSqlUnitOfWork(fsql, ServiceLocator.GetService<ILogger<FreeSqlUnitOfWork>>());
+            return new FreeSqlUnitOfWork(_serviceProvider, fsql, _serviceProvider.GetRequiredService<ILogger<FreeSqlUnitOfWork>>());
         }
     }
 }

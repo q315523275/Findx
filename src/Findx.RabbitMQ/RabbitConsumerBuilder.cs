@@ -48,7 +48,7 @@ namespace Findx.RabbitMQ
                     {
                         var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
 
-                        using (var scope = ServiceLocator.ServiceProvider.CreateScope())
+                        using (var scope = ServiceLocator.Instance.CreateScope())
                         {
                             var serviceProvider = scope.ServiceProvider;
 

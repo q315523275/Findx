@@ -42,7 +42,7 @@ namespace Findx.Data
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public static TEntity CheckICreatedTime<TEntity>(this TEntity entity) where TEntity : IEntity
+        public static TEntity CheckCreatedTime<TEntity>(this TEntity entity) where TEntity : IEntity
         {
             if (entity is ICreatedTime entity1)
             {
@@ -66,13 +66,13 @@ namespace Findx.Data
         /// <param name="entity"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public static TEntity CheckICreationAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user)
+        public static TEntity CheckCreationAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user)
             where TEntity : IEntity
             where TUserKey : struct
         {
             if (entity is ICreationAudited<TUserKey> entity1)
             {
-                entity1.CreatorId = user.Identity.IsAuthenticated ? user.Identity.GetUserId<TUserKey>() : null;
+                entity1.CreatorId = user?.Identity.GetUserId<TUserKey>()?? default;
                 if (!entity1.CreatedTime.HasValue || entity1.CreatedTime == default(DateTime))
                 {
                     entity1.CreatedTime = DateTime.Now;
@@ -91,7 +91,7 @@ namespace Findx.Data
         /// <typeparam name="TEntity"></typeparam>
         /// <param name="entity"></param>
         /// <returns></returns>
-        public static TEntity CheckIUpdateTime<TEntity>(this TEntity entity) where TEntity : IEntity
+        public static TEntity CheckUpdateTime<TEntity>(this TEntity entity) where TEntity : IEntity
         {
             if (entity is IUpdateTime entity1)
             {
@@ -115,13 +115,13 @@ namespace Findx.Data
         /// <param name="entity"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public static TEntity CheckIUpdateAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user)
+        public static TEntity CheckUpdateAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user)
             where TEntity : IEntity
             where TUserKey : struct
         {
             if (entity is IUpdateAudited<TUserKey> entity1)
             {
-                entity1.LastUpdaterId = user.Identity.IsAuthenticated ? user.Identity.GetUserId<TUserKey>() : default;
+                entity1.LastUpdaterId = user?.Identity.GetUserId<TUserKey>()?? default;
                 if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime == default(DateTime))
                 {
                     entity1.LastUpdatedTime = DateTime.Now;
@@ -142,7 +142,7 @@ namespace Findx.Data
         /// <param name="entity"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public static TEntity CheckITenant<TEntity>(this TEntity entity, IPrincipal user) where TEntity : IEntity
+        public static TEntity CheckTenant<TEntity>(this TEntity entity, IPrincipal user) where TEntity : IEntity
         {
             if (entity is ITenant entity1 && user.Identity.IsAuthenticated && !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
             {
@@ -163,13 +163,13 @@ namespace Findx.Data
         /// <param name="entity"></param>
         /// <param name="user"></param>
         /// <returns></returns>
-        public static TEntity CheckITenant<TEntity, TTenantKey>(this TEntity entity, IPrincipal user)
+        public static TEntity CheckTenant<TEntity, TTenantKey>(this TEntity entity, IPrincipal user)
             where TEntity : IEntity
             where TTenantKey : struct
         {
             if (entity is ITenant<TTenantKey> entity1)
             {
-                entity1.TenantId = user.Identity.IsAuthenticated ? user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<TTenantKey>() : default;
+                entity1.TenantId = user?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<TTenantKey>()?? default;
                 return (TEntity)entity1;
             }
             else

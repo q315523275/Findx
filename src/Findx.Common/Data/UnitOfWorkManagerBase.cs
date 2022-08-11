@@ -1,4 +1,6 @@
 ﻿using Findx.DependencyInjection;
+using Findx.Extensions;
+
 namespace Findx.Data
 {
     /// <summary>
@@ -25,7 +27,7 @@ namespace Findx.Data
         /// <returns></returns>
         public IUnitOfWork GetConnUnitOfWork(bool enableTransaction = false, string dbPrimary = default)
         {
-            var unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary ?? "default_0");
+            var unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary ?? "system");
             if (unitOfWork != null)
             {
                 if (enableTransaction)
@@ -36,7 +38,38 @@ namespace Findx.Data
             }
 
             unitOfWork = CreateConnUnitOfWork(dbPrimary);
-            _scopedDictionary.SetConnUnitOfWork(dbPrimary ?? "default_0", unitOfWork);
+            _scopedDictionary.SetConnUnitOfWork(dbPrimary ?? "system", unitOfWork);
+            if (enableTransaction)
+            {
+                unitOfWork.EnableTransaction();
+            }
+
+            return unitOfWork;
+        }
+
+        /// <summary>
+        /// 根据实体获取工作单元
+        /// </summary>
+        /// <param name="enableTransaction">是否启用事务</param>
+        /// <returns></returns>
+        public IUnitOfWork GetEntityUnitOfWork<TEntity>(bool enableTransaction = false)
+        {
+            var entityType = typeof(TEntity);
+            var extensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(entityType, () => entityType.GetAttribute<EntityExtensionAttribute>());
+            var dataSource = extensionAttribute?.DataSource;
+
+            var unitOfWork = _scopedDictionary.GetEntityUnitOfWork(entityType);
+            if (unitOfWork != null)
+            {
+                if (enableTransaction)
+                {
+                    unitOfWork.EnableTransaction();
+                }
+                return unitOfWork;
+            }
+
+            unitOfWork = CreateConnUnitOfWork(dataSource);
+            _scopedDictionary.SetEntityUnitOfWork(entityType, unitOfWork);
             if (enableTransaction)
             {
                 unitOfWork.EnableTransaction();

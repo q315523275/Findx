@@ -6,7 +6,7 @@ namespace Findx.EventBus
     /// <summary>
     /// 事件执行器
     /// </summary>
-    public interface IEventExecuter
+    public interface IEventExecutor
     {
         /// <summary>
         /// 执行

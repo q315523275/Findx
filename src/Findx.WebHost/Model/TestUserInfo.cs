@@ -4,7 +4,7 @@ using System;
 
 namespace Findx.WebHost.Model
 {
-    public class TestUserInfo : ISoftDeletable
+    public class TestUserInfo : ISoftDeletable, IEntity
     {
         [Column(IsIdentity = true, IsPrimary = true)]
         public int Id { get; set; }

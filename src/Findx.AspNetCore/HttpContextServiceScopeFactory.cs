@@ -5,31 +5,67 @@ using System;
 
 namespace Findx.AspNetCore
 {
+    /// <summary>
+    /// Http请求服务范围工厂
+    /// </summary>
     public class HttpContextServiceScopeFactory : IHybridServiceScopeFactory
     {
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="serviceScopeFactory"></param>
+        /// <param name="httpContextAccessor"></param>
         public HttpContextServiceScopeFactory(IServiceScopeFactory serviceScopeFactory, IHttpContextAccessor httpContextAccessor)
         {
             ServiceScopeFactory = serviceScopeFactory;
             HttpContextAccessor = httpContextAccessor;
         }
-        protected IServiceScopeFactory ServiceScopeFactory { get; }
-        protected IHttpContextAccessor HttpContextAccessor { get; }
+        
+        /// <summary>
+        /// 服务范围工厂
+        /// </summary>
+        private IServiceScopeFactory ServiceScopeFactory { get; }
+        
+        /// <summary>
+        /// Http上下文访问器
+        /// </summary>
+        private IHttpContextAccessor HttpContextAccessor { get; }
+        
+        /// <summary>
+        /// 创建作用域
+        /// </summary>
+        /// <returns></returns>
         public virtual IServiceScope CreateScope()
         {
-            HttpContext httpContext = HttpContextAccessor?.HttpContext;
+            var httpContext = HttpContextAccessor?.HttpContext;
             if (httpContext == null)
             {
                 return ServiceScopeFactory.CreateScope();
             }
             return new NonDisposedHttpContextServiceScope(httpContext.RequestServices);
         }
-        protected class NonDisposedHttpContextServiceScope : IServiceScope
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        private class NonDisposedHttpContextServiceScope : IServiceScope
         {
+            /// <summary>
+            /// 服务提供商
+            /// </summary>
             public IServiceProvider ServiceProvider { get; }
+            
+            /// <summary>
+            /// Ctor
+            /// </summary>
+            /// <param name="serviceProvider"></param>
             public NonDisposedHttpContextServiceScope(IServiceProvider serviceProvider)
             {
                 ServiceProvider = serviceProvider;
             }
+            /// <summary>
+            /// Dispose
+            /// </summary>
             public void Dispose() { }
         }
     }

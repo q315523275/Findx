@@ -15,6 +15,7 @@
     <None Remove="Findx.Security" />
     <None Remove="storage\" />
     <None Remove="Findx.NLog" />
+    <None Remove="Auditing\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.665" />
@@ -32,5 +33,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="storage\" />
+    <Folder Include="Auditing\" />
   </ItemGroup>
 </Project>

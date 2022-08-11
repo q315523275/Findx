@@ -17,7 +17,7 @@ namespace Findx.Module.WebHost
                     .AddMvcFilter<FindxGlobalAttribute>()
                     .AddJsonOptions(options =>
                     {
-                        options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+                        // options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.CjkUnifiedIdeographs, UnicodeRanges.CjkSymbolsandPunctuation);
                         options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
                         options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
                     });

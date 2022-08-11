@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Findx.AspNetCore.Mvc
@@ -14,9 +13,9 @@ namespace Findx.AspNetCore.Mvc
     /// <summary>
     /// 通用查询控制器基类
     /// </summary>
-    public abstract class QueryControllerBase<TModel, TDTO, TQueryParameter, TKey> : QueryControllerBase<TModel, TDTO, TDTO, TQueryParameter, TKey>
+    public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> : QueryControllerBase<TModel, TDto, TDto, TQueryParameter, TKey>
         where TModel : EntityBase<TKey>, new()
-        where TDTO : IResponse, new()
+        where TDto : IResponse, new()
         where TQueryParameter : IPager, new()
         where TKey : IEquatable<TKey>
     {
@@ -26,10 +25,10 @@ namespace Findx.AspNetCore.Mvc
         /// <summary>
         /// 通用查询控制器基类
         /// </summary>
-        public abstract class QueryControllerBase<TModel, TListDTO, TDetailDTO, TQueryParameter, TKey> : ApiControllerBase
+        public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryParameter, TKey> : ApiControllerBase
         where TModel : EntityBase<TKey>, new()
-        where TListDTO : IResponse, new()
-        where TDetailDTO : IResponse, new()
+        where TListDto : IResponse, new()
+        where TDetailDto : IResponse, new()
         where TQueryParameter : IPager, new()
         where TKey : IEquatable<TKey>
     {
@@ -75,7 +74,7 @@ namespace Findx.AspNetCore.Mvc
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var result = await repo.PagedAsync<TListDTO>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
+            var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
 
             return CommonResult.Success(result);
         }
@@ -89,8 +88,6 @@ namespace Findx.AspNetCore.Mvc
         [Description("列表")]
         public virtual async Task<CommonResult> ListAsync([FromQuery] TQueryParameter request)
         {
-            var js = DateTime.Now;
-
             Check.NotNull(request, nameof(request));
 
             var repo = GetRepository<TModel>();
@@ -100,9 +97,7 @@ namespace Findx.AspNetCore.Mvc
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var list = await repo.TopAsync<TListDTO>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
-
-            Debug.WriteLine($"动态API查询接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
+            var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
 
             return CommonResult.Success(list);
         }
@@ -124,7 +119,7 @@ namespace Findx.AspNetCore.Mvc
 
             var model = repo.Get(id);
 
-            var result = ToDetailDTO(model);
+            var result = ToDetailDto(model);
 
             await DetailAfterAsync(model, result);
 
@@ -136,20 +131,21 @@ namespace Findx.AspNetCore.Mvc
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        protected virtual List<TListDTO> ToListDTO(TModel model) => model.MapTo<List<TListDTO>>();
+        protected virtual List<TListDto> ToListDto(TModel model) => model.MapTo<List<TListDto>>();
 
         /// <summary>
         /// 转换单条数据查询结果
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        protected virtual TDetailDTO ToDetailDTO(TModel model) => model.MapTo<TDetailDTO>();
+        protected virtual TDetailDto ToDetailDto(TModel model) => model.MapTo<TDetailDto>();
 
         /// <summary>
         /// 单条数据查询后操作
         /// </summary>
         /// <param name="model"></param>
-        protected virtual Task DetailAfterAsync(TModel model, TDetailDTO dto) => Task.CompletedTask;
+        /// <param name="dto"></param>
+        protected virtual Task DetailAfterAsync(TModel model, TDetailDto dto) => Task.CompletedTask;
 
 
 
@@ -158,9 +154,9 @@ namespace Findx.AspNetCore.Mvc
         /// </summary>
         /// <typeparam name="TEntity"></typeparam>
         /// <returns></returns>
-        protected IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, new()
+        protected IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, IEntity, new()
         {
-            return Request?.HttpContext?.RequestServices.GetRequiredService<IRepository<TEntity>>();
+            return Request.HttpContext.RequestServices.GetRequiredService<IRepository<TEntity>>();
         }
 
         /// <summary>

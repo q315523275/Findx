@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdmin.Models
 	/// 字典类型
 	/// </summary>
 	[Table(Name = "sys_dict_type")]
-	[DataEntity(DataSource = "system")]
+	[EntityExtension(DataSource = "system")]
 	public class SysDictTypeInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ISort, IResponse
 	{
 		/// <summary>
