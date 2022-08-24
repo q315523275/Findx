@@ -2,10 +2,12 @@
 using SqlSugar;
 using System;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Findx.SqlSugar
 {
-    public class SqlSugarUnitOfWork : IUnitOfWork<SqlSugarProvider>, IDisposable
+    public class SqlSugarUnitOfWork : IUnitOfWork
     {
         private readonly SqlSugarProvider _provider;
 
@@ -16,6 +18,7 @@ namespace Findx.SqlSugar
             _provider = provider;
         }
 
+        public IServiceProvider ServiceProvider { get; }
         public bool HasCommitted { get; }
         public void EnableTransaction()
         {
@@ -52,9 +55,19 @@ namespace Findx.SqlSugar
             _provider.Ado.RollbackTran();
         }
 
-        public SqlSugarProvider GetInstance()
+        public Task BeginOrUseTransactionAsync(CancellationToken cancellationToken = default)
         {
-            return _provider;
+            throw new NotImplementedException();
+        }
+
+        public Task CommitAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RollbackAsync(CancellationToken cancellationToken = default)
+        {
+            throw new NotImplementedException();
         }
 
         public void Dispose()

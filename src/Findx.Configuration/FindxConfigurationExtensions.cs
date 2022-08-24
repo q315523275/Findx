@@ -24,7 +24,7 @@ namespace Findx.Configuration
         {
             hostBuilder.ConfigureHostConfiguration(builder =>
             {
-                FindxConfigurationOptions options = new FindxConfigurationOptions();
+                var options = new FindxConfigurationOptions();
                 var configuration = builder.Build();
                 configuration.Bind(options);
                 builder.AddFindx(options);

@@ -199,7 +199,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 var user = await repo.FirstAsync(x => x.UserName == req.UserName);
                 if (user != null)
                 {
-                    var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = user.Id, TenantId = Tenant.TenantId.Value });
+                    var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
                     await roleRepo.InsertAsync(list);
                 }
             }
@@ -229,7 +229,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             {
                 var roleRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserRoleInfo>>();
 
-                var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = model.Id, TenantId = Findx.Data.Tenant.TenantId.Value });
+                var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = model.Id, TenantId = Findx.Data.TenantManager.Current });
                 await roleRepo.DeleteAsync(x => x.UserId == model.Id);
                 await roleRepo.InsertAsync(list);
             }

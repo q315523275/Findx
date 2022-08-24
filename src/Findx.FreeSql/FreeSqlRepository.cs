@@ -657,7 +657,7 @@ namespace Findx.FreeSql
         }
         #endregion
 
-        #region 私有服务
+        #region 私有方法
         private TEntity[] CheckInsert(params TEntity[] entities)
         {
             if (!Options.CheckInsert)

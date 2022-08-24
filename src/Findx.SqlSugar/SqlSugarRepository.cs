@@ -15,16 +15,16 @@ using System.Threading.Tasks;
 
 namespace Findx.SqlSugar
 {
-    public class SqlSugarRepository<TEntity> : IRepository<TEntity> where TEntity : class, new()
+    public class SqlSugarRepository<TEntity> : IRepository<TEntity> where TEntity : class, IEntity, new()
     {
-        private readonly static IDictionary<Type, DataEntityAttribute> DataEntityMap = new ConcurrentDictionary<Type, DataEntityAttribute>();
-        private readonly static IDictionary<Type, (bool softDeletable, bool customSharding)> BaseOnMap = new ConcurrentDictionary<Type, (bool softDeletable, bool customSharding)>();
+        private static readonly IDictionary<Type, EntityExtensionAttribute> DataEntityMap = new ConcurrentDictionary<Type, EntityExtensionAttribute>();
+        private static readonly IDictionary<Type, (bool softDeletable, bool customSharding)> BaseOnMap = new ConcurrentDictionary<Type, (bool softDeletable, bool customSharding)>();
 
         private readonly Type _entityType = typeof(TEntity);
         private readonly SqlSugarProvider _sugar;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IOptionsMonitor<SqlSugarOptions> _options;
-        private readonly DataEntityAttribute _attribute;
+        private readonly EntityExtensionAttribute _attribute;
         private readonly bool _softDeletable;
         private readonly bool _customSharding;
         private readonly string _softDeletableFilterName = "SoftDeletable";
@@ -41,7 +41,7 @@ namespace Findx.SqlSugar
 
             _options = options;
 
-            _attribute = DataEntityMap.GetOrAdd(_entityType, () => { return _entityType.GetAttribute<DataEntityAttribute>(); });
+            _attribute = DataEntityMap.GetOrAdd(_entityType, () => { return _entityType.GetAttribute<EntityExtensionAttribute>(); });
 
             var primary = _attribute?.DataSource ?? Options.Primary ?? "";
 
@@ -97,6 +97,9 @@ namespace Findx.SqlSugar
         }
 
         #region 插入
+
+        public IUnitOfWork UnitOfWork { get; set; }
+
         public int Insert(TEntity entity)
         {
             Check.NotNull(entity, nameof(entity));

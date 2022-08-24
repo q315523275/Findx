@@ -46,7 +46,7 @@ namespace Findx.AspNetCore.Mvc
             {
                 var cache = _cacheProvider.Get("memory");
                 var functions = cache.Get<List<MvcFunction>>("function");
-                if (functions != null && functions.Count > 0)
+                if (functions is { Count: > 0 })
                 {
                     return functions;
                 }
@@ -58,7 +58,7 @@ namespace Findx.AspNetCore.Mvc
             foreach (var item in controllerActionList)
             {
                 var routeValues = item.RouteValues;
-                var controller = result.FirstOrDefault(x => x.IsController == true && x.Area == routeValues["area"] && x.Controller == item.ControllerName);
+                var controller = result.FirstOrDefault(x => x.IsController && x.Area == routeValues["area"] && x.Controller == item.ControllerName);
                 if (controller == null)
                 {
                     var typeInfo = item.ControllerTypeInfo;

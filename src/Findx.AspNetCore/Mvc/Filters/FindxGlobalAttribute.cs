@@ -37,7 +37,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
             if (currentUser is { IsAuthenticated: true } && !currentUser.TenantId.IsNullOrWhiteSpace())
             {
-                Tenant.TenantId.Value = currentUser.TenantId.CastTo<Guid>();
+                TenantManager.Current = currentUser.TenantId.CastTo<Guid>();
             }
 
             // 刷新Token
@@ -51,6 +51,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// <param name="context"></param>
         public void OnActionExecuted(ActionExecutedContext context)
         {
+            TenantManager.Current = Guid.Empty;
         }
     }
 }

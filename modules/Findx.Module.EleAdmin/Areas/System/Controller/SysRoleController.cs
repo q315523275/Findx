@@ -78,7 +78,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 				Id = Utils.SequentialGuid.Instance.Create(DatabaseType.MySql),
 				MenuId = x,
 				RoleId = roleId,
-				TenantId = Tenant.TenantId.Value
+				TenantId = TenantManager.Current
 			});
 			if (list.Any())
 				repo.Insert(list);

@@ -67,7 +67,7 @@ namespace Findx.Configuration
         }
         private void AddOrUpdateData(string body)
         {
-            var result = body.ToObject<Response>();
+            var result = body.ToObject<ConfigDto>();
             if (result?.Data?.Count > 0)
             {
                 foreach (var keyVault in result?.Data)

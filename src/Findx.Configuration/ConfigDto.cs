@@ -2,12 +2,15 @@
 
 namespace Findx.Configuration
 {
-    internal class Response
+    internal class ConfigDto
     {
         public int Version { set; get; }
-        public List<KeyValueDTO> Data { set; get; }
+        public List<KeyValueDto> Data { set; get; }
     }
-    internal class KeyValueDTO
+    /// <summary>
+    /// KeyValueDto
+    /// </summary>
+    internal class KeyValueDto
     {
         public VaultType VaultType { set; get; }
         public string VaultKey { set; get; }

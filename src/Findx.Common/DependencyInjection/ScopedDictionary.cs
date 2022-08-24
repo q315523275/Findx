@@ -20,7 +20,7 @@ namespace Findx.DependencyInjection
         /// <summary>
         /// 获取或设置 对于当前功能有效的角色集合，用于数据权限判断
         /// </summary>
-        public IEnumerable<string> DataAuthValidRoleNames { get; set; } = new string[0];
+        public IEnumerable<string> DataAuthValidRoleNames { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// 获取或设置 当前操作审计
@@ -43,10 +43,10 @@ namespace Findx.DependencyInjection
 
             foreach(var key in this.Keys)
             {
-                if (this[key] is IDisposable s1)
-                    s1?.Dispose();
+                if (this[key] is IDisposable disposable)
+                    disposable?.Dispose();
             }
-
+            
             this.Clear();
         }
     }

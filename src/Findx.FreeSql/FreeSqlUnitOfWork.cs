@@ -185,11 +185,13 @@ namespace Findx.FreeSql
 
         public void Dispose()
         {
-            if (Interlocked.Increment(ref _disposeCounter) != 1) return;
+            if (Interlocked.Increment(ref _disposeCounter) != 1) 
+                return;
             try
             {
                 this.Rollback();
-                _logger.LogDebug($"工作单元生命周期结束，单元标识：{this.GetHashCode()}");
+                
+                _logger.LogDebug($"工作单元生命周期结束，单元标识：{this.GetHashCode()}，释放计量：{_disposeCounter}");
             }
             finally
             {
@@ -250,6 +252,7 @@ namespace Findx.FreeSql
                 if (Transaction?.Connection != null)
                 {
                     await Transaction.CommitAsync();
+                    
                     _logger.LogDebug($"提交事务，标识：{token}，事务标识：{Transaction.GetHashCode()}");
                 }
             }

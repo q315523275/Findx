@@ -33,7 +33,7 @@ namespace Findx.Security
 		/// <summary>
 		/// 获取 日志记录对象
 		/// </summary>
-		protected ILogger Logger { get; }
+		private ILogger Logger { get; }
 
 		/// <summary>
 		/// 从程序集中获取功能信息（如MVC的Controller-Action）

@@ -42,9 +42,7 @@ namespace Findx.Jobs.Local
             // 作业监听器决定作业是推队列、推线程池、直接执行
             // 作业执行器包括调用作业执行、异常捕获、重试策略、作业执行情况上报
 
-            var job = context.ServiceProvider.GetService(jobType) as IJob;
-            Check.NotNull(job, nameof(job));
-
+            var job = context.ServiceProvider.GetRequiredService(jobType) as IJob;
             try
             {
                 await job.RunAsync(context, cancellationToken);

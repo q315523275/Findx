@@ -17,6 +17,19 @@
             repo.UnitOfWork = uow;
             return repo;
         }
+        
+        /// <summary>
+        /// 设置仓库工作单元
+        /// </summary>
+        /// <param name="repo"></param>
+        /// <param name="uow"></param>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public static IRepository<TEntity> WithUnitOfWork<TEntity>(this IRepository<TEntity> repo, IUnitOfWork uow) where TEntity : class, IEntity, new()
+        {
+            repo.UnitOfWork = uow;
+            return repo;
+        }
     }
 }
 

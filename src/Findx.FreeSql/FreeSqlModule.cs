@@ -63,7 +63,7 @@ namespace Findx.FreeSql
                 // 开启租户隔离
                 if (FreeSqlOptions.MultiTenant)
                 {
-                    freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => Tenant.TenantId.Value != Guid.Empty, it => it.TenantId == Tenant.TenantId.Value);
+                    freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current != Guid.Empty, it => it.TenantId == TenantManager.Current);
                 }
                 // AOP
                 freeSql.Aop.CurdAfter += (s, e) =>
@@ -92,6 +92,14 @@ namespace Findx.FreeSql
                     if (FreeSqlOptions.OutageDetection && e.ElapsedMilliseconds > (FreeSqlOptions.OutageDetectionInterval * 1000))
                     {
                         ServiceLocator.GetService<ILogger<FreeSqlModule>>()?.LogInformation($"FreeSql触发慢日志:执行sql({e.Sql})耗时({e.ElapsedMilliseconds:0.000})毫秒");
+                    }
+                };
+                freeSql.Aop.AuditValue += (_, e) =>
+                {
+                    // 租户自动赋值
+                    if (FreeSqlOptions.MultiTenant && TenantManager.Current != Guid.Empty && e.Property.PropertyType == typeof(Guid?) && e.Property.Name == "TenantId")
+                    {
+                        e.Value = TenantManager.Current;
                     }
                 };
                 // 注入
