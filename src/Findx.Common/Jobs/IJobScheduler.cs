@@ -31,18 +31,18 @@ namespace Findx.Jobs
         /// <summary>
         /// 调度一个循环执行任务
         /// </summary>
-        /// <typeparam name="TTaskHandler"></typeparam>
-        /// <param name="taskArgs"></param>
         /// <param name="delay"></param>
+        /// <param name="jobArgs"></param>
+        /// <typeparam name="TJob"></typeparam>
         /// <returns></returns>
         Task<long> ScheduleAsync<TJob>([NotNull] TimeSpan delay, object jobArgs = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个循环执行任务
         /// </summary>
-        /// <typeparam name="TTaskHandler"></typeparam>
-        /// <param name="taskArgs"></param>
         /// <param name="cronExpression"></param>
+        /// <param name="jobArgs"></param>
+        /// <typeparam name="TJob"></typeparam>
         /// <returns></returns>
         Task<long> ScheduleAsync<TJob>([NotNull] string cronExpression, object jobArgs = null) where TJob : IJob;
 
@@ -52,6 +52,27 @@ namespace Findx.Jobs
         /// <param name="jobType"></param>
         /// <returns></returns>
         Task<long> ScheduleAsync([NotNull] Type jobType);
-    }
+
+        /// <summary>
+        /// 暂停任务
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task PauseJob(long id);
+        
+        /// <summary>
+        /// 恢复暂停的任务
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task ResumeJob(long id);
+        
+        /// <summary>
+        /// 删除任务
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task RemoveJob(long id);
+	}
 }
 

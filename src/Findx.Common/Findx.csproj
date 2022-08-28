@@ -11,7 +11,7 @@
 		<Product />
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<Description>模块化、缓存、Cron、仓储工作单元实体约束、自动注入、图片处理、邮件发送、异常订阅、扩展集合、锁、实体映射、进程消息、指标计数器、认证、序列化、短信、存储、调度任务、验证、应用信息、工具类集合等组件核心库</Description>
-		<PackageVersion>1.8.2</PackageVersion>
+		<PackageVersion>1.8.3-beta01</PackageVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

@@ -6,18 +6,33 @@ using Findx.Serialization;
 
 namespace Findx.Jobs.Local
 {
+    /// <summary>
+    /// 默认工作调度
+    /// </summary>
     public class DefaultJobScheduler : IJobScheduler
     {
         private readonly IJobStorage _storage;
 
         private readonly IJsonSerializer _serializer;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="storage"></param>
+        /// <param name="serializer"></param>
         public DefaultJobScheduler(IJobStorage storage, IJsonSerializer serializer)
         {
             _storage = storage;
             _serializer = serializer;
         }
 
+        /// <summary>
+        /// 添加一次性任务
+        /// </summary>
+        /// <param name="delay"></param>
+        /// <param name="jobArgs"></param>
+        /// <typeparam name="TJob"></typeparam>
+        /// <returns></returns>
         public async Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, object jobArgs = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
@@ -31,6 +46,13 @@ namespace Findx.Jobs.Local
             return jobDetail.Id;
         }
 
+        /// <summary>
+        /// 添加一次性任务
+        /// </summary>
+        /// <param name="dateTime"></param>
+        /// <param name="jobArgs"></param>
+        /// <typeparam name="TJob"></typeparam>
+        /// <returns></returns>
         public async Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, object jobArgs = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
@@ -42,6 +64,13 @@ namespace Findx.Jobs.Local
             return jobDetail.Id;
         }
 
+        /// <summary>
+        /// 添加循环任务
+        /// </summary>
+        /// <param name="delay"></param>
+        /// <param name="jobArgs"></param>
+        /// <typeparam name="TJob"></typeparam>
+        /// <returns></returns>
         public async Task<long> ScheduleAsync<TJob>(TimeSpan delay, object jobArgs = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
@@ -54,6 +83,13 @@ namespace Findx.Jobs.Local
             return jobDetail.Id;
         }
 
+        /// <summary>
+        /// 添加循环任务
+        /// </summary>
+        /// <param name="cronExpression"></param>
+        /// <param name="jobArgs"></param>
+        /// <typeparam name="TJob"></typeparam>
+        /// <returns></returns>
         public async Task<long> ScheduleAsync<TJob>(string cronExpression, object jobArgs = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
@@ -66,6 +102,11 @@ namespace Findx.Jobs.Local
             return jobDetail.Id;
         }
 
+        /// <summary>
+        /// 添加循环任务,Type必须带属性注解
+        /// </summary>
+        /// <param name="jobType"></param>
+        /// <returns></returns>
         public async Task<long> ScheduleAsync(Type jobType)
         {
             var attribute = jobType.GetAttribute<JobAttribute>();
@@ -93,6 +134,52 @@ namespace Findx.Jobs.Local
             return jobDetail.Id;
         }
 
+        /// <summary>
+        /// 暂停任务
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task PauseJob(long id)
+        {
+            var jobInfo = await _storage.FindAsync(id);
+            if (jobInfo != null && jobInfo.IsEnable)
+            {
+                jobInfo.IsEnable = false;
+                await _storage.UpdateAsync(jobInfo);
+            }
+        }
+
+        /// <summary>
+        /// 恢复暂停任务
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task ResumeJob(long id)
+        {
+            var jobInfo = await _storage.FindAsync(id);
+            if (jobInfo != null && !jobInfo.IsEnable)
+            {
+                jobInfo.IsEnable = true;
+                await _storage.UpdateAsync(jobInfo);
+            }
+        }
+
+        /// <summary>
+        /// 删除任务
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public async Task RemoveJob(long id)
+        {
+            await _storage.DeleteAsync(id);
+        }
+
+        /// <summary>
+        /// 创建任务信息
+        /// </summary>
+        /// <param name="jobType"></param>
+        /// <param name="jsonParam"></param>
+        /// <returns></returns>
         private JobInfo CreateJobDetail(Type jobType, object jsonParam)
         {
             var detail = new JobInfo

@@ -18,6 +18,7 @@
     <None Remove="Auditing\" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Findx.DinkToPdf" Version="1.5.8" />
     <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.665" />
   </ItemGroup>
   <ItemGroup>

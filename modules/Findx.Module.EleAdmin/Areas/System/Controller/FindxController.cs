@@ -11,6 +11,7 @@ using Findx.Data;
 using Findx.Email;
 using Findx.Extensions;
 using Findx.Module.EleAdmin.Jobs;
+using Findx.Pdf;
 using Findx.Security;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
@@ -145,8 +146,21 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         public async Task<string> EmailSend([FromServices] IEmailSender sender, [Required] string mailAddress, [Required] string subject, [Required] string body)
         {
             await sender.SendAsync(mailAddress, subject, body, isBodyHtml: false);
-
             return "ok";
+        }
+        
+        /// <summary>
+        /// 文本转PDF示例接口
+        /// </summary>
+        /// <param name="converter"></param>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        [HttpGet("textToPdf")]
+        public async Task<IActionResult> TextToPdf([FromServices] IPdfConverter converter, [Required] string text)
+        {
+            Console.WriteLine(text);
+            var res = await converter.ConvertAsync(text);
+            return File(res, "application/pdf");
         }
     }
 }

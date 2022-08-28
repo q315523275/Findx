@@ -46,7 +46,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             var options = provider.GetRequiredService<IOptions<AuditingOptions>>();
             if (!options.Value.Enabled)
             {
-                return; ;
+                return;
             }
             var function = context.GetExecuteFunction();
             if (function == null)
