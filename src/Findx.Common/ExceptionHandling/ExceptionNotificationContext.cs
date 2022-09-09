@@ -21,7 +21,6 @@ namespace Findx.ExceptionHandling
         /// 初始化一个<see cref="ExceptionNotificationContext"/>类型的实例
         /// </summary>
         /// <param name="exception">异常</param>
-        /// <param name="logLevel">日志级别</param>
         /// <param name="handled">是否已处理异常</param>
         public ExceptionNotificationContext(Exception exception, bool handled = true)
         {

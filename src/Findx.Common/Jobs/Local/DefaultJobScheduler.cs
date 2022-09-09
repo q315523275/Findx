@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Data;
 using Findx.Extensions;
 using Findx.Serialization;
 
@@ -30,13 +31,13 @@ namespace Findx.Jobs.Local
         /// 添加一次性任务
         /// </summary>
         /// <param name="delay"></param>
-        /// <param name="jobArgs"></param>
+        /// <param name="parameter"></param>
         /// <typeparam name="TJob"></typeparam>
         /// <returns></returns>
-        public async Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, object jobArgs = null) where TJob : IJob
+        public async Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, IDictionary<string, string> parameter = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
-            var jobDetail = CreateJobDetail(jobType, jobArgs);
+            var jobDetail = CreateJobDetail(jobType, parameter);
             var nextRunTime = DateTimeOffset.UtcNow.LocalDateTime;
 
             jobDetail.IsSingle = true;
@@ -50,13 +51,13 @@ namespace Findx.Jobs.Local
         /// 添加一次性任务
         /// </summary>
         /// <param name="dateTime"></param>
-        /// <param name="jobArgs"></param>
+        /// <param name="parameter"></param>
         /// <typeparam name="TJob"></typeparam>
         /// <returns></returns>
-        public async Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, object jobArgs = null) where TJob : IJob
+        public async Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, IDictionary<string, string> parameter = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
-            var jobDetail = CreateJobDetail(jobType, jobArgs);
+            var jobDetail = CreateJobDetail(jobType, parameter);
             jobDetail.IsSingle = true;
             jobDetail.NextRunTime = dateTime ?? DateTimeOffset.UtcNow.LocalDateTime;
 
@@ -68,13 +69,13 @@ namespace Findx.Jobs.Local
         /// 添加循环任务
         /// </summary>
         /// <param name="delay"></param>
-        /// <param name="jobArgs"></param>
+        /// <param name="parameter"></param>
         /// <typeparam name="TJob"></typeparam>
         /// <returns></returns>
-        public async Task<long> ScheduleAsync<TJob>(TimeSpan delay, object jobArgs = null) where TJob : IJob
+        public async Task<long> ScheduleAsync<TJob>(TimeSpan delay, IDictionary<string, string> parameter = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
-            var jobDetail = CreateJobDetail(jobType, jobArgs);
+            var jobDetail = CreateJobDetail(jobType, parameter);
             jobDetail.IsSingle = false;
             jobDetail.FixedDelay = delay.TotalSeconds;
             jobDetail.NextRunTime = DateTimeOffset.UtcNow.Add(delay).LocalDateTime;
@@ -87,13 +88,13 @@ namespace Findx.Jobs.Local
         /// 添加循环任务
         /// </summary>
         /// <param name="cronExpression"></param>
-        /// <param name="jobArgs"></param>
+        /// <param name="parameter"></param>
         /// <typeparam name="TJob"></typeparam>
         /// <returns></returns>
-        public async Task<long> ScheduleAsync<TJob>(string cronExpression, object jobArgs = null) where TJob : IJob
+        public async Task<long> ScheduleAsync<TJob>(string cronExpression, IDictionary<string, string> parameter = null) where TJob : IJob
         {
             var jobType = typeof(TJob);
-            var jobDetail = CreateJobDetail(jobType, jobArgs);
+            var jobDetail = CreateJobDetail(jobType, parameter);
             jobDetail.IsSingle = false;
             jobDetail.CronExpress = cronExpression;
             jobDetail.NextRunTime = Utils.Cron.GetNextOccurrence(cronExpression);
@@ -109,7 +110,7 @@ namespace Findx.Jobs.Local
         /// <returns></returns>
         public async Task<long> ScheduleAsync(Type jobType)
         {
-            var attribute = jobType.GetAttribute<JobAttribute>();
+            var attribute = SingletonDictionary<Type, JobAttribute>.Instance.GetOrAdd(jobType, () => jobType.GetAttribute<JobAttribute>());
 
             Check.NotNull(attribute, nameof(attribute));
 
@@ -180,7 +181,7 @@ namespace Findx.Jobs.Local
         /// <param name="jobType"></param>
         /// <param name="jsonParam"></param>
         /// <returns></returns>
-        private JobInfo CreateJobDetail(Type jobType, object jsonParam)
+        private JobInfo CreateJobDetail(Type jobType, IDictionary<string, string> parameter)
         {
             var detail = new JobInfo
             {
@@ -188,13 +189,13 @@ namespace Findx.Jobs.Local
                 IsEnable = true,
                 NextRunTime = DateTimeOffset.UtcNow.LocalDateTime,
                 Id = Findx.Utils.SnowflakeId.Default().NextId(),
-                JsonParam = _serializer.Serialize(jsonParam ?? new { }),
+                JsonParam = _serializer.Serialize(parameter ?? new Dictionary<string, string>()),
                 Name = jobType.Name,
                 FullName = jobType.FullName,
                 TryCount = 0,
             };
 
-            var attribute = jobType.GetAttribute<JobAttribute>();
+            var attribute = SingletonDictionary<Type, JobAttribute>.Instance.GetOrAdd(jobType, () => jobType.GetAttribute<JobAttribute>());
             if (attribute != null)
             {
                 detail.Name = attribute.Name;

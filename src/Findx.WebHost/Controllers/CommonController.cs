@@ -23,7 +23,6 @@ namespace Findx.WebHost.Controllers
         /// <summary>
         /// 雪花ID，Json返回需转换为string
         /// </summary>
-        /// <param name="instance"></param>
         /// <returns></returns>
         [HttpGet("/snowflakeId")]
         public string SnowflakeId()

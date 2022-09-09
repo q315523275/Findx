@@ -108,7 +108,7 @@ namespace Findx.Messaging
             catch (Exception ex)
             {
                 // 通道关闭时，再读取信息会报ChannelClosedException错误
-                _logger.LogError(ex, $"应用事件监听时引发异常：{ex.FormatMessage()}");
+                _logger.LogError(message: $"应用事件监听时引发异常{Findx.Utils.Common.Line}{ex.FormatMessage()}");
             }
         }
     }

@@ -7,13 +7,15 @@ using Microsoft.Extensions.Options;
 
 namespace Findx.Jobs.Local
 {
+    /// <summary>
+    /// 调度工作器
+    /// </summary>
 	public class InMemorySchedulerWorker: BackgroundService, IJobSchedulerWorker
 	{
         private readonly IOptions<JobOptions> _options;
-
         private readonly IJobStorage _storage;
-
         private readonly ITriggerListener _trigger;
+        private readonly ILogger<InMemorySchedulerWorker> _logger;
 
         /// <summary>
         /// Ctor
@@ -21,20 +23,33 @@ namespace Findx.Jobs.Local
         /// <param name="options"></param>
         /// <param name="storage"></param>
         /// <param name="trigger"></param>
-        public InMemorySchedulerWorker(IOptions<JobOptions> options, IJobStorage storage, ITriggerListener trigger)
+        /// <param name="logger"></param>
+        public InMemorySchedulerWorker(IOptions<JobOptions> options, IJobStorage storage, ITriggerListener trigger, ILogger<InMemorySchedulerWorker> logger)
         {
             _options = options;
             _storage = storage;
             _trigger = trigger;
+            _logger = logger;
         }
 
+        /// <summary>
+        /// 后台循环执行
+        /// </summary>
+        /// <param name="stoppingToken"></param>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay(TimeSpan.FromMilliseconds(_options.Value.Delay), stoppingToken);
 
-                await ExecuteOnceAsync(stoppingToken);
+                try
+                {
+                    await ExecuteOnceAsync(stoppingToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, ex.FormatMessage());
+                }
             }
         }
 
@@ -64,18 +79,16 @@ namespace Findx.Jobs.Local
                 // 作业监听器包含节点执行的方式方法，单节点串行执行控制
                 // 作业执行者包含作业执行的参数构建等等
 
-
-                // 当前使用最简单方式
-
-                await _trigger.TriggerFiredAsync(jobDetail, cancellationToken);
-
                 // 固定时间执行任务直接计算下次执行时间
-                if (!jobDetail.CronExpress.IsNullOrWhiteSpace())
+                if (!jobDetail.CronExpress.IsNullOrWhiteSpace() || jobDetail.IsSingle)
                     jobDetail.Increment();
 
                 // 固定间隔任务，从推送开始标识执行中
                 if (jobDetail.FixedDelay > 0)
                     jobDetail.IsRuning = true;
+
+                // 当前使用最简单方式
+                await _trigger.TriggerFiredAsync(jobDetail, cancellationToken);
             }
         }
     }

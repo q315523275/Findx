@@ -4,6 +4,7 @@ using Findx.Extensions;
 using Findx.Serialization;
 using Microsoft.Extensions.FileProviders;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Unicode;
 namespace Findx.Module.WebHost
 {
@@ -20,6 +21,7 @@ namespace Findx.Module.WebHost
                         // options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin, UnicodeRanges.CjkUnifiedIdeographs, UnicodeRanges.CjkSymbolsandPunctuation);
                         options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
                         options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
+                        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                     });
 
             services.AddCors(options =>

@@ -2,10 +2,14 @@
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Extensions;
 using Findx.Threading;
 
 namespace Findx.Caching.InMemory
 {
+    /// <summary>
+    /// 内存缓存
+    /// </summary>
     public class InMemoryCache : ICache, IDisposable
     {
         public string Name => CacheType.DefaultMemory;
@@ -19,7 +23,7 @@ namespace Findx.Caching.InMemory
             _cache = new ConcurrentDictionary<string, CacheItem>();
 
             Timer = timer;
-            Timer.Period = 1000 * 60; // 60 sec.
+            Timer.Period = 1000 * 120; // 60 sec.
             Timer.Elapsed = Timer_Elapsed;
             Timer.RunOnStart = false;
             Timer.Start();
@@ -36,22 +40,48 @@ namespace Findx.Caching.InMemory
             await Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 判断缓存是否存在
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public Task<bool> ExistsAsync(string key, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
 
-            if (!_cache.TryGetValue(key, out var item) || item.Expired)
+            if (!_cache.TryGetValue(key, out var item))
+            {
                 return Task.FromResult(false);
+            }
+
+            // 存在且过期,删除缓存
+            if (item.Expired)
+            {
+                _cache.Remove(key, out var _);
+                return Task.FromResult(false);
+            }
 
             return Task.FromResult(true);
         }
 
+        /// <summary>
+        /// 获取缓存值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="func"></param>
+        /// <param name="expire"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<T> GetAsync<T>(string key, Func<Task<T>> func, TimeSpan? expire = null, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
 
             if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            {
                 return (T)item.Visit();
+            }
 
             var value = await func.Invoke();
 
@@ -60,22 +90,48 @@ namespace Findx.Caching.InMemory
             return value;
         }
 
+        /// <summary>
+        /// 获取缓存值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public async Task<T> GetAsync<T>(string key, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
 
-            if (!_cache.TryGetValue(key, out var item) || item.Expired)
+            if (!_cache.TryGetValue(key, out var item))
+            {
                 return default;
+            }
+
+            // 存在且过期,删除缓存
+            if (item.Expired)
+            {
+                _cache.Remove(key, out var _);
+                return default;
+            }
 
             await Task.CompletedTask;
 
             return (T)item.Visit();
         }
 
+        /// <summary>
+        /// 添加缓存,已存在则添加失败
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="expire"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public Task<bool> TryAddAsync<T>(string key, T value, TimeSpan? expire = null, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
 
+            // 存在且未过期
             if (_cache.TryGetValue(key, out var item) && !item.Expired)
                 return Task.FromResult(false);
 
@@ -84,6 +140,15 @@ namespace Findx.Caching.InMemory
             return Task.FromResult(true);
         }
 
+        /// <summary>
+        /// 添加缓存
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="expire"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public Task AddAsync<T>(string key, T value, TimeSpan? expire = null, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
@@ -97,6 +162,12 @@ namespace Findx.Caching.InMemory
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 移除缓存
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public Task RemoveAsync(string key, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
@@ -106,6 +177,12 @@ namespace Findx.Caching.InMemory
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 根据前缀移除缓存
+        /// </summary>
+        /// <param name="prefix"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public Task RemoveByPrefixAsync(string prefix, CancellationToken token = default)
         {
             foreach (var item in _cache)
@@ -116,28 +193,57 @@ namespace Findx.Caching.InMemory
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 清空缓存
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
         public Task ClearAsync(CancellationToken token = default)
         {
             _cache.Clear();
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// 判断缓存是否存在
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public bool Exists(string key)
         {
             Check.NotNull(key, nameof(key));
 
-            if (!_cache.TryGetValue(key, out var item) || item.Expired)
+            if (!_cache.TryGetValue(key, out var item))
+            {
                 return false;
+            }
+
+            // 存在且过期,删除缓存
+            if (item.Expired)
+            {
+                _cache.Remove(key, out var _);
+                return false;
+            }
 
             return true;
         }
 
+        /// <summary>
+        /// 获取缓存值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="func"></param>
+        /// <param name="expire"></param>
+        /// <returns></returns>
         public T Get<T>(string key, Func<T> func, TimeSpan? expire = null)
         {
             Check.NotNull(key, nameof(key));
 
             if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            {
                 return (T)item.Visit();
+            }
 
             var value = func.Invoke();
 
@@ -146,28 +252,60 @@ namespace Findx.Caching.InMemory
             return value;
         }
 
+        /// <summary>
+        /// 获取缓存
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public T Get<T>(string key)
         {
             Check.NotNull(key, nameof(key));
 
-            if (!_cache.TryGetValue(key, out var item) || item.Expired)
+            if (!_cache.TryGetValue(key, out var item))
+            {
                 return default;
+            }
+
+            // 存在且过期,删除缓存
+            if (item.Expired)
+            {
+                _cache.Remove(key, out var _);
+                return default;
+            }
 
             return (T)item.Visit();
         }
 
+        /// <summary>
+        /// 添加缓存,已存在则添加失败
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="expire"></param>
+        /// <returns></returns>
         public bool TryAdd<T>(string key, T value, TimeSpan? expire = null)
         {
             Check.NotNull(key, nameof(key));
 
             if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            {
                 return false;
+            }
 
             Add(key, value, expire);
 
             return true;
         }
 
+        /// <summary>
+        /// 添加缓存
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <param name="expire"></param>
         public void Add<T>(string key, T value, TimeSpan? expire = null)
         {
             Check.NotNull(key, nameof(key));
@@ -179,11 +317,19 @@ namespace Findx.Caching.InMemory
             });
         }
 
+        /// <summary>
+        /// 移除缓存
+        /// </summary>
+        /// <param name="key"></param>
         public void Remove(string key)
         {
             _cache.TryRemove(key, out _);
         }
 
+        /// <summary>
+        /// 根据缓存前缀移除缓存
+        /// </summary>
+        /// <param name="prefix"></param>
         public void RemoveByPrefix(string prefix)
         {
             foreach (var item in _cache)
@@ -193,11 +339,17 @@ namespace Findx.Caching.InMemory
             }
         }
 
+        /// <summary>
+        /// 清空缓存
+        /// </summary>
         public void Clear()
         {
             _cache.Clear();
         }
 
+        /// <summary>
+        /// 释放
+        /// </summary>
         public void Dispose()
         {
             _cache?.Clear();

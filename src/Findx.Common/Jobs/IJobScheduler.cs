@@ -14,37 +14,37 @@ namespace Findx.Jobs
         /// 调度一个延时执行任务
         /// </summary>
         /// <typeparam name="TJob"></typeparam>
-        /// <param name="jobArgs"></param>
+        /// <param name="parameter"></param>
         /// <param name="delay"></param>
         /// <returns></returns>
-        Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, object jobArgs = null) where TJob : IJob;
+        Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, IDictionary<string, string> parameter = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个延时执行任务
         /// </summary>
         /// <typeparam name="TJob"></typeparam>
-        /// <param name="jobArgs"></param>
+        /// <param name="parameter"></param>
         /// <param name="dateTime"></param>
         /// <returns></returns>
-        Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, object jobArgs = null) where TJob : IJob;
+        Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, IDictionary<string, string> parameter = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个循环执行任务
         /// </summary>
         /// <param name="delay"></param>
-        /// <param name="jobArgs"></param>
+        /// <param name="parameter"></param>
         /// <typeparam name="TJob"></typeparam>
         /// <returns></returns>
-        Task<long> ScheduleAsync<TJob>([NotNull] TimeSpan delay, object jobArgs = null) where TJob : IJob;
+        Task<long> ScheduleAsync<TJob>([NotNull] TimeSpan delay, IDictionary<string, string> parameter = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个循环执行任务
         /// </summary>
         /// <param name="cronExpression"></param>
-        /// <param name="jobArgs"></param>
+        /// <param name="parameter"></param>
         /// <typeparam name="TJob"></typeparam>
         /// <returns></returns>
-        Task<long> ScheduleAsync<TJob>([NotNull] string cronExpression, object jobArgs = null) where TJob : IJob;
+        Task<long> ScheduleAsync<TJob>([NotNull] string cronExpression, IDictionary<string, string> parameter = null) where TJob : IJob;
 
         /// <summary>
         /// 调度一个循环执行任务

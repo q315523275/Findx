@@ -14,5 +14,15 @@
         {
             return new Expressionable<T>();
         }
+
+        /// <summary>
+        /// 创建排序表达式
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static Expressionsort<T> CreateOrder<T>() where T : class, new()
+        {
+            return new Expressionsort<T>();
+        }
     }
 }

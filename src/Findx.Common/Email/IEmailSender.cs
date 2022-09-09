@@ -17,6 +17,7 @@ namespace Findx.Email
         /// <param name="body">正文</param>
         /// <param name="isBodyHtml">是否html内容</param>
         Task SendAsync(string to, string subject, string body, bool isBodyHtml = true, CancellationToken token = default);
+        
         /// <summary>
         /// 发送邮件
         /// </summary>
@@ -26,6 +27,7 @@ namespace Findx.Email
         /// <param name="body">正文</param>
         /// <param name="isBodyHtml">是否html内容</param>
         Task SendAsync(string from, string to, string subject, string body, bool isBodyHtml = true, CancellationToken token = default);
+        
         /// <summary>
         /// 发送邮件
         /// </summary>

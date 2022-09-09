@@ -8,13 +8,11 @@ using Findx.Security.Authentication.Jwt;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 using Findx.Mapping;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Enum;
 using Findx.Module.EleAdmin.Models;
 using System.ComponentModel;
-using Findx.AspNetCore.Mvc.Filters;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -26,10 +24,12 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Description("系统-账户")]
     public class AuthController : AreaApiControllerBase
     {
-        private readonly IJwtTokenBuilder _tokenBuilder;
         private readonly IOptions<JwtOptions> _options;
+        
+        private readonly IJwtTokenBuilder _tokenBuilder;
         private readonly ICurrentUser _currentUser;
         private readonly ICacheProvider _cacheProvider;
+        
         private readonly IRepository<SysUserInfo> _repo;
         private readonly IRepository<SysLoginRecordInfo> _recordRepo;
 
@@ -41,6 +41,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <param name="currentUser"></param>
         /// <param name="cacheProvider"></param>
         /// <param name="repo"></param>
+        /// <param name="recordRepo"></param>
         public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheProvider cacheProvider, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo)
         {
             _tokenBuilder = tokenBuilder;
@@ -63,8 +64,14 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             // 验证码正确性验证
             var cache = _cacheProvider.Get();
             var cacheKey = $"verifyCode:" + req.Uuid;
+            var errorCacheKey = $"error:" + req.UserName;
+
             if (cache.Get<string>(cacheKey) != req.Code.ToLower())
                 return CommonResult.Fail("50500", "验证码错误");
+
+            var errorCount = cache.Get<int>(errorCacheKey);
+            if (errorCount >= 5)
+                return CommonResult.Fail("50509", "密码错误次数超出限制");
 
             var accountInfo = await _repo.FirstAsync(it => it.UserName == req.UserName && it.TenantId == req.TenantId);
             // 验证帐号是否存在
@@ -79,7 +86,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 Comments = "账户密码错误",
                 CreatedTime = DateTime.Now,
                 Device = userAgent.OS.Name,
-                Id = Utils.SequentialGuid.Instance.Create(DatabaseType.MySql),
+                Id = Utils.SequentialGuid.Instance.Create(_repo.GetDbType()),
                 Ip = HttpContext.GetClientIp(),
                 LoginType = 1,
                 Os = userAgent.Platform.Name,
@@ -91,9 +98,14 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             // 验证帐号密码是否正确
             if (accountInfo.Password != Utils.Encrypt.Md5By32(req.Password))
             {
+                // 增加错误次数
+                errorCount++;
+                await cache.AddAsync(errorCacheKey, errorCount, TimeSpan.FromMinutes(15));
+                var returnMsg = $"账号密码错误,剩余重试次数{(5 - errorCount)}次";
+                
                 loginLog.LoginType = 1;
-                loginLog.Comments = "账户密码错误";
-                fail = CommonResult.Fail("D1000", "账户密码错误");
+                loginLog.Comments = returnMsg;
+                fail = CommonResult.Fail("D1000", returnMsg);
             }
 
             // 验证账号是否被冻结
@@ -105,17 +117,18 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             }
 
             // 清空验证码
-            cache.Remove(cacheKey);
+            await cache.RemoveAsync(cacheKey);
 
             // 登录日志
             if (fail != null)
             {
-                _recordRepo.Insert(loginLog);
+                await _recordRepo.InsertAsync(loginLog);
                 return fail;
             }
+            
             loginLog.LoginType = 0;
             loginLog.Comments = "登录成功";
-            _recordRepo.Insert(loginLog);
+            await _recordRepo.InsertAsync(loginLog);
 
             // token票据
             var payload = new Dictionary<string, string>
@@ -123,7 +136,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 { ClaimTypes.UserId, accountInfo.Id.SafeString() },
                 { ClaimTypes.UserName, accountInfo.UserName.SafeString() },
                 { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
-                { ClaimTypes.TenantId, req.TenantId.ToString() }
+                { ClaimTypes.TenantId, req.TenantId.ToString() },
+                { ClaimTypes.UserIdTypeName, typeof(Guid).FullName }
             };
             var token = await _tokenBuilder.CreateAsync(payload, _options.Value);
 
@@ -137,18 +151,17 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         [HttpGet("/api/auth/user")]
         [Authorize]
         [Description("查看账户信息")]
-        [AuditOperation]
         public new CommonResult User()
         {
             var userId = _currentUser.UserId.To<Guid>();
-            var tenantId = _currentUser.TenantId.To<Guid>();
+            // var tenantId = _currentUser.TenantId.To<Guid>();
             var userInfo = _repo.First(x => x.Id == userId);
             if (userInfo == null)
                 return CommonResult.Fail("D1000", "账户不存在");
 
-            var roleRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserRoleInfo>>();
-            var menuRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysRoleMenuInfo>>();
-            var appRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysAppInfo>>();
+            var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
+            var menuRepo = GetRequiredService<IRepository<SysRoleMenuInfo>>();
+            var appRepo = GetRequiredService<IRepository<SysAppInfo>>();
 
             var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, selectExpression: x => new RoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }).DistinctBy(x => x.Id);
             var roleIds = roles.Select(x => x.Id);
@@ -178,7 +191,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         public CommonResult Password([FromBody] UpdatePasswordRequest req)
         {
             var userId = _currentUser.UserId.To<Guid>();
-            var tenantId = _currentUser.TenantId.To<Guid>();
+            // var tenantId = _currentUser.TenantId.To<Guid>();
             var userInfo = _repo.First(x => x.Id == userId);
             if (userInfo == null)
                 return CommonResult.Fail("D1000", "账户不存在");

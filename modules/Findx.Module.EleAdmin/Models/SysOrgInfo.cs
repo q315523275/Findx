@@ -44,12 +44,17 @@ namespace Findx.Module.EleAdmin.Models
 		/// <summary>
 		/// 负责人id
 		/// </summary>
-		public Guid LeaderId { get; set; } = Guid.Empty;
+		public Guid? LeaderId { get; set; } = Guid.Empty;
 
 		/// <summary>
-		/// 排序号
+		/// 负责人昵称
 		/// </summary>
-		public int Sort { get; set; }
+		public string LeaderNickname { get; set; }
+
+        /// <summary>
+        /// 排序号
+        /// </summary>
+        public int Sort { get; set; }
 
 		/// <summary>
 		/// 备注

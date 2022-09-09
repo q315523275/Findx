@@ -49,11 +49,11 @@ namespace Findx.AspNetCore.Mvc
         /// <returns></returns>
         protected virtual List<OrderByParameter<TModel>> CreatePageOrderExpression(TQueryParameter request)
         {
-            var multiOrderBy = new List<OrderByParameter<TModel>>();
+            var orderExp = ExpressionBuilder.CreateOrder<TModel>();
             if (typeof(TModel).IsAssignableTo(typeof(ISort)))
-                multiOrderBy.Add(new OrderByParameter<TModel> { Expression = it => (it as ISort).Sort, SortDirection = ListSortDirection.Ascending });
-            multiOrderBy.Add(new OrderByParameter<TModel> { Expression = it => it.Id, SortDirection = ListSortDirection.Descending });
-            return multiOrderBy;
+                orderExp.OrderBy(it => (it as ISort).Sort);
+            orderExp.OrderByDescending(it => it.Id);
+            return orderExp.ToSort();
         }
 
         /// <summary>

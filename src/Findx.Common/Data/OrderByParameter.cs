@@ -6,16 +6,6 @@ using System.Linq.Expressions;
 namespace Findx.Data
 {
     /// <summary>
-    /// 仓储使用多排
-    /// </summary>
-    public class MultiOrderBy<TEntity>
-    {
-        /// <summary>
-        /// 排序集
-        /// </summary>
-        public List<OrderByParameter<TEntity>> OrderBy { set; get; } = new List<OrderByParameter<TEntity>>();
-    }
-    /// <summary>
     /// 排序参数
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>

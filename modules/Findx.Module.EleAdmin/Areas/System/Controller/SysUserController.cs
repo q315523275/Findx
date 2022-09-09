@@ -54,31 +54,30 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <returns></returns>
         protected override List<OrderByParameter<SysUserInfo>> CreatePageOrderExpression(QueryUserRequest request)
         {
-            var multiOrderBy = new List<OrderByParameter<SysUserInfo>>();
-
+            var orderExp = ExpressionBuilder.CreateOrder<SysUserInfo>();
             switch (request.SortField)
             {
                 case "userName":
-                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.UserName, SortDirection = request.SortDirection });
+                    orderExp.Order(it => it.UserName, request.SortDirection);
                     break;
                 case "nickname":
-                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Nickname, SortDirection = request.SortDirection });
+                    orderExp.Order(it => it.Nickname, request.SortDirection);
                     break;
                 case "sex":
-                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Sex, SortDirection = request.SortDirection });
+                    orderExp.Order(it => it.Sex, request.SortDirection);
                     break;
                 case "phone":
-                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Phone, SortDirection = request.SortDirection });
+                    orderExp.Order(it => it.Phone, request.SortDirection);
                     break;
                 case "createdTime":
-                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.CreatedTime, SortDirection = request.SortDirection });
+                    orderExp.Order(it => it.CreatedTime, request.SortDirection);
                     break;
                 case "status":
-                    multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Status, SortDirection = request.SortDirection });
+                    orderExp.Order(it => it.Status, request.SortDirection);
                     break;
             }
-            multiOrderBy.Add(new OrderByParameter<SysUserInfo> { Expression = it => it.Id, SortDirection = ListSortDirection.Descending });
-            return multiOrderBy;
+            orderExp.OrderByDescending(it => it.Id);
+            return orderExp.ToSort();
         }
 
         /// <summary>
@@ -193,8 +192,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         {
             if (result > 0)
             {
-                var repo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserInfo>>();
-                var roleRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserRoleInfo>>();
+                var repo = GetRequiredService<IRepository<SysUserInfo>>();
+                var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
 
                 var user = await repo.FirstAsync(x => x.UserName == req.UserName);
                 if (user != null)
@@ -227,7 +226,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         {
             if (result > 0)
             {
-                var roleRepo = HttpContext.RequestServices.GetRequiredService<IRepository<SysUserRoleInfo>>();
+                var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
 
                 var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = model.Id, TenantId = Findx.Data.TenantManager.Current });
                 await roleRepo.DeleteAsync(x => x.UserId == model.Id);

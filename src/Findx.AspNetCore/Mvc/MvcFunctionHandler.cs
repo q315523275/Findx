@@ -71,7 +71,7 @@ namespace Findx.AspNetCore.Mvc
                     controller = new MvcFunction()
                     {
                         Name = typeInfo.GetDescription(),
-                        Area = routeValues["area"],
+                        Area = routeValues.ContainsKey("area") ? routeValues["area"] : null,
                         Controller = item.ControllerName,
                         IsController = true,
                         AccessType = typeAccessType,

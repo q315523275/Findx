@@ -11,25 +11,26 @@ namespace Findx.Locks
         /// <summary>
         /// 是否锁定
         /// </summary>
-        /// <param name="_lock"></param>
+        /// <param name="lock"></param>
         /// <returns></returns>
-        public static bool IsLocked(this RLock _lock)
+        public static bool IsLocked(this RLock @lock)
         {
-            return _lock != null;
+            return @lock != null;
         }
 
         /// <summary>
         /// 使用锁执行一个异步方法
         /// </summary>
+        /// <param name="lock"></param>
         /// <param name="key">锁的键</param>
         /// <param name="span">耗时时间</param>
         /// <param name="executeAction">要执行的方法</param>
-        public static async Task ExecuteWithLockAsync(this ILock _lock, string key, TimeSpan span, Func<Task> executeAction)
+        public static async Task ExecuteWithLockAsync(this ILock @lock, string key, TimeSpan span, Func<Task> executeAction)
         {
             if (executeAction == null)
                 return;
 
-            var rlock = await _lock.AcquireAsync(key, timeUntilExpires: span);
+            var rlock = await @lock.AcquireAsync(key, timeUntilExpires: span);
             if (rlock.IsLocked())
             {
                 try

@@ -13,7 +13,6 @@ namespace Findx.Serialization
 		public static byte[] SerializeToBytes<T>(this ISerializer serializer, T model)
 		{
             return serializer.Serialize(model);
-
         }
 	}
 }

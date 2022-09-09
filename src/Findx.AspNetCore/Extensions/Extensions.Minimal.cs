@@ -54,14 +54,14 @@ namespace Findx.AspNetCore.Extensions
             #endregion
 
             IServiceProvider provider = app.Services;
-            IApplicationBuilder applicationBuilder = provider.GetRequiredService<IApplicationBuilder>();
+            IApplicationBuilder applicationBuilder = app as IApplicationBuilder;
             ILogger logger = provider.GetLogger("ApplicationBuilderExtensions");
 
             logger.LogInformation(0, "框架初始化开始");
 
             // 打印框架启动日志
             StartupLogger startupLogger = provider.GetService<StartupLogger>();
-            startupLogger.Print(provider);
+            startupLogger?.Print(provider);
 
             Stopwatch watch = Stopwatch.StartNew();
             // 框架构建接口
