@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Findx.ExceptionHandling
+﻿namespace Findx.ExceptionHandling
 {
     /// <summary>
     /// 异常通知上下文

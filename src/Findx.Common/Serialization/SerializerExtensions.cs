@@ -1,6 +1,8 @@
-﻿using System;
-namespace Findx.Serialization
+﻿namespace Findx.Serialization
 {
+	/// <summary>
+	/// 序列化扩展
+	/// </summary>
 	public static class SerializerExtensions
 	{
 		/// <summary>

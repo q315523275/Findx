@@ -3,7 +3,6 @@ using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Security;
-using Findx.Threading;
 using Findx.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -22,7 +21,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// <summary>
         /// 业务标识
         /// </summary>
-        public string Key { get; set; }
+        public string Key { get; set; } = string.Empty;
         
         /// <summary>
         /// 限定请求时长

@@ -34,44 +34,52 @@ namespace Findx.AspNetCore.Mvc.Filters
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
             var provider = context.HttpContext.RequestServices;
-            var operation = new AuditOperationEntry();
-            var dict = provider.GetRequiredService<ScopedDictionary>();
-            dict.AuditOperation = operation;
-
-            operation.CreatedTime = DateTime.Now;
-            var actionContext = await next();
-            operation.EndedTime = DateTime.Now;
-
-            var serializer = provider.GetRequiredService<IJsonSerializer>();
-            var options = provider.GetRequiredService<IOptions<AuditingOptions>>();
-            if (!options.Value.Enabled)
-            {
-                return;
-            }
+            var httpContext = context.HttpContext;
+            // 功能识别
             var function = context.GetExecuteFunction();
             if (function == null)
             {
                 return;
             }
+            var serializer = provider.GetRequiredService<IJsonSerializer>();
+            var options = provider.GetRequiredService<IOptions<AuditingOptions>>();
+            var dict = provider.GetRequiredService<ScopedDictionary>();
+            // 数据权限有效角色，即有当前功能权限的角色
+            var functionAuthorization = provider.GetRequiredService<IFunctionAuthorization>();
+            var roleName = functionAuthorization.GetOkRoles(function, context.HttpContext.User);
+            dict.DataAuthValidRoleNames = roleName;
             
-            operation.FunctionName = function.Name;
-            operation.Ip = actionContext.HttpContext.GetClientIp();
-            operation.UserAgent = actionContext.HttpContext.Request.Headers["User-Agent"].FirstOrDefault();
-            operation.Message = actionContext.Exception?.FormatMessage();
-            if (operation.Message.IsNullOrWhiteSpace() && actionContext.Result is CommonResult commonResult)
+            // 审计数据初始化
+            var operation = new AuditOperationEntry
             {
-                if (!commonResult.IsSuccess())
-                {
-                    operation.Message = commonResult.Msg;
-                }
-            }
-            if (context.HttpContext.User.Identity is { IsAuthenticated: true } and ClaimsIdentity identity)
+                Ip = httpContext.GetClientIp(),
+                UserAgent = httpContext.Request.Headers.GetOrDefault("User-Agent"),
+                CreatedTime = DateTime.Now
+            };
+            // 认证参数
+            if (httpContext.User.Identity is { IsAuthenticated: true } and ClaimsIdentity identity)
             {
                 operation.UserId = identity.GetUserId();
                 operation.UserName = identity.GetUserName();
                 operation.NickName = identity.GetNickname();
                 operation.TenantId = identity.GetTenantId();
             }
+            
+            dict.AuditOperation = operation;
+            
+            // 执行业务
+            var actionContext = await next();
+            
+            // 审计执行判断
+            if (!options.Value.Enabled || !function.AuditOperationEnabled)
+            {
+                return;
+            }
+
+            operation.EndedTime = DateTime.Now;
+            operation.FunctionName = function.Name;
+            operation.Exception = actionContext.Exception;
+ 
             // Mvc参数
             dict.AuditOperation.ExtendData.Add("http.url", context.HttpContext.Request.GetDisplayUrl());
             dict.AuditOperation.ExtendData.Add("http.path", context.HttpContext.Request.Path);
@@ -82,6 +90,11 @@ namespace Findx.AspNetCore.Mvc.Filters
             if (options.Value.RecordParameters)
             {
                 dict.AuditOperation.ExtendData.Add("http.request", SerializeConvertArguments(context.ActionArguments, serializer));
+            }
+            
+            // 返回结果
+            if (options.Value.RecordReturnValue)
+            {
                 if (actionContext.Exception is FindxException findxException)
                 {
                     dict.AuditOperation.ExtendData.Add("http.response", serializer.Serialize(CommonResult.Fail(findxException.ErrorCode, findxException.ErrorMessage)));
@@ -91,7 +104,7 @@ namespace Findx.AspNetCore.Mvc.Filters
                     dict.AuditOperation.ExtendData.Add("http.response", SerializeConvertResponse(actionContext.Result, serializer));
                 }
             }
-
+            
             // 存储
             var store = provider.GetService<IAuditStore>();
             if (store != null)

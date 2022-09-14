@@ -27,7 +27,7 @@ namespace Findx.Utils
             string dir = Path.GetDirectoryName(fileName);
             if (dir != null)
             {
-                Directorys.CreateIfNotExists(dir);
+                DirectoryTool.CreateIfNotExists(dir);
             }
             File.Create(fileName);
         }

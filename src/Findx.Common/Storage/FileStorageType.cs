@@ -2,6 +2,9 @@
 
 namespace Findx.Storage
 {
+	/// <summary>
+	/// 文件存储器类型
+	/// </summary>
     public enum FileStorageType
 	{
 		/// <summary>

@@ -1,9 +1,5 @@
 ﻿using Findx.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System.Net;
 using System.Net.Mail;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.Email
@@ -14,6 +10,12 @@ namespace Findx.Email
     public class DefaultEmailSender : EmailSenderBase
     {
         private readonly ILogger<DefaultEmailSender> _logger;
+        
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="optionsMonitor"></param>
         public DefaultEmailSender(ILogger<DefaultEmailSender> logger, IOptionsMonitor<EmailSenderOptions> optionsMonitor)
         {
             _logger = logger;
@@ -25,6 +27,11 @@ namespace Findx.Email
             EmailSenderOptions = changeOptions;
         }
 
+        /// <summary>
+        /// 发送
+        /// </summary>
+        /// <param name="mail"></param>
+        /// <param name="token"></param>
         protected override async Task SendEmailAsync(MailMessage mail, CancellationToken token = default)
         {
             using SmtpClient client = new SmtpClient(EmailSenderOptions.Host, EmailSenderOptions.Port)

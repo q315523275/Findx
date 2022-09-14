@@ -6,14 +6,14 @@ namespace Findx.Utils
     /// <summary>
     /// 目录辅助操作类
     /// </summary>
-    public class Directorys
+    public class DirectoryTool
     {
         /// <summary>
         /// 获取程序根目录
         /// </summary>
         public static string RootPath()
         {
-            return Path.GetDirectoryName(typeof(Directorys).Assembly.Location);
+            return Path.GetDirectoryName(typeof(DirectoryTool).Assembly.Location);
         }
 
         /// <summary>

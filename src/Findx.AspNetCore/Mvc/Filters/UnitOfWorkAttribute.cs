@@ -13,7 +13,7 @@ namespace Findx.AspNetCore.Mvc.Filters
 		/// <summary>
 		/// 数据连接标识,不传默认使用主连接
 		/// </summary>
-		public string DbKey { get; set; }
+		public string DbKey { get; set; } = null;
 		
 		/// <summary>
 		/// Called before the action executes, after model binding is complete.

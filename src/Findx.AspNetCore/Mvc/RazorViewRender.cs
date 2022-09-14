@@ -87,8 +87,10 @@ namespace Findx.AspNetCore.Mvc
 
         private ActionContext GetActionContext()
         {
-            var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = this._serviceProvider;
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = this._serviceProvider
+            };
             return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
         }
     }

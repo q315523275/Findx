@@ -1,8 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 namespace Findx.ExceptionHandling
 {
     /// <summary>
@@ -20,6 +16,11 @@ namespace Findx.ExceptionHandling
         /// </summary>
         private readonly IEnumerable<IExceptionSubscriber> _exceptionSubscribers;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="exceptionSubscribers"></param>
         public ExceptionNotifier(ILogger<ExceptionNotifier> logger, IEnumerable<IExceptionSubscriber> exceptionSubscribers)
         {
             _logger = logger;
@@ -30,6 +31,7 @@ namespace Findx.ExceptionHandling
         /// 通知
         /// </summary>
         /// <param name="context">异常通知上下文</param>
+        /// <param name="token"></param>
         public async Task NotifyAsync(ExceptionNotificationContext context, CancellationToken token = default)
         {
             Check.NotNull(context, nameof(context));
@@ -38,7 +40,7 @@ namespace Findx.ExceptionHandling
             {
                 try
                 {
-                    await exceptionSubscriber.HandleAsync(context);
+                    await exceptionSubscriber.HandleAsync(context, token);
                 }
                 catch (Exception ex)
                 {

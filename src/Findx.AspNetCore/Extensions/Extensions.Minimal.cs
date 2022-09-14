@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Findx.Builders;
@@ -53,20 +52,20 @@ namespace Findx.AspNetCore.Extensions
             Console.ForegroundColor = defaultColor;
             #endregion
 
-            IServiceProvider provider = app.Services;
-            IApplicationBuilder applicationBuilder = app as IApplicationBuilder;
-            ILogger logger = provider.GetLogger("ApplicationBuilderExtensions");
+            var provider = app.Services;
+            IApplicationBuilder applicationBuilder = app;
+            var logger = provider.GetLogger("ApplicationBuilderExtensions");
 
             logger.LogInformation(0, "框架初始化开始");
 
             // 打印框架启动日志
-            StartupLogger startupLogger = provider.GetService<StartupLogger>();
+            var startupLogger = provider.GetService<StartupLogger>();
             startupLogger?.Print(provider);
 
-            Stopwatch watch = Stopwatch.StartNew();
+            var watch = Stopwatch.StartNew();
             // 框架构建接口
-            IFindxBuilder findxBuilder = provider.GetService<IFindxBuilder>();
-            IEnumerable<FindxModule> modules = findxBuilder.Modules;
+            var findxBuilder = provider.GetRequiredService<IFindxBuilder>();
+            var modules = findxBuilder.Modules;
             logger.LogInformation($"共有 {modules.Count()} 个模块需要初始化");
             // 所有模块初始化
             foreach (FindxModule module in findxBuilder.Modules)
@@ -99,7 +98,7 @@ namespace Findx.AspNetCore.Extensions
         /// <summary>
         /// 添加Json异常处理器中间件
         /// </summary>
-        /// <param name="builder"></param>
+        /// <param name="app"></param>
         /// <returns></returns>
         public static WebApplication UseJsonExceptionHandler(this WebApplication app)
         {

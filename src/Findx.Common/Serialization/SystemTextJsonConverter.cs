@@ -1,6 +1,4 @@
-﻿using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace Findx.Serialization
 {
@@ -84,14 +82,9 @@ namespace Findx.Serialization
         /// <param name="options"></param>
         public override void Write(Utf8JsonWriter writer, DateTime? value, JsonSerializerOptions options)
         {
-            if (value?.Hour == 0 && value?.Minute == 0 && value?.Second == 0)
-            {
-                writer.WriteStringValue(value?.ToString("yyyy-MM-dd"));
-            }
-            else
-            {
-                writer.WriteStringValue(value?.ToString("yyyy-MM-dd HH:mm:ss"));
-            }
+            writer.WriteStringValue(value is { Hour: 0, Minute: 0, Second: 0 }
+                ? value?.ToString("yyyy-MM-dd")
+                : value?.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }
 

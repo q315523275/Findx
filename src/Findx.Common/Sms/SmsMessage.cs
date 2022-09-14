@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Findx.Sms
+﻿namespace Findx.Sms
 {
     /// <summary>
     /// 短信消息

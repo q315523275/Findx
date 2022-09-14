@@ -5,8 +5,14 @@ using Findx.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.AspNetCore.Mvc.Filters;
+using Findx.AspNetCore.Upload;
+using Findx.AspNetCore.Upload.Params;
+using Findx.Drawing;
+using Findx.Exceptions;
 using Findx.Extensions;
+using Findx.Utils.Files;
 using FreeSql.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -39,6 +45,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 
                 var x = await repo1.DeleteAsync();
                 var y = await repo2.DeleteAsync();
+                
+                throw new FindxException("500", "弄个异常玩玩");
 
             //    throw new Exception("123");
             //
@@ -78,7 +86,6 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 
             return CommonResult.Success(new { Name = "测试", Date = DateTime.Now, Param = param.ToJson() });
         }
-
 
         public class TestNewsInfo: IEntity
         {

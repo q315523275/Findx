@@ -76,7 +76,7 @@ namespace Findx.AspNetCore.Extensions
             Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
             if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak.IsNullOrWhiteSpace()) return httpClientBuilder;
 
-            var BreakTimeSpan = Findx.Utils.Time.ToTimeSpan(durationOfBreak);
+            var breakTimeSpan = Utils.Time.ToTimeSpan(durationOfBreak);
 
             httpClientBuilder.AddTransientHttpErrorPolicy(build =>
             {
@@ -86,21 +86,21 @@ namespace Findx.AspNetCore.Extensions
                             .OrResult(rsp => rsp.StatusCode == HttpStatusCode.InternalServerError || rsp.StatusCode == HttpStatusCode.RequestTimeout)
                             .CircuitBreakerAsync(
                                   handledEventsAllowedBeforeBreaking: exceptionsAllowedBeforeBreaking,
-                                  durationOfBreak: BreakTimeSpan,
+                                  durationOfBreak: breakTimeSpan,
                                   onBreak: (res, ts) =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-断路器即将熔断{ts.TotalSeconds}秒,原因:{res?.Exception?.Message}");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-断路器即将熔断{ts.TotalSeconds}秒,原因:{res?.Exception?.Message}");
                                   },
                                   onReset: () =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-断路器熔断重置");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-断路器熔断重置");
                                   },
                                   onHalfOpen: () =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-断路器半开启");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-断路器半开启");
                                   });
             });
 
@@ -130,15 +130,12 @@ namespace Findx.AspNetCore.Extensions
                             .Or<BrokenCircuitException>()
                             .OrResult(rsp => rsp.StatusCode == HttpStatusCode.InternalServerError || rsp.StatusCode == HttpStatusCode.RequestTimeout)
                             .FallbackAsync(
-                                  fallbackAction: (cancellationToken) =>
-                                  {
-                                      return Task.FromResult(new HttpResponseMessage { Content = new StringContent(fallbackRspResult), StatusCode = (HttpStatusCode)fallbackRspStatus });
-                                  },
+                                  fallbackAction: (_) => Task.FromResult(new HttpResponseMessage { Content = new StringContent(fallbackRspResult), StatusCode = (HttpStatusCode)fallbackRspStatus }),
                                   onFallbackAsync: (res) =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
-                                      _logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{fallbackRspResult}");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
+                                      logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{fallbackRspResult}");
                                       return Task.CompletedTask;
                                   });
             });
@@ -165,15 +162,12 @@ namespace Findx.AspNetCore.Extensions
                             .Or<BrokenCircuitException>()
                             .OrResult(rsp => rsp.StatusCode == HttpStatusCode.InternalServerError || rsp.StatusCode == HttpStatusCode.RequestTimeout)
                             .FallbackAsync(
-                                  fallbackAction: async (cancellationToken) =>
-                                  {
-                                      return await fallbackAction.Invoke(cancellationToken);
-                                  },
+                                  fallbackAction: async (cancellationToken) => await fallbackAction.Invoke(cancellationToken),
                                   onFallbackAsync: async (res) =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
-                                      _logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{await res?.Result?.Content?.ReadAsStringAsync()}");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
+                                      logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{await res?.Result?.Content.ReadAsStringAsync()!}");
                                   });
             });
 

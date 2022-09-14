@@ -3,9 +3,15 @@ using System.Text.Json.Serialization;
 
 namespace Findx.Serialization
 {
+    /// <summary>
+    /// 序列化
+    /// </summary>
     public class SystemTextUtf8ByteSerializer : ISerializer
     {
         readonly JsonSerializerOptions _options;
+        /// <summary>
+        /// Ctor
+        /// </summary>
         public SystemTextUtf8ByteSerializer()
         {
             _options = new JsonSerializerOptions(JsonSerializerDefaults.Web)
@@ -37,16 +43,32 @@ namespace Findx.Serialization
             };
         }
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="options"></param>
         public SystemTextUtf8ByteSerializer(JsonSerializerOptions options)
         {
             _options = options;
         }
 
+        /// <summary>
+        /// 反序列化
+        /// </summary>
+        /// <param name="bytes"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public T Deserialize<T>(byte[] bytes)
         {
             return JsonSerializer.Deserialize<T>(bytes, _options);
         }
 
+        /// <summary>
+        /// 序列化
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public byte[] Serialize<T>(T obj)
         {
             return JsonSerializer.SerializeToUtf8Bytes(obj, _options);

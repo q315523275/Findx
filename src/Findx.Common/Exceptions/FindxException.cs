@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Text.Json.Serialization;
 
 namespace Findx.Exceptions
 {
@@ -19,6 +19,7 @@ namespace Findx.Exceptions
         /// Ctor
         /// </summary>
         /// <param name="code"></param>
+        [JsonConstructor]
         public FindxException(string code)
         {
             ErrorCode = code;
@@ -28,6 +29,7 @@ namespace Findx.Exceptions
         /// </summary>
         /// <param name="code"></param>
         /// <param name="message"></param>
+        [JsonConstructor]
         public FindxException(string code, string message) : base(message)
         {
             ErrorCode = code;
@@ -39,6 +41,7 @@ namespace Findx.Exceptions
         /// <param name="code"></param>
         /// <param name="message"></param>
         /// <param name="exception"></param>
+        [JsonConstructor]
         public FindxException(string code, string message, Exception exception) : base(message, exception)
         {
             ErrorCode = code;

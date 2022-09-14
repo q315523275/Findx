@@ -1,10 +1,11 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Findx.Extensions;
 
 namespace Findx.Locks
 {
+    /// <summary>
+    /// 锁基类
+    /// </summary>
     public abstract class LockBase : ILock
     {
         /// <summary>
@@ -19,19 +20,21 @@ namespace Findx.Locks
         /// <exception cref="NotImplementedException"></exception>
         public async Task<RLock> AcquireAsync(string resource, TimeSpan? timeUntilExpires = null, bool isWait = false, bool renew = false, CancellationToken cancellationToken = default)
         {
-            if (!timeUntilExpires.HasValue)
-                timeUntilExpires = TimeSpan.FromSeconds(30);
+            timeUntilExpires ??= TimeSpan.FromSeconds(30);
 
-            DateTime startTime = DateTime.Now;
-            bool gotLock = false;
-            string lockId = GenerateNewLockId();
+            var startTime = DateTime.Now;
+            var gotLock = false;
+            var lockId = GenerateNewLockId();
             do
             {
                 try
                 {
                     gotLock = await TryLockAsync(resource, lockId, timeUntilExpires);
                 }
-                catch { }
+                catch
+                {
+                    // ignored
+                }
 
                 // 拿到锁
                 // 线程取消
@@ -54,30 +57,63 @@ namespace Findx.Locks
                 if (startTime.Add(timeUntilExpires.Value) >= DateTime.Now.Add(-delayAmount))
                     break;
 
-                await Task.Delay(delayAmount);
+                await Task.Delay(delayAmount, cancellationToken);
 
                 Thread.Yield();
 
             } while (!cancellationToken.IsCancellationRequested);
 
-            if (!gotLock)
-                return null;
-
-            return new RLock(resource, lockId, this, timeUntilExpires, autoRenew: renew, period: timeUntilExpires.Value.TotalMilliseconds.To<int>() / 3);
+            return !gotLock ? null : new RLock(resource, lockId, this, timeUntilExpires, autoRenew: renew, period: timeUntilExpires.Value.TotalMilliseconds.To<int>() / 3);
         }
+        
+        /// <summary>
+        /// 创建锁标识
+        /// </summary>
+        /// <returns></returns>
         protected string GenerateNewLockId()
         {
             return Guid.NewGuid().ToString();
         }
+        
+        /// <summary>
+        /// 创建锁键值
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         protected string GenerateNewLockKey(string key)
         {
             return $"lock:{key}";
         }
 
-
+        /// <summary>
+        /// 锁类型
+        /// </summary>
         public abstract LockType LockType { get; }
+        
+        /// <summary>
+        /// 尝试获取锁
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <param name="lockId"></param>
+        /// <param name="timeUntilExpires"></param>
+        /// <returns></returns>
         public abstract Task<bool> TryLockAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null);
+        
+        /// <summary>
+        /// 释放锁
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <param name="lockId"></param>
+        /// <returns></returns>
         public abstract Task ReleaseAsync(string resource, string lockId);
+        
+        /// <summary>
+        /// 锁续期
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <param name="lockId"></param>
+        /// <param name="timeUntilExpires"></param>
+        /// <returns></returns>
         public abstract Task RenewAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null);
     }
 }

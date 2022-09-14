@@ -29,7 +29,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             }
             else
             {
-                logger.LogError(context.Exception, "WebApi全局异常");
+                logger?.LogError(context.Exception, "WebApi全局异常");
                 context.Result = new JsonResult(CommonResult.Fail("500", "系统开小差,请稍后再试"));
             }
         }

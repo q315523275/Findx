@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Findx.Utils.Files;
 
 namespace Findx.Storage
@@ -44,17 +39,14 @@ namespace Findx.Storage
 
             using (var stream = await storage.GetFileStreamAsync(path, cancellationToken))
             {
-                if (stream != null)
-                {
-                    byte[] bytes = new byte[stream.Length];
-                    stream.Read(bytes, 0, bytes.Length);
-                    stream.Seek(0, SeekOrigin.Begin);
+                if (stream == null) return default;
+                
+                var bytes = new byte[stream.Length];
+                await stream.ReadAsync(bytes, 0, bytes.Length);
+                stream.Seek(0, SeekOrigin.Begin);
 
-                    return storage.Serializer.Deserialize<T>(bytes);
-                }
+                return storage.Serializer.Deserialize<T>(bytes);
             }
-
-            return default;
         }
 
         /// <summary>

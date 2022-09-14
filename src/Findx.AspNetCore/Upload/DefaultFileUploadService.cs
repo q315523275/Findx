@@ -26,7 +26,7 @@ namespace Findx.AspNetCore.Upload
         {
             if (param.FormFile == null || param.FormFile.Length < 1)
             {
-                if (param.Request.Form.Files != null && param.Request.Form.Files.Any())
+                if (param.Request.Form.Files.Any())
                 {
                     param.FormFile = param.Request.Form.Files[0];
                 }
@@ -51,20 +51,21 @@ namespace Findx.AspNetCore.Upload
         {
             var date = DateTime.Now;
 
-            var name = formFile.FileName;
-            var size = formFile.Length;
-            var path = Path.Combine(relativePath, date.ToString("yyyy"), date.ToString("MM"), date.ToString("dd"));
-            var id = Guid.NewGuid();
-            var fileInfo = new FileSpec(path, size, name, id.ToString());
-            fileInfo.SaveName = $"{id.ToString().Replace("-", "")}.{fileInfo.Extension}";
-
-            var fullDir = Path.Combine(rootPath, fileInfo.Path);
-            if (!Directory.Exists(fullDir))
-            {
-                Directory.CreateDirectory(fullDir);
-            }
-
-            var fullPath = Path.Combine(fullDir, fileInfo.SaveName);
+            var name = formFile.FileName; // 文件名
+            var size = formFile.Length; // 文件大小
+            var pathDir = Path.Combine(relativePath, date.ToString("yyyy"), date.ToString("MM"), date.ToString("dd")); // 文件存储目录
+            var id = Guid.NewGuid(); // 文件编号
+            var saveName = $"{id.ToString().Replace("-", "")}{System.IO.Path.GetExtension(name)}"; // 保存文件名
+            var path = Path.Combine(pathDir, saveName); // 文件相对存储全路径
+            
+            // 文件信息
+            var fileInfo = new FileSpec(path, size, name, id.ToString()) { SaveName = saveName };
+            // 全目录
+            var fullDir = Path.Combine(rootPath, pathDir);
+            // 创建文件夹
+            Findx.Utils.DirectoryTool.CreateIfNotExists(fullDir);
+            // 文件全路径
+            var fullPath = Path.Combine(fullDir, saveName);
             fileInfo.Md5 = await SaveWithMd5Async(formFile, fullPath, cancellationToken);
             return fileInfo;
         }
@@ -78,7 +79,7 @@ namespace Findx.AspNetCore.Upload
         {
             if (param.FormFiles == null || !param.FormFiles.Any())
             {
-                if (param.Request.Form.Files != null && param.Request.Form.Files.Any())
+                if (param.Request.Form.Files.Any())
                 {
                     param.FormFiles = param.Request.Form.Files.AsEnumerable();
                 }
@@ -89,11 +90,7 @@ namespace Findx.AspNetCore.Upload
                 throw new FindxException("4401", "请选择文件!");
             }
 
-            var tasks = new List<Task<FileSpec>>();
-            foreach (var formFile in param.FormFiles)
-            {
-                tasks.Add(SaveAsync(formFile, param.RelativePath, param.RootPath, cancellationToken));
-            }
+            var tasks = param.FormFiles.Select(formFile => SaveAsync(formFile, param.RelativePath, param.RootPath, cancellationToken));
 
             return await Task.WhenAll(tasks);
         }
@@ -106,7 +103,7 @@ namespace Findx.AspNetCore.Upload
         /// <param name="cancellationToken">取消令牌</param>
         public async Task SaveAsync(IFormFile formFile, string savePath, CancellationToken cancellationToken = default)
         {
-            using var stream = new FileStream(savePath, FileMode.Create);
+            await using var stream = new FileStream(savePath, FileMode.Create);
             await formFile.CopyToAsync(stream, cancellationToken);
         }
 
@@ -118,13 +115,9 @@ namespace Findx.AspNetCore.Upload
         /// <param name="cancellationToken">取消令牌</param>
         public async Task<string> SaveWithMd5Async(IFormFile formFile, string savePath, CancellationToken cancellationToken = default)
         {
-            string md5;
-            using (var stream = new FileStream(savePath, FileMode.Create))
-            {
-                md5 = Md5(stream);
-                await formFile.CopyToAsync(stream, cancellationToken);
-            }
-
+            await using var stream = new FileStream(savePath, FileMode.Create);
+            var md5 = Md5(stream);
+            await formFile.CopyToAsync(stream, cancellationToken);
             return md5;
         }
 
@@ -138,7 +131,6 @@ namespace Findx.AspNetCore.Upload
             {
                 return string.Empty;
             }
-
             using var md5Hash = MD5.Create();
             return BitConverter.ToString(md5Hash.ComputeHash(stream)).Replace("-", "");
         }

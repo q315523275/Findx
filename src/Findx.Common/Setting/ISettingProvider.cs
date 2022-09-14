@@ -1,5 +1,4 @@
-﻿using System;
-namespace Findx.Setting
+﻿namespace Findx.Setting
 {
 	/// <summary>
     /// 配置提供器

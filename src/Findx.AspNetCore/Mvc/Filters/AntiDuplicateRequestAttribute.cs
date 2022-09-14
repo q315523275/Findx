@@ -21,12 +21,12 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// <summary>
         /// 业务标识
         /// </summary>
-        public string Key { get; set; }
+        public string Key { get; set; } = string.Empty;
 
         /// <summary>
         /// 是否分布式
         /// </summary>
-        public bool IsDistributed { set; get; }
+        public bool IsDistributed { set; get; } = false;
 
         /// <summary>
         /// 再次提交时间间隔
@@ -48,7 +48,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         {
             Check.NotNull(context, nameof(context));
 
-            ILock rlock = GetLock(context);
+            var rlock = GetLock(context);
             var key = GetLockKey(context);
             var expir = Time.ToTimeSpan(Interval);
 
@@ -78,7 +78,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// <returns></returns>
         private ILock GetLock(ActionExecutingContext context)
         {
-            var provider = context.HttpContext.RequestServices.GetService<ILockProvider>();
+            var provider = context.HttpContext.RequestServices.GetRequiredService<ILockProvider>();
             if (IsDistributed)
                 return provider.Get(Locks.LockType.Distributed);
             return provider.Get(Locks.LockType.Local);
@@ -98,7 +98,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             if (currentUser.Identity != null && Type == LockType.User && currentUser.Identity.IsAuthenticated)
                 userId = $"{currentUser.Identity.GetUserId()}_";
 
-            if (Type == LockType.IP)
+            if (Type == LockType.Ip)
                 userId = $"{context.HttpContext.GetClientIp()}_";
 
             return Key.IsNullOrWhiteSpace() ? $"ADR:{userId}{context.HttpContext.Request.Path}" : $"ADR:{userId}{Key}";
@@ -117,7 +117,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// <summary>
         /// 用户级别锁,同一IP只能同时发起一个请求
         /// </summary>
-        IP = 1,
+        Ip = 1,
 
         /// <summary>
         /// 全局锁，该操作同时只有一个用户请求被执行

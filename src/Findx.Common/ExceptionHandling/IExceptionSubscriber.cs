@@ -1,5 +1,4 @@
 ﻿using Findx.DependencyInjection;
-using System.Threading;
 using System.Threading.Tasks;
 namespace Findx.ExceptionHandling
 {

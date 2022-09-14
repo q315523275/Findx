@@ -1,4 +1,5 @@
-﻿using Findx.Extensions;
+﻿using Findx.Data;
+using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,16 @@ namespace Findx.AspNetCore.Mvc
         protected TService GetRequiredService<TService>()
         {
             return HttpContext.RequestServices.GetRequiredService<TService>();
+        }
+        
+        /// <summary>
+        /// 获取仓储方法
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        protected IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, IEntity, new()
+        {
+            return Request.HttpContext.RequestServices.GetRequiredService<IRepository<TEntity>>();
         }
     }
 }

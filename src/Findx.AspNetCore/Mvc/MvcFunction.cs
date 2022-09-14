@@ -1,5 +1,4 @@
-﻿using System;
-using Findx.Security;
+﻿using Findx.Security;
 
 namespace Findx.AspNetCore.Mvc
 {

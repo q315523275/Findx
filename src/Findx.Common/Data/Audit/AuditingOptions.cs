@@ -21,4 +21,9 @@ public class AuditingOptions: IOptions<AuditingOptions>
     /// 是否记录请求参数
     /// </summary>
     public bool RecordParameters { set; get; }
+    
+    /// <summary>
+    /// 是否记录返回结果
+    /// </summary>
+    public bool RecordReturnValue { set; get; }
 }

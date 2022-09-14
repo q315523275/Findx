@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Findx.Data
+﻿namespace Findx.Data
 {
     /// <summary>
     /// 定义实体创建时间

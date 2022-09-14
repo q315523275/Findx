@@ -10,6 +10,10 @@ namespace Findx.Data
     {
         private readonly IGuidGenerator _generator;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="generator"></param>
         public SequentialGuidGenerator(IGuidGenerator generator)
         {
             _generator = generator;

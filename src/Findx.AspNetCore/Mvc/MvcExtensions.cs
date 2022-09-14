@@ -1,5 +1,4 @@
-﻿using System;
-using Findx.DependencyInjection;
+﻿using Findx.DependencyInjection;
 using Findx.Security;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -20,7 +19,7 @@ namespace Findx.AspNetCore.Mvc
             Check.NotNull(context, nameof(context));
 
             var provider = context.HttpContext.RequestServices;
-            var dict = provider.GetService<ScopedDictionary>();
+            var dict = provider.GetRequiredService<ScopedDictionary>();
             if (dict.Function != null)
             {
                 return dict.Function;
@@ -49,7 +48,7 @@ namespace Findx.AspNetCore.Mvc
             Check.NotNull(context, nameof(context));
 
             string area = null;
-            if (context.RouteData.Values.TryGetValue("area", out object value))
+            if (context.RouteData.Values.TryGetValue("area", out var value))
             {
                 area = (string)value;
                 if (area.IsNullOrWhiteSpace())
@@ -67,7 +66,7 @@ namespace Findx.AspNetCore.Mvc
         {
             Check.NotNull(context, nameof(context));
 
-            return context.RouteData.Values["controller"].ToString();
+            return context.RouteData.Values["controller"].SafeString();
         }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace Findx.AspNetCore.Mvc
         public static string GetActionName(this ActionContext context)
         {
             Check.NotNull(context, nameof(context));
-            return context.RouteData.Values["action"].ToString();
+            return context.RouteData.Values["action"].SafeString();
         }
     }
 }

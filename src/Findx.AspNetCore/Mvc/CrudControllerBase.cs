@@ -1,8 +1,6 @@
 ﻿using Findx.Data;
-using Findx.Extensions;
 using Findx.Mapping;
 using Findx.Security;
-using Findx.Utils;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -10,6 +8,7 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -22,7 +21,7 @@ namespace Findx.AspNetCore.Mvc
     /// <typeparam name="TKey"></typeparam>
     /// <typeparam name="TUserKey"></typeparam>
     public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey, TUserKey>: CrudControllerBase<TModel, TModel, TModel, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
-                where TModel : EntityBase<TKey>, IResponse, new()
+        where TModel : EntityBase<TKey>, IResponse, new()
         where TRequest : IRequest, new()
         where TQueryParameter : IPager, new()
         where TKey : IEquatable<TKey>
@@ -164,7 +163,6 @@ namespace Findx.AspNetCore.Mvc
 
             var repo = GetRepository<TModel>();
             var principal = GetService<IPrincipal>();
-            var dbType = repo.GetDbType();
 
             Check.NotNull(repo, nameof(repo));
 
@@ -181,10 +179,7 @@ namespace Findx.AspNetCore.Mvc
             var res = repo.Insert(model);
             await AddAfterAsync(model, request, res);
 
-            if (res > 0)
-                return CommonResult.Success();
-            else
-                return CommonResult.Fail("db.add.error", "数据创建失败");
+            return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
         }
 
         /// <summary>
@@ -216,10 +211,7 @@ namespace Findx.AspNetCore.Mvc
             var res = repo.Update(model, ignoreNullColumns: true);
             await EditAfterAsync(model, request ,res);
 
-            if (res > 0)
-                return CommonResult.Success();
-            else
-                return CommonResult.Fail("db.edit.error", "数据更新失败");
+            return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.edit.error", "数据更新失败");
         }
 
         /// <summary>
@@ -243,12 +235,7 @@ namespace Findx.AspNetCore.Mvc
 
             await DeleteBeforeAsync(request);
 
-            int total = 0;
-            foreach (var id in request)
-            {
-                if (repo.Delete(key: id) > 0)
-                    total++;
-            }
+            var total = request.Count(id => repo.Delete(key: id) > 0);
 
             await DeleteAfterAsync(request, total);
 

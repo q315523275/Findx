@@ -146,27 +146,5 @@ namespace Findx.AspNetCore.Mvc
         /// <param name="model"></param>
         /// <param name="dto"></param>
         protected virtual Task DetailAfterAsync(TModel model, TDetailDto dto) => Task.CompletedTask;
-
-
-
-        /// <summary>
-        /// 获取仓储方法
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <returns></returns>
-        protected IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, IEntity, new()
-        {
-            return Request.HttpContext.RequestServices.GetRequiredService<IRepository<TEntity>>();
-        }
-
-        /// <summary>
-        /// 获取服务
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        protected T GetService<T>()
-        {
-            return Request.HttpContext.RequestServices.GetRequiredService<T>();
-        }
     }
 }

@@ -35,25 +35,54 @@ namespace Findx
             InstanceIP = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());
             InternalIP = InstanceIP;
 
-            RootPath = AppDomain.CurrentDomain.BaseDirectory;
+            RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;
         }
 
+        /// <summary>
+        /// 应用编号
+        /// </summary>
         public string ApplicationId { set; get; }
 
+        /// <summary>
+        /// 应用名称
+        /// </summary>
         public string ApplicationName { set; get; }
 
+        /// <summary>
+        /// Uri集合
+        /// </summary>
         public IEnumerable<string> Uris { set; get; }
 
+        /// <summary>
+        /// 端口
+        /// </summary>
         public int Port { set; get; }
 
+        /// <summary>
+        /// 版本
+        /// </summary>
         public string Version { set; get; }
 
+        /// <summary>
+        /// 实例Ip
+        /// </summary>
         public string InstanceIP { set; get; }
 
+        /// <summary>
+        /// 内网Ip
+        /// </summary>
         public string InternalIP { set; get; }
 
+        /// <summary>
+        /// 根目录
+        /// </summary>
         public string RootPath { set; get; }
 
-        public string MapPath(string virtualPath) => RootPath + virtualPath.TrimStart('~');
+        /// <summary>
+        /// 获取绝对路径
+        /// </summary>
+        /// <param name="virtualPath"></param>
+        /// <returns></returns>
+        public string MapPath(string virtualPath) => RootPath + virtualPath.RemovePreFix("~/");
     }
 }

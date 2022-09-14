@@ -11,9 +11,6 @@ using System;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace Findx.AspNetCore.Mvc.Middlewares

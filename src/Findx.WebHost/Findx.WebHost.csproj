@@ -39,7 +39,6 @@
 	  <None Remove="EventHandlers\" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Audit" />
 	  <Folder Include="EventHandlers\" />
 	</ItemGroup>
 	<ItemGroup>

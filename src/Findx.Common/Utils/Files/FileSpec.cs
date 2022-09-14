@@ -69,11 +69,6 @@ namespace Findx.Utils.Files
         public string Url { get; set; }
 
         /// <summary>
-        /// 完整存储路径。不包含根路径
-        /// </summary>
-        public string FullPath => System.IO.Path.Combine(Path, SaveName);
-
-        /// <summary>
         /// 获取扩展名
         /// </summary>
         /// <param name="path">文件路径</param>

@@ -1,16 +1,14 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Findx.Extensions;
 using Findx.Serialization;
 using Findx.Setting;
 using Findx.Utils.Files;
-using Microsoft.Extensions.Logging;
 
 namespace Findx.Storage
 {
+    /// <summary>
+    /// 本地文件存储器
+    /// </summary>
     public class FolderFileStorage : IFileStorage
     {
 
@@ -26,18 +24,28 @@ namespace Findx.Storage
 
         private readonly ILogger<FolderFileStorage> _logger;
 
-        private readonly string MediaRootFoler = "store";
+        private readonly string _mediaRootFolder;
 
         private readonly object _lockObject = new();
 
-        public FolderFileStorage(ISerializer serializer, ILogger<FolderFileStorage> logger, ISettingProvider setting)
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="serializer"></param>
+        /// <param name="app"></param>
+        /// <param name="logger"></param>
+        /// <param name="setting"></param>
+        public FolderFileStorage(ISerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, ISettingProvider setting)
         {
             Serializer = serializer;
             _logger = logger;
 
-            MediaRootFoler = setting.GetValue<string>("Storage:Folder:DefaultFolder") ?? "store";
+            _mediaRootFolder = setting.GetValue<string>("Findx:Storage:Folder:DefaultFolder") ?? app.MapPath("~/storage");
         }
 
+        /// <summary>
+        /// Dispose
+        /// </summary>
         public void Dispose() { }
 
         /// <summary>
@@ -45,9 +53,10 @@ namespace Findx.Storage
         /// </summary>
         /// <param name="path"></param>
         /// <param name="targetPath"></param>
+        /// <param name="overwrite"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public Task<bool> CopyFileAsync(string path, string targetPath, CancellationToken cancellationToken = default)
+        public Task<bool> CopyFileAsync(string path, string targetPath, bool overwrite = false, CancellationToken cancellationToken = default)
         {
             Check.NotNull(path, nameof(path));
             Check.NotNull(targetPath, nameof(targetPath));
@@ -58,11 +67,11 @@ namespace Findx.Storage
             {
                 lock (_lockObject)
                 {
-                    string directory = Path.GetDirectoryName(targetPath);
+                    var directory = Path.GetDirectoryName(targetPath);
                     if (directory != null)
-                        Directory.CreateDirectory(Path.Combine(MediaRootFoler, directory));
+                        Findx.Utils.DirectoryTool.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
 
-                    File.Copy(Path.Combine(MediaRootFoler, path), Path.Combine(MediaRootFoler, targetPath));
+                    File.Copy(Path.Combine(_mediaRootFolder, path), Path.Combine(_mediaRootFolder, targetPath), overwrite: overwrite);
                 }
             }
             catch (Exception ex)
@@ -83,14 +92,14 @@ namespace Findx.Storage
         /// <exception cref="NotImplementedException"></exception>
         public Task<bool> DeleteFileAsync(string path, CancellationToken cancellationToken = default)
         {
-            if (String.IsNullOrEmpty(path))
+            if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentNullException(nameof(path));
 
             path = path.NormalizePath();
 
             try
             {
-                File.Delete(Path.Combine(MediaRootFoler, path));
+                File.Delete(Path.Combine(_mediaRootFolder, path));
             }
             catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
             {
@@ -111,25 +120,25 @@ namespace Findx.Storage
         /// <exception cref="NotImplementedException"></exception>
         public Task<int> DeleteFilesAsync(string searchPattern = null, CancellationToken cancellation = default)
         {
-            int count = 0;
+            var count = 0;
 
-            if (searchPattern == null || String.IsNullOrEmpty(searchPattern) || searchPattern == "*")
+            if (searchPattern == null || string.IsNullOrEmpty(searchPattern) || searchPattern == "*")
             {
-                if (Directory.Exists(MediaRootFoler))
+                if (Directory.Exists(_mediaRootFolder))
                 {
-                    count += Directory.EnumerateFiles(MediaRootFoler, "*,*", SearchOption.AllDirectories).Count();
-                    Directory.Delete(MediaRootFoler, true);
+                    count += Directory.EnumerateFiles(_mediaRootFolder, "*,*", SearchOption.AllDirectories).Count();
+                    Directory.Delete(_mediaRootFolder, true);
                 }
 
                 return Task.FromResult(count);
             }
 
             searchPattern = searchPattern.NormalizePath();
-            string path = Path.Combine(MediaRootFoler, searchPattern);
+            var path = Path.Combine(_mediaRootFolder, searchPattern);
 
-            if (path[path.Length - 1] == Path.DirectorySeparatorChar || path.EndsWith(Path.DirectorySeparatorChar + "*"))
+            if (path[^1] == Path.DirectorySeparatorChar || path.EndsWith(Path.DirectorySeparatorChar + "*"))
             {
-                string directory = Path.GetDirectoryName(path);
+                var directory = Path.GetDirectoryName(path);
                 if (Directory.Exists(directory))
                 {
                     count += Directory.EnumerateFiles(directory, "*,*", SearchOption.AllDirectories).Count();
@@ -147,7 +156,7 @@ namespace Findx.Storage
                 return Task.FromResult(count);
             }
 
-            foreach (string file in Directory.EnumerateFiles(MediaRootFoler, searchPattern, SearchOption.AllDirectories))
+            foreach (var file in Directory.EnumerateFiles(_mediaRootFolder, searchPattern, SearchOption.AllDirectories))
             {
                 File.Delete(file);
                 count++;
@@ -167,7 +176,7 @@ namespace Findx.Storage
             Check.NotNull(path, nameof(path));
 
             path = path.NormalizePath();
-            return Task.FromResult(File.Exists(Path.Combine(MediaRootFoler, path)));
+            return Task.FromResult(File.Exists(Path.Combine(_mediaRootFolder, path)));
         }
 
         /// <summary>
@@ -181,13 +190,11 @@ namespace Findx.Storage
 
             path = path.NormalizePath();
 
-            var info = new FileInfo(Path.Combine(MediaRootFoler, path));
-            if (!info.Exists)
+            var fileInfo = new FileInfo(Path.Combine(_mediaRootFolder, path));
+            if (!fileInfo.Exists)
                 return Task.FromResult<FileSpec>(null);
 
-            var fileInfo = new FileInfo(Path.Combine(MediaRootFoler, path));
-
-            var fileSpec = new FileSpec(fileInfo.FullName, fileInfo.Length, fileName: fileInfo.Name, System.Guid.NewGuid().ToString())
+            var fileSpec = new FileSpec(path, fileInfo.Length, fileName: fileInfo.Name, id: Guid.NewGuid().ToString())
             {
                 SaveName = fileInfo.Name
             };
@@ -209,7 +216,7 @@ namespace Findx.Storage
 
             try
             {
-                return Task.FromResult<Stream>(File.OpenRead(Path.Combine(MediaRootFoler, path)));
+                return Task.FromResult<Stream>(File.OpenRead(Path.Combine(_mediaRootFolder, path)));
             }
             catch (IOException ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
             {
@@ -239,12 +246,12 @@ namespace Findx.Storage
             {
                 lock (_lockObject)
                 {
-                    string directory = Path.GetDirectoryName(newPath);
+                    var directory = Path.GetDirectoryName(newPath);
                     if (directory != null)
-                        Directory.CreateDirectory(Path.Combine(MediaRootFoler, directory));
+                        Findx.Utils.DirectoryTool.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
 
-                    string oldFullPath = Path.Combine(MediaRootFoler, path);
-                    string newFullPath = Path.Combine(MediaRootFoler, newPath);
+                    var oldFullPath = Path.Combine(_mediaRootFolder, path);
+                    var newFullPath = Path.Combine(_mediaRootFolder, newPath);
                     try
                     {
                         File.Move(oldFullPath, newFullPath);
@@ -279,12 +286,12 @@ namespace Findx.Storage
             Check.NotNull(stream, nameof(stream));
 
             path = path.NormalizePath();
-            string file = Path.Combine(MediaRootFoler, path);
+            var file = Path.Combine(_mediaRootFolder, path);
 
             try
             {
-                using var fileStream = CreateFileStream(file);
-                await stream.CopyToAsync(fileStream);
+                await using var fileStream = CreateFileStream(file);
+                await stream.CopyToAsync(fileStream, cancellationToken);
                 return true;
             }
             catch (Exception ex)
@@ -308,11 +315,11 @@ namespace Findx.Storage
             Check.NotNull(byteArray, nameof(byteArray));
 
             path = path.NormalizePath();
-            string file = Path.Combine(MediaRootFoler, path);
+            var file = Path.Combine(_mediaRootFolder, path);
 
             try
             {
-                using var fileStream = CreateFileStream(file);
+                await using var fileStream = CreateFileStream(file);
                 await fileStream.WriteAsync(byteArray, 0, byteArray.Length, cancellationToken);
                 return true;
             }
@@ -328,7 +335,7 @@ namespace Findx.Storage
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
-        private Stream CreateFileStream(string filePath)
+        private static Stream CreateFileStream(string filePath)
         {
             try
             {
@@ -336,9 +343,9 @@ namespace Findx.Storage
             }
             catch (DirectoryNotFoundException) { }
 
-            string directory = Path.GetDirectoryName(filePath);
+            var directory = Path.GetDirectoryName(filePath);
             if (directory != null)
-                Directory.CreateDirectory(directory);
+                Findx.Utils.DirectoryTool.CreateIfNotExists(directory);
 
             return File.Create(filePath);
         }

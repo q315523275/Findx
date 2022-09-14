@@ -1,6 +1,8 @@
-﻿using System;
-namespace Findx.Locks
+﻿namespace Findx.Locks
 {
+	/// <summary>
+	/// 锁提供器
+	/// </summary>
 	public interface ILockProvider
 	{
 		/// <summary>

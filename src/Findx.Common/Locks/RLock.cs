@@ -11,14 +11,15 @@ namespace Findx.Locks
     /// </summary>
 	public class RLock: IAsyncDisposable
 	{
-        private readonly object _lockObj = new();
         private readonly ILock _lock;
         private readonly TimeSpan? _timeUntilExpires;
-
+        private readonly bool _isRenewal;
+        private readonly int _period;
+        
+        private readonly ILogger<RLock> _logger;
+        
         private FindxAsyncTimer _timer;
         private int _renewalCount = 0;
-        private bool _isRenewal;
-        private int _period;
         private bool _isReleased;
 
         /// <summary>
@@ -40,16 +41,12 @@ namespace Findx.Locks
             Resource = resource;
             LockId = lockId;
 
+            _logger = ServiceLocator.GetService<ILogger<RLock>>();
+
             // 开启自动续期
             if (autoRenew)
             {
-                _timer = new FindxAsyncTimer(ServiceLocator.GetService<IExceptionNotifier>(), ServiceLocator.GetService<ILogger<FindxAsyncTimer>>())
-                {
-                    Period = period,
-                    Elapsed = Timer_Elapsed,
-                    RunOnStart = false
-                };
-                _timer.Start();
+                RunAutoRenew();
             }
         }
 
@@ -82,8 +79,10 @@ namespace Findx.Locks
             await _lock.RenewAsync(Resource, LockId, lockExtension);
 
             _renewalCount++;
+            
+            Console.WriteLine($"the resource ({Resource}) lock ({_lock.LockType}) is renewed {_renewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
 
-            ServiceLocator.GetService<ILogger<RLock>>()?.LogDebug($"the resource ({Resource}) lock ({_lock.LockType}) is renewed {_renewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            _logger.LogDebug($"the resource ({Resource}) lock ({_lock.LockType}) is renewed {_renewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
         }
 
         /// <summary>
@@ -131,7 +130,7 @@ namespace Findx.Locks
         /// 定时续期方法
         /// </summary>
         /// <param name="timer"></param>
-        protected async Task Timer_Elapsed(FindxAsyncTimer timer)
+        private async Task Timer_Elapsed(FindxAsyncTimer timer)
         {
             await RenewAsync(_timeUntilExpires);
         }

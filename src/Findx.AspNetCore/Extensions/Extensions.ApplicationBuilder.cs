@@ -2,14 +2,12 @@
 using Findx.Builders;
 using Findx.Extensions;
 using Findx.Logging;
-using Findx.Modularity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -81,20 +79,20 @@ namespace Findx.AspNetCore.Extensions
             logger.LogInformation(0, "框架初始化开始");
 
             // 打印框架启动日志
-            StartupLogger startupLogger = provider.GetService<StartupLogger>();
-            startupLogger.Print(provider);
+            var startupLogger = provider.GetService<StartupLogger>();
+            startupLogger?.Print(provider);
 
-            Stopwatch watch = Stopwatch.StartNew();
+            var watch = Stopwatch.StartNew();
             // 框架构建接口
-            IFindxBuilder findxBuilder = provider.GetService<IFindxBuilder>();
-            IEnumerable<FindxModule> modules = findxBuilder.Modules;
-            logger.LogInformation($"共有 {modules.Count()} 个模块需要初始化");
+            var findxBuilder = provider.GetRequiredService<IFindxBuilder>();
+            var modules = findxBuilder.Modules;
+            logger.LogInformation(message: $"共有 {modules.Count()} 个模块需要初始化");
             // 所有模块初始化
-            foreach (FindxModule module in findxBuilder.Modules)
+            foreach (var module in findxBuilder.Modules)
             {
                 var jsTime = DateTime.Now;
-                Type moduleType = module.GetType();
-                logger.LogInformation($"正在初始化模块《{moduleType.GetDescription()}》({moduleType.Name})”");
+                var moduleType = module.GetType();
+                logger.LogInformation(message: $"正在初始化模块《{moduleType.GetDescription()}》({moduleType.Name})”");
                 if (module is AspNetCoreModuleBase aspNetCoreModule)
                     aspNetCoreModule.UseModule(builder);
                 else

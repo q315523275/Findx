@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Findx.Serialization
+﻿namespace Findx.Serialization
 {
     /// <summary>
     /// JSON序列化处理器
@@ -8,7 +6,7 @@ namespace Findx.Serialization
     public interface IJsonSerializer
     {
         /// <summary>
-        /// 对象序列为Jjson
+        /// 对象序列为json
         /// </summary>
         /// <param name="obj"></param>
         /// <returns></returns>

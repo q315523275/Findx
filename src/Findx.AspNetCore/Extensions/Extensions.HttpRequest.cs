@@ -2,7 +2,6 @@
 using Findx.UA;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Linq;
 using System.Net;
 namespace Findx.AspNetCore.Extensions
 {
@@ -34,14 +33,14 @@ namespace Findx.AspNetCore.Extensions
         public static bool IsJsonContextType(this HttpRequest request)
         {
             Check.NotNull(request, nameof(request));
-            bool flag = request.Headers?["Content-Type"].ToString().IndexOf("application/json", StringComparison.OrdinalIgnoreCase) > -1
-                || request.Headers?["Content-Type"].ToString().IndexOf("text/json", StringComparison.OrdinalIgnoreCase) > -1;
+            var flag = request.Headers.GetOrDefault("Content-Type").SafeString().IndexOf("application/json", StringComparison.OrdinalIgnoreCase) > -1
+                       || request.Headers.GetOrDefault("Content-Type").SafeString().IndexOf("text/json", StringComparison.OrdinalIgnoreCase) > -1;
             if (flag)
             {
                 return true;
             }
-            flag = request.Headers?["Accept"].ToString().IndexOf("application/json", StringComparison.OrdinalIgnoreCase) > -1
-                || request.Headers?["Accept"].ToString().IndexOf("text/json", StringComparison.OrdinalIgnoreCase) > -1;
+            flag = request.Headers.GetOrDefault("Accept").SafeString().IndexOf("application/json", StringComparison.OrdinalIgnoreCase) > -1
+                || request.Headers.GetOrDefault("Accept").SafeString().IndexOf("text/json", StringComparison.OrdinalIgnoreCase) > -1;
             return flag;
         }
 
@@ -50,20 +49,20 @@ namespace Findx.AspNetCore.Extensions
         /// </summary>
         public static string GetClientIp(this HttpContext context)
         {
-            string ip = context.Request.Headers["X-Forwarded-For"].ToString().Split(',')[0];
+            var ip = context.Request.Headers.GetOrDefault("X-Forwarded-For").SafeString().Split(',')[0];
             if (string.IsNullOrWhiteSpace(ip))
             {
-                ip = context.Request.Headers["REMOTE_ADDR"].FirstOrDefault();
+                ip = context.Request.Headers.GetOrDefault("REMOTE_ADDR");
             }
             if (string.IsNullOrEmpty(ip))
             {
-                IPAddress remoteIpAddress = context.Connection.RemoteIpAddress;
-                if (remoteIpAddress.IsIPv4MappedToIPv6)
+                var remoteIpAddress = context.Connection.RemoteIpAddress;
+                if (remoteIpAddress is { IsIPv4MappedToIPv6: true })
                 {
                     ip = remoteIpAddress.MapToIPv4().ToString();
                 }
 
-                if (string.IsNullOrEmpty(ip) && IPAddress.IsLoopback(remoteIpAddress))
+                if (string.IsNullOrEmpty(ip) && remoteIpAddress != null && IPAddress.IsLoopback(remoteIpAddress))
                 {
                     return "127.0.0.1";
                 }
@@ -81,7 +80,7 @@ namespace Findx.AspNetCore.Extensions
         /// <returns></returns>
         public static string GetUserAgentString(this HttpRequest request)
         {
-            return request.Headers?["User-Agent"].SafeString();
+            return request.Headers.GetOrDefault("User-Agent").SafeString();
         }
 
         /// <summary>
@@ -91,8 +90,8 @@ namespace Findx.AspNetCore.Extensions
         /// <returns></returns>
         public static UserAgent GetUserAgent(this HttpRequest request)
         {
-            var ua = request.Headers?["User-Agent"].SafeString();
-            return Findx.Utils.UserAgentUtil.Parse(ua);
+            var ua = request.Headers.GetOrDefault("User-Agent").SafeString();
+            return Utils.UserAgentUtil.Parse(ua);
         }
     }
 }

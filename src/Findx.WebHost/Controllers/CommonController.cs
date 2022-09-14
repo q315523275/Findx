@@ -110,7 +110,7 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("/antiDuplicateRequest")]
-        [AntiDuplicateRequest(Interval = "10s", Type = LockType.IP)]
+        [AntiDuplicateRequest(Interval = "10s", Type = LockType.Ip)]
         public object AntiDuplicateRequest()
         {
             var rng = new Random();

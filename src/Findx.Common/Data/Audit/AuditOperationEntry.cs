@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#nullable enable
+using System.Text.Json.Serialization;
 using Findx.Messaging;
 
 namespace Findx.Data
@@ -62,7 +62,8 @@ namespace Findx.Data
         /// <summary>
         /// 获取或设置 异常对象
         /// </summary>
-        public Exception Exception { get; set; }
+        [JsonIgnore]
+        public Exception? Exception { get; set; }
 
         /// <summary>
         /// 获取 扩展数据字典

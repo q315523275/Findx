@@ -1,7 +1,8 @@
-﻿using Microsoft.Extensions.Options;
-
-namespace Findx.Email
+﻿namespace Findx.Email
 {
+    /// <summary>
+    /// 邮件发送配置
+    /// </summary>
     public class EmailSenderOptions : IOptions<EmailSenderOptions>
     {
         /// <summary>
@@ -39,6 +40,9 @@ namespace Findx.Email
         /// </summary>
         public string FromAddress { get; set; }
 
+        /// <summary>
+        /// value
+        /// </summary>
         public EmailSenderOptions Value => this;
     }
 }

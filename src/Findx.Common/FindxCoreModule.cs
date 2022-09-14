@@ -102,18 +102,19 @@ namespace Findx.Builders
             // 线程取消通知
             services.AddSingleton<ICancellationTokenProvider, NullCancellationTokenProvider>();
 
-            // 应用
+            // 应用上下文
             services.AddSingleton<IApplicationContext, ApplicationContext>();
 
             // 有序Guid
             services.Configure<SequentialGuidOptions>(configuration.GetSection("Findx:SequentialGuid"));
-
-            // 功能权限
-            services.AddSingleton<IFunctionAuthorization, FunctionAuthorization>();
+            services.AddSingleton<IGuidGenerator, Findx.Guids.SequentialGuidGenerator>();
 
             // 主键生成器
             services.AddSingleton<IKeyGenerator<long>, SnowflakeIdGenerator>();
             services.AddSingleton<IKeyGenerator<Guid>, Findx.Data.SequentialGuidGenerator>();
+            
+            // 功能权限
+            services.AddSingleton<IFunctionAuthorization, FunctionAuthorization>();
             
             // 审计配置
             services.Configure<Findx.Data.AuditingOptions>(configuration.GetSection("Findx:Auditing"));
