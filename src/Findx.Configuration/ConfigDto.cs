@@ -2,9 +2,19 @@
 
 namespace Findx.Configuration
 {
+    /// <summary>
+    /// 配置Dto
+    /// </summary>
     internal class ConfigDto
     {
-        public int Version { set; get; }
+        /// <summary>
+        /// 当前配置版本号
+        /// </summary>
+        public long Version { set; get; }
+        
+        /// <summary>
+        /// 配置集合
+        /// </summary>
         public List<KeyValueDto> Data { set; get; }
     }
     /// <summary>
@@ -12,8 +22,19 @@ namespace Findx.Configuration
     /// </summary>
     internal class KeyValueDto
     {
+        /// <summary>
+        /// 配置项类型
+        /// </summary>
         public VaultType VaultType { set; get; }
+        
+        /// <summary>
+        /// 配置项Key
+        /// </summary>
         public string VaultKey { set; get; }
+        
+        /// <summary>
+        /// 配置项值
+        /// </summary>
         public string Vault { set; get; }
     }
     internal enum VaultType

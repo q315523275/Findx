@@ -109,58 +109,15 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             
             return CommonResult.Success(new { sysOsInfo, runtimeInfo });
         }
-
-        /// <summary>
-        /// 添加任务
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet("addJobs")]
-        public async Task<CommonResult> AddJobs([FromServices] Findx.Jobs.IJobScheduler scheduler)
-        {
-            for (var i = 0; i < 10000; i++)
-            {
-                await scheduler.ScheduleAsync<TestJobTask>(TimeSpan.FromSeconds(5));
-            }
-            return CommonResult.Success();
-        }
         
         /// <summary>
         /// 方法集合
         /// </summary>
         /// <returns></returns>
         [HttpGet("functions")]
-        public CommonResult AddJobs([FromServices] IFunctionStore<MvcFunction> store)
+        public CommonResult Functions([FromServices] IFunctionStore<MvcFunction> store)
         {
             return CommonResult.Success(store.GetFromDatabase());
-        }
-        
-        /// <summary>
-        /// 邮件发送示例接口
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="mailAddress"></param>
-        /// <param name="subject"></param>
-        /// <param name="body"></param>
-        /// <returns></returns>
-        [HttpGet("emailSend")]
-        public async Task<string> EmailSend([FromServices] IEmailSender sender, [Required] string mailAddress, [Required] string subject, [Required] string body)
-        {
-            await sender.SendAsync(mailAddress, subject, body, isBodyHtml: false);
-            return "ok";
-        }
-        
-        /// <summary>
-        /// 文本转PDF示例接口
-        /// </summary>
-        /// <param name="converter"></param>
-        /// <param name="text"></param>
-        /// <returns></returns>
-        [HttpGet("textToPdf")]
-        public async Task<IActionResult> TextToPdf([FromServices] IPdfConverter converter, [Required] string text)
-        {
-            Console.WriteLine(text);
-            var res = await converter.ConvertAsync(text);
-            return File(res, "application/pdf");
         }
     }
 }

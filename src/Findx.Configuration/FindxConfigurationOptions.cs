@@ -1,5 +1,8 @@
 ﻿namespace Findx.Configuration
 {
+    /// <summary>
+    /// Findx配置中心控制配置
+    /// </summary>
     public class FindxConfigurationOptions
     {
         /// <summary>

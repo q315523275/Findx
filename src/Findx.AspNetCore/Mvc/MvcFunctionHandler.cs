@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Findx.Caching;
 using Findx.Data;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Findx.AspNetCore.Mvc
@@ -43,7 +44,7 @@ namespace Findx.AspNetCore.Mvc
         {
             if (fromCache)
             {
-                var cache = _cacheProvider.Get("memory");
+                var cache = _cacheProvider.Get(CacheType.DefaultMemory);
                 var functions = cache.Get<List<MvcFunction>>("function");
                 if (functions is { Count: > 0 })
                 {
@@ -57,7 +58,8 @@ namespace Findx.AspNetCore.Mvc
             foreach (var item in controllerActionList)
             {
                 var routeValues = item.RouteValues;
-                var controller = result.FirstOrDefault(x => x.IsController && x.Area == routeValues["area"] && x.Controller == item.ControllerName);
+                var area = routeValues.ContainsKey("area") ? routeValues["area"] : null;
+                var controller = result.FirstOrDefault(x => x.IsController && x.Area == area && x.Controller == item.ControllerName);
                 if (controller == null)
                 {
                     var typeInfo = item.ControllerTypeInfo;
@@ -69,8 +71,9 @@ namespace Findx.AspNetCore.Mvc
                                          : FunctionAccessType.RoleLimit;
                     controller = new MvcFunction()
                     {
+                        DisplayName = typeInfo.GetFullNameWithModule(),
                         Name = typeInfo.GetDescription(),
-                        Area = routeValues.ContainsKey("area") ? routeValues["area"] : null,
+                        Area = area,
                         Controller = item.ControllerName,
                         IsController = true,
                         AccessType = typeAccessType,
@@ -81,6 +84,7 @@ namespace Findx.AspNetCore.Mvc
                     result.Add(controller);
                 }
                 // Action
+                var methodHttp = item.MethodInfo.GetAttribute<HttpMethodAttribute>();
                 var methodAuthorize = item.MethodInfo.GetAttribute<AuthorizeAttribute>();
                 var methodAccessType = item.MethodInfo.HasAttribute<AllowAnonymousAttribute>()
                                                 ? FunctionAccessType.Anonymous
@@ -96,20 +100,27 @@ namespace Findx.AspNetCore.Mvc
 
                 var auditOperationEnabled = !item.MethodInfo.HasAttribute<DisableAuditingAttribute>() && controller.AuditOperationEnabled;
 
-                var function = new MvcFunction()
+                // 请求方法循环
+                foreach (var httpMethod in methodHttp.HttpMethods.Distinct())
                 {
-                    Name = $"{controller.Name}-{item.MethodInfo.GetDescription()}",
-                    Area = controller.Area,
-                    Controller = controller.Controller,
-                    Action = item.ActionName,
-                    AccessType = methodAccessType,
-                    IsController = false,
-                    Roles = actionRoles,
-                    AuditOperationEnabled = auditOperationEnabled,
-                    Id = Findx.Utils.SequentialGuid.Instance.Create()
-                };
+                    var function = new MvcFunction()
+                    {
+                        Name = $"{controller.Name}-{item.MethodInfo.GetDescription()}",
+                        DisplayName = item.DisplayName,
+                        Area = controller.Area,
+                        Controller = controller.Controller,
+                        Action = item.ActionName,
+                        AccessType = methodAccessType,
+                        HttpMethod = httpMethod,
+                        RouteTemplate = item.AttributeRouteInfo?.Template,
+                        IsController = false,
+                        Roles = actionRoles,
+                        AuditOperationEnabled = auditOperationEnabled,
+                        Id = Findx.Utils.SequentialGuid.Instance.Create()
+                    };
 
-                result.Add(function);
+                    result.Add(function);
+                }
             }
 
             if (fromCache)

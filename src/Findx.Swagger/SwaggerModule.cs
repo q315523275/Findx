@@ -34,7 +34,7 @@ namespace Findx.Swagger
             {
                 if (_swaggerOptions?.Endpoints?.Count > 0)
                 {
-                    foreach (SwaggerEndpoint endpoint in _swaggerOptions.Endpoints)
+                    foreach (var endpoint in _swaggerOptions.Endpoints)
                     {
                         options.SwaggerDoc($"{endpoint.Version}", new OpenApiInfo() { Title = endpoint.Title, Version = endpoint.Version });
                     }
@@ -46,7 +46,7 @@ namespace Findx.Swagger
                         }
                         // 文档分组
                         var versions = method.DeclaringType.GetAttributes<ApiExplorerSettingsAttribute>().Select(m => m.GroupName);
-                        if (version.ToLower() == "v1" && versions.Count() == 0)
+                        if (version.ToLower() == "v1" && !versions.Any())
                         {
                             return true;
                         }
@@ -75,7 +75,7 @@ namespace Findx.Swagger
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
                             }
-                        }, new string[] { }
+                        }, Array.Empty<string>()
                     }
                 });
                 options.DocumentFilter<IgnoreApiFilter>();
@@ -93,7 +93,7 @@ namespace Findx.Swagger
             {
                 if (_swaggerOptions.Endpoints?.Count > 0)
                 {
-                    foreach (SwaggerEndpoint endpoint in _swaggerOptions.Endpoints)
+                    foreach (var endpoint in _swaggerOptions.Endpoints)
                     {
                         options.SwaggerEndpoint(endpoint.Url, endpoint.Title);
                     }

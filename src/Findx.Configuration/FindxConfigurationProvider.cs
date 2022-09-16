@@ -5,18 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
+using Findx.Threading;
 
 namespace Findx.Configuration
 {
+    /// <summary>
+    /// Findx配置提供器
+    /// </summary>
     internal class FindxConfigurationProvider : ConfigurationProvider, IDisposable
     {
         private readonly string _localBackupPath;
         private readonly FindxConfigurationOptions _options;
-        private Timer _timer;
+        private FindxAsyncTimer _timer;
         private bool _polling;
-        private int _version;
+        private long _version;
         private HttpClient _httpClient;
         public FindxConfigurationProvider(FindxConfigurationOptions options)
         {
@@ -26,7 +29,7 @@ namespace Findx.Configuration
             _httpClient = new HttpClient { Timeout = new TimeSpan(0, 0, 30) };
         }
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        private async Task PollingRefreshTask()
+        private async Task PollingRefreshTask(FindxAsyncTimer timer)
         {
             if (_polling) return;
 
@@ -44,7 +47,7 @@ namespace Findx.Configuration
                 response.EnsureSuccessStatusCode();
                 var responseBody = await response.Content.ReadAsStringAsync();
                 AddOrUpdateData(responseBody);
-                File.WriteAllText(_localBackupPath, responseBody);
+                await File.WriteAllTextAsync(_localBackupPath, responseBody);
             }
             catch
             {
@@ -52,7 +55,7 @@ namespace Findx.Configuration
                 // 从缓存文件中读取最后一次成功数据进行恢复
                 if (_version == 0 && File.Exists(_localBackupPath))
                 {
-                    var configText = File.ReadAllText(_localBackupPath);
+                    var configText = await File.ReadAllTextAsync(_localBackupPath);
                     AddOrUpdateData(configText);
                 }
             }
@@ -61,38 +64,43 @@ namespace Findx.Configuration
                 // 第一次成功后,开启定时获取最新变更配置
                 if (_timer == null && _options.RefreshInteval > 0)
                 {
-                    _timer = new Timer(async x => await PollingRefreshTask(), null, _options.RefreshInteval * 1000, _options.RefreshInteval * 1000);
+                    _timer = new FindxAsyncTimer(null, null)
+                    {
+                        Elapsed = PollingRefreshTask,
+                        Period = _options.RefreshInteval * 1000,
+                        RunOnStart = false
+                    };
+                    _timer.Start();
                 }
-            };
+            }
         }
+
         private void AddOrUpdateData(string body)
         {
             var result = body.ToObject<ConfigDto>();
-            if (result?.Data?.Count > 0)
+            if (!(result?.Data?.Count > 0)) return;
+            foreach (var keyVault in result.Data)
             {
-                foreach (var keyVault in result?.Data)
+                switch (keyVault.VaultType)
                 {
-                    switch (keyVault.VaultType)
+                    case VaultType.Text:
+                        Data[keyVault.VaultKey] = keyVault.Vault;
+                        break;
+                    case VaultType.Json:
                     {
-                        case VaultType.Text:
-                            Data[keyVault.VaultKey] = keyVault.Vault;
-                            break;
-                        case VaultType.Json:
-                            {
-                                var jsonKeyVault = JsonConfigurationFileParser.Parse(keyVault.Vault);
-                                foreach (var kv in jsonKeyVault)
-                                {
-                                    Data[kv.Key] = kv.Value;
-                                }
-                            }
-                            break;
+                        var jsonKeyVault = JsonConfigurationFileParser.Parse(keyVault.Vault);
+                        foreach (var kv in jsonKeyVault)
+                        {
+                            Data[kv.Key] = kv.Value;
+                        }
                     }
+                        break;
                 }
-                _version = result.Version;
-                OnReload();
             }
+            _version = result.Version;
+            OnReload();
         }
-        private string CreateRequestUri(int version = 0)
+        private string CreateRequestUri(long version = 0)
         {
             var queryPath = $"/configs/{_options.AppId}/{_options.Group}/{_options.Namespace}";
             var queryString = $"version={version}";
@@ -103,7 +111,7 @@ namespace Findx.Configuration
 
         public void Dispose()
         {
-            _timer?.Dispose();
+            _timer?.Stop();
             _timer = null;
             _httpClient?.Dispose();
             _httpClient = null;

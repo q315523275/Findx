@@ -6,6 +6,7 @@
 		<Version>1.5.8</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
+		<PackageVersion>1.8.3</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -18,7 +19,7 @@
 
 	<ItemGroup>
 		<None Update="libwkhtmltox.so">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 

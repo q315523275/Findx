@@ -37,7 +37,6 @@ namespace Findx.Security
         /// 获取或设置 访问类型
         /// </summary>
         FunctionAccessType AccessType { get; set; }
-        
 
         /// <summary>
         /// 获取或设置 是否启用操作审计

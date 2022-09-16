@@ -13,7 +13,7 @@ namespace Findx.Builders
     /// </summary>
     public class FindxBuilder : IFindxBuilder
     {
-        private readonly IEnumerable<FindxModule> _sourceModules;
+        private readonly List<FindxModule> _sourceModules;
         private List<FindxModule> _modules;
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Findx.Builders
         {
             var source = _sourceModules;
             var exceptModules = source.Where(m => exceptModuleTypes.Contains(m.GetType()));
-            source = source.Except(exceptModules);
+            source = source.Except(exceptModules).ToList();
             foreach (var module in source)
             {
                 AddModule(module.GetType());
@@ -164,12 +164,13 @@ namespace Findx.Builders
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        private static IEnumerable<FindxModule> GetAllModules(IServiceCollection services)
+        private static List<FindxModule> GetAllModules(IServiceCollection services)
         {
             var moduleTypeFinder = services.GetOrAddTypeFinder<IFindxModuleTypeFinder>(assemblyFinder => new FindxModuleTypeFinder(assemblyFinder));
             var moduleTypes = moduleTypeFinder.FindAll();
             return moduleTypes.Select(m => (FindxModule)Activator.CreateInstance(m))
-                              .OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName);
+                              .OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName)
+                              .ToList();
         }
 
     }

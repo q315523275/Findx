@@ -14,7 +14,7 @@ namespace Findx.NLog
 
         public NLogLoggerProvider(string nlogConfigFile)
         {
-            string file = nlogConfigFile ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName);
+            var file = nlogConfigFile ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName);
             if (!File.Exists(file)) throw new FileNotFoundException("未发现“nlog.config”位置文件");
             LogManager.LoadConfiguration(file);
         }

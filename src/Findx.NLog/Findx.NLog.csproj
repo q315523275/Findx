@@ -6,6 +6,7 @@
 		<Company>Findx</Company>
 		<Version>1.5.1</Version>
 		<Description>NLog日志组件包</Description>
+		<PackageVersion>1.8.3</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -14,6 +15,12 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="nlog.config">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

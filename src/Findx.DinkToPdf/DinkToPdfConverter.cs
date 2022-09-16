@@ -31,7 +31,7 @@ namespace Findx.DinkToPdf
                 }
             };
 
-            byte[] pdf = _converter.Convert(doc);
+            var pdf = _converter.Convert(doc);
             return Task.FromResult(pdf);
         }
     }

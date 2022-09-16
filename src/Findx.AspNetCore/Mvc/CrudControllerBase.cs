@@ -187,7 +187,7 @@ namespace Findx.AspNetCore.Mvc
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost("edit")]
+        [HttpPut("edit")]
         [Description("编辑")]
         public virtual async Task<CommonResult> EditAsync([FromBody] TUpdateRequest request)
         {

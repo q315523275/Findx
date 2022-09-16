@@ -1,27 +1,47 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Findx.ExceptionHandling;
-using Microsoft.Extensions.Logging;
 
 namespace Findx.Threading
 {
+    /// <summary>
+    /// 异步定时器
+    /// </summary>
     public class FindxAsyncTimer : Findx.DependencyInjection.ITransientDependency
     {
+        /// <summary>
+        /// 执行方法
+        /// </summary>
         public Func<FindxAsyncTimer, Task> Elapsed = _ => Task.CompletedTask;
 
+        /// <summary>
+        /// 循环间隔时间
+        /// </summary>
         public int Period { get; set; }
 
+        /// <summary>
+        /// 是否立即启动定时执行
+        /// </summary>
         public bool RunOnStart { get; set; }
 
+        /// <summary>
+        /// logger
+        /// </summary>
         public ILogger<FindxAsyncTimer> Logger { get; set; }
 
+        /// <summary>
+        /// 异常通知器
+        /// </summary>
         public IExceptionNotifier ExceptionNotifier { get; set; }
 
         private readonly Timer _taskTimer;
         private volatile bool _performingTasks;
         private volatile bool _isRunning;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="exceptionNotifier"></param>
+        /// <param name="logger"></param>
         public FindxAsyncTimer(IExceptionNotifier exceptionNotifier, ILogger<FindxAsyncTimer> logger)
         {
             ExceptionNotifier = exceptionNotifier;
@@ -35,6 +55,11 @@ namespace Findx.Threading
             );
         }
 
+        /// <summary>
+        /// 开始定时执行
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="Exception"></exception>
         public void Start(CancellationToken cancellationToken = default)
         {
             if (Period <= 0)
@@ -49,6 +74,10 @@ namespace Findx.Threading
             }
         }
 
+        /// <summary>
+        /// 停止定时执行
+        /// </summary>
+        /// <param name="cancellationToken"></param>
         public void Stop(CancellationToken cancellationToken = default)
         {
             lock (_taskTimer)
@@ -63,7 +92,10 @@ namespace Findx.Threading
             }
         }
 
-
+        /// <summary>
+        /// 任务回调
+        /// </summary>
+        /// <param name="state"></param>
         private void TimerCallBack(object state)
         {
             lock (_taskTimer)
@@ -88,8 +120,8 @@ namespace Findx.Threading
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "");
-                await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
+                Logger?.LogError(ex, "");
+                await ExceptionNotifier?.NotifyAsync(new ExceptionNotificationContext(ex))!;
             }
             finally
             {

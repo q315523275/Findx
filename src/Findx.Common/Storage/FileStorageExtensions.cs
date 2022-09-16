@@ -37,16 +37,14 @@ namespace Findx.Storage
         {
             Check.NotNull(path, nameof(path));
 
-            using (var stream = await storage.GetFileStreamAsync(path, cancellationToken))
-            {
-                if (stream == null) return default;
+            await using var stream = await storage.GetFileStreamAsync(path, cancellationToken);
+            if (stream == null) return default;
                 
-                var bytes = new byte[stream.Length];
-                await stream.ReadAsync(bytes, 0, bytes.Length);
-                stream.Seek(0, SeekOrigin.Begin);
+            var bytes = new byte[stream.Length];
+            await stream.ReadAsync(bytes, 0, bytes.Length);
+            stream.Seek(0, SeekOrigin.Begin);
 
-                return storage.Serializer.Deserialize<T>(bytes);
-            }
+            return storage.Serializer.Deserialize<T>(bytes);
         }
 
         /// <summary>
@@ -75,12 +73,10 @@ namespace Findx.Storage
         {
             Check.NotNull(path, nameof(path));
 
-            using (var stream = await storage.GetFileStreamAsync(path))
+            await using var stream = await storage.GetFileStreamAsync(path);
+            if (stream != null)
             {
-                if (stream != null)
-                {
-                    return await new StreamReader(stream).ReadToEndAsync();
-                }
+                return await new StreamReader(stream).ReadToEndAsync();
             }
 
             return null;
@@ -96,7 +92,7 @@ namespace Findx.Storage
         {
             Check.NotNull(path, nameof(path));
 
-            using var stream = await storage.GetFileStreamAsync(path);
+            await using var stream = await storage.GetFileStreamAsync(path);
             if (stream == null)
                 return null;
 
