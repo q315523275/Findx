@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Findx.Reflection
 {
@@ -60,27 +61,19 @@ namespace Findx.Reflection
             };
 
             // Core 中获取依赖对象的方式
-            DependencyContext context = DependencyContext.Default;
+            var context = DependencyContext.Default;
             if (context != null)
             {
-                //var dllNames = context.CompileLibraries.SelectMany(m => m.Assemblies).Distinct().Select(m => m.Replace(".dll", ""));
-                var dllNames = context.GetDefaultAssemblyNames().Distinct().Select(m => m.Name.Replace(".dll", ""));
-                if (dllNames.Count() > 0)
-                {
-                    var names = (from name in dllNames
-                                 let index = name.LastIndexOf('/') + 1
-                                 select name.Substring(index))
-                                 .Distinct()
-                                 .WhereIf(_filterSystemAssembly, name => !filter.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase)));
-
-                    return LoadFromFiles(names);
-                }
+                var lt = context.GetDefaultAssemblyNames()
+                                .Where(x => x.Name != null && !filter.Any(m => x.Name.StartsWith(m, StringComparison.OrdinalIgnoreCase)))
+                                .Select(Assembly.Load);
+                return lt;
             }
 
             // 传统方式
-            string pathbase = AppDomain.CurrentDomain.BaseDirectory;
-            var files = Directory.GetFiles(pathbase, "*.dll", SearchOption.TopDirectoryOnly)
-                                 .Concat(Directory.GetFiles(pathbase, ".exe", SearchOption.TopDirectoryOnly));
+            var pathBase = AppDomain.CurrentDomain.BaseDirectory;
+            var files = Directory.GetFiles(pathBase, "*.dll", SearchOption.TopDirectoryOnly)
+                                 .Concat(Directory.GetFiles(pathBase, ".exe", SearchOption.TopDirectoryOnly));
 
             return files.WhereIf(_filterSystemAssembly, name => !filter.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase))).Distinct().Select(Assembly.LoadFrom);
         }

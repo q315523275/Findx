@@ -39,25 +39,19 @@ namespace Findx.AspNetCore.Mvc.Filters
             {
 				return;
             }
-			
+
 			if (context.Result is JsonResult result1)
 			{
-				if (result1.Value is CommonResult ajax)
+				if (result1.Value is CommonResult ajax && ajax.IsSuccess())
 				{
-					if (ajax.IsSuccess())
-					{
-						unitOfWork?.Commit();
-					}
+					unitOfWork?.Commit();
 				}
 			}
 			else if (context.Result is ObjectResult result2)
 			{
-				if (result2.Value is CommonResult ajax)
+				if (result2.Value is CommonResult ajax && ajax.IsSuccess())
 				{
-					if (ajax.IsSuccess())
-					{
-						unitOfWork?.Commit();
-					}
+					unitOfWork?.Commit();
 				}
 			}
 			else if (context.HttpContext.Response.StatusCode < 400)
