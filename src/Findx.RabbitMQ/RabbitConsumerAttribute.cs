@@ -31,6 +31,11 @@ namespace Findx.RabbitMQ
         public string Type { get; } = "direct";
 
         /// <summary>
+        /// 交换机是否持久化
+        /// </summary>
+        public bool Durable { set; get; } = false;
+
+        /// <summary>
         /// 队列的名称
         /// </summary>
         public string QueueName { get; }

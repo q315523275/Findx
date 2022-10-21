@@ -94,7 +94,9 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 UserName = req.UserName,
                 Nickname = accountInfo.Nickname
             };
+            
             CommonResult fail = null;
+            
             // 验证帐号密码是否正确
             if (accountInfo.Password != Utils.Encrypt.Md5By32(req.Password))
             {
@@ -137,7 +139,9 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 { ClaimTypes.UserName, accountInfo.UserName.SafeString() },
                 { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
                 { ClaimTypes.TenantId, req.TenantId.ToString() },
-                { ClaimTypes.UserIdTypeName, typeof(Guid).FullName }
+                { ClaimTypes.UserIdTypeName, typeof(Guid).FullName },
+                { "org_id", accountInfo.OrgId.SafeString() },
+                { "org_name", accountInfo.OrgName.SafeString() }
             };
             var token = await _tokenBuilder.CreateAsync(payload, _options.Value);
 

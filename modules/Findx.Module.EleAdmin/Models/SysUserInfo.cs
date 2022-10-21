@@ -80,6 +80,11 @@ namespace Findx.Module.EleAdmin.Models
 		/// 机构id
 		/// </summary>
 		public Guid? OrgId { get; set; }
+		
+		/// <summary>
+		/// 机构名称
+		/// </summary>
+		public string OrgName { get; set; }
 
 		/// <summary>
 		/// 状态, 0正常, 1冻结

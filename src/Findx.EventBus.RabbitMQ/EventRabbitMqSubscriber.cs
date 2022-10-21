@@ -30,24 +30,22 @@ namespace Findx.EventBus.RabbitMQ
 
         protected override void DoInternalSubscribe(string eventName, string handlerName, int prefetchCount)
         {
-            handlerName = handlerName ?? _application.ApplicationName;
-
-            var containsKey = SubscribeManager.HasSubscribeForEvent(eventName);
-            if (!containsKey)
+            if (SubscribeManager.HasSubscribeForEvent(eventName)) return;
+            
+            if (!_consumers.ContainsKey(handlerName))
             {
-                if (!_consumers.ContainsKey(handlerName))
-                {
-                    var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(_options.ExchangeName, _options.ExchangeType);
+                handlerName ??= _application.ApplicationName;
+                
+                var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(_options.ExchangeName, _options.ExchangeType);
 
-                    var queueDeclareConfiguration = new QueueDeclareConfiguration(handlerName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
+                var queueDeclareConfiguration = new QueueDeclareConfiguration(handlerName, qos: prefetchCount) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
 
-                    IRabbitMqConsumer rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration);
+                var rabbitMqConsumer = _consumerFactory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration);
 
-                    _consumers.TryAdd(handlerName, rabbitMqConsumer);
-                }
-
-                _consumers.GetOrDefault(handlerName)?.BindAsync(eventName);
+                _consumers.TryAdd(handlerName, rabbitMqConsumer);
             }
+
+            _consumers.GetOrDefault(handlerName)?.BindAsync(eventName);
         }
 
         protected override void OnEventRemoved(string eventName)
@@ -102,10 +100,10 @@ namespace Findx.EventBus.RabbitMQ
         {
             foreach (var queueName in _consumers.Keys)
             {
-                _consumers.TryGetValue(queueName, out var _consumer);
-
-                _consumer.OnMessageReceived(Consumer_Received);
-
+                if (_consumers.TryGetValue(queueName, out var consumer))
+                {
+                    consumer.OnMessageReceived(Consumer_Received);
+                }
                 // _consumer.StartConsuming();
             }
         }

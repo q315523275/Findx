@@ -85,17 +85,19 @@ namespace Findx.AspNetCore.Mvc.Middlewares
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"全局异常捕获,状态码:{ context?.Response?.StatusCode},Url:{context?.Request?.GetDisplayUrl()}");
+                // _logger.LogError(new EventId(), ex, $"全局异常捕获,Url:{context?.Request?.GetDisplayUrl()}{Findx.Utils.Common.Line}{ex.FormatMessage()}");
+                _logger.LogError(new EventId(), ex, ex.Message);
 
                 await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-
+                
+                if (context == null || context.Response.HasStarted) return;
                 // 开启异常,方便外层组件熔断等功能使用
                 context.Response.Clear();
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                 context.Response.ContentType = "text/plain;charset=utf-8";
                 await context.Response.WriteAsync("error occurred");
             }
-            Debug.WriteLine($"全局异常拦截器中间件接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
+            _logger.LogDebug($"全局异常拦截器中间件接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
         }
     }
 }

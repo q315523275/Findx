@@ -74,12 +74,15 @@ namespace Findx.WebHost.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet("/exception")]
-        public async Task<string> Exception()
+        public async Task<string> Exception([FromServices] ILogger<CommonController> logger)
         {
             await Task.Delay(50);
             //return "1";
-            Console.WriteLine($"{DateTime.Now} - 自定义异常");
-            throw new Exception("自定义异常");
+            var exp = new Exception("自定义异常");
+            
+            logger.LogError(exp, string.Empty);
+
+            throw exp;
         }
 
         /// <summary>

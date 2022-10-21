@@ -1,17 +1,11 @@
-﻿using System;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc;
 using Findx.Builders;
 using Findx.Data;
-using Findx.Email;
 using Findx.Extensions;
-using Findx.Module.EleAdmin.Jobs;
-using Findx.Pdf;
 using Findx.Security;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller

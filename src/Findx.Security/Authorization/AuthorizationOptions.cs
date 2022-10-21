@@ -2,8 +2,14 @@
 
 namespace Findx.Security.Authorization
 {
+    /// <summary>
+    /// 授权配置
+    /// </summary>
     public class AuthorizationOptions : IOptions<AuthorizationOptions>
     {
+        /// <summary>
+        /// this
+        /// </summary>
         public AuthorizationOptions Value => this;
 
         /// <summary>

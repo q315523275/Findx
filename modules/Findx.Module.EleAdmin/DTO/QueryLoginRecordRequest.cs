@@ -2,6 +2,9 @@ using Findx.Data;
 
 namespace Findx.Module.EleAdmin.DTO;
 
+/// <summary>
+/// 查询登录日志参数
+/// </summary>
 public class QueryLoginRecordRequest: PageBase
 {
     /// <summary>

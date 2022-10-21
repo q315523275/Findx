@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Findx.Data;
+using System.Collections.Generic;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -26,6 +27,16 @@ namespace Findx.AspNetCore.Mvc
         protected TService GetService<TService>()
         {
             return HttpContext.RequestServices.GetService<TService>();
+        }
+
+        /// <summary>
+        /// 获取服务集合
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        protected IEnumerable<TService> GetServices<TService>()
+        {
+            return HttpContext.RequestServices.GetServices<TService>();
         }
 
         /// <summary>

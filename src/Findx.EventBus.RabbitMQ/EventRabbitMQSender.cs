@@ -25,7 +25,7 @@ namespace Findx.EventBus.RabbitMQ
                 // 创建并配置交换器
                 channel.ExchangeDeclare(exchange: _options.CurrentValue.ExchangeName, type: _options.CurrentValue.ExchangeType);
                 // 创建队列属性
-                IBasicProperties properties = channel.CreateBasicProperties();
+                var properties = channel.CreateBasicProperties();
                 // 决定发送数据类型
                 properties.ContentType = "application/json";
                 // 是否持久化  1 no  2 yes

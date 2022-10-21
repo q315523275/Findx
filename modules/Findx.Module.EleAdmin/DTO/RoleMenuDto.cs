@@ -6,6 +6,9 @@ namespace Findx.Module.EleAdmin.DTO
 	/// </summary>
 	public class RoleMenuDto
 	{
+		/// <summary>
+		/// id
+		/// </summary>
 		public Guid Id { get; set; } = Guid.Empty;
 
 		/// <summary>

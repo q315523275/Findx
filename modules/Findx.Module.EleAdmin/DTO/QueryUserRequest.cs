@@ -22,6 +22,11 @@ namespace Findx.Module.EleAdmin.DTO
 		/// 性别
 		/// </summary>
 		public int Sex { set; get; }
+		
+		/// <summary>
+		/// 机构编号
+		/// </summary>
+		public Guid? OrgId { set; get; }
 	}
 }
 

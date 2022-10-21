@@ -1,7 +1,7 @@
-﻿using Findx.Email;
+﻿using System;
+using Findx.Email;
 using Findx.Extensions;
 using MailKit.Net.Smtp;
-using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Threading;
@@ -25,17 +25,19 @@ namespace Findx.MailKit
 
         protected override async Task SendEmailAsync(System.Net.Mail.MailMessage mail, CancellationToken token = default)
         {
-            using (var client = new SmtpClient())
+            var message = mail.ToMimeMessage();
+            
+            using var client = new SmtpClient();
+            client.MessageSent += (s, e) =>
             {
-                client.Connect(EmailSenderOptions.Host, EmailSenderOptions.Port, EmailSenderOptions.EnableSsl ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTlsWhenAvailable);
-                client.Authenticate(EmailSenderOptions.UserName, EmailSenderOptions.Password);
-
-                var message = mail.ToMimeMessage();
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
-
-                _logger.LogDebug($"发送邮件到“{mail.To.JoinAsString(",")}”，标题：{mail.Subject}");
-            }
+                _logger.LogDebug($"发送邮件到“{mail.To.JoinAsString(",")}”，标题：{mail.Subject}，结果：{e.Response}");
+            };
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+                
+            await client.ConnectAsync(EmailSenderOptions.Host, EmailSenderOptions.Port, EmailSenderOptions.EnableSsl, token);
+            await client.AuthenticateAsync(EmailSenderOptions.UserName, EmailSenderOptions.Password, token);
+            await client.SendAsync(message, token);
+            await client.DisconnectAsync(true, token);
         }
     }
 }

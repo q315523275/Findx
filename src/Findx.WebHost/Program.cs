@@ -11,8 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddFindx().AddModules(typeof(Findx.RabbitMQ.FindxRabbitMqModule)
-    , typeof(Findx.EventBus.RabbitMQ.EventBusRabbitMqModule)
+builder.Services.AddFindx().AddModules(typeof(Findx.EventBus.RabbitMQ.EventBusRabbitMqModule)
     , typeof(Findx.Discovery.Consul.ConsulDiscoveryModule)
     , typeof(Findx.Redis.FindxRedisModule)
     , typeof(Findx.FreeSql.FreeSqlModule));

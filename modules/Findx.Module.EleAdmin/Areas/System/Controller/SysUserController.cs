@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Findx.Linq;
 using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.DependencyInjection;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Findx.Security;
@@ -43,7 +42,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             var whereExp = ExpressionBuilder.Create<SysUserInfo>()
                                             .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
                                             .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-                                            .AndIF(req.Sex > 0, x => x.Sex == req.Sex);
+                                            .AndIF(req.Sex > 0, x => x.Sex == req.Sex)
+                                            .AndIF(req.OrgId.HasValue, x => x.OrgId == req.OrgId);
             return whereExp;
         }
 

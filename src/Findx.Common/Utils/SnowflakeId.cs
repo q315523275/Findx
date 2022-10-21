@@ -1,7 +1,5 @@
-﻿using System;
-using System.Linq;
+﻿#nullable enable
 using System.Net.NetworkInformation;
-using System.Threading;
 
 namespace Findx.Utils
 {
@@ -47,7 +45,7 @@ namespace Findx.Utils
         /// middle 10 bit: workerId
         /// lowest 53 bit: all 0
         /// </summary>
-        private long _workerId { get; set; }
+        private long WorkerId { get; set; }
 
         /// <summary>
         /// timestamp and sequence mix in one Long
@@ -63,6 +61,11 @@ namespace Findx.Utils
 
         private readonly object _lock = new object();
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="workerId"></param>
+        /// <exception cref="ArgumentException"></exception>
         public SnowflakeId(long workerId)
         {
             InitTimestampAndSequence();
@@ -70,9 +73,13 @@ namespace Findx.Utils
             if (workerId > MaxWorkerId || workerId < 0)
                 throw new ArgumentException($"worker Id can't be greater than {MaxWorkerId} or less than 0");
 
-            _workerId = workerId << (TimestampBits + SequenceBits);
+            WorkerId = workerId << (TimestampBits + SequenceBits);
         }
 
+        /// <summary>
+        /// 默认单例
+        /// </summary>
+        /// <returns></returns>
         public static SnowflakeId Default()
         {
             if (_snowflakeId != null)
@@ -87,22 +94,27 @@ namespace Findx.Utils
                     return _snowflakeId;
                 }
 
-                if (!long.TryParse(Environment.GetEnvironmentVariable("CAP_WORKERID", EnvironmentVariableTarget.Machine), out var workerId))
+                if (!long.TryParse(Environment.GetEnvironmentVariable("WORKERID", EnvironmentVariableTarget.Machine), out var workerId))
                 {
                     workerId = Util.GenerateWorkerId(MaxWorkerId);
                 }
 
+                // ReSharper disable once PossibleMultipleWriteAccessInDoubleCheckLocking
                 return _snowflakeId = new SnowflakeId(workerId);
             }
         }
 
-        public virtual long NextId()
+        /// <summary>
+        /// 获取Id
+        /// </summary>
+        /// <returns></returns>
+        public long NextId()
         {
             lock (_lock)
             {
                 WaitIfNecessary();
                 long timestampWithSequence = _timestampAndSequence & TimestampAndSequenceMask;
-                return _workerId | timestampWithSequence;
+                return WorkerId | timestampWithSequence;
             }
         }
 

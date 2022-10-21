@@ -1,4 +1,5 @@
-﻿using Findx.Data;
+﻿using System.Collections.Generic;
+using Findx.Data;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,6 +29,16 @@ namespace Findx.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// 获取服务集合
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <returns></returns>
+        protected IEnumerable<TService> GetServices<TService>()
+        {
+            return HttpContext.RequestServices.GetServices<TService>();
+        }
+
+        /// <summary>
         /// 获取服务并校验
         /// </summary>
         /// <typeparam name="TService"></typeparam>
@@ -36,7 +47,7 @@ namespace Findx.AspNetCore.Mvc
         {
             return HttpContext.RequestServices.GetRequiredService<TService>();
         }
-        
+
         /// <summary>
         /// 获取仓储方法
         /// </summary>

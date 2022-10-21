@@ -108,9 +108,12 @@ namespace Findx.RabbitMQ
                     if (FailedCallback != null)
                         await FailedCallback(Channel, basicDeliverEventArgs);
                 }
-                catch { }
+                catch
+                {
+                    // ignored
+                }
 
-                Logger.LogError(ex, "");
+                Logger.LogError(ex, ex.Message);
                 await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
             }
         }
@@ -157,11 +160,11 @@ namespace Findx.RabbitMQ
                     operationInterruptedException.ShutdownReason.ReplyCode == 406 &&
                     operationInterruptedException.Message.Contains("arg 'x-dead-letter-exchange'"))
                 {
-                    Logger.LogWarning(ex, "");
+                    Logger.LogWarning(ex, ex.Message);
                     await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
                 }
 
-                Logger.LogWarning(ex, "");
+                Logger.LogWarning(ex, ex.Message);
                 await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
             }
         }

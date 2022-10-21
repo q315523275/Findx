@@ -6,6 +6,7 @@
 		<Description>MailKit邮件发送器组件包</Description>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
+		<PackageVersion>1.8.3-beta1</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -57,17 +57,11 @@ namespace Findx.NLog
             {
                 switch (logLevel)
                 {
-                    case Microsoft.Extensions.Logging.LogLevel.Critical:
-                        _log.Fatal(message);
-                        break;
-                    case Microsoft.Extensions.Logging.LogLevel.Debug:
-                        _log.Debug(message);
-                        break;
                     case Microsoft.Extensions.Logging.LogLevel.Trace:
                         _log.Trace(message);
                         break;
-                    case Microsoft.Extensions.Logging.LogLevel.Error:
-                        _log.Error(message, exception, null);
+                    case Microsoft.Extensions.Logging.LogLevel.Debug:
+                        _log.Debug(message);
                         break;
                     case Microsoft.Extensions.Logging.LogLevel.Information:
                         _log.Info(message);
@@ -75,9 +69,17 @@ namespace Findx.NLog
                     case Microsoft.Extensions.Logging.LogLevel.Warning:
                         _log.Warn(message);
                         break;
+                    case Microsoft.Extensions.Logging.LogLevel.Error:
+                        _log.Error(message, exception);
+                        break;
+                    case Microsoft.Extensions.Logging.LogLevel.Critical:
+                        _log.Fatal(message, exception);
+                        break;
+                    case Microsoft.Extensions.Logging.LogLevel.None:
+                        break;
                     default:
                         _log.Warn($"遇到未知的日志级别 {logLevel}, 使用Info级别写入日志。");
-                        _log.Info(message, exception, null);
+                        _log.Info(message, exception);
                         break;
                 }
             }

@@ -26,9 +26,9 @@ namespace Findx.RabbitMQ
             try
             {
                 var lazyConnection = Connections.GetOrAdd(
-                    connectionName, (connectionName) => new Lazy<IConnection>(() =>
+                    connectionName, (key) => new Lazy<IConnection>(() =>
                     {
-                        var connection = Options.Connections.GetOrDefault(connectionName);
+                        var connection = Options.Connections.GetOrDefault(key);
                         var hostnames = connection.HostName.TrimEnd(';').Split(';');
                         // Handle Rabbit MQ Cluster.
                         return hostnames.Length == 1 ? connection.CreateConnection() : connection.CreateConnection(hostnames);
@@ -62,7 +62,7 @@ namespace Findx.RabbitMQ
                 }
                 catch
                 {
-
+                    // ignored
                 }
             }
 
