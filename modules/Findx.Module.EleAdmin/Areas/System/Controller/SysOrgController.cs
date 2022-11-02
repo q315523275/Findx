@@ -1,5 +1,8 @@
 ﻿using System.ComponentModel;
 using Findx.AspNetCore.Mvc;
+using Findx.Data;
+using Findx.Extensions;
+using Findx.Linq;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -16,7 +19,28 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 	[Description("系统-机构")]
 	public class SysOrgController: CrudControllerBase<SysOrgInfo, SetOrgRequest, QueryOrgRequest, Guid, Guid>
 	{
+		/// <summary>
+		/// 构建查询条件
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
+		protected override Expressionable<SysOrgInfo> CreatePageWhereExpression(QueryOrgRequest request)
+		{
+			var whereExp = ExpressionBuilder.Create<SysOrgInfo>()
+											.AndIF(request.Pid != null && request.Pid != Guid.Empty, x => x.ParentId == request.Pid)
+											.AndIF(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords));
+			return whereExp;
+		}
 
+		/// <summary>
+		/// 构建排序
+		/// </summary>
+		/// <param name="request"></param>
+		/// <returns></returns>
+		protected override List<OrderByParameter<SysOrgInfo>> CreatePageOrderExpression(QueryOrgRequest request)
+		{
+			return ExpressionBuilder.CreateOrder<SysOrgInfo>().OrderBy(x => x.Sort).ToSort();
+		}
 	}
 }
 

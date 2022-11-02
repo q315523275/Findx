@@ -10,7 +10,7 @@ namespace Findx.Messaging
     /// </summary>
     public class ApplicationEventPublisher : IApplicationEventPublisher, IDisposable
     {
-        private readonly IDictionary<Type, object> _eventHandlers = new Dictionary<Type, object>();
+        private readonly IDictionary<Type, object> _eventHandlers = new ConcurrentDictionary<Type, object>();
 
         private readonly Channel<IApplicationEvent> _channel;
         private readonly ILogger<ApplicationEventPublisher> _logger;

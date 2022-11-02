@@ -34,6 +34,8 @@ namespace Findx.Security
         public string UserName => this.FindClaimValue(ClaimTypes.UserName);
 
         public string Name => this.FindClaimValue(ClaimTypes.Name);
+        
+        public string Nickname => this.FindClaimValue(ClaimTypes.Nickname);
 
         public string PhoneNumber => this.FindClaimValue(ClaimTypes.PhoneNumber);
 

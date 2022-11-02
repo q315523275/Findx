@@ -127,10 +127,9 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         [Description("修改密码")]
         public CommonResult Password([FromBody] SetUserPropertyRequest req)
         {
-            var userId = _currentUser.UserId.To<Guid>();
             var repo = GetRepository<SysUserInfo>();
             var pwd = Findx.Utils.Encrypt.Md5By32(req.Password);
-            repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == userId);
+            repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == req.Id);
             return CommonResult.Success();
         }
 

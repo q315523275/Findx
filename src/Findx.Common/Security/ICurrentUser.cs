@@ -31,6 +31,12 @@ namespace Findx.Security
         /// </summary>
         [CanBeNull]
         string Name { get; }
+        
+        /// <summary>
+        /// 昵称
+        /// </summary>
+        [CanBeNull]
+        string Nickname { get; }
 
         /// <summary>
         /// 手机号码
