@@ -7,10 +7,11 @@
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Description>Redis通用功能、分布式锁等(StackExchangeRedis)</Description>
+		<PackageVersion>1.8.5</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="StackExchange.Redis" Version="2.6.48" />
+		<PackageReference Include="StackExchange.Redis" Version="2.6.70" />
 	</ItemGroup>
 
 	<ItemGroup>

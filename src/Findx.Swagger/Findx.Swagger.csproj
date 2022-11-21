@@ -6,6 +6,7 @@
 	  <Authors>Findx</Authors>
 	  <Company>Findx</Company>
 	  <Description>Swagger在线文档组件</Description>
+	  <PackageVersion>1.8.5</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

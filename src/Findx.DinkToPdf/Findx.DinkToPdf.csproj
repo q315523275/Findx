@@ -6,7 +6,7 @@
 		<Version>1.5.8</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
-		<PackageVersion>1.8.3</PackageVersion>
+		<PackageVersion>1.8.5</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

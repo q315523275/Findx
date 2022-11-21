@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Castle.DynamicProxy;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,6 +26,7 @@ namespace Findx.Castle
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services.AddTransient(typeof(CastleAsyncDeterminationInterceptor<>));
+            services.AddSingleton<IProxyGenerator, ProxyGenerator>();
             return services;
         }
     }
