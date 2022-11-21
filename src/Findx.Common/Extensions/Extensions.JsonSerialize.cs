@@ -1,5 +1,4 @@
-﻿using Findx.DependencyInjection;
-using Findx.Serialization;
+﻿using Findx.Serialization;
 
 namespace Findx.Extensions
 {
@@ -16,8 +15,7 @@ namespace Findx.Extensions
         /// <returns>json格式的字符串</returns>
         public static string ToJson<T>(this T obj)
         {
-            var serializer = ServiceLocator.GetService<IJsonSerializer>();
-            return serializer?.Serialize(obj);
+            return JsonSerializer.Serialize(obj, SystemTextJsonStringSerializer.Options);
         }
 
         /// <summary>
@@ -29,8 +27,19 @@ namespace Findx.Extensions
         /// <returns>指定对象的实例</returns>
         public static T ToObject<T>(this string json)
         {
-            var serializer = ServiceLocator.GetService<IJsonSerializer>();
-            return serializer.Deserialize<T>(json);
+            return JsonSerializer.Deserialize<T>(json, SystemTextJsonStringSerializer.Options);
+        }
+
+        /// <summary>
+        /// 将json格式的字符串转为指定对象
+        /// 如果json格式字符串格式不对则抛异常
+        /// </summary>
+        /// <param name="json">json格式字符串</param>
+        /// <param name="type">要转换的对象类型</param>
+        /// <returns>指定对象的实例</returns>
+        public static object ToObject(this string json, Type type)
+        {
+            return JsonSerializer.Deserialize(json, type, SystemTextJsonStringSerializer.Options);
         }
     }
 }

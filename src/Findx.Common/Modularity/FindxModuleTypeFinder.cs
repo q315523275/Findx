@@ -5,8 +5,15 @@ using System.Linq;
 
 namespace Findx.Modularity
 {
+    /// <summary>
+    /// Findx框架模块查找器
+    /// </summary>
     public class FindxModuleTypeFinder : BaseTypeFinderBase<FindxModule>, IFindxModuleTypeFinder
     {
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="appDomainAssemblyFinder"></param>
         public FindxModuleTypeFinder(IAppDomainAssemblyFinder appDomainAssemblyFinder) : base(appDomainAssemblyFinder)
         {
         }

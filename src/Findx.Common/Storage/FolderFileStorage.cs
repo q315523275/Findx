@@ -15,7 +15,7 @@ namespace Findx.Storage
         /// <summary>
         /// 序列化工具
         /// </summary>
-        public ISerializer Serializer { get; private set; }
+        public ISerializer Serializer { get; }
 
         /// <summary>
         /// 文件存储类型名称
@@ -69,14 +69,14 @@ namespace Findx.Storage
                 {
                     var directory = Path.GetDirectoryName(targetPath);
                     if (directory != null)
-                        Findx.Utils.DirectoryTool.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
+                        Utils.DirectoryTool.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
 
                     File.Copy(Path.Combine(_mediaRootFolder, path), Path.Combine(_mediaRootFolder, targetPath), overwrite: overwrite);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error trying to copy file {Path} to {TargetPath}.", path, targetPath);
+                _logger.LogError(ex, "Error trying to copy file {Path} to {TargetPath}", path, targetPath);
                 return Task.FromResult(false);
             }
 
@@ -103,7 +103,7 @@ namespace Findx.Storage
             }
             catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
             {
-                _logger.LogDebug(ex, "Error trying to delete file: {Path}.", path);
+                _logger.LogDebug(ex, "Error trying to delete file: {Path}", path);
 
                 return Task.FromResult(false);
             }
@@ -248,7 +248,7 @@ namespace Findx.Storage
                 {
                     var directory = Path.GetDirectoryName(newPath);
                     if (directory != null)
-                        Findx.Utils.DirectoryTool.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
+                        Utils.DirectoryTool.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
 
                     var oldFullPath = Path.Combine(_mediaRootFolder, path);
                     var newFullPath = Path.Combine(_mediaRootFolder, newPath);
@@ -265,7 +265,7 @@ namespace Findx.Storage
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error trying to rename file {Path} to {NewPath}.", path, newPath);
+                _logger.LogError(ex, "Error trying to rename file {Path} to {NewPath}", path, newPath);
 
                 return Task.FromResult(false);
             }
@@ -345,7 +345,7 @@ namespace Findx.Storage
 
             var directory = Path.GetDirectoryName(filePath);
             if (directory != null)
-                Findx.Utils.DirectoryTool.CreateIfNotExists(directory);
+                Utils.DirectoryTool.CreateIfNotExists(directory);
 
             return File.Create(filePath);
         }

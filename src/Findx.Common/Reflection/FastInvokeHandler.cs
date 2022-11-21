@@ -7,11 +7,17 @@ namespace Findx.Reflection
     using InvokeHandler = Func<object, object[], object>;
 
     /// <summary>
-    /// 
+    /// 快速调用处理程序
     /// http://www.codeproject.com/Articles/14593/A-General-Fast-Method-Invoker
     /// </summary>
     public class FastInvokeHandler
     {
+        /// <summary>
+        /// 创建
+        /// </summary>
+        /// <param name="methodInfo">方法信息</param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
         public static InvokeHandler Create(MethodInfo methodInfo)
         {
             if (methodInfo.DeclaringType == null)

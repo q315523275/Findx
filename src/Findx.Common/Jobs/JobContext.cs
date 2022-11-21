@@ -3,8 +3,18 @@ using System.Collections.Generic;
 
 namespace Findx.Jobs
 {
+    /// <summary>
+    /// 作业上下文
+    /// </summary>
 	public class JobContext: IJobContext
 	{
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="jobId"></param>
+        /// <param name="executionId"></param>
+        /// <param name="fullName"></param>
         public JobContext(IServiceProvider serviceProvider, long jobId, long executionId, string fullName)
         {
             ServiceProvider = serviceProvider;
@@ -13,21 +23,44 @@ namespace Findx.Jobs
             FullName = fullName;
         }
 
+        /// <summary>
+        /// 服务提供器
+        /// </summary>
         public IServiceProvider ServiceProvider { get; }
 
+        /// <summary>
+        /// 任务编号
+        /// </summary>
         public long JobId { get; }
 
+        /// <summary>
+        /// 执行记录编号
+        /// </summary>
         public long ExecutionId { get; }
 
+        /// <summary>
+        /// 任务全名
+        /// </summary>
         public string FullName { get; }
 
-        // 非必填参数
+        /// <summary>
+        /// 任务名
+        /// </summary>
         public string JobName { get; set; }
 
+        /// <summary>
+        /// 任务参数
+        /// </summary>
         public IDictionary<string, string> Parameter { get; set; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// 分片索引
+        /// </summary>
         public int ShardIndex { get; set; }
 
+        /// <summary>
+        /// 分片总数
+        /// </summary>
         public int ShardTotal { get; set; }
     }
 }

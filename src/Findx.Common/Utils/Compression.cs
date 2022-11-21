@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.IO.Compression;
-using System.Text;
+﻿using System.IO.Compression;
 using Findx.Extensions;
 
 namespace Findx.Utils
@@ -24,7 +21,7 @@ namespace Findx.Utils
             zip.Close();
             var buffer = new byte[ms.Length];
             ms.Position = 0;
-            ms.Read(buffer, 0, buffer.Length);
+            _ = ms.Read(buffer, 0, buffer.Length);
             return buffer;
         }
 

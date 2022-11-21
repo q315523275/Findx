@@ -19,22 +19,22 @@
         /// 图片裁剪
         /// </summary>
         /// <param name="byteData">图片字节数组</param>
-        /// <param name="X">裁剪的矩形区域X坐标</param>
-        /// <param name="Y">裁剪的矩形区域Y坐标</param>
+        /// <param name="x">裁剪的矩形区域X坐标</param>
+        /// <param name="y">裁剪的矩形区域Y坐标</param>
         /// <param name="width">裁剪的矩形区域长宽度</param>
         /// <returns></returns>
-        byte[] Crop(byte[] byteData, int X, int Y, int width);
+        byte[] Crop(byte[] byteData, int x, int y, int width);
 
         /// <summary>
         /// 图片裁剪
         /// </summary>
         /// <param name="byteData">图片字节数组</param>
-        /// <param name="X">裁剪的矩形区域X坐标</param>
-        /// <param name="Y">裁剪的矩形区域Y坐标</param>
+        /// <param name="x">裁剪的矩形区域X坐标</param>
+        /// <param name="y">裁剪的矩形区域Y坐标</param>
         /// <param name="width">裁剪的矩形区域宽度</param>
         /// <param name="height">裁剪的矩形区域高度</param>
         /// <returns></returns>
-        byte[] Crop(byte[] byteData, int X, int Y, int width, int height);
+        byte[] Crop(byte[] byteData, int x, int y, int width, int height);
 
         /// <summary>
         /// 图片压缩(仅支持Jpg图片)
@@ -71,24 +71,24 @@
         /// </summary>
         /// <param name="byteData">图片字节数组</param>
         /// <param name="mergeImagePath">添加图片物理路径</param>
-        /// <param name="X">绘制X轴</param>
-        /// <param name="Y">绘制Y轴</param>
+        /// <param name="x">绘制X轴</param>
+        /// <param name="y">绘制Y轴</param>
         /// <param name="width">添加图片宽度,0不处理</param>
         /// <param name="height">添加合并图片高度,0不处理</param>
         /// <param name="opacity">透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字</param>
         /// <returns></returns>
-        byte[] PressImage(byte[] byteData, string mergeImagePath, int X, int Y, int width = 0, int height = 0, float opacity = 1);
+        byte[] PressImage(byte[] byteData, string mergeImagePath, int x, int y, int width = 0, int height = 0, float opacity = 1);
 
         /// <summary>
         /// 图片添加文本
         /// </summary>
         /// <param name="byteData"></param>
-        /// <param name="X">绘制X轴</param>
-        /// <param name="Y">绘制Y轴</param>
+        /// <param name="x">绘制X轴</param>
+        /// <param name="y">绘制Y轴</param>
         /// <param name="text"></param>
         /// <param name="fontOptions">文字样式</param>
         /// <returns></returns>
-        byte[] PressText(byte[] byteData, int X, int Y, string text, FontOptions fontOptions);
+        byte[] PressText(byte[] byteData, int x, int y, string text, FontOptions fontOptions);
 
         /// <summary>
         /// 图片水印

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-namespace Findx.DependencyInjection
+﻿namespace Findx.DependencyInjection
 {
     /// <summary>
     /// 依赖注入注解
@@ -8,6 +6,10 @@ namespace Findx.DependencyInjection
     [AttributeUsage(AttributeTargets.Class)]
     public class DependencyAttribute : Attribute
     {
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="lifetime">生命周期</param>
         public DependencyAttribute(ServiceLifetime lifetime)
         {
             Lifetime = lifetime;

@@ -5,6 +5,10 @@
     /// </summary>
     public class AtomicIntegerArray : AtomicReferenceArray<int>
     {
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="length"></param>
         public AtomicIntegerArray(int length)
             : base(length)
         {

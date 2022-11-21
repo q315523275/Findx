@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Threading;
-using System.Threading.Tasks;
-using Findx.Extensions;
+﻿using System.Threading.Tasks;
 using Findx.Threading;
 
 namespace Findx.Caching.InMemory
@@ -12,12 +8,19 @@ namespace Findx.Caching.InMemory
     /// </summary>
     public class InMemoryCache : ICache, IDisposable
     {
+        /// <summary>
+        /// 名称
+        /// </summary>
         public string Name => CacheType.DefaultMemory;
 
         private readonly ConcurrentDictionary<string, CacheItem> _cache;
 
         private FindxAsyncTimer Timer { get; }
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="timer"></param>
         public InMemoryCache(FindxAsyncTimer timer)
         {
             _cache = new ConcurrentDictionary<string, CacheItem>();
@@ -29,7 +32,11 @@ namespace Findx.Caching.InMemory
             Timer.Start();
         }
 
-        protected async Task Timer_Elapsed(FindxAsyncTimer timer)
+        /// <summary>
+        /// 调度执行方法
+        /// </summary>
+        /// <param name="timer"></param>
+        private async Task Timer_Elapsed(FindxAsyncTimer timer)
         {
             var now = DateTime.Now;
             foreach (var item in _cache)
@@ -153,7 +160,7 @@ namespace Findx.Caching.InMemory
         {
             Check.NotNull(key, nameof(key));
 
-            _cache.AddOrUpdate(key, new CacheItem(value, expire), (key, oldItem) =>
+            _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) =>
             {
                 oldItem.Set(value, expire);
                 return oldItem;
@@ -310,7 +317,7 @@ namespace Findx.Caching.InMemory
         {
             Check.NotNull(key, nameof(key));
 
-            _cache.AddOrUpdate(key, new CacheItem(value, expire), (key, oldItem) =>
+            _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) =>
             {
                 oldItem.Set(value, expire);
                 return oldItem;
@@ -359,27 +366,20 @@ namespace Findx.Caching.InMemory
     }
     internal class CacheItem
     {
-        private object _Value;
-
         /// <summary>
         /// 数值
         /// </summary>
-        public object Value { get => _Value; set => _Value = value; }
+        private object Value { get; set; }
 
         /// <summary>
         /// 过期时间
         /// </summary>
-        public DateTime ExpiredTime { get; set; }
+        public DateTime ExpiredTime { get; private set; }
 
         /// <summary>
         /// 是否过期
         /// </summary>
         public bool Expired => ExpiredTime <= DateTime.Now;
-
-        /// <summary>
-        /// 访问时间
-        /// </summary>
-        public DateTime VisitTime { get; private set; }
 
         /// <summary>
         /// 构造缓存项
@@ -398,11 +398,8 @@ namespace Findx.Caching.InMemory
         {
             Value = value;
 
-            var now = VisitTime = DateTime.Now;
-            if (expire == null)
-                ExpiredTime = DateTime.MaxValue;
-            else
-                ExpiredTime = now.AddSeconds(expire.Value.TotalSeconds);
+            var now = DateTime.Now;
+            ExpiredTime = expire == null ? DateTime.MaxValue : now.AddSeconds(expire.Value.TotalSeconds);
         }
 
         /// <summary>
@@ -411,7 +408,6 @@ namespace Findx.Caching.InMemory
         /// <returns></returns>
         public object Visit()
         {
-            VisitTime = DateTime.Now;
             return Value;
         }
     }

@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.Autofac
 {
-    public static class AutofacAbpApplicationCreationOptionsExtensions
+    public static class AutofacFindxBuilderExtensions
 	{
 
         public static void UseAutofac(this IFindxBuilder build)

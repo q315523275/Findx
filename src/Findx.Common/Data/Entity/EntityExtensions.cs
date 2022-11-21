@@ -1,10 +1,7 @@
-﻿using System;
-using System.Security.Principal;
+﻿using System.Security.Principal;
 using Findx.DependencyInjection;
 using Findx.Extensions;
-using Findx.Guids;
 using Findx.Security;
-using Findx.Utils;
 
 namespace Findx.Data
 {
@@ -32,7 +29,7 @@ namespace Findx.Data
         public static bool IsExpired(this IExpirable entity)
         {
             Check.NotNull(entity, nameof(entity));
-            DateTime now = DateTime.Now;
+            var now = DateTime.Now;
             return entity.BeginTime != null && entity.BeginTime.Value > now || entity.EndTime != null && entity.EndTime.Value < now;
         }
 

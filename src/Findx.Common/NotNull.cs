@@ -9,13 +9,26 @@ namespace Findx
     /// <typeparam name="T"></typeparam>
     public class NotNull<T>
     {
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="value"></param>
         public NotNull(T value)
         {
             this.Value = value;
         }
 
+        /// <summary>
+        /// 对象值
+        /// </summary>
         public T Value { get; set; }
 
+        /// <summary>
+        /// 判断是否为Null
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException">为Null抛出异常</exception>
         public static implicit operator NotNull<T>(T value)
         {
             if (value == null)

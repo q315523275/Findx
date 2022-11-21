@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Findx.Security
+﻿namespace Findx.Security
 {
     /// <summary>
     /// 定义功能信息存储器
@@ -13,12 +10,11 @@ namespace Findx.Security
         /// 同步功能信息至存储库
         /// </summary>
         /// <param name="functions"></param>
-        void SyncToDatabase(List<TFunction> functions);
+        void SyncToDatabase(IEnumerable<TFunction> functions);
 
         /// <summary>
         /// 从存储器同步功能信息
-        /// </summary>
-        /// <param name="functions"></param>
+        /// </summary> 
         List<TFunction> GetFromDatabase();
     }
 }

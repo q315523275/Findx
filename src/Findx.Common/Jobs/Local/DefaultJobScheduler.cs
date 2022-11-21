@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Serialization;
@@ -179,7 +177,7 @@ namespace Findx.Jobs.Local
         /// 创建任务信息
         /// </summary>
         /// <param name="jobType"></param>
-        /// <param name="jsonParam"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
         private JobInfo CreateJobDetail(Type jobType, IDictionary<string, string> parameter)
         {

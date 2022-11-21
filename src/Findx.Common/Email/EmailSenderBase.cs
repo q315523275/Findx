@@ -75,20 +75,9 @@ namespace Findx.Email
                 mail.From = new MailAddress(EmailSenderOptions.FromAddress, EmailSenderOptions.FromDisplayName, Encoding.UTF8);
             }
 
-            if (mail.HeadersEncoding == null)
-            {
-                mail.HeadersEncoding = Encoding.UTF8;
-            }
-
-            if (mail.SubjectEncoding == null)
-            {
-                mail.SubjectEncoding = Encoding.UTF8;
-            }
-
-            if (mail.BodyEncoding == null)
-            {
-                mail.BodyEncoding = Encoding.UTF8;
-            }
+            mail.HeadersEncoding ??= Encoding.UTF8;
+            mail.SubjectEncoding ??= Encoding.UTF8;
+            mail.BodyEncoding ??= Encoding.UTF8;
         }
     }
 }

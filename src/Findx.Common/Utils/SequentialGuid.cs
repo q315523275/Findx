@@ -1,12 +1,11 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using Findx.Data;
 
 namespace Findx.Utils
 {
     /// <summary>
     /// ABP有序Guid
-    /// Implements <see cref="IGuidGenerator"/> by creating sequential Guids.
+    /// Implements <see cref="Guids.IGuidGenerator"/> by creating sequential Guids.
     /// This code is taken from https://github.com/jhtodd/SequentialGuid/blob/master/SequentialGuid/Classes/SequentialGuid.cs
     /// </summary>
     public class SequentialGuid
@@ -18,6 +17,9 @@ namespace Findx.Utils
 
         private static readonly RandomNumberGenerator RandomNumberGenerator = RandomNumberGenerator.Create();
 
+        /// <summary>
+        /// 数据库类型
+        /// </summary>
         public DatabaseType DatabaseType { get; set; }
 
         /// <summary>
@@ -29,11 +31,20 @@ namespace Findx.Utils
             DatabaseType = DatabaseType.MySql;
         }
 
+        /// <summary>
+        /// 创建
+        /// </summary>
+        /// <returns></returns>
         public Guid Create()
         {
             return Create(DatabaseType);
         }
 
+        /// <summary>
+        /// 创建
+        /// </summary>
+        /// <param name="databaseType"></param>
+        /// <returns></returns>
         public Guid Create(DatabaseType databaseType)
         {
             switch (databaseType)
@@ -51,6 +62,11 @@ namespace Findx.Utils
             }
         }
 
+        /// <summary>
+        /// 创建
+        /// </summary>
+        /// <param name="guidType"></param>
+        /// <returns></returns>
         public Guid Create(SequentialGuidType guidType)
         {
             // We start with 16 bytes of cryptographically strong random data.

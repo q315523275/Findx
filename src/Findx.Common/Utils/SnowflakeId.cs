@@ -5,6 +5,7 @@ namespace Findx.Utils
 {
     /// <summary>
     /// 雪花算法生成ID
+    /// https://github.com/dotnetcore/cap/blob/master/src/DotNetCore.CAP/Internal/SnowflakeId.cs
     /// </summary>
     public class SnowflakeId
     {
@@ -38,14 +39,11 @@ namespace Findx.Utils
         /// </summary>
         private const long TimestampAndSequenceMask = ~(-1L << (TimestampBits + SequenceBits));
 
-        /// <summary>
-        /// business meaning: machine ID (0 ~ 1023)
-        /// actual layout in memory:
-        /// highest 1 bit: 0
-        /// middle 10 bit: workerId
-        /// lowest 53 bit: all 0
-        /// </summary>
-        private long WorkerId { get; set; }
+        private static SnowflakeId? _snowflakeId;
+
+        private static readonly object SLock = new();
+
+        private readonly object _lock = new();
 
         /// <summary>
         /// timestamp and sequence mix in one Long
@@ -54,12 +52,6 @@ namespace Findx.Utils
         /// lowest  12 bit: sequence
         /// </summary>
         private long _timestampAndSequence;
-
-        private static SnowflakeId? _snowflakeId;
-
-        private static readonly object SLock = new object();
-
-        private readonly object _lock = new object();
 
         /// <summary>
         /// Ctor
@@ -77,27 +69,28 @@ namespace Findx.Utils
         }
 
         /// <summary>
-        /// 默认单例
+        /// business meaning: machine ID (0 ~ 1023)
+        /// actual layout in memory:
+        /// highest 1 bit: 0
+        /// middle 10 bit: workerId
+        /// lowest 53 bit: all 0
+        /// </summary>
+        private long WorkerId { get; }
+
+        /// <summary>
+        /// 单例
         /// </summary>
         /// <returns></returns>
         public static SnowflakeId Default()
         {
-            if (_snowflakeId != null)
-            {
-                return _snowflakeId;
-            }
+            if (_snowflakeId != null) return _snowflakeId;
 
             lock (SLock)
             {
-                if (_snowflakeId != null)
-                {
-                    return _snowflakeId;
-                }
+                if (_snowflakeId != null) return _snowflakeId;
 
-                if (!long.TryParse(Environment.GetEnvironmentVariable("WORKERID", EnvironmentVariableTarget.Machine), out var workerId))
-                {
+                if (!long.TryParse(Environment.GetEnvironmentVariable("WORKERID"), out var workerId))
                     workerId = Util.GenerateWorkerId(MaxWorkerId);
-                }
 
                 // ReSharper disable once PossibleMultipleWriteAccessInDoubleCheckLocking
                 return _snowflakeId = new SnowflakeId(workerId);
@@ -105,15 +98,15 @@ namespace Findx.Utils
         }
 
         /// <summary>
-        /// 获取Id
+        /// ID
         /// </summary>
         /// <returns></returns>
-        public long NextId()
+        public virtual long NextId()
         {
             lock (_lock)
             {
                 WaitIfNecessary();
-                long timestampWithSequence = _timestampAndSequence & TimestampAndSequenceMask;
+                var timestampWithSequence = _timestampAndSequence & TimestampAndSequenceMask;
                 return WorkerId | timestampWithSequence;
             }
         }
@@ -123,8 +116,8 @@ namespace Findx.Utils
         /// </summary>
         private void InitTimestampAndSequence()
         {
-            long timestamp = GetNewestTimestamp();
-            long timestampWithSequence = timestamp << SequenceBits;
+            var timestamp = GetNewestTimestamp();
+            var timestampWithSequence = timestamp << SequenceBits;
             _timestampAndSequence = timestampWithSequence;
         }
 
@@ -134,14 +127,11 @@ namespace Findx.Utils
         /// </summary>
         private void WaitIfNecessary()
         {
-            long currentWithSequence = ++_timestampAndSequence;
-            long current = currentWithSequence >> SequenceBits;
-            long newest = GetNewestTimestamp();
+            var currentWithSequence = ++_timestampAndSequence;
+            var current = currentWithSequence >> SequenceBits;
+            var newest = GetNewestTimestamp();
 
-            if (current >= newest)
-            {
-                Thread.Sleep(5);
-            }
+            if (current >= newest) Thread.Sleep(5);
         }
 
         /// <summary>
@@ -180,13 +170,12 @@ namespace Findx.Utils
         {
             NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
             //exclude virtual and Loopback
-            var firstUpInterface = nics.OrderByDescending(x => x.Speed).FirstOrDefault(x => !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up);
-            if (firstUpInterface == null)
-            {
-                throw new Exception("no available mac found");
-            }
-            PhysicalAddress address = firstUpInterface.GetPhysicalAddress();
-            byte[] mac = address.GetAddressBytes();
+            var firstUpInterface = nics.OrderByDescending(x => x.Speed).FirstOrDefault(x =>
+                !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback &&
+                x.OperationalStatus == OperationalStatus.Up);
+            if (firstUpInterface == null) throw new Exception("no available mac found");
+            var address = firstUpInterface.GetPhysicalAddress();
+            var mac = address.GetAddressBytes();
 
             return ((mac[4] & 0B11) << 8) | (mac[5] & 0xFF);
         }

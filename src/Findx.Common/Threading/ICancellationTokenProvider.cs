@@ -1,6 +1,4 @@
-﻿using System.Threading;
-
-namespace Findx.Threading
+﻿namespace Findx.Threading
 {
     /// <summary>
     /// 取消令牌提供程序

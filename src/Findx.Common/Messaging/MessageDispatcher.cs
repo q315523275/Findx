@@ -6,7 +6,7 @@ namespace Findx.Messaging
     /// <summary>
     /// 进程消息发送者
     /// </summary>
-    public class MessageSender : IMessageSender
+    public class MessageDispatcher : IMessageDispatcher
     {
         /// <summary>
         /// 消息订阅处理器集合
@@ -19,7 +19,7 @@ namespace Findx.Messaging
         /// Ctor
         /// </summary>
         /// <param name="serviceProvider"></param>
-        public MessageSender(IServiceProvider serviceProvider)
+        public MessageDispatcher(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }

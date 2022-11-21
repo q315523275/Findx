@@ -11,9 +11,7 @@ namespace Findx
     /// </summary>
     public class ApplicationContext : IApplicationContext
     {
-        private readonly string FindxApplicationRoot = "Findx:Application";
-        private readonly IConfiguration _configuration;
-        private readonly IHostEnvironment _environment;
+        private const string FindxApplicationRoot = "Findx:Application";
 
         /// <summary>
         /// Ctor
@@ -22,16 +20,13 @@ namespace Findx
         /// <param name="environment"></param>
         public ApplicationContext(IConfiguration configuration, IHostEnvironment environment)
         {
-            _configuration = configuration;
-            _environment = environment;
-
-            ApplicationId = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Id") ?? Guid.NewGuid().ToString();
-            ApplicationName = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Name") ?? _environment.ApplicationName;
-            Port = _configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? RandomUtil.RandomInt(1000, 40000);
+            ApplicationId = configuration?.GetValue<string>($"{FindxApplicationRoot}:Id") ?? Guid.NewGuid().ToString();
+            ApplicationName = configuration?.GetValue<string>($"{FindxApplicationRoot}:Name") ?? environment.ApplicationName;
+            Port = configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? RandomUtil.RandomInt(1000, 40000);
             // 启用随机端口
             if (Port == 0) Port = RandomUtil.RandomInt(1000, 40000);
-            Version = _configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
-            Uris = _configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
+            Version = configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
+            Uris = configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
             InstanceIP = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());
             InternalIP = InstanceIP;
 
@@ -41,42 +36,42 @@ namespace Findx
         /// <summary>
         /// 应用编号
         /// </summary>
-        public string ApplicationId { set; get; }
+        public string ApplicationId { get; }
 
         /// <summary>
         /// 应用名称
         /// </summary>
-        public string ApplicationName { set; get; }
+        public string ApplicationName { get; }
 
         /// <summary>
         /// Uri集合
         /// </summary>
-        public IEnumerable<string> Uris { set; get; }
+        public IEnumerable<string> Uris { get; }
 
         /// <summary>
         /// 端口
         /// </summary>
-        public int Port { set; get; }
+        public int Port { get; }
 
         /// <summary>
         /// 版本
         /// </summary>
-        public string Version { set; get; }
+        public string Version { get; }
 
         /// <summary>
         /// 实例Ip
         /// </summary>
-        public string InstanceIP { set; get; }
+        public string InstanceIP { get; }
 
         /// <summary>
         /// 内网Ip
         /// </summary>
-        public string InternalIP { set; get; }
+        public string InternalIP { get; }
 
         /// <summary>
         /// 根目录
         /// </summary>
-        public string RootPath { set; get; }
+        public string RootPath { get; }
 
         /// <summary>
         /// 获取绝对路径

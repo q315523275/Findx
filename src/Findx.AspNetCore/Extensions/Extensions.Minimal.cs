@@ -66,21 +66,21 @@ namespace Findx.AspNetCore.Extensions
             // 框架构建接口
             var findxBuilder = provider.GetRequiredService<IFindxBuilder>();
             var modules = findxBuilder.Modules;
-            logger.LogInformation($"共有 {modules.Count()} 个模块需要初始化");
+            logger.LogInformation("共有 {Count} 个模块需要初始化", modules.Count());
             // 所有模块初始化
             foreach (FindxModule module in findxBuilder.Modules)
             {
                 var jsTime = DateTime.Now;
                 Type moduleType = module.GetType();
-                logger.LogInformation($"正在初始化模块《{moduleType.GetDescription()}》({moduleType.Name})”");
+                logger.LogInformation("正在初始化模块《{Description}》({ModuleTypeName})”", moduleType.GetDescription(), moduleType.Name);
                 if (module is AspNetCoreModuleBase aspNetCoreModule)
                     aspNetCoreModule.UseModule(applicationBuilder);
                 else
                     module.UseModule(provider);
-                logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now - jsTime).TotalMilliseconds}ms");
+                logger.LogInformation("模块《{Description}》({ModuleTypeName})” 初始化完成，耗时{TotalMilliseconds}ms", moduleType.GetDescription(), moduleType.Name, (DateTime.Now - jsTime).TotalMilliseconds);
             }
             // 所有模块停止委托注册
-            IHostApplicationLifetime hostApplicationLifetime = provider.GetService<IHostApplicationLifetime>();
+            var hostApplicationLifetime = provider.GetService<IHostApplicationLifetime>();
             hostApplicationLifetime?.ApplicationStopping.Register(() =>
             {
                 foreach (var module in findxBuilder.Modules)
@@ -90,7 +90,7 @@ namespace Findx.AspNetCore.Extensions
             });
 
             watch.Stop();
-            logger.LogInformation(0, $"框架初始化完成，耗时：{watch.Elapsed.TotalMilliseconds}毫秒\r\n");
+            logger.LogInformation(0, "框架初始化完成，耗时：{ElapsedTotalMilliseconds}毫秒\\r\\n", watch.Elapsed.TotalMilliseconds);
 
             return app;
         }

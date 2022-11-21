@@ -1,44 +1,57 @@
-﻿using System;
-using System.Text;
-
-namespace Findx.ConsistentHash
+﻿namespace Findx.ConsistentHash
 {
+    /// <summary>
+    /// MurmurHash-Hash算法
+    /// </summary>
     public class MurmurHash2HashAlgorithm : IHashAlgorithm
     {
+        /// <summary>
+        /// 计算hash值
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
         public int Hash(string item)
         {
-            uint hash = Hash(Encoding.UTF8.GetBytes(item));
+            var hash = Hash(Encoding.UTF8.GetBytes(item));
             return (int)hash;
         }
 
-        private const uint m = 0x5bd1e995;
-        private const int r = 24;
+        private const uint M = 0x5bd1e995;
+        private const int R = 24;
 
-        public static uint Hash(byte[] data)
+        
+        /// <summary>
+        /// 计算hash值
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        private static uint Hash(byte[] data)
         {
-            return Hash(data, 0xc58f1a7b);
+            return Hash(data, 0xc58f1a7a);
         }
 
-        public static uint Hash(byte[] data, uint seed)
+        /// <summary>
+        /// 计算hash值
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="seed"></param>
+        /// <returns></returns>
+        private static uint Hash(IReadOnlyList<byte> data, uint seed)
         {
-            int length = data.Length;
+            var length = data.Count;
             if (length == 0)
                 return 0;
 
-            uint h = seed ^ (uint)length;
-            int c = 0; // current index
+            var h = seed ^ (uint)length;
+            var currentIndex = 0; // current index
             while (length >= 4)
             {
-                uint k = (uint)(
-                    data[c++]
-                    | data[c++] << 8
-                    | data[c++] << 16
-                    | data[c++] << 24);
-                k *= m;
-                k ^= k >> r;
-                k *= m;
+                var k = (uint)(data[currentIndex++] | data[currentIndex++] << 8 | data[currentIndex++] << 16 | data[currentIndex++] << 24);
+                k *= M;
+                k ^= k >> R;
+                k *= M;
 
-                h *= m;
+                h *= M;
                 h ^= k;
                 length -= 4;
             }
@@ -46,24 +59,22 @@ namespace Findx.ConsistentHash
             switch (length)
             {
                 case 3:
-                    h ^= (ushort)(data[c++] | data[c++] << 8);
-                    h ^= (uint)(data[c] << 16);
-                    h *= m;
+                    h ^= (ushort)(data[currentIndex++] | data[currentIndex++] << 8);
+                    h ^= (uint)(data[currentIndex] << 16);
+                    h *= M;
                     break;
                 case 2:
-                    h ^= (ushort)(data[c++] | data[c] << 8);
-                    h *= m;
+                    h ^= (ushort)(data[currentIndex++] | data[currentIndex] << 8);
+                    h *= M;
                     break;
                 case 1:
-                    h ^= data[c];
-                    h *= m;
-                    break;
-                default:
+                    h ^= data[currentIndex];
+                    h *= M;
                     break;
             }
 
             h ^= h >> 13;
-            h *= m;
+            h *= M;
             h ^= h >> 15;
 
             return h;

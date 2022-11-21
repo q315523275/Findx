@@ -41,7 +41,7 @@ namespace Findx.Email
                 Credentials = new NetworkCredential(EmailSenderOptions.UserName, EmailSenderOptions.Password)
             };
             await client.SendMailAsync(mail);
-            _logger.LogDebug($"发送邮件到“{mail.To.JoinAsString(",")}”，标题：{mail.Subject}");
+            _logger.LogDebug("发送邮件到“{JoinAsString}”，标题：{MailSubject}", mail.To.JoinAsString(","), mail.Subject);
         }
     }
 }

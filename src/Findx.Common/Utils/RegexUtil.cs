@@ -13,34 +13,15 @@ namespace Findx.Utils
         /// </summary>
         /// <param name="input">输入字符串</param>
         /// <param name="pattern">模式字符串</param>
-        /// <param name="resultPatterns">结果模式字符串数组,范例：new[]{"$1","$2"}</param>
         /// <param name="options">选项</param>
-        public static Dictionary<string, string> GetValues(string input, string pattern, string[] resultPatterns, RegexOptions options = RegexOptions.IgnoreCase)
+        public static IEnumerable<string> GetValues(string input, string pattern, RegexOptions options = RegexOptions.IgnoreCase)
         {
-            var result = new Dictionary<string, string>();
             if (string.IsNullOrWhiteSpace(input))
-                return result;
-            var match = Regex.Match(input, pattern, options);
-            if (match.Success == false)
-                return result;
-            AddResults(result, match, resultPatterns);
-            return result;
+                return new List<string>();
+            var matches = Regex.Matches(input, pattern, options);
+            return from Match match in matches select match.Value;
         }
-
-        /// <summary>
-        /// 添加匹配结果
-        /// </summary>
-        private static void AddResults(Dictionary<string, string> result, Match match, string[] resultPatterns)
-        {
-            if (resultPatterns == null)
-            {
-                result.Add(string.Empty, match.Value);
-                return;
-            }
-            foreach (var resultPattern in resultPatterns)
-                result.Add(resultPattern, match.Result(resultPattern));
-        }
-
+        
         /// <summary>
         /// 获取匹配值
         /// </summary>
@@ -88,20 +69,10 @@ namespace Findx.Utils
         /// <summary>
         /// 验证输入与模式是否匹配
         /// </summary>
-        /// <param name="input">输入字符串</param>
-        /// <param name="pattern">模式字符串</param>        
-        public static bool IsMatch(string input, string pattern)
-        {
-            return IsMatch(input, pattern, RegexOptions.IgnoreCase);
-        }
-
-        /// <summary>
-        /// 验证输入与模式是否匹配
-        /// </summary>
         /// <param name="input">输入的字符串</param>
         /// <param name="pattern">模式字符串</param>
         /// <param name="options">选项</param>
-        public static bool IsMatch(string input, string pattern, RegexOptions options)
+        public static bool IsMatch(string input, string pattern, RegexOptions options = RegexOptions.IgnoreCase)
         {
             return Regex.IsMatch(input, pattern, options);
         }

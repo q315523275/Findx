@@ -17,6 +17,7 @@ namespace Findx.Extensions
         /// </summary>
         /// <param name="context"></param>
         /// <param name="applicationEvent"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public static Task PublishEventAsync(this IApplicationContext context, IApplicationEvent applicationEvent, CancellationToken cancellationToken = default)
         {

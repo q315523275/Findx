@@ -1,4 +1,4 @@
-﻿
+﻿using System.ComponentModel;
 using Findx.Caching;
 using Findx.Caching.InMemory;
 using Findx.Data;
@@ -12,18 +12,15 @@ using Findx.Mapping;
 using Findx.Messaging;
 using Findx.Modularity;
 using Findx.Reflection;
+using Findx.Security;
 using Findx.Serialization;
 using Findx.Setting;
 using Findx.Sms;
 using Findx.Storage;
 using Findx.Threading;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.ComponentModel;
-using Findx.Security;
-using System;
 
-namespace Findx.Builders
+namespace Findx
 {
     /// <summary>
     /// Findx-基础模块
@@ -85,7 +82,7 @@ namespace Findx.Builders
             services.AddSingleton<IMethodInfoFinder, PublicInstanceMethodInfoFinder>();
 
             // 进程消息
-            services.AddScoped<IMessageSender, MessageSender>();
+            services.AddScoped<IMessageDispatcher, MessageDispatcher>();
             services.AddSingleton<IApplicationEventPublisher, ApplicationEventPublisher>();
 
             // 序列化

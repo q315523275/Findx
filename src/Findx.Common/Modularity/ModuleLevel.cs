@@ -1,5 +1,8 @@
 ﻿namespace Findx.Modularity
 {
+    /// <summary>
+    /// 模块等级
+    /// </summary>
     public enum ModuleLevel
     {
         /// <summary>

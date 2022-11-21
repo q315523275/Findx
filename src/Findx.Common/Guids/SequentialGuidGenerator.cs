@@ -1,8 +1,4 @@
-﻿using System;
-using Findx.DependencyInjection;
-using Microsoft.Extensions.Options;
-
-namespace Findx.Guids
+﻿namespace Findx.Guids
 {
     /// <summary>
     /// 与ABP对接使用

@@ -18,7 +18,7 @@ namespace Findx.Utils
         /// <returns></returns>
         public static ValidResult IsValid(object value)
         {
-            ValidResult result = new ValidResult();
+            var result = new ValidResult();
             try
             {
                 var validationContext = new ValidationContext(value);
@@ -48,7 +48,7 @@ namespace Findx.Utils
                 result.IsVaild = false;
                 result.ErrorMembers = new List<ErrorMember>
                 {
-                    new ErrorMember()
+                    new()
                     {
                         ErrorMessage = ex.Message,
                         ErrorMemberName = "Internal error"

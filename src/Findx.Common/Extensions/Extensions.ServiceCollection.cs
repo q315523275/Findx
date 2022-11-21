@@ -3,14 +3,8 @@ using Findx.Logging;
 using Findx.Modularity;
 using Findx.Reflection;
 using JetBrains.Annotations;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
@@ -64,6 +58,12 @@ namespace Findx.Extensions
             return services;
         }
 
+        /// <summary>
+        /// 获取服务描述，不存在则添加
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="toAdDescriptor"></param>
+        /// <returns></returns>
         public static ServiceDescriptor GetOrAdd(this IServiceCollection services, ServiceDescriptor toAdDescriptor)
         {
             ServiceDescriptor descriptor = services.FirstOrDefault(m => m.ServiceType == toAdDescriptor.ServiceType);
@@ -138,6 +138,14 @@ namespace Findx.Extensions
             return instance;
         }
 
+        /// <summary>
+        /// 通过工厂进行服务器提供器构建
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="builderAction"></param>
+        /// <typeparam name="TContainerBuilder"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static IServiceProvider BuildServiceProviderFromFactory<TContainerBuilder>([NotNull] this IServiceCollection services, Action<TContainerBuilder> builderAction = null)
         {
             Check.NotNull(services, nameof(services));

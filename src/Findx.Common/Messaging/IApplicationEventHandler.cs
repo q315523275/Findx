@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Messaging
 {
@@ -8,8 +6,8 @@ namespace Findx.Messaging
     /// 应用事件处理器
     /// </summary>
 	public interface IApplicationEventHandler<in TEvent> where TEvent : IApplicationEvent
-    {
-        /// <summary>
+	{
+		/// <summary>
         /// 处理泛型知消消息
         /// </summary>
         /// <param name="applicationEvent"></param>

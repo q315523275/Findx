@@ -1,6 +1,8 @@
-﻿using System;
-namespace Findx.Jobs
+﻿namespace Findx.Jobs
 {
+	/// <summary>
+	/// 任务状态枚举
+	/// </summary>
 	public enum JobStatus
 	{
 		/// <summary>

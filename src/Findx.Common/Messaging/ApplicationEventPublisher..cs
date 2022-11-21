@@ -89,6 +89,7 @@ namespace Findx.Messaging
                 //        }
                 //    }
                 //}
+
                 // 异步流方式
                 await foreach (var message in channel.Reader.ReadAllAsync(cancellationToken))
                 {
@@ -101,14 +102,14 @@ namespace Findx.Messaging
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, $"执行应用事件“{messageType.Name}”的处理器“{handler.GetType()}”时引发异常：{ex.Message}");
+                        _logger.LogError(ex, "执行应用事件“{MessageTypeName}”的处理器“{Type}”时引发异常：{ExMessage}", messageType.Name, handler.GetType(), ex.Message);
                     }
                 }
             }
             catch (Exception ex)
             {
                 // 通道关闭时，再读取信息会报ChannelClosedException错误
-                _logger.LogError(message: $"应用事件监听时引发异常{Findx.Utils.Common.Line}{ex.FormatMessage()}");
+                _logger.LogError("应用事件监听时引发异常{Line}{FormatMessage}", Findx.Utils.Common.Line, ex.FormatMessage());
             }
         }
     }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Xml;
 
 namespace Findx.Extensions
@@ -21,7 +20,7 @@ namespace Findx.Extensions
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(xmlString);
 
-            if (xmlDoc.DocumentElement.Name.Equals("RSAKeyValue"))
+            if (xmlDoc.DocumentElement != null && xmlDoc.DocumentElement.Name.Equals("RSAKeyValue"))
             {
                 foreach (XmlNode node in xmlDoc.DocumentElement.ChildNodes)
                 {

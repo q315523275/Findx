@@ -1,5 +1,4 @@
-﻿using System;
-namespace Findx.Guids
+﻿namespace Findx.Guids
 {
 	/// <summary>
 	/// Guid生成器

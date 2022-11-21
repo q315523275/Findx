@@ -8,11 +8,19 @@
     {
         private readonly T[] _array;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="length"></param>
         public AtomicReferenceArray(int length)
         {
             _array = new T[length];
         }
 
+        /// <summary>
+        /// 获取或设置集合成员
+        /// </summary>
+        /// <param name="index"></param>
         public T this[int index]
         {
             get
@@ -32,6 +40,10 @@
             }
         }
 
+        /// <summary>
+        /// 转换为集合
+        /// </summary>
+        /// <returns></returns>
         public T[] ToArray()
         {
             lock (_array)
@@ -40,6 +52,9 @@
             }
         }
 
+        /// <summary>
+        /// 集合长度
+        /// </summary>
         public int Length
         {
             get

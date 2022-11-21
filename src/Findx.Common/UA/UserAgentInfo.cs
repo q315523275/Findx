@@ -1,10 +1,15 @@
-﻿using System;
-using Findx.Utils;
+﻿using Findx.Utils;
 
 namespace Findx.UA
 {
+	/// <summary>
+	/// UserAgent信息
+	/// </summary>
 	public class UserAgentInfo
 	{
+		/// <summary>
+		/// 未知
+		/// </summary>
 		public static string NameUnknown = "Unknown";
 
 		/// <summary>

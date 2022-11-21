@@ -1,5 +1,4 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 
 namespace Findx.Security
 {
@@ -8,6 +7,12 @@ namespace Findx.Security
     /// </summary>
 	public static class CurrentUserExtensions
 	{
+        /// <summary>
+        /// 获取声明对应结果值
+        /// </summary>
+        /// <param name="currentUser"></param>
+        /// <param name="claimType"></param>
+        /// <returns></returns>
         [CanBeNull]
         public static string FindClaimValue(this ICurrentUser currentUser, string claimType)
         {

@@ -1,12 +1,11 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Messaging
 {
     /// <summary>
-    /// 消息发送器
+    /// 消息调度器
     /// </summary>
-    public interface IMessageSender
+    public interface IMessageDispatcher
     {
         /// <summary>
         /// 发送消息

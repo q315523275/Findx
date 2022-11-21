@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Findx.Caching
+﻿namespace Findx.Caching
 {
     /// <summary>
     /// 缓存

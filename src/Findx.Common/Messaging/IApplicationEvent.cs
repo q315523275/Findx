@@ -1,5 +1,4 @@
-﻿using System;
-namespace Findx.Messaging
+﻿namespace Findx.Messaging
 {
 	/// <summary>
     /// 应用事件

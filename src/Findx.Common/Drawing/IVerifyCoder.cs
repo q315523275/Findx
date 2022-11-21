@@ -11,9 +11,9 @@ namespace Findx.Drawing
         /// 获取验证码
         /// </summary>
         /// <param name="length">验证码长度</param>
-        /// <param name="verifyCodeTyoe">验证码类型</param>
+        /// <param name="verifyCodeType">验证码类型</param>
         /// <returns></returns>
-        string GetCode(int length, VerifyCodeType verifyCodeTyoe);
+        string GetCode(int length, VerifyCodeType verifyCodeType);
 
         /// <summary>
         /// 创建验证码图片

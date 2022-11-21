@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Utils
 {
@@ -47,29 +45,29 @@ namespace Findx.Utils
         /// <summary>
         /// 执行异步方法
         /// </summary>
-        /// <param name="action"></param>
+        /// <param name="func"></param>
         /// <param name="maxRetryTimes"></param>
         /// <param name="onRetry"></param>
         /// <param name="delayFunc"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<bool> TryInvokeAsync(Func<Task> action, int maxRetryTimes = 3, Action<int, TimeSpan, Exception> onRetry = null, Func<int, TimeSpan> delayFunc = null, CancellationToken cancellationToken = default)
+        public static async Task<bool> TryInvokeAsync(Func<Task> func, int maxRetryTimes = 3, Func<int, TimeSpan, Exception, Task> onRetry = null, Func<int, TimeSpan> delayFunc = null, CancellationToken cancellationToken = default)
         {
-            Check.NotNull(action, nameof(action));
+            Check.NotNull(func, nameof(func));
 
             var time = 0;
             do
             {
                 try
                 {
-                    await action();
+                    await func();
                     return true;
                 }
                 catch (Exception ex)
                 {
                     time++;
                     var delay = delayFunc?.Invoke(time);
-                    onRetry?.Invoke(time, delay.GetValueOrDefault(), ex);
+                    await onRetry?.Invoke(time, delay.GetValueOrDefault(), ex)!;
                     if (delay.HasValue)
                     {
                         await Task.Delay(delay.Value, cancellationToken);

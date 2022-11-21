@@ -2,6 +2,9 @@
 
 namespace Findx.Locks
 {
+	/// <summary>
+	/// 锁服务类型枚举
+	/// </summary>
     public enum LockType
 	{
 		/// <summary>

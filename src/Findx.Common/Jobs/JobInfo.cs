@@ -104,6 +104,11 @@ namespace Findx.Jobs
             }
         }
 
+        /// <summary>
+        /// 判断是否可以执行
+        /// </summary>
+        /// <param name="currentTime"></param>
+        /// <returns></returns>
         public bool ShouldRun(DateTime currentTime)
         {
             return IsEnable && !IsRuning && NextRunTime.HasValue && NextRunTime <= currentTime && LastRunTime != NextRunTime;

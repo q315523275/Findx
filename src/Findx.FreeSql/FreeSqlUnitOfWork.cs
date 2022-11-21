@@ -16,7 +16,6 @@ namespace Findx.FreeSql
     /// </summary>
     public class FreeSqlUnitOfWork : IUnitOfWork
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<FreeSqlUnitOfWork> _logger;
         private readonly IFreeSql _fsql;
         private Object<DbConnection> _conn;
@@ -31,7 +30,7 @@ namespace Findx.FreeSql
         /// <param name="logger"></param>
         public FreeSqlUnitOfWork(IServiceProvider serviceProvider, IFreeSql fsql, ILogger<FreeSqlUnitOfWork> logger)
         {
-            _serviceProvider = serviceProvider;
+            ServiceProvider = serviceProvider;
             _fsql = fsql;
             _logger = logger;
 
@@ -56,14 +55,17 @@ namespace Findx.FreeSql
         {
             var token = Guid.NewGuid().ToString();
             _transactionStack.Push(token);
-            _logger.LogDebug($"允许事务提交，标识：{token}，当前总标识数：{_transactionStack.Count}");
+            _logger.LogDebug("允许事务提交，标识：{Token}，当前总标识数：{TransactionStackCount}", token, _transactionStack.Count);
         }
 
         public DbConnection Connection => _conn.Value;
 
         public DbTransaction Transaction { set; get; }
 
-        public IServiceProvider ServiceProvider => _serviceProvider;
+        /// <summary>
+        /// 服务提供器
+        /// </summary>
+        public IServiceProvider ServiceProvider { get; }
 
         /// <summary>
         /// 对数据库连接开启事务或应用现有同连接对象的上下文事务
@@ -82,7 +84,7 @@ namespace Findx.FreeSql
             try
             {
                 Transaction = _conn.Value.BeginTransaction();
-                _logger.LogDebug($"创建事务，事务标识：{Transaction.GetHashCode()}");
+                _logger.LogDebug("创建事务，事务标识：{HashCode}", Transaction.GetHashCode());
             }
             catch (Exception exception)
             {
@@ -108,7 +110,7 @@ namespace Findx.FreeSql
             if (_transactionStack.Count > 1)
             {
                 token = _transactionStack.Pop();
-                _logger.LogDebug($"跳过事务提交，标识：{token}，当前剩余标识数：{_transactionStack.Count}");
+                _logger.LogDebug("跳过事务提交，标识：{Token}，当前剩余标识数：{TransactionStackCount}", token, _transactionStack.Count);
                 return;
             }
 
@@ -124,7 +126,7 @@ namespace Findx.FreeSql
                 if (Transaction?.Connection != null)
                 {
                     Transaction.Commit();
-                    _logger.LogDebug($"提交事务，标识：{token}，事务标识：{Transaction.GetHashCode()}");
+                    _logger.LogDebug("提交事务，标识：{Token}，事务标识：{HashCode}", token, Transaction.GetHashCode());
                 }
             }
             catch (Exception ex)
@@ -135,6 +137,7 @@ namespace Findx.FreeSql
             {
                 ReturnObject();
             }
+            
             HasCommitted = true;
         }
 
@@ -149,7 +152,7 @@ namespace Findx.FreeSql
                 {
                     Transaction.Rollback();
 
-                    _logger.LogDebug($"回滚事务，事务标识：{Transaction.GetHashCode()}");
+                    _logger.LogDebug("回滚事务，事务标识：{HashCode}", Transaction.GetHashCode());
                 }
             }
             catch (Exception ex)
@@ -181,8 +184,13 @@ namespace Findx.FreeSql
             }
         }
 
+        /// <summary>
+        /// 释放次数
+        /// </summary>
         private int _disposeCounter;
-
+        /// <summary>
+        /// 释放
+        /// </summary>
         public void Dispose()
         {
             if (Interlocked.Increment(ref _disposeCounter) != 1) 
@@ -191,7 +199,7 @@ namespace Findx.FreeSql
             {
                 this.Rollback();
                 
-                _logger.LogDebug($"工作单元生命周期结束，单元标识：{this.GetHashCode()}，释放计量：{_disposeCounter}");
+                _logger.LogDebug("工作单元生命周期结束，单元标识：{HashCode}，释放计量：{DisposeCounter}", this.GetHashCode(), _disposeCounter);
             }
             finally
             {
@@ -199,6 +207,10 @@ namespace Findx.FreeSql
             }
         }
 
+        /// <summary>
+        /// 开启事物异步
+        /// </summary>
+        /// <param name="cancellationToken"></param>
         public async Task BeginOrUseTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (!IsEnabledTransaction || Transaction != null)
@@ -212,8 +224,8 @@ namespace Findx.FreeSql
             _conn = _fsql.Ado.MasterPool.Get();
             try
             {
-                Transaction = await _conn.Value.BeginTransactionAsync();
-                _logger.LogDebug($"创建事务，事务标识：{Transaction.GetHashCode()}");
+                Transaction = await _conn.Value.BeginTransactionAsync(cancellationToken);
+                _logger.LogDebug("创建事务，事务标识：{HashCode}", Transaction.GetHashCode());
             }
             catch (Exception exception)
             {
@@ -225,9 +237,14 @@ namespace Findx.FreeSql
             HasCommitted = false;
         }
 
+        /// <summary>
+        /// 事物提交异步
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <exception cref="FindxException"></exception>
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
-            if (HasCommitted || Transaction == null || Transaction.Connection == null)
+            if (HasCommitted || Transaction?.Connection == null)
             {
                 return;
             }
@@ -236,7 +253,7 @@ namespace Findx.FreeSql
             if (_transactionStack.Count > 1)
             {
                 token = _transactionStack.Pop();
-                _logger.LogDebug($"跳过事务提交，标识：{token}，当前剩余标识数：{_transactionStack.Count}");
+                _logger.LogDebug("跳过事务提交，标识：{Token}，当前剩余标识数：{TransactionStackCount}", token, _transactionStack.Count);
                 return;
             }
 
@@ -251,9 +268,9 @@ namespace Findx.FreeSql
             {
                 if (Transaction?.Connection != null)
                 {
-                    await Transaction.CommitAsync();
+                    await Transaction.CommitAsync(cancellationToken);
                     
-                    _logger.LogDebug($"提交事务，标识：{token}，事务标识：{Transaction.GetHashCode()}");
+                    _logger.LogDebug("提交事务，标识：{Token}，事务标识：{HashCode}", token, Transaction.GetHashCode());
                 }
             }
             catch (Exception ex)
@@ -264,18 +281,23 @@ namespace Findx.FreeSql
             {
                 ReturnObject();
             }
+            
             HasCommitted = true;
         }
 
+        /// <summary>
+        /// 事物回滚异步
+        /// </summary>
+        /// <param name="cancellationToken"></param>
         public async Task RollbackAsync(CancellationToken cancellationToken = default)
         {
             try
             {
                 if (Transaction?.Connection != null)
                 {
-                    await Transaction.RollbackAsync();
+                    await Transaction.RollbackAsync(cancellationToken);
 
-                    _logger.LogDebug($"回滚事务，事务标识：{Transaction.GetHashCode()}");
+                    _logger.LogDebug("回滚事务，事务标识：{HashCode}", Transaction.GetHashCode());
                 }
             }
             catch (Exception ex)

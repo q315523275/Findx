@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Builder;
 
 namespace Findx.AspNetCore
 {
+    /// <summary>
+    /// AspNetCore模块基类
+    /// </summary>
     public abstract class AspNetCoreModuleBase : FindxModule
     {
         /// <summary>

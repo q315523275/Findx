@@ -6,7 +6,7 @@ namespace Findx.Threading
     /// <summary>
     /// 异步定时器
     /// </summary>
-    public class FindxAsyncTimer : Findx.DependencyInjection.ITransientDependency
+    public class FindxAsyncTimer : DependencyInjection.ITransientDependency
     {
         /// <summary>
         /// 执行方法

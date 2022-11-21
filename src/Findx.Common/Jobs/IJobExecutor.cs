@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace Findx.Jobs
@@ -12,8 +11,8 @@ namespace Findx.Jobs
 		/// <summary>
 		/// 执行作业
 		/// </summary>
-		/// <param name="jobDetail"></param>
-		/// <param name="provider"></param>
+		/// <param name="context"></param>
+		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
 		Task RunAsync([NotNull] IJobContext context, CancellationToken cancellationToken = default);
 	}

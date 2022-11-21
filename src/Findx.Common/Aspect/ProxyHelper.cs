@@ -1,13 +1,17 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-
-namespace Findx.Aspect
+﻿namespace Findx.Aspect
 {
+    /// <summary>
+    /// 代理工具
+    /// </summary>
     public static class ProxyHelper
     {
         private const string ProxyNamespace = "Castle.Proxies";
 
+        /// <summary>
+        /// 取消代理
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public static object UnProxy(object obj)
         {
             if (obj.GetType().Namespace != ProxyNamespace)
@@ -27,6 +31,11 @@ namespace Findx.Aspect
             return targetField.GetValue(obj);
         }
 
+        /// <summary>
+        /// 获取未代理类型
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
         public static Type GetUnProxiedType(object obj)
         {
             return UnProxy(obj).GetType();

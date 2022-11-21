@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Messaging
 {
@@ -9,6 +8,7 @@ namespace Findx.Messaging
     /// <typeparam name="TResponse"></typeparam>
     /// <returns></returns>
     public delegate Task<TResponse> MessageHandlerDelegate<TResponse>();
+    
     /// <summary>
     /// 消息管理
     /// </summary>

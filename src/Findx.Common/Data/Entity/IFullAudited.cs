@@ -1,5 +1,4 @@
-﻿using System;
-namespace Findx.Data
+﻿namespace Findx.Data
 {
 	/// <summary>
     /// 审计全量字段

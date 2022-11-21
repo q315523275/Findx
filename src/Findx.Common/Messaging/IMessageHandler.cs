@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Messaging
 {
@@ -16,6 +15,6 @@ namespace Findx.Messaging
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken);
+        Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken = default);
     }
 }

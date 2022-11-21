@@ -45,6 +45,10 @@ namespace Findx.Data
             Code = code;
             Msg = msg;
         }
+        
+        /// <summary>
+        /// Ctor
+        /// </summary>
         public CommonResult() { }
 
         /// <summary>

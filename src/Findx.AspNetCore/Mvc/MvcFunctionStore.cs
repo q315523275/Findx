@@ -14,7 +14,7 @@ public class MvcFunctionStore: IFunctionStore<MvcFunction>
     /// 保存
     /// </summary>
     /// <param name="functions"></param>
-    public void SyncToDatabase(List<MvcFunction> functions)
+    public void SyncToDatabase(IEnumerable<MvcFunction> functions)
     {
         _functions.Clear();
         _functions.AddRange(functions);

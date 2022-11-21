@@ -31,7 +31,7 @@ namespace Findx.EventBus
                 { Headers.SentTime, message.CreateAt.ToString(CultureInfo.InvariantCulture) }
             };
 
-            var transportMessage = new TransportMessage(headers, message.Content.GetBytes());
+            var transportMessage = new TransportMessage(headers, message.Content.ToBytes());
 
             _sender.Send(transportMessage);
         }
@@ -45,7 +45,7 @@ namespace Findx.EventBus
                 { Headers.SentTime, message.CreateAt.ToString(CultureInfo.InvariantCulture) }
             };
 
-            var transportMessage = new TransportMessage(headers, message.Content.GetBytes());
+            var transportMessage = new TransportMessage(headers, message.Content.ToBytes());
 
             return _sender.SendAsync(transportMessage, cancellationToken);
         }

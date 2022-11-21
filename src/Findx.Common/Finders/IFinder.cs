@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-namespace Findx.Finders
+﻿namespace Findx.Finders
 {
     /// <summary>
     /// 反射查找器

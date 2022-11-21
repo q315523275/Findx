@@ -44,7 +44,7 @@ namespace Findx.ExceptionHandling
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"{exceptionSubscriber.GetType().AssemblyQualifiedName} 异常订阅器抛出异常!");
+                    _logger.LogError(ex, "{AssemblyQualifiedName} 异常订阅器抛出异常!", exceptionSubscriber.GetType().AssemblyQualifiedName);
                 }
             }
         }

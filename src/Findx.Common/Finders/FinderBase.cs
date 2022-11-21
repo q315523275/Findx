@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-
-namespace Findx.Finders
+﻿namespace Findx.Finders
 {
     /// <summary>
     /// 反射查找器基类
@@ -21,7 +16,7 @@ namespace Findx.Finders
         /// <summary>
         /// 是否已查找过
         /// </summary>
-        protected bool Found = false;
+        protected bool Found;
 
         /// <summary>
         /// 查找指定条件的项
