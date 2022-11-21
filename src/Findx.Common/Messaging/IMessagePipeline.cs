@@ -23,6 +23,6 @@ namespace Findx.Messaging
         /// <param name="next"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TResponse> Handle(TRequest request, MessageHandlerDelegate<TResponse> next, CancellationToken cancellationToken);
+        Task<TResponse> HandleAsync(TRequest request, MessageHandlerDelegate<TResponse> next, CancellationToken cancellationToken);
     }
 }

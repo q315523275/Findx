@@ -15,6 +15,6 @@ namespace Findx.Messaging
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<TResponse> Handle(TRequest request, CancellationToken cancellationToken = default);
+        Task<TResponse> HandleAsync(TRequest request, CancellationToken cancellationToken = default);
     }
 }

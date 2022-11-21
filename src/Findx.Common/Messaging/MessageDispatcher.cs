@@ -42,7 +42,7 @@ namespace Findx.Messaging
 
             Check.NotNull(handler, nameof(handler));
 
-            return handler.Handle(message, _serviceProvider, cancellationToken);
+            return handler.HandleAsync(message, _serviceProvider, cancellationToken);
         }
     }
 }

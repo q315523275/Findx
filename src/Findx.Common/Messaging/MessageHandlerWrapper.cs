@@ -9,7 +9,7 @@ namespace Findx.Messaging
     /// <typeparam name="TResponse"></typeparam>
     internal class MessageHandlerWrapperImpl<TRequest, TResponse> : MessageHandlerWrapper<TResponse> where TRequest : IMessageRequest<TResponse>
     {
-        public override Task<TResponse> Handle(IMessageRequest<TResponse> request, IServiceProvider serviceProvider, CancellationToken cancellationToken)
+        public override Task<TResponse> HandleAsync(IMessageRequest<TResponse> request, IServiceProvider serviceProvider, CancellationToken cancellationToken)
         {
             var handler = serviceProvider.GetRequiredService<IMessageHandler<TRequest, TResponse>>();
 
@@ -17,11 +17,11 @@ namespace Findx.Messaging
 
             var messagePipelines = serviceProvider.GetServices<IMessagePipeline<TRequest, TResponse>>();
             if (!messagePipelines.Any()) 
-                return handler.Handle((TRequest)request, cancellationToken);
+                return handler.HandleAsync((TRequest)request, cancellationToken);
             
-            Task<TResponse> Handler() => handler.Handle((TRequest)request, cancellationToken);
+            Task<TResponse> Handler() => handler.HandleAsync((TRequest)request, cancellationToken);
             return messagePipelines.Reverse()
-                                   .Aggregate((MessageHandlerDelegate<TResponse>)Handler, (next, pipeline) => () => pipeline.Handle((TRequest)request, next, cancellationToken))();
+                                   .Aggregate((MessageHandlerDelegate<TResponse>)Handler, (next, pipeline) => () => pipeline.HandleAsync((TRequest)request, next, cancellationToken))();
 
         }
     }
@@ -32,6 +32,6 @@ namespace Findx.Messaging
     /// <typeparam name="TResponse"></typeparam>
     internal abstract class MessageHandlerWrapper<TResponse>
     {
-        public abstract Task<TResponse> Handle(IMessageRequest<TResponse> request, IServiceProvider serviceProvider, CancellationToken cancellationToken);
+        public abstract Task<TResponse> HandleAsync(IMessageRequest<TResponse> request, IServiceProvider serviceProvider, CancellationToken cancellationToken);
     }
 }
