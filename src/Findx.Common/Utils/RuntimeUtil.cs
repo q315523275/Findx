@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Findx.Utils
@@ -21,7 +19,7 @@ namespace Findx.Utils
 
             using (var executor = new ProcessExecutor(exePath))
             {
-                executor.OnOutputDataReceived += (sender, str) =>
+                executor.OnOutputDataReceived += (_, str) =>
                 {
                     results.Add(str);
                 };
@@ -43,7 +41,7 @@ namespace Findx.Utils
 
             using (var executor = new ProcessExecutor(exePath, arguments))
             {
-                executor.OnOutputDataReceived += (sender, str) =>
+                executor.OnOutputDataReceived += (_, str) =>
                 {
                     results.Add(str);
                 };
@@ -65,9 +63,9 @@ namespace Findx.Utils
         /// 进程退出钩子
         /// </summary>
         /// <param name="hook"></param>
-        public static void AddShutdownHook(Action hook)
+        public static void AddShutdownHook(Action<EventArgs> hook)
         {
-            AppDomain.CurrentDomain.ProcessExit += (s, e) => hook();
+            AppDomain.CurrentDomain.ProcessExit += (_, e) => hook(e);
         }
 
         /// <summary>
@@ -159,7 +157,7 @@ namespace Findx.Utils
         /// 获取GC信息
         /// </summary>
         /// <returns>单位：KB</returns>
-        public static (double gen0, double gen1, double gen2, double totalMemory) GetGCInfo()
+        public static (double gen0, double gen1, double gen2, double totalMemory) GetGcInfo()
         {
             return (GCUtil.Gen0CollectCount / 1024.0, GCUtil.Gen1CollectCount / 1024.0, GCUtil.Gen2CollectCount / 1024.0, GCUtil.TotalMemory / 1024.0);
         }
