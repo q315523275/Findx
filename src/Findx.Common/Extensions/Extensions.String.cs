@@ -150,17 +150,17 @@ namespace Findx.Extensions
                 return false;
             }
             //校验最后一位
-            string[] chars = value.ToCharArray().Select(m => m.ToString()).ToArray();
+            var chars = value.ToCharArray().Select(m => m.ToString()).ToArray();
             int[] weights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
-            int sum = 0;
-            for (int i = 0; i < 17; i++)
+            var sum = 0;
+            for (var i = 0; i < 17; i++)
             {
-                int num = int.Parse(chars[i]);
+                var num = int.Parse(chars[i]);
                 sum = sum + num * weights[i];
             }
-            int mod = sum % 11;
-            string vCode = "10X98765432";//检验码字符串
-            string last = vCode.ToCharArray().ElementAt(mod).ToString();
+            var mod = sum % 11;
+            var vCode = "10X98765432";//检验码字符串
+            var last = vCode.ToCharArray().ElementAt(mod).ToString();
             return chars.Last().ToUpper() == last;
         }
 
@@ -171,7 +171,7 @@ namespace Findx.Extensions
         /// <param name="isRestrict">是否按严格格式验证</param>
         public static bool IsMobileNumber(this string value, bool isRestrict = false)
         {
-            string pattern = isRestrict ? @"^[1][3-9]\d{9}$" : @"^[1]\d{10}$";
+            var pattern = isRestrict ? @"^[1][3-9]\d{9}$" : @"^[1]\d{10}$";
             return value.IsMatch(pattern);
         }
         
@@ -1023,7 +1023,7 @@ namespace Findx.Extensions
             {
                 return new string[] { };
             }
-            MatchCollection matches = Regex.Matches(value, pattern);
+            var matches = Regex.Matches(value, pattern);
             return from Match match in matches select match.Value;
         }
 
@@ -1032,12 +1032,8 @@ namespace Findx.Extensions
         /// </summary>
         public static string MatchFirstNumber(this string value)
         {
-            MatchCollection matches = Regex.Matches(value, @"\d+");
-            if (matches.Count == 0)
-            {
-                return string.Empty;
-            }
-            return matches[0].Value;
+            var matches = Regex.Matches(value, @"\d+");
+            return matches.Count == 0 ? string.Empty : matches[0].Value;
         }
 
         /// <summary>
@@ -1045,12 +1041,8 @@ namespace Findx.Extensions
         /// </summary>
         public static string MatchLastNumber(this string value)
         {
-            MatchCollection matches = Regex.Matches(value, @"\d+");
-            if (matches.Count == 0)
-            {
-                return string.Empty;
-            }
-            return matches[matches.Count - 1].Value;
+            var matches = Regex.Matches(value, @"\d+");
+            return matches.Count == 0 ? string.Empty : matches[^1].Value;
         }
 
         /// <summary>

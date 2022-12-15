@@ -3,11 +3,21 @@ using Microsoft.AspNetCore.Http;
 
 namespace Findx.WebSocketCore
 {
+    /// <summary>
+    /// 扩展
+    /// </summary>
     public static class WebSocketManagerExtensions
     {
-        public static IApplicationBuilder MapWebSocketManager(this IApplicationBuilder app, PathString path, WebSocketHandler handler)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="path"></param>
+        /// <param name="handler"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder MapWebSocketManager(this IApplicationBuilder app, PathString path, WebSocketHandlerBase handler)
         {
-            return app.Map(path, (_app) => _app.UseMiddleware<WebSocketManagerMiddleware>(handler));
+            return app.Map(path, (x) => x.UseMiddleware<WebSocketManagerMiddleware>(handler));
         }
     }
 }

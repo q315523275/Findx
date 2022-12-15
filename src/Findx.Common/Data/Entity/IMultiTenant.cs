@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Findx.Data
+﻿namespace Findx.Data
 {
     /// <summary>
     /// 多租户

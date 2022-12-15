@@ -108,5 +108,19 @@ namespace Findx.Extensions
 
             return items;
         }
+        
+        /// <summary>
+        /// 向集合中添加指定项
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="ifExp">判断条件表达式，当此条件为true时，才进行添加</param>
+        /// <param name="item">泛型集合项</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static IEnumerable<T> AddIf<T>(this ICollection<T> source, bool ifExp, T item)
+        {
+            if (ifExp) source.Add(item);
+            return source;
+        }
     }
 }

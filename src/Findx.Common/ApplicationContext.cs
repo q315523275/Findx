@@ -1,9 +1,6 @@
 ﻿using Findx.Extensions;
 using Findx.Utils;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
+
 namespace Findx
 {
     /// <summary>
@@ -12,14 +9,17 @@ namespace Findx
     public class ApplicationContext : IApplicationContext
     {
         private const string FindxApplicationRoot = "Findx:Application";
+        private readonly IHostApplicationLifetime _hostApplicationLifetime;
 
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="configuration"></param>
         /// <param name="environment"></param>
-        public ApplicationContext(IConfiguration configuration, IHostEnvironment environment)
+        /// <param name="hostApplicationLifetime"></param>
+        public ApplicationContext(IConfiguration configuration, IHostEnvironment environment, IHostApplicationLifetime hostApplicationLifetime)
         {
+            _hostApplicationLifetime = hostApplicationLifetime;
             ApplicationId = configuration?.GetValue<string>($"{FindxApplicationRoot}:Id") ?? Guid.NewGuid().ToString();
             ApplicationName = configuration?.GetValue<string>($"{FindxApplicationRoot}:Name") ?? environment.ApplicationName;
             Port = configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? RandomUtil.RandomInt(1000, 40000);
@@ -27,8 +27,8 @@ namespace Findx
             if (Port == 0) Port = RandomUtil.RandomInt(1000, 40000);
             Version = configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
             Uris = configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
-            InstanceIP = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());
-            InternalIP = InstanceIP;
+            InstanceIp = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());
+            InternalIp = InstanceIp;
 
             RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;
         }
@@ -61,12 +61,12 @@ namespace Findx
         /// <summary>
         /// 实例Ip
         /// </summary>
-        public string InstanceIP { get; }
+        public string InstanceIp { get; }
 
         /// <summary>
         /// 内网Ip
         /// </summary>
-        public string InternalIP { get; }
+        public string InternalIp { get; }
 
         /// <summary>
         /// 根目录
@@ -79,5 +79,14 @@ namespace Findx
         /// <param name="virtualPath"></param>
         /// <returns></returns>
         public string MapPath(string virtualPath) => RootPath + virtualPath.RemovePreFix("~/");
+
+        /// <summary>
+        /// 停止应用
+        /// </summary>
+        /// <exception cref="NotImplementedException"></exception>
+        public void StopApplication()
+        {
+            _hostApplicationLifetime.StopApplication();
+        }
     }
 }

@@ -82,7 +82,7 @@ public class ProcessAsyncEnumerable : IAsyncEnumerable<string>
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<string[]> ToArrayAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<string>> ToListAsync(CancellationToken cancellationToken = default)
     {
         var list = new List<string>();
         await foreach (var item in this.WithCancellation(cancellationToken).ConfigureAwait(false))
@@ -90,7 +90,7 @@ public class ProcessAsyncEnumerable : IAsyncEnumerable<string>
             list.Add(item);
         }
 
-        return list.ToArray();
+        return list;
     }
 
     /// <summary>

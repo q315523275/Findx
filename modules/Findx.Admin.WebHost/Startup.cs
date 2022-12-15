@@ -6,6 +6,10 @@ using Microsoft.Extensions.FileProviders;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Unicode;
+using Findx.Admin.WebHost.WebShell;
+using Findx.WebSocketCore;
+using Microsoft.AspNetCore.WebSockets;
+
 namespace Findx.Module.WebHost
 {
     public class Startup
@@ -38,6 +42,11 @@ namespace Findx.Module.WebHost
             {
                 options.EnableForHttps = true;
             });
+
+            services.AddWebSockets(x =>
+            {
+                x.KeepAliveInterval = TimeSpan.FromMinutes(2);
+            });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -55,6 +64,9 @@ namespace Findx.Module.WebHost
             app.UseResponseCompression();
 
             app.UseRouting();
+
+            app.UseWebSockets();
+            app.MapWebSocketManager("/ws", app.ApplicationServices.GetRequiredService<WebSocketHandler>());
 
             app.UseFindx();
 

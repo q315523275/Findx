@@ -15,7 +15,7 @@
         /// <summary>
         /// 从存储器同步功能信息
         /// </summary> 
-        List<TFunction> GetFromDatabase();
+        IEnumerable<TFunction> GetFromDatabase();
     }
 }
 

@@ -13,7 +13,7 @@ namespace Findx.Extensions
     public partial class Extensions
     {
         /// <summary>
-        /// 推送事件
+        /// 推送异步执行事件
         /// </summary>
         /// <param name="context"></param>
         /// <param name="applicationEvent"></param>

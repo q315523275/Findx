@@ -7,16 +7,13 @@
     {
         static Singleton()
         {
-            if (AllSingletons == null)
-            {
-                AllSingletons = new Dictionary<Type, object>();
-            }
+            AllSingletons = new Dictionary<Type, object>();
         }
 
         /// <summary>
         /// 获取 单例对象字典
         /// </summary>
-        protected static IDictionary<Type, object> AllSingletons { get; }
+        public static IDictionary<Type, object> AllSingletons { get; }
     }
 
     /// <summary>
@@ -32,7 +29,7 @@
         /// </summary>
         public static T Instance
         {
-            get { return _instance; }
+            get => _instance;
             set
             {
                 _instance = value;

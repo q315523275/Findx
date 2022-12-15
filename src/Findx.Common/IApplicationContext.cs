@@ -36,12 +36,12 @@ namespace Findx
         /// <summary>
         /// 提供服务IP
         /// </summary>
-        string InstanceIP { get; }
+        string InstanceIp { get; }
 
         /// <summary>
         /// 真实IP,Docker容器等
         /// </summary>
-        string InternalIP { get; }
+        string InternalIp { get; }
 
         /// <summary>
         /// 应用根目录
@@ -54,5 +54,10 @@ namespace Findx
         /// <param name="virtualPath">虚拟路径</param>
         /// <returns>虚拟路径对应的物理路径</returns>
         string MapPath(string virtualPath);
+
+        /// <summary>
+        /// 停止应用
+        /// </summary>
+        void StopApplication();
     }
 }

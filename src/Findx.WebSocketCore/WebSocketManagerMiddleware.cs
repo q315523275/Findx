@@ -9,16 +9,34 @@ using System.Threading.Tasks;
 
 namespace Findx.WebSocketCore
 {
+    /// <summary>
+    /// 中间件
+    /// </summary>
     public class WebSocketManagerMiddleware
     {
         private readonly RequestDelegate _next;
-        private WebSocketHandler _webSocketHandler { get; set; }
-        public WebSocketManagerMiddleware(RequestDelegate next, WebSocketHandler webSocketHandler)
+        
+        private WebSocketHandlerBase WebSocketHandler { get; }
+        
+        private IWebSocketSerializer Serializer { get; }
+
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="next"></param>
+        /// <param name="webSocketHandler"></param>
+        /// <param name="serializer"></param>
+        public WebSocketManagerMiddleware(RequestDelegate next, WebSocketHandlerBase webSocketHandler, IWebSocketSerializer serializer)
         {
             _next = next;
-            _webSocketHandler = webSocketHandler;
+            WebSocketHandler = webSocketHandler;
+            Serializer = serializer;
         }
 
+        /// <summary>
+        /// 执行
+        /// </summary>
+        /// <param name="context"></param>
         public async Task Invoke(HttpContext context)
         {
             if (!context.WebSockets.IsWebSocketRequest)
@@ -31,46 +49,39 @@ namespace Findx.WebSocketCore
             var socket = await context.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(query))
             {
-                await _webSocketHandler.OnConnected(socket).ConfigureAwait(false);
+                await WebSocketHandler.OnConnected(socket).ConfigureAwait(false);
             }
             else
             {
                 query = query.TrimStart('?');
-                await _webSocketHandler.OnConnected(query, socket).ConfigureAwait(false);
+                await WebSocketHandler.OnConnected(query, socket).ConfigureAwait(false);
             }
+
             await ReceiveAsync(socket, async (result, serializedMessage) =>
             {
                 if (result.MessageType == WebSocketMessageType.Text)
                 {
-                    WebSocketMessage message = serializedMessage.ToObject<WebSocketMessage>();
-                    await _webSocketHandler.ReceiveAsync(socket, result, message).ConfigureAwait(false);
+                    var message = Serializer.Deserialize<WebSocketMessage>(serializedMessage);
+                    await WebSocketHandler.ReceiveAsync(socket, result, message).ConfigureAwait(false);
                     return;
                 }
-                else if (result.MessageType == WebSocketMessageType.Close)
-                {
-                    try
-                    {
-                        await _webSocketHandler.OnDisconnected(socket);
-                    }
-                    catch (WebSocketException)
-                    {
-                        throw; //let's not swallow any exception for now
-                    }
 
-                    return;
+                if (result.MessageType == WebSocketMessageType.Close)
+                {
+                    await WebSocketHandler.OnDisconnected(socket);
                 }
             });
         }
 
-        private async Task ReceiveAsync(WebSocket socket, Action<WebSocketReceiveResult, string> handleMessage)
+        private async Task ReceiveAsync(WebSocket socket, Func<WebSocketReceiveResult, byte[], Task> handleMessage)
         {
             while (socket.State == WebSocketState.Open)
             {
-                ArraySegment<Byte> buffer = new ArraySegment<byte>(new Byte[1024 * 4]);
-                string message = null;
-                WebSocketReceiveResult result = null;
+                var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
                 try
                 {
+                    byte[] message;
+                    WebSocketReceiveResult result;
                     using (var ms = new MemoryStream())
                     {
                         do
@@ -82,10 +93,12 @@ namespace Findx.WebSocketCore
 
                         ms.Seek(0, SeekOrigin.Begin);
 
-                        using (var reader = new StreamReader(ms, Encoding.UTF8))
-                        {
-                            message = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        }
+                        message = ms.ToArray();
+                        
+                        // using (var reader = new StreamReader(ms, Encoding.UTF8))
+                        // {
+                        //     message = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        // }
                     }
 
                     handleMessage(result, message);
@@ -99,7 +112,7 @@ namespace Findx.WebSocketCore
                 }
             }
 
-            await _webSocketHandler.OnDisconnected(socket);
+            await WebSocketHandler.OnDisconnected(socket);
         }
     }
 }

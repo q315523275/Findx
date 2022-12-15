@@ -12,7 +12,7 @@ public class Expressionsort<T> where T : class, new()
     /// <summary>
     /// 排序集合
     /// </summary>
-    private readonly List<OrderByParameter<T>> orderList = new();
+    private readonly List<OrderByParameter<T>> _orderList = new();
 
     /// <summary>
     /// 正序
@@ -21,7 +21,7 @@ public class Expressionsort<T> where T : class, new()
     /// <returns></returns>
     public Expressionsort<T> OrderBy(Expression<Func<T, object>> expression)
     {
-        orderList.Add(new OrderByParameter<T>() { Expression = expression, SortDirection = ListSortDirection.Ascending});
+        _orderList.Add(new OrderByParameter<T>() { Expression = expression, SortDirection = ListSortDirection.Ascending});
         return this;
     }
 
@@ -31,7 +31,7 @@ public class Expressionsort<T> where T : class, new()
     /// <param name="isExp"></param>
     /// <param name="expression"></param>
     /// <returns></returns>
-    public Expressionsort<T> OrderByIF(bool isExp, Expression<Func<T, object>> expression)
+    public Expressionsort<T> OrderByIf(bool isExp, Expression<Func<T, object>> expression)
     {
         if (isExp)
         {
@@ -47,7 +47,7 @@ public class Expressionsort<T> where T : class, new()
     /// <returns></returns>
     public Expressionsort<T> OrderByDescending(Expression<Func<T, object>> expression)
     {
-        orderList.Add(new OrderByParameter<T>() { Expression = expression, SortDirection = ListSortDirection.Descending});
+        _orderList.Add(new OrderByParameter<T>() { Expression = expression, SortDirection = ListSortDirection.Descending});
         return this;
     }
 
@@ -57,7 +57,7 @@ public class Expressionsort<T> where T : class, new()
     /// <param name="isExp"></param>
     /// <param name="expression"></param>
     /// <returns></returns>
-    public Expressionsort<T> OrderByDescendingIF(bool isExp, Expression<Func<T, object>> expression)
+    public Expressionsort<T> OrderByDescendingIf(bool isExp, Expression<Func<T, object>> expression)
     {
         if (isExp)
         {
@@ -93,6 +93,6 @@ public class Expressionsort<T> where T : class, new()
     /// <returns></returns>
     public List<OrderByParameter<T>> ToSort()
     {
-        return orderList;
+        return _orderList;
     }
 }

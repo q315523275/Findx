@@ -66,7 +66,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 { "applicationPort", app.Port.ToString() },
                 { "uris", string.Join(",", app.Uris) },
                 { "rootPath", app.RootPath },
-                { "instanceIP", app.InstanceIP },
+                { "instanceIp", app.InstanceIp },
                 { "threadStats", new {
                     maxCompletionPortThreads = maxCompletionPortThreads,
                     maxWorkerThreads = maxWorkerThreads,
@@ -82,7 +82,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 { "processArchitecture", RuntimeInformation.ProcessArchitecture.ToString() },
                 { "frameworkDescription", RuntimeInformation.FrameworkDescription },
                 { "is64BitOperatingSystem", Environment.Is64BitOperatingSystem.ToString() },
-                { "instanceIP", app.InstanceIP },
+                { "instanceIP", app.InstanceIp },
                 { "machineName", Environment.MachineName },
                 { "osVersion", Environment.OSVersion.ToString() },
                 { "systemPageSize", Environment.SystemPageSize.ToString() },

@@ -202,7 +202,6 @@ public static class ProcessX
                     outputChannel.Writer.TryComplete(new ProcessErrorException(process.ExitCode, errorList.ToArray()));
                 }
             }
-            Console.WriteLine("执行进程退出了");
         };
 
         if (!process.Start())

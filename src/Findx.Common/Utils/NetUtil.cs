@@ -1,6 +1,4 @@
-﻿using System.Net;
-using System.Net.NetworkInformation;
-using System.Text;
+﻿using System.Net.NetworkInformation;
 
 namespace Findx.Utils
 {
@@ -16,13 +14,13 @@ namespace Findx.Utils
         {
             try
             {
-                Ping ping = new Ping();
-                PingOptions options = new PingOptions { DontFragment = true };
-                string data = "Test Data";
-                byte[] buffer = Encoding.ASCII.GetBytes(data);
-                int timeout = 1000;
-                PingReply reply = ping.Send(ip, timeout, buffer, options);
-                return reply != null && reply.Status == IPStatus.Success;
+                var ping = new Ping();
+                var options = new PingOptions { DontFragment = true };
+                var data = "Test Data";
+                var buffer = Encoding.ASCII.GetBytes(data);
+                var timeout = 1000;
+                var reply = ping.Send(ip, timeout, buffer, options);
+                return reply is { Status: IPStatus.Success };
             }
             catch (PingException)
             {
@@ -35,7 +33,7 @@ namespace Findx.Utils
         /// </summary>
         /// <param name="ipv4Address"></param>
         /// <returns></returns>
-        public static bool IsInternalIP(string ipv4Address)
+        public static bool IsInternalIp(string ipv4Address)
         {
             if (IPAddress.TryParse(ipv4Address, out var ip))
             {
@@ -53,9 +51,9 @@ namespace Findx.Utils
         /// </summary>
         /// <param name="ipv4Address"></param>
         /// <returns></returns>
-        public static bool IsInternalIP(IPAddress ipv4Address)
+        public static bool IsInternalIp(IPAddress ipv4Address)
         {
-            byte[] ipBytes = ipv4Address.GetAddressBytes();
+            var ipBytes = ipv4Address.GetAddressBytes();
             if (ipBytes[0] == 10) return true;
             if (ipBytes[0] == 127 && ipBytes[1] == 0) return true;
             if (ipBytes[0] == 172 && ipBytes[1] >= 16 && ipBytes[1] <= 31) return true;

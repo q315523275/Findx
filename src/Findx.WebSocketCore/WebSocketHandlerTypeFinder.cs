@@ -4,8 +4,15 @@ using System.Linq;
 using System.Collections.Generic;
 namespace Findx.WebSocketCore
 {
-    public class WebSocketHandlerTypeFinder : BaseTypeFinderBase<WebSocketHandler>, IWebSocketHandlerTypeFinder
+    /// <summary>
+    /// 查找器
+    /// </summary>
+    public class WebSocketHandlerTypeFinder : BaseTypeFinderBase<WebSocketHandlerBase>, IWebSocketHandlerTypeFinder
     {
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="appDomainAssemblyFinder"></param>
         public WebSocketHandlerTypeFinder(IAppDomainAssemblyFinder appDomainAssemblyFinder) : base(appDomainAssemblyFinder)
         {
         }

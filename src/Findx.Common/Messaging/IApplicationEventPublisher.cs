@@ -8,7 +8,7 @@ namespace Findx.Messaging
     public interface IApplicationEventPublisher
     {
         /// <summary>
-        /// 事件推送
+        /// 推送异步执行事件
         /// </summary>
         /// <typeparam name="TEvent"></typeparam>
         /// <param name="applicationEvent"></param>

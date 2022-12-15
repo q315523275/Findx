@@ -10,8 +10,6 @@ namespace Findx.Messaging
     /// </summary>
     public class ApplicationEventPublisher : IApplicationEventPublisher, IDisposable
     {
-        private readonly IDictionary<Type, object> _eventHandlers = new ConcurrentDictionary<Type, object>();
-
         private readonly Channel<IApplicationEvent> _channel;
         private readonly ILogger<ApplicationEventPublisher> _logger;
         private readonly CancellationTokenSource _cts;
@@ -36,7 +34,7 @@ namespace Findx.Messaging
 
             // StartConsuming(_cancellationToken.Token);
             Task.WhenAll(Enumerable.Range(0, consumerThreadCount)
-                   .Select(_ => Task.Factory.StartNew(() => Processing(_channel, _cts.Token), _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default)));
+                   .Select(_ => Task.Factory.StartNew(() => Processing(_channel.Reader, _cts.Token), _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default)));
         }
 
         /// <summary>
@@ -45,7 +43,7 @@ namespace Findx.Messaging
         public void Dispose()
         {
             _cts?.Cancel();
-            _eventHandlers?.Clear();
+            MessageConst.ApplicationEventHandlers?.Clear();
         }
 
         /// <summary>
@@ -65,10 +63,10 @@ namespace Findx.Messaging
         /// <summary>
         /// 消费执行方法
         /// </summary>
-        /// <param name="channel"></param>
+        /// <param name="channelReader"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private async Task Processing(Channel<IApplicationEvent> channel, CancellationToken cancellationToken)
+        private async Task Processing(ChannelReader<IApplicationEvent> channelReader, CancellationToken cancellationToken)
         {
             try
             {
@@ -91,10 +89,11 @@ namespace Findx.Messaging
                 //}
 
                 // 异步流方式
-                await foreach (var message in channel.Reader.ReadAllAsync(cancellationToken))
+                
+                await foreach (var message in channelReader.ReadAllAsync(cancellationToken))
                 {
                     var messageType = message.GetType();
-                    var handler = (ApplicationEventHandlerWrapper)_eventHandlers.GetOrAdd(messageType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
+                    var handler = (ApplicationEventHandlerWrapper)MessageConst.ApplicationEventHandlers.GetOrAdd(messageType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
                     try
                     {
                         using var scope = ServiceLocator.Instance.CreateScope();

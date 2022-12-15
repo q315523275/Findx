@@ -24,7 +24,7 @@ public class MvcFunctionStore: IFunctionStore<MvcFunction>
     /// 查询
     /// </summary>
     /// <returns></returns>
-    public List<MvcFunction> GetFromDatabase()
+    public IEnumerable<MvcFunction> GetFromDatabase()
     {
         return _functions;
     }

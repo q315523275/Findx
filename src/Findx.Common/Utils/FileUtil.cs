@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
+﻿using System.Diagnostics;
 using System.Security.Cryptography;
-using System.Text;
 
 namespace Findx.Utils
 {
@@ -13,6 +8,16 @@ namespace Findx.Utils
     /// </summary>
     public class FileUtil
     {
+        /// <summary>
+        /// 文件是否存在
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static bool Exists(string fileName)
+        {
+            return File.Exists(fileName);
+        }
+        
         /// <summary>
         /// 创建文件，如果文件不存在
         /// </summary>
@@ -44,7 +49,36 @@ namespace Findx.Utils
             }
             File.Delete(fileName);
         }
+        
+        /// <summary>
+        /// 复制指定文件
+        /// </summary>
+        /// <param name="sourceFileName"> 源文件名 </param>
+        /// <param name="destFileName"> 目标文件名 </param>
+        /// <param name="overwrite"> 是否覆盖 </param>
+        public static void Copy(string sourceFileName, string destFileName, bool overwrite = false)
+        {
+            if (!File.Exists(sourceFileName))
+            {
+                return;
+            }
+            File.Copy(sourceFileName, destFileName, overwrite);
+        }
 
+        /// <summary>
+        /// 移动文件
+        /// </summary>
+        /// <param name="sourceFileName">源文件名</param>
+        /// <param name="destFileName">目标文件名</param>
+        public static void Move(string sourceFileName, string destFileName)
+        {
+            if (!File.Exists(sourceFileName))
+            {
+                return;
+            }
+            File.Move(sourceFileName, destFileName);
+        }
+        
         /// <summary>
         /// 设置或取消文件的指定<see cref="FileAttributes"/>属性
         /// </summary>
@@ -69,6 +103,49 @@ namespace Findx.Utils
         }
 
         /// <summary>
+        /// 获取文件大小
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static long GetLength(string path)
+        {
+            if (!Exists(path))
+                return -1;
+
+            return new FileInfo(path).Length;
+        }
+        
+        /// <summary>
+        /// 获取文件创建时间
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public virtual DateTime GetCreationTime(string path)
+        {
+            return File.GetCreationTime(path);
+        }
+        
+        /// <summary>
+        /// 获取最后访问时间
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public virtual DateTime GetLastAccessTime(string path)
+        {
+            return File.GetLastAccessTime(path);
+        }
+
+        /// <summary>
+        /// 获取最后修改时间
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public virtual DateTime GetLastWriteTime(string path)
+        {
+            return File.GetLastWriteTime(path);
+        }
+        
+        /// <summary>
         /// 获取文件版本号
         /// </summary>
         /// <param name="fileName"> 完整文件名 </param>
@@ -90,11 +167,11 @@ namespace Findx.Utils
         /// <returns> 32位MD5 </returns>
         public static string GetFileMd5(string fileName)
         {
-            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 const int bufferSize = 1024 * 1024;
                 byte[] buffer = new byte[bufferSize];
-                using (MD5CryptoServiceProvider md5 = new MD5CryptoServiceProvider())
+                using (var md5 = new MD5CryptoServiceProvider())
                 {
                     md5.Initialize();
                     long offset = 0;
@@ -105,7 +182,8 @@ namespace Findx.Utils
                         {
                             readSize = fs.Length - offset;
                         }
-                        fs.Read(buffer, 0, (int)readSize);
+
+                        _ = fs.Read(buffer, 0, (int)readSize);
                         if (offset + readSize < fs.Length)
                         {
                             md5.TransformBlock(buffer, 0, (int)readSize, buffer, 0);
@@ -117,10 +195,10 @@ namespace Findx.Utils
                         offset += bufferSize;
                     }
                     fs.Close();
-                    byte[] result = md5.Hash;
+                    var result = md5.Hash;
                     md5.Clear();
-                    StringBuilder sb = new StringBuilder(32);
-                    foreach (byte b in result)
+                    var sb = new StringBuilder(32);
+                    foreach (var b in result)
                     {
                         sb.Append(b.ToString("X2"));
                     }
@@ -158,7 +236,7 @@ namespace Findx.Utils
         /// <returns></returns>
         public static Encoding GetEncoding(string fileName, Encoding defaultEncoding)
         {
-            using (FileStream fs = File.Open(fileName, FileMode.Open))
+            using (var fs = File.Open(fileName, FileMode.Open))
             {
                 return GetEncoding(fs, defaultEncoding);
             }
@@ -172,15 +250,15 @@ namespace Findx.Utils
         /// <returns></returns>
         public static Encoding GetEncoding(FileStream fs, Encoding defaultEncoding)
         {
-            Encoding targetEncoding = defaultEncoding;
-            if (fs != null && fs.Length >= 2)
+            var targetEncoding = defaultEncoding;
+            if (fs is { Length: >= 2 })
             {
                 byte b1 = 0;
                 byte b2 = 0;
                 byte b3 = 0;
                 byte b4 = 0;
 
-                long oriPos = fs.Seek(0, SeekOrigin.Begin);
+                var oriPos = fs.Seek(0, SeekOrigin.Begin);
                 fs.Seek(0, SeekOrigin.Begin);
 
                 b1 = Convert.ToByte(fs.ReadByte());
@@ -198,15 +276,15 @@ namespace Findx.Utils
                 //Unicode {0xFF, 0xFE};
                 //BE-Unicode {0xFE, 0xFF};
                 //UTF8 = {0xEF, 0xBB, 0xBF};
-                if (b1 == 0xFE && b2 == 0xFF)//UnicodeBe
+                if (b1 == 0xFE && b2 == 0xFF) // UnicodeBe
                 {
                     targetEncoding = Encoding.BigEndianUnicode;
                 }
-                if (b1 == 0xFF && b2 == 0xFE && b3 != 0xFF)//Unicode
+                if (b1 == 0xFF && b2 == 0xFE && b3 != 0xFF) // Unicode
                 {
                     targetEncoding = Encoding.Unicode;
                 }
-                if (b1 == 0xEF && b2 == 0xBB && b3 == 0xBF)//UTF8
+                if (b1 == 0xEF && b2 == 0xBB && b3 == 0xBF) // UTF8
                 {
                     targetEncoding = Encoding.UTF8;
                 }
@@ -222,7 +300,7 @@ namespace Findx.Utils
         /// <param name="fileExt">文件扩展名，不含“.”</param>
         public static bool IsImage(string fileExt)
         {
-            ArrayList al = new ArrayList();
+            var al = new ArrayList();
             al.Add("bmp");
             al.Add("jpeg");
             al.Add("jpg");
@@ -239,28 +317,25 @@ namespace Findx.Utils
         /// 检查文件地址是否文件服务器地址
         /// </summary>
         /// <param name="url">文件地址</param>
-        public static bool IsExternalIPAddress(string url)
+        public static bool IsExternalIpAddress(string url)
         {
             var uri = new Uri(url);
             switch (uri.HostNameType)
             {
                 case UriHostNameType.Dns:
                     var ipHostEntry = Dns.GetHostEntry(uri.DnsSafeHost);
-                    foreach (IPAddress ipAddress in ipHostEntry.AddressList)
+                    foreach (var ipAddress in ipHostEntry.AddressList)
                     {
-                        byte[] ipBytes = ipAddress.GetAddressBytes();
-                        if (ipAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-                        {
-                            if (!NetUtil.IsInternalIP(ipAddress))
-                            {
-                                return true;
-                            }
-                        }
+                        // var ipBytes = ipAddress.GetAddressBytes();
+                        if (ipAddress.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork) 
+                            continue;
+                        if (!NetUtil.IsInternalIp(ipAddress))
+                            return true;
                     }
                     break;
 
                 case UriHostNameType.IPv4:
-                    return !NetUtil.IsInternalIP(IPAddress.Parse(uri.DnsSafeHost));
+                    return !NetUtil.IsInternalIp(IPAddress.Parse(uri.DnsSafeHost));
             }
             return false;
         }

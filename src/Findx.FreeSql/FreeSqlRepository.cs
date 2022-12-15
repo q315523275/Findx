@@ -305,7 +305,7 @@ namespace Findx.FreeSql
         }
 
 
-        public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null, params OrderByParameter<TEntity>[] orderParameters)
+        public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
         {
             var queryable = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -326,7 +326,7 @@ namespace Findx.FreeSql
             return queryable.WithTransaction(UnitOfWork?.Transaction).ToList();
         }
 
-        public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
+        public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
         {
             var queryable = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -347,7 +347,7 @@ namespace Findx.FreeSql
             return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync(cancellationToken);
         }
 
-        public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, params OrderByParameter<TEntity>[] orderParameters)
+        public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
         {
             var select = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -371,7 +371,7 @@ namespace Findx.FreeSql
                 return select.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
         }
 
-        public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
+        public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
         {
             var select = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -396,7 +396,7 @@ namespace Findx.FreeSql
         }
 
 
-        public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, params OrderByParameter<TEntity>[] orderParameters)
+        public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
         {
             var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -417,7 +417,7 @@ namespace Findx.FreeSql
             return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToList();
         }
 
-        public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
+        public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
         {
             var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -438,7 +438,7 @@ namespace Findx.FreeSql
             return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToListAsync(cancellationToken);
         }
 
-        public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, params OrderByParameter<TEntity>[] orderParameters)
+        public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
         {
             var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -464,7 +464,7 @@ namespace Findx.FreeSql
                 return queryable.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
         }
 
-        public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
+        public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
         {
             var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -491,7 +491,7 @@ namespace Findx.FreeSql
         }
 
 
-        public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, params OrderByParameter<TEntity>[] orderParameters)
+        public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
         {
             var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -514,7 +514,7 @@ namespace Findx.FreeSql
             return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
         }
 
-        public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
+        public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
         {
             var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -537,7 +537,7 @@ namespace Findx.FreeSql
             return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
         }
 
-        public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, params OrderByParameter<TEntity>[] orderParameters)
+        public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
         {
             var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -564,7 +564,7 @@ namespace Findx.FreeSql
             return new PageResult<List<TObject>>(pageNumber, pageSize, (int)totalRows, result);
         }
 
-        public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, CancellationToken cancellationToken = default, params OrderByParameter<TEntity>[] orderParameters)
+        public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
         {
             var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 

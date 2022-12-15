@@ -8,10 +8,6 @@ namespace Findx.Messaging
     /// </summary>
     public class MessageDispatcher : IMessageDispatcher
     {
-        /// <summary>
-        /// 消息订阅处理器集合
-        /// </summary>
-        private static readonly IDictionary<Type, object> MessageHandlers = new ConcurrentDictionary<Type, object>();
 
         private readonly IServiceProvider _serviceProvider;
 
@@ -37,12 +33,28 @@ namespace Findx.Messaging
 
             var messageType = message.GetType();
 
-            var handler = (MessageHandlerWrapper<TResponse>)MessageHandlers.GetOrAdd(messageType,
+            var handler = (MessageHandlerWrapper<TResponse>)MessageConst.RequestMessageHandlers.GetOrAdd(messageType,
                          t => Activator.CreateInstance(typeof(MessageHandlerWrapperImpl<,>).MakeGenericType(messageType, typeof(TResponse))));
 
             Check.NotNull(handler, nameof(handler));
 
             return handler.HandleAsync(message, _serviceProvider, cancellationToken);
+        }
+
+        /// <summary>
+        /// 异步推送事件
+        /// </summary>
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="applicationEvent"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default) where TEvent : IApplicationEvent
+        {
+            var eventType = applicationEvent.GetType();
+
+            var handler = (ApplicationEventHandlerWrapper)MessageConst.ApplicationEventHandlers.GetOrAdd(eventType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(eventType)));
+
+            await handler.Handle(applicationEvent, _serviceProvider, cancellationToken);
         }
     }
 }

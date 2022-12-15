@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-namespace Findx.Data
+﻿namespace Findx.Data
 {
 	/// <summary>
 	/// 租户管理

@@ -74,7 +74,7 @@ namespace Findx.AspNetCore.Mvc
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
+            var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression);
 
             return CommonResult.Success(result);
         }
@@ -97,7 +97,7 @@ namespace Findx.AspNetCore.Mvc
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
 
-            var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
+            var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression);
 
             return CommonResult.Success(list);
         }

@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  findx.admin.webhost:
+    image: ${DOCKER_REGISTRY-}findxadmin
+    build:
+      context: .
+      dockerfile: modules/Findx.Admin.WebHost/Dockerfile
