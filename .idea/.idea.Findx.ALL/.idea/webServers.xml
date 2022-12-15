@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="d172501b-54df-4712-8349-044a0709bc3b" name="tencent" url="http://106.54.160.19:10020/swagger/index.html">
+        <fileTransfer rootFolder="/apps/application/findx.saas.webhost" accessType="SFTP" host="106.54.160.19" port="22" sshConfigId="6eb58580-6b18-4be7-a47e-e063dafd6422" sshConfig="root@106.54.160.19:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>
