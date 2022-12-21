@@ -5,10 +5,17 @@ using System.Collections.Generic;
 
 namespace Findx.Discovery
 {
+    /// <summary>
+    /// 服务发现配置
+    /// </summary>
     public class DiscoveryOptions : IOptions<DiscoveryOptions>
     {
         private string _hostName;
         private string _scheme = "http";
+        
+        /// <summary>
+        /// Ctor
+        /// </summary>
         public DiscoveryOptions()
         {
             _hostName = DnsUtil.ResolveHostName();

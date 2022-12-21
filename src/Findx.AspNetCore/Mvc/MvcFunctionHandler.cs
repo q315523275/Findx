@@ -125,7 +125,7 @@ namespace Findx.AspNetCore.Mvc
 
             if (fromCache)
             {
-                var cache = _cacheProvider.Get("memory");
+                var cache = _cacheProvider.Get(CacheType.DefaultMemory);
                 cache.Add("function", result);
             }
 
