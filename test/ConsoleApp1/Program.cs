@@ -1,7 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System;
+using System.Net;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using Findx.Metrics;
+using Findx.Metrics.Memory;
+using Findx.Metrics.Network;
 using Findx.Utils;
 
 Console.WriteLine("Hello, World!");
@@ -15,46 +20,23 @@ Console.WriteLine("Hello, World!");
 // var version = await ProcessX.StartAsync("dotnet --version").FirstAsync();
 // Console.WriteLine(version);
 
-Console.WriteLine($"localIp:{DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName())}");
+var network = NetworkInfo.TryGetRealNetworkInfo();
+var oldRate = network.IpvSpeed();
+var initRateLength = oldRate.ReceivedLength + oldRate.SendLength;
+var networkSpeed = SizeInfo.Get(network.Speed);
 
-var monitorNetwork = new MonitorNetwork("en6");
-monitorNetwork.Start();
 while (true)
 {
     Thread.Sleep(1000);
-    Console.WriteLine($"全部流量:{monitorNetwork.AllTraffic};上行速率:{monitorNetwork.UpSpeed};下行速率:{monitorNetwork.DownSpeed}");
+
+    var memory = MemoryHelper.GetMemoryValue();
+    var newRate = network.IpvSpeed();
+    var nodeRate = SizeInfo.Get((newRate.ReceivedLength + newRate.SendLength) - initRateLength);
+    var speed = NetworkInfo.GetSpeed(oldRate, newRate);
+    oldRate = newRate;
+    Console.Clear();
+    // Console.WriteLine($"Cpu:    {(int)(value * 100)} %");
+    Console.WriteLine($"已用内存：{memory.UsedPercentage}%");
+    Console.WriteLine($"网卡连接速度:{networkSpeed.Size} {networkSpeed.SizeType}/S");
+    Console.WriteLine($"监测流量:{nodeRate.Size} {nodeRate.SizeType} 上传速率：{speed.Sent.Size} {speed.Sent.SizeType}/S 下载速率：{speed.Received.Size} {speed.Received.SizeType}/S");
 }
-
-//IPGlobalProperties computerProperties = IPGlobalProperties.GetIPGlobalProperties();
-//NetworkInterface[] nics = NetworkInterface.GetAllNetworkInterfaces();
-//Console.WriteLine("Interface information for {0}.{1}     ",
-//        computerProperties.HostName, computerProperties.DomainName);
-//if (nics == null || nics.Length < 1)
-//{
-//    Console.WriteLine("  No network interfaces found.");
-//    return;
-//}
-//foreach (NetworkInterface adapter in nics)
-//{
-//    System.Threading.Tasks.Task.Factory.StartNew(() =>
-//    {
-//        while (true)
-//        {
-//            var start = adapter.GetIPv4Statistics().BytesReceived;
-//            System.Threading.Thread.Sleep(1000);
-//            var end = adapter.GetIPv4Statistics().BytesReceived;
-//            var res = (end - start);
-//            if (res > 0)
-//            {
-//                Console.WriteLine($"{adapter.Name}:{(res / 1024)} kb，speed:{adapter.Speed / (1024 * 1024)}MB");
-//            }
-//        }
-//    });
-//}
-
-//while (true)
-//{
-//    Thread.Sleep(5000);
-//}
-
-
