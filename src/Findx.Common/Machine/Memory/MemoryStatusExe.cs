@@ -1,7 +1,6 @@
-﻿using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace Findx.Metrics.Memory
+namespace Findx.Machine.Memory
 {
     /// <summary>
     /// 包含有关物理内存和虚拟内存（包括扩展内存）的当前状态的信息。该 GlobalMemoryStatusEx在这个构造函数存储信息。

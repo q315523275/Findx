@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Findx.Metrics.Memory
+namespace Findx.Machine.Memory
 {
     /// <summary>
     /// Windows系统内存

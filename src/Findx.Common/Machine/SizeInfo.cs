@@ -1,4 +1,6 @@
-namespace Findx.Metrics;
+using Findx.Metrics;
+
+namespace Findx.Machine;
 
 /// <summary>
 /// 大小信息

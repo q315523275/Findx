@@ -1,7 +1,7 @@
 using Findx.Extensions;
 using Findx.Utils;
 
-namespace Findx.Metrics.Memory;
+namespace Findx.Machine.Memory;
 
 /// <summary>
 /// Linux系统内存
@@ -14,8 +14,6 @@ public class LinuxMemory
     /// <returns></returns>
     public static MemoryValue GetMemory()
     {
-        if (!Common.IsLinux) return default;
-        
         ulong totalPhysicalMemory = 0; // 物理内存字节数
         ulong availablePhysicalMemory = 0; // 可用的物理内存字节数
         ulong usedPercentage = 0; // 已用物理内存百分比
@@ -33,7 +31,7 @@ public class LinuxMemory
             availablePhysicalMemory = str.RemovePostFix(" kB").To<ulong>() * 1024;
                 
         if (totalPhysicalMemory > 0)
-            usedPercentage = (totalPhysicalMemory - availablePhysicalMemory) / totalPhysicalMemory;
+            usedPercentage = (totalPhysicalMemory - availablePhysicalMemory) * 100 / totalPhysicalMemory;
                 
         if (dic.TryGetValue("VmallocTotal", out str))
             totalVirtualMemory = str.RemovePostFix(" kB").To<ulong>() * 1024;

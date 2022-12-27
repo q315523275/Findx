@@ -1,5 +1,4 @@
-﻿using System;
-namespace Findx.Metrics.Memory
+﻿namespace Findx.Machine.Memory
 {
 	public struct MemoryStatus
 	{

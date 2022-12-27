@@ -49,7 +49,6 @@
 	  <None Remove="System.Threading.Channels" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Folder Include="Metrics\Cpu" />
 	  <Folder Include="Setting\" />
 	  <Folder Include="Jobs\" />
 	  <Folder Include="Jobs\Local\" />

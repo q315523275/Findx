@@ -1,6 +1,6 @@
 using Findx.Utils;
 
-namespace Findx.Metrics.Memory;
+namespace Findx.Machine.Memory;
 
 /// <summary>
 /// 内存工具类

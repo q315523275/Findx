@@ -1,4 +1,4 @@
-namespace Findx.Metrics.Network;
+namespace Findx.Machine.Network;
 
 /// <summary>
 /// 速率

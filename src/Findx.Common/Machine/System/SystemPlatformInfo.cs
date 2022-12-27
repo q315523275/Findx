@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Findx.Metrics.System
+namespace Findx.Machine.System
 {
     /// <summary>
     /// 提供有关 .NET 运行时安装的信息、程序系统信息等。

@@ -1,4 +1,4 @@
-﻿namespace Findx.Metrics.Disk
+﻿namespace Findx.Machine.Disk
 {
     /// <summary>
     /// 磁盘信息

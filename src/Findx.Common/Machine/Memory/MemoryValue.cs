@@ -1,4 +1,4 @@
-namespace Findx.Metrics.Memory;
+namespace Findx.Machine.Memory;
 
 /// <summary>
 /// 内存值表示

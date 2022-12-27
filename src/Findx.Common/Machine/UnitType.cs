@@ -1,4 +1,4 @@
-namespace Findx.Metrics;
+namespace Findx.Machine;
 
 /// <summary>
 /// 单位
@@ -10,6 +10,7 @@ public enum UnitType : int
     /// </summary>
     /// 
     B = 0,
+    
     /// <summary>
     /// KB
     /// </summary>

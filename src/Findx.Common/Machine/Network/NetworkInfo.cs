@@ -2,7 +2,7 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 
-namespace Findx.Metrics.Network;
+namespace Findx.Machine.Network;
 
 /// <summary>
 /// 网络接口信息

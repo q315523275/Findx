@@ -9,12 +9,33 @@ namespace Findx.Caching.InMemory
     public class InMemoryCache : ICache, IDisposable
     {
         /// <summary>
+        /// 存储字典
+        /// </summary>
+        private readonly ConcurrentDictionary<string, CacheItem> _cache;
+        
+        /// <summary>
         /// 名称
         /// </summary>
         public string Name => CacheType.DefaultMemory;
 
-        private readonly ConcurrentDictionary<string, CacheItem> _cache;
-
+        /// <summary>
+        /// 写入次数
+        /// </summary>
+        private long _writes;
+        
+        /// <summary>
+        /// 命中次数
+        /// </summary>
+        private long _hits;
+        
+        /// <summary>
+        /// 丢失次数
+        /// </summary>
+        private long _misses;
+        
+        /// <summary>
+        /// 定时器
+        /// </summary>
         private FindxAsyncTimer Timer { get; }
 
         /// <summary>
@@ -31,6 +52,54 @@ namespace Findx.Caching.InMemory
             Timer.RunOnStart = false;
             Timer.Start();
         }
+        
+        /// <summary>
+        /// 缓存总数
+        /// </summary>
+        public int Count => _cache.Count;
+
+        /// <summary>
+        /// 交互次数
+        /// </summary>
+        public long Calls => _writes + _hits + _misses;
+        
+        /// <summary>
+        /// 写入次数
+        /// </summary>
+        public long Writes => _writes;
+        
+        /// <summary>
+        /// 读取次数
+        /// </summary>
+        public long Reads => _hits + _misses;
+        
+        /// <summary>
+        /// 缓存命中次数
+        /// </summary>
+        public long Hits => _hits;
+        
+        /// <summary>
+        /// 丢失次数
+        /// </summary>
+        public long Misses => _misses;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString() {
+            return $"Count: {Count} Calls: {Calls} Reads: {Reads} Writes: {Writes} Hits: {Hits} Misses: {Misses}";
+        }
+
+        /// <summary>
+        /// 重置统计
+        /// </summary>
+        public void ResetStats() 
+        {
+            _writes = 0;
+            _hits = 0;
+            _misses = 0;
+        }
 
         /// <summary>
         /// 调度执行方法
@@ -42,7 +111,7 @@ namespace Findx.Caching.InMemory
             foreach (var item in _cache)
             {
                 if (item.Value.ExpiredTime < now)
-                    Remove(item.Key);
+                    _cache.TryRemove(item.Key, out _);
             }
             await Task.CompletedTask;
         }
@@ -65,7 +134,7 @@ namespace Findx.Caching.InMemory
             // 存在且过期,删除缓存
             if (item.Expired)
             {
-                _cache.Remove(key, out var _);
+                _cache.Remove(key, out _);
                 return Task.FromResult(false);
             }
 
@@ -87,13 +156,14 @@ namespace Findx.Caching.InMemory
 
             if (_cache.TryGetValue(key, out var item) && !item.Expired)
             {
+                Interlocked.Increment(ref _hits);
                 return (T)item.Visit();
             }
 
+            Interlocked.Increment(ref _misses);
+            
             var value = await func.Invoke();
-
             Add(key, value, expire);
-
             return value;
         }
 
@@ -104,25 +174,27 @@ namespace Findx.Caching.InMemory
         /// <param name="key"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public async Task<T> GetAsync<T>(string key, CancellationToken token = default)
+        public Task<T> GetAsync<T>(string key, CancellationToken token = default)
         {
             Check.NotNull(key, nameof(key));
 
             if (!_cache.TryGetValue(key, out var item))
             {
+                Interlocked.Increment(ref _misses);
                 return default;
             }
 
             // 存在且过期,删除缓存
             if (item.Expired)
             {
-                _cache.Remove(key, out var _);
+                Interlocked.Increment(ref _misses);
+                _cache.Remove(key, out _);
                 return default;
             }
 
-            await Task.CompletedTask;
+            Interlocked.Increment(ref _hits);
 
-            return (T)item.Visit();
+            return Task.FromResult((T)item.Visit());
         }
 
         /// <summary>
@@ -141,9 +213,10 @@ namespace Findx.Caching.InMemory
             // 存在且未过期
             if (_cache.TryGetValue(key, out var item) && !item.Expired)
                 return Task.FromResult(false);
+            
+            Interlocked.Increment(ref _writes);
 
             Add(key, value, expire);
-
             return Task.FromResult(true);
         }
 
@@ -160,6 +233,8 @@ namespace Findx.Caching.InMemory
         {
             Check.NotNull(key, nameof(key));
 
+            Interlocked.Increment(ref _writes);
+            
             _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) =>
             {
                 oldItem.Set(value, expire);
@@ -249,13 +324,14 @@ namespace Findx.Caching.InMemory
 
             if (_cache.TryGetValue(key, out var item) && !item.Expired)
             {
+                Interlocked.Increment(ref _hits);
                 return (T)item.Visit();
             }
 
+            Interlocked.Increment(ref _misses);
+            
             var value = func.Invoke();
-
             Add(key, value, expire);
-
             return value;
         }
 
@@ -271,16 +347,20 @@ namespace Findx.Caching.InMemory
 
             if (!_cache.TryGetValue(key, out var item))
             {
+                Interlocked.Increment(ref _misses);
                 return default;
             }
 
             // 存在且过期,删除缓存
             if (item.Expired)
             {
-                _cache.Remove(key, out var _);
+                Interlocked.Increment(ref _misses);
+                _cache.Remove(key, out _);
                 return default;
             }
 
+            Interlocked.Increment(ref _hits);
+            
             return (T)item.Visit();
         }
 
@@ -301,8 +381,9 @@ namespace Findx.Caching.InMemory
                 return false;
             }
 
+            Interlocked.Increment(ref _writes);
+            
             Add(key, value, expire);
-
             return true;
         }
 
@@ -317,6 +398,8 @@ namespace Findx.Caching.InMemory
         {
             Check.NotNull(key, nameof(key));
 
+            Interlocked.Increment(ref _writes);
+            
             _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) =>
             {
                 oldItem.Set(value, expire);
