@@ -20,10 +20,10 @@ namespace Findx.Swagger
                 {
                     if (method.ReflectedType.HasAttribute<IgnoreApiAttribute>() || method.HasAttribute<IgnoreApiAttribute>())
                     {
-                        string key = $"/{apiDescription.RelativePath}";
-                        if (key.Contains("?"))
+                        var key = $"/{apiDescription.RelativePath}";
+                        if (key.Contains('?'))
                         {
-                            int index = key.IndexOf("?", StringComparison.Ordinal);
+                            var index = key.IndexOf("?", StringComparison.Ordinal);
                             key = key.Substring(0, index);
                         }
 

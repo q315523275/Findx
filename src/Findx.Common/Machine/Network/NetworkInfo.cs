@@ -9,7 +9,11 @@ namespace Findx.Machine.Network;
 /// </summary>
 public class NetworkInfo
 {
-    public NetworkInfo(NetworkInterface network)
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="network"></param>
+    private NetworkInfo(NetworkInterface network)
     {
         NetworkInterface = network;
     }

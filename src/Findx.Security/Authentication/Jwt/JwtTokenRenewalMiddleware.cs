@@ -47,8 +47,8 @@ public class JwtTokenRenewalMiddleware
                 var spanTime = DateTimeOffset.FromUnixTimeSeconds(exp.To<long>()).LocalDateTime - DateTimeOffset.Now.LocalDateTime;
                 if (spanTime.TotalMinutes <= options.Value.RenewalMinutes)
                 {
-                    var claimFilterKeys = new List<string> { "nbf", "exp", "iat", "iss","aud" };
-                    var renewalDict = context.User.Claims.Where(claim => !claimFilterKeys.Contains(claim.Type)).ToDictionary(claim => claim.Type, claim => claim.Value);
+                    var claimIgnoreKeys = new List<string> { "nbf", "exp", "iat", "iss","aud" };
+                    var renewalDict = context.User.Claims.Where(claim => !claimIgnoreKeys.Contains(claim.Type)).ToDictionary(claim => claim.Type, claim => claim.Value);
                     var jwtBuilder = context.RequestServices.GetRequiredService<IJwtTokenBuilder>();
                     var token = await jwtBuilder.CreateAsync(renewalDict, options.Value);
                     

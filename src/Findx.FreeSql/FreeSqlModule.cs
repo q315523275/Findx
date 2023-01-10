@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System.Text;
+using Microsoft.Extensions.Options;
 
 namespace Findx.FreeSql
 {
@@ -50,7 +51,6 @@ namespace Findx.FreeSql
                 return services;
 
             var freeSqlClient = services.GetOrAddSingletonInstance(() => new FreeSqlClient());
-
             foreach (var item in FreeSqlOptions.DataSource)
             {
                 // FreeSQL构建开始
@@ -71,8 +71,7 @@ namespace Findx.FreeSql
                     // 开启SQL打印
                     if (FreeSqlOptions.PrintSql)
                     {
-                        var sb = new StringBuilder();
-                        sb.AppendLine("Creating a new SqlSession");
+                        var sb = new StringBuilder("Creating a new SqlSession");
                         sb.AppendLine("==>  Preparing:" + e.Sql);
                         if (e.DbParms.Length > 0)
                         {
@@ -86,18 +85,21 @@ namespace Findx.FreeSql
                         }
                         sb.Append($"==>  ExecuteTime:{e.ElapsedMilliseconds:0.000}ms");
                         var logger = ServiceLocator.GetService<ILogger<FreeSqlModule>>();
+                        // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                         logger?.LogInformation(sb.ToString());
                     }
                     // 开启慢SQL记录
-                    if (FreeSqlOptions.OutageDetection && e.ElapsedMilliseconds > (FreeSqlOptions.OutageDetectionInterval * 1000))
+                    if (FreeSqlOptions.OutageDetection && e.ElapsedMilliseconds > FreeSqlOptions.OutageDetectionInterval * 1000)
                     {
-                        ServiceLocator.GetService<ILogger<FreeSqlModule>>()?.LogInformation($"FreeSql触发慢日志:执行sql({e.Sql})耗时({e.ElapsedMilliseconds:0.000})毫秒");
+                        ServiceLocator.GetService<ILogger<FreeSqlModule>>()?.LogInformation("FreeSql触发慢日志:执行sql({ESql})耗时({EElapsedMilliseconds})毫秒", e.Sql, e.ElapsedMilliseconds);
                     }
                 };
                 freeSql.Aop.AuditValue += (_, e) =>
                 {
                     // 租户自动赋值
-                    if (FreeSqlOptions.MultiTenant && TenantManager.Current != Guid.Empty && e.Property.PropertyType == typeof(Guid?) && e.Property.Name == "TenantId")
+                    if (FreeSqlOptions.MultiTenant && TenantManager.Current != Guid.Empty 
+                                                   && e.Property.PropertyType == typeof(Guid?) 
+                                                   && e.Property.Name == FreeSqlOptions.MultiTenantFieldName)
                     {
                         e.Value = TenantManager.Current;
                     }

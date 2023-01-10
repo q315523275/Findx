@@ -24,7 +24,7 @@ namespace Findx.Swagger
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             // 配置服务
-            IConfiguration configuration = services.GetConfiguration();
+            var configuration = services.GetConfiguration();
             configuration.Bind("Findx:Swagger", _swaggerOptions);
             if (!_swaggerOptions.Enabled)
                 return services;
@@ -53,6 +53,8 @@ namespace Findx.Swagger
                         return versions.Any(m => m.ToString() == version);
                     });
                 }
+                // 参数描述小驼峰
+                if (_swaggerOptions.AllParametersInCamelCase) options.DescribeAllParametersInCamelCase();
                 options.CustomSchemaIds(x => x.FullName);
                 var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml");
                 foreach(var file in files)

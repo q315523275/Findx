@@ -22,9 +22,11 @@ namespace Findx
             _hostApplicationLifetime = hostApplicationLifetime;
             ApplicationId = configuration?.GetValue<string>($"{FindxApplicationRoot}:Id") ?? Guid.NewGuid().ToString();
             ApplicationName = configuration?.GetValue<string>($"{FindxApplicationRoot}:Name") ?? environment.ApplicationName;
-            Port = configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? RandomUtil.RandomInt(1000, 40000);
-            // 启用随机端口
-            if (Port == 0) Port = RandomUtil.RandomInt(1000, 40000);
+            Port = configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? GlobalListener.GetAvailablePort(5000);
+            if (!GlobalListener.CanListen(Port))
+            {
+                Port = GlobalListener.GetAvailablePort(5000);
+            }
             Version = configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
             Uris = configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
             InstanceIp = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());

@@ -137,10 +137,10 @@ namespace Findx.Jobs
                 logger.LogWarning(result.Error, "Job run {JobName} cancelled: {Message}", jobName, result.Message);
             else if (!result.IsSuccess)
                 logger.LogError(result.Error, "Job run {JobName} failed: {Message}", jobName, result.Message);
-            else if (!String.IsNullOrEmpty(result.Message))
+            else if (!string.IsNullOrEmpty(result.Message))
                 logger.LogInformation("Job run {JobName} succeeded: {Message}", jobName, result.Message);
             else if (logger.IsEnabled(LogLevel.Debug))
-                logger.LogDebug("Job run {JobName} succeeded.", jobName);
+                logger.LogDebug("Job run {JobName} succeeded", jobName);
         }
     }
 }

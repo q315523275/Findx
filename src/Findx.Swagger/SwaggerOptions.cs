@@ -7,6 +7,8 @@ namespace Findx.Swagger
         public ICollection<SwaggerEndpoint> Endpoints { get; set; } = new List<SwaggerEndpoint>();
 
         public bool Enabled { get; set; }
+
+        public bool AllParametersInCamelCase { get; set; } = false;
     }
 
     public class SwaggerEndpoint

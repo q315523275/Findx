@@ -58,6 +58,11 @@ namespace Findx.FreeSql
         /// 是否多租户
         /// </summary>
         public bool MultiTenant { set; get; }
+        
+        /// <summary>
+        /// 多租户字段名
+        /// </summary>
+        public string MultiTenantFieldName { set; get; } = "TenantId";
 
         /// <summary>
         /// 自动同步实体结构【开发环境必备】，FreeSql不会扫描程序集，只有CRUD时才会生成表。

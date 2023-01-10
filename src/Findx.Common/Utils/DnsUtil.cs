@@ -20,11 +20,11 @@ namespace Findx.Utils
             try
             {
                 if (Common.IsLinux)
-                    return NetworkInterface.GetAllNetworkInterfaces()
-                                           .Select(p => p.GetIPProperties())
-                                           .SelectMany(p => p.UnicastAddresses)
-                                           .Where(p => p.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(p.Address))
-                                           .FirstOrDefault()?.Address.ToString();
+                    return NetworkInterface
+                        .GetAllNetworkInterfaces()
+                        .Select(p => p.GetIPProperties())
+                        .SelectMany(p => p.UnicastAddresses)
+                        .FirstOrDefault(p => p.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(p.Address))?.Address.ToString();
 
                 return Dns.GetHostAddresses(hostName).FirstOrDefault(ip => ip.AddressFamily.Equals(AddressFamily.InterNetwork))?.ToString();
             }
@@ -47,10 +47,7 @@ namespace Findx.Utils
                 if (!string.IsNullOrEmpty(result))
                 {
                     var response = Dns.GetHostEntry(result);
-                    if (response != null)
-                    {
-                        return response.HostName;
-                    }
+                    return response.HostName;
                 }
             }
             catch { }

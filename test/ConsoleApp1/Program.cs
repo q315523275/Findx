@@ -23,31 +23,38 @@ Console.WriteLine("Hello, World!");
 // var version = await ProcessX.StartAsync("dotnet --version").FirstAsync();
 // Console.WriteLine(version);
 
-var network = NetworkInfo.GetNetworkInfos().FirstOrDefault(x => x.Name.Contains("eth0")); //TryGetRealNetworkInfo();
-if (network == null) return;
-var oldRate = network.IpvSpeed();
-var oldRateLength = oldRate.ReceivedLength + oldRate.SendLength;
-var networkSpeed = SizeInfo.Get(network.Speed);
-var v1 = CpuHelper.GetCpuTime();
+// var network = NetworkInfo.TryGetRealNetworkInfo();
+// if (network == null) return;
+// var oldRate = network.IpvSpeed();
+// var oldRateLength = oldRate.ReceivedLength + oldRate.SendLength;
+// var networkSpeed = SizeInfo.Get(network.Speed);
+// var v1 = CpuHelper.GetCpuTime();
+//
+// while (true)
+// {
+//     Thread.Sleep(1000);
+//     
+//     var v2 = CpuHelper.GetCpuTime();
+//     var value = CpuHelper.CalculateCpuLoad(v1, v2);
+//     v1 = v2;
+//
+//     var memory = MemoryHelper.GetMemoryValue();
+//     var newRate = network.IpvSpeed();
+//     var nodeRate = SizeInfo.Get(newRate.ReceivedLength + newRate.SendLength - oldRateLength);
+//     var speed = NetworkInfo.GetSpeed(oldRate, newRate);
+//     oldRate = newRate;
+//     
+//     Console.Clear();
+//     Console.WriteLine($"Cpu:{(int)(value * 100)} %");
+//     Console.WriteLine($"已用内存:{memory.UsedPercentage} %");
+//     Console.WriteLine($"网卡信息:{network.Name},{network.UnicastAddresses.FirstOrDefault()};Ips:{NetworkInfo.GetIpAddresses().Select(x => x.MapToIPv4().ToString()).ToJson()}");
+//     Console.WriteLine($"网卡连接速度:{networkSpeed.Size} {networkSpeed.SizeType}/s");
+//     Console.WriteLine($"监测流量:{nodeRate.Size} {nodeRate.SizeType} 上传速率:{speed.Sent.Size} {speed.Sent.SizeType}/s 下载速率:{speed.Received.Size} {speed.Received.SizeType}/s");
+// }
 
-while (true)
+// 机器占用端口
+foreach (var activeTcpListener in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
 {
-    Thread.Sleep(1000);
-    
-    var v2 = CpuHelper.GetCpuTime();
-    var value = CpuHelper.CalculateCpuLoad(v1, v2);
-    v1 = v2;
-
-    var memory = MemoryHelper.GetMemoryValue();
-    var newRate = network.IpvSpeed();
-    var nodeRate = SizeInfo.Get(newRate.ReceivedLength + newRate.SendLength - oldRateLength);
-    var speed = NetworkInfo.GetSpeed(oldRate, newRate);
-    oldRate = newRate;
-    
-    Console.Clear();
-    Console.WriteLine($"Cpu:{(int)(value * 100)} %");
-    Console.WriteLine($"已用内存:{memory.UsedPercentage} %");
-    Console.WriteLine($"网卡信息:{network.Name},{network.UnicastAddresses.FirstOrDefault()};Ips:{NetworkInfo.GetIpAddresses().Select(x => x.MapToIPv4().ToString()).ToJson()}");
-    Console.WriteLine($"网卡连接速度:{networkSpeed.Size} {networkSpeed.SizeType}/s");
-    Console.WriteLine($"监测流量:{nodeRate.Size} {nodeRate.SizeType} 上传速率:{speed.Sent.Size} {speed.Sent.SizeType}/s 下载速率:{speed.Received.Size} {speed.Received.SizeType}/s");
+    Console.WriteLine($"{activeTcpListener.Address.MapToIPv4().ToString()}:{activeTcpListener.Port}");
 }
+
