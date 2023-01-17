@@ -63,7 +63,7 @@
         /// <summary>
         /// 磁盘根目录位置
         /// </summary>
-        public string? RootPath => DriveInfo.RootDirectory.FullName;
+        public string RootPath => DriveInfo.RootDirectory.FullName;
 
         /// <summary>
         /// 获取本地所有磁盘信息
@@ -99,7 +99,7 @@
         /// </summary>
         private class DiskInfoEquality : IEqualityComparer<DiskInfo>
         {
-            public bool Equals(DiskInfo? x, DiskInfo? y)
+            public bool Equals(DiskInfo x, DiskInfo y)
             {
                 return x?.Id == y?.Id;
             }

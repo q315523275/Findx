@@ -1,17 +1,17 @@
-﻿using Findx.DependencyInjection;
+﻿using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
-using System;
-using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Findx.Extensions
+namespace Findx.WebApiClient
 {
     /// <summary>
     /// HttpClientBuilder弹性构建扩展
@@ -84,18 +84,18 @@ namespace Findx.Extensions
                                   durationOfBreak: BreakTimeSpan,
                                   onBreak: (res, ts) =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-断路器即将熔断{ts.TotalSeconds}秒,原因:{res?.Exception?.Message}");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-断路器即将熔断{ts.TotalSeconds}秒,原因:{res?.Exception?.Message}");
                                   },
                                   onReset: () =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-断路器熔断重置");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-断路器熔断重置");
                                   },
                                   onHalfOpen: () =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-断路器半开启");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-断路器半开启");
                                   });
             });
 
@@ -132,9 +132,9 @@ namespace Findx.Extensions
                                   },
                                   onFallbackAsync: (res) =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
-                                      _logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{fallbackRspResult}");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
+                                      logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{fallbackRspResult}");
                                       return Task.CompletedTask;
                                   });
             });
@@ -167,9 +167,9 @@ namespace Findx.Extensions
                                   },
                                   onFallbackAsync: async (res) =>
                                   {
-                                      var _logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
-                                      _logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
-                                      _logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{await res?.Result?.Content?.ReadAsStringAsync()}");
+                                      var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                      logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
+                                      logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{await res?.Result?.Content?.ReadAsStringAsync()}");
                                   });
             });
 

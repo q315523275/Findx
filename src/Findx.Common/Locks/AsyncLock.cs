@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace Findx;
+namespace Findx.Locks;
 
 /// <summary>
 /// AsyncLock basedOn SemaphoreSlim

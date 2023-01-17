@@ -1,5 +1,3 @@
-namespace Findx.ProcessX;
-
 /// <summary>
 /// 进程执行异常信息
 /// </summary>

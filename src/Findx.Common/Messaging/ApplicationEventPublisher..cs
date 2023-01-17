@@ -105,11 +105,8 @@ namespace Findx.Messaging
                     }
                 }
             }
-            catch (Exception ex)
+            catch(OperationCanceledException)
             {
-                // 通道关闭时，再读取信息会报ChannelClosedException错误
-                // 强制关闭进程时也会触发异常错误
-                // _logger.LogError("应用事件监听时引发异常{Line}{FormatMessage}", Findx.Utils.Common.Line, ex.FormatMessage());
                 // expected
             }
         }

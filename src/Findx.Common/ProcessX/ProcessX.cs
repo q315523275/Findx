@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace Findx.ProcessX;
-
 // https://github.com/Cysharp/ProcessX/blob/master/src/ProcessX/ProcessX.cs
 
 /// <summary>

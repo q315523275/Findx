@@ -57,4 +57,3 @@ foreach (var activeTcpListener in IPGlobalProperties.GetIPGlobalProperties().Get
 {
     Console.WriteLine($"{activeTcpListener.Address.MapToIPv4().ToString()}:{activeTcpListener.Port}");
 }
-

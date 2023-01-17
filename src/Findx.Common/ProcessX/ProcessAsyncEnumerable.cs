@@ -3,8 +3,6 @@ using System.Diagnostics;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace Findx.ProcessX;
-
 /// <summary>
 /// 进程异步可迭代集合
 /// </summary>

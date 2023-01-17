@@ -168,7 +168,7 @@ public class NetworkInfo
     /// 获取当前真实 IP
     /// </summary>
     /// <returns></returns>
-    public static IPAddress? TryGetRealIpv4()
+    public static IPAddress TryGetRealIpv4()
     {
         var address = GetIpAddresses();
         var ipv4 = address.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
@@ -179,7 +179,7 @@ public class NetworkInfo
     /// 获取真实网卡
     /// </summary>
     /// <returns></returns>
-    public static NetworkInfo? TryGetRealNetworkInfo()
+    public static NetworkInfo TryGetRealNetworkInfo()
     {
         var realIp = TryGetRealIpv4();
         if (realIp == null) return default;

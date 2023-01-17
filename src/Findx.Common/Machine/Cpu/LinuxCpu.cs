@@ -4,6 +4,9 @@ using Findx.Extensions;
 
 namespace Findx.Machine.Cpu;
 
+/// <summary>
+/// 
+/// </summary>
 public class LinuxCpu
 {
     /// <summary>

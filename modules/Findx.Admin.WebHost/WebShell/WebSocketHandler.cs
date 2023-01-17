@@ -19,7 +19,7 @@ public class WebSocketHandler: WebSocketHandlerBase
     {
         try
         {
-            var res = await Findx.ProcessX.ProcessX.StartAsync(receivedMessage.Data).ToListAsync();
+            var res = await ProcessX.StartAsync(receivedMessage.Data).ToListAsync();
                 
             await SendMessageAsync(socket, new WebSocketMessage<IEnumerable<string>> { MessageType = MessageType.Text, Data = res }).ConfigureAwait(false);
         }

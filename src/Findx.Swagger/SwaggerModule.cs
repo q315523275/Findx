@@ -100,6 +100,26 @@ namespace Findx.Swagger
                         options.SwaggerEndpoint(endpoint.Url, endpoint.Title);
                     }
                 }
+                // 接口地址复制功能
+                options.HeadContent = @"
+                    <script type='text/javascript'>
+                    window.addEventListener('load', function () {
+                        setTimeout(() => {
+                            let createElement = window.ui.React.createElement
+                            ui.React.createElement = function () {
+                                let array = Array.from(arguments)
+                                if (array.length == 3) {
+                                    if (array[0] == 'span' && !array[1]) {
+                                        array[1] = { contentEditable: true }
+                                    }
+                                }
+
+                                let ele = createElement(...array)
+                                return ele
+                            }
+                        })
+                    })
+                    </script>";
             });
 
             base.UseModule(app);
