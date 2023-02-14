@@ -17,7 +17,7 @@ namespace Findx.ImageSharp
         /// <summary>
         /// 字体缓存
         /// </summary>
-        private readonly static IDictionary<string, FontFamily> FontFamilyDict = new Dictionary<string, FontFamily>();
+        private static readonly IDictionary<string, FontFamily> FontFamilyDict = new Dictionary<string, FontFamily>();
 
         /// <summary>
         /// 获取图片缩放形式
@@ -88,12 +88,13 @@ namespace Findx.ImageSharp
         /// </summary>
         /// <param name="byteData">图片字节数组</param>
         /// <param name="mergeImagePath">合并图片物理路径</param>
-        /// <param name="X">X轴</param>
-        /// <param name="Y">Y轴</param>
+        /// <param name="x">X轴</param>
+        /// <param name="y">Y轴</param>
         /// <param name="width">合并图片宽度,0不处理</param>
         /// <param name="height">合并图片高度,0不处理</param>
+        /// <param name="opacity">图片质量值</param>
         /// <returns></returns>
-        public byte[] PressImage(byte[] byteData, string mergeImagePath, int X, int Y, int width = 0, int height = 0, float opacity = 1.0f)
+        public byte[] PressImage(byte[] byteData, string mergeImagePath, int x, int y, int width = 0, int height = 0, float opacity = 1.0f)
         {
             using (var mergeImage = Image.Load(mergeImagePath))
             {
@@ -102,9 +103,9 @@ namespace Findx.ImageSharp
                     mergeImage.Mutate(m => { m.Resize(new Size(width, height)); });
                 }
 
-                using (var originalImage = Image.Load(byteData, out IImageFormat imageFormat))
+                using (var originalImage = Image.Load(byteData, out var imageFormat))
                 {
-                    originalImage.Mutate(o => { o.DrawImage(mergeImage, new Point(X, Y), opacity); });
+                    originalImage.Mutate(o => { o.DrawImage(mergeImage, new Point(x, y), opacity); });
 
                     using (var ms = new MemoryStream())
                     {
@@ -120,10 +121,10 @@ namespace Findx.ImageSharp
         /// </summary>
         /// <param name="byteData"></param>
         /// <param name="text"></param>
-        /// <param name="X"></param>
-        /// <param name="Y"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
         /// <returns></returns>
-        public byte[] PressText(byte[] byteData, int X, int Y, string text, FontOptions fontOptions)
+        public byte[] PressText(byte[] byteData, int x, int y, string text, FontOptions fontOptions)
         {
             Check.NotNull(fontOptions, nameof(fontOptions));
             Check.NotNullOrWhiteSpace(text, nameof(text));
@@ -150,7 +151,7 @@ namespace Findx.ImageSharp
             using (var originalImage = Image.Load(byteData, out IImageFormat imageFormat))
             {
                 // 绘制文字
-                originalImage.Mutate(o => { o.DrawText(text, font, Rgba32.ParseHex(fontOptions.FontColor ?? "#000000"), new PointF(X, Y)); });
+                originalImage.Mutate(o => { o.DrawText(text, font, Rgba32.ParseHex(fontOptions.FontColor ?? "#000000"), new PointF(x, y)); });
                 using (var ms = new MemoryStream())
                 {
                     originalImage.SaveImage(ms, imageFormat);

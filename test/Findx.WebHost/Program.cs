@@ -4,6 +4,7 @@ using Castle.DynamicProxy;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Castle;
+using Findx.Configuration;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.WebHost.Aspect;

@@ -40,7 +40,7 @@ namespace Findx.Security.Authentication.Jwt
                     ? options.RefreshExpireMinutes
                     : 10080; // 默认7天
             var expires = now.AddMinutes(minutes);
-            var jwt = new JwtSecurityToken(options.Issuer, options.Audience, claims, now, expires, credentials);
+            var jwt = new JwtSecurityToken(options.Issuer, options.Audience, claims, now.AddMinutes(-1), expires, credentials);
             var accessToken = tokenHandler.WriteToken(jwt);
             return (accessToken, expires);
         }

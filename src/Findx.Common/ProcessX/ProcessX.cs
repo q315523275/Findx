@@ -22,7 +22,7 @@ public static class ProcessX
     /// <returns></returns>
     private static bool IsInvalidExitCode(Process process)
     {
-        return !AcceptableExitCodes.Any(x => x == process.ExitCode);
+        return AcceptableExitCodes.All(x => x != process.ExitCode);
     }
 
     /// <summary>

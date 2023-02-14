@@ -50,6 +50,8 @@ namespace Findx.AspNetCore.Mvc.Middlewares
             }
             catch (FindxException ex)
             {
+                await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
+                
                 context.Response.Clear();
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.ContentType = "application/json;charset=utf-8";
@@ -62,15 +64,19 @@ namespace Findx.AspNetCore.Mvc.Middlewares
                 context.Response.ContentType = "application/json;charset=utf-8";
                 await context.Response.WriteAsync(CommonResult.Fail("4001", ex.Message ?? "参数校验不通过").ToJson());
             }
-            catch (BrokenCircuitException)
+            catch (BrokenCircuitException ex)
             {
+                await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
+                
                 context.Response.Clear();
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.ContentType = "application/json;charset=utf-8";
                 await context.Response.WriteAsync(CommonResult.Fail("500", "当前服务不可用,请稍后再试").ToJson());
             }
-            catch (TimeoutRejectedException)
+            catch (TimeoutRejectedException ex)
             {
+                await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
+                
                 context.Response.Clear();
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.ContentType = "application/json;charset=utf-8";
@@ -78,6 +84,8 @@ namespace Findx.AspNetCore.Mvc.Middlewares
             }
             catch (HttpRequestException ex)
             {
+                await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
+                
                 context.Response.Clear();
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.ContentType = "application/json;charset=utf-8";
