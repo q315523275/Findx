@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Swashbuckle.AspNetCore.SwaggerUI;
 
 namespace Findx.Swagger
 {
@@ -9,6 +10,10 @@ namespace Findx.Swagger
         public bool Enabled { get; set; }
 
         public bool AllParametersInCamelCase { get; set; } = false;
+
+        public bool HideSchemas { get; set; } = true;
+
+        public DocExpansion DocExpansion { get; set; } = DocExpansion.None;
     }
 
     public class SwaggerEndpoint

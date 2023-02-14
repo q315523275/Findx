@@ -11,16 +11,35 @@ using System;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Findx.Swagger
 {
+    /// <summary>
+    /// Findx-Swagger文档模块
+    /// </summary>
     [Description("Findx-Swagger文档模块")]
     public class SwaggerModule : AspNetCoreModuleBase
     {
+        /// <summary>
+        /// 等级
+        /// </summary>
         public override ModuleLevel Level => ModuleLevel.Application;
+        
+        /// <summary>
+        /// 排序
+        /// </summary>
         public override int Order => 20;
-        private SwaggerOptions _swaggerOptions = new();
+        
+        /// <summary>
+        /// 配置
+        /// </summary>
+        private readonly SwaggerOptions _swaggerOptions = new();
+        
+        /// <summary>
+        /// 配置服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             // 配置服务
@@ -29,7 +48,8 @@ namespace Findx.Swagger
             if (!_swaggerOptions.Enabled)
                 return services;
 
-            services.AddMvcCore().AddApiExplorer();
+            // services.AddMvcCore().AddApiExplorer();
+            services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {
                 if (_swaggerOptions?.Endpoints?.Count > 0)
@@ -40,27 +60,32 @@ namespace Findx.Swagger
                     }
                     options.DocInclusionPredicate((version, desc) =>
                     {
-                        if (!desc.TryGetMethodInfo(out MethodInfo method))
+                        if (!desc.TryGetMethodInfo(out var method))
                         {
                             return false;
                         }
                         // 文档分组
                         var versions = method.DeclaringType.GetAttributes<ApiExplorerSettingsAttribute>().Select(m => m.GroupName);
+                        // ReSharper disable once PossibleMultipleEnumeration
                         if (version.ToLower() == "v1" && !versions.Any())
                         {
                             return true;
                         }
-                        return versions.Any(m => m.ToString() == version);
+                        // ReSharper disable once PossibleMultipleEnumeration
+                        return versions.Any(m => m != null && m.ToString() == version);
                     });
                 }
                 // 参数描述小驼峰
-                if (_swaggerOptions.AllParametersInCamelCase) options.DescribeAllParametersInCamelCase();
+                if (_swaggerOptions is { AllParametersInCamelCase: true }) 
+                    options.DescribeAllParametersInCamelCase();
+                // 自定义架构编号
                 options.CustomSchemaIds(x => x.FullName);
-                var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml");
-                foreach(var file in files)
+                // 装载注释
+                foreach(var file in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml"))
                 {
                     options.IncludeXmlComments(file, true);
                 }
+                // 权限token
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     In = ParameterLocation.Header,
@@ -80,6 +105,7 @@ namespace Findx.Swagger
                         }, Array.Empty<string>()
                     }
                 });
+                // 加载过滤器
                 options.DocumentFilter<IgnoreApiFilter>();
             });
 
@@ -120,6 +146,9 @@ namespace Findx.Swagger
                         })
                     })
                     </script>";
+                options.DocExpansion(_swaggerOptions.DocExpansion);
+                if (_swaggerOptions.HideSchemas)
+                    options.DefaultModelsExpandDepth(-1);
             });
 
             base.UseModule(app);
