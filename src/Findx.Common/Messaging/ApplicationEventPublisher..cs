@@ -31,7 +31,7 @@ namespace Findx.Messaging
             consumerThreadCount = consumerThreadCount <= 0 ? 1 : consumerThreadCount;
 
             _cts = new CancellationTokenSource();
-
+            
             // StartConsuming(_cancellationToken.Token);
             Task.WhenAll(Enumerable.Range(0, consumerThreadCount)
                    .Select(_ => Task.Factory.StartNew(() => Processing(_channel.Reader, _cts.Token), _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default)));

@@ -176,7 +176,7 @@ namespace Findx.AspNetCore.Mvc
             model.SetEmptyKey(); // 判断设置ID值
 
             await AddBeforeAsync(model, request);
-            var res = repo.Insert(model);
+            var res = await repo.InsertAsync(model);
             await AddAfterAsync(model, request, res);
 
             return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
@@ -208,7 +208,7 @@ namespace Findx.AspNetCore.Mvc
             model.CheckUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
 
             await EditBeforeAsync(model, request);
-            var res = repo.Update(model, ignoreNullColumns: true);
+            var res = await repo.UpdateAsync(model, ignoreNullColumns: true);
             await EditAfterAsync(model, request ,res);
 
             return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.edit.error", "数据更新失败");
@@ -235,7 +235,7 @@ namespace Findx.AspNetCore.Mvc
 
             await DeleteBeforeAsync(request);
 
-            var total = request.Count(id => repo.Delete(key: id) > 0);
+            var total = await repo.DeleteAsync(x => request.Contains(x.Id));
 
             await DeleteAfterAsync(request, total);
 

@@ -22,6 +22,9 @@
 		<ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
 		<ProjectReference Include="..\..\src\Findx.WebApiClient\Findx.WebApiClient.csproj" />
 		<ProjectReference Include="..\..\src\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
+		<ProjectReference Include="..\..\src\Findx.Configuration\Findx.Configuration.csproj">
+		  <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+		</ProjectReference>
 	</ItemGroup>
 
 	<ItemGroup>

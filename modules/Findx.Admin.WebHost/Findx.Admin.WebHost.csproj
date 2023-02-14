@@ -16,9 +16,12 @@
     <None Remove="storage\" />
     <None Remove="Findx.NLog" />
     <None Remove="Auditing\" />
+    <None Update="Dockerfile">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Findx.DinkToPdf" Version="1.5.8" />
+    <PackageReference Include="Findx.DinkToPdf" Version="1.8.5" />
     <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.665" />
   </ItemGroup>
   <ItemGroup>

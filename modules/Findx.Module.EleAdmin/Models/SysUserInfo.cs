@@ -80,7 +80,7 @@ namespace Findx.Module.EleAdmin.Models
 		/// 机构id
 		/// </summary>
 		public Guid? OrgId { get; set; }
-		
+
 		/// <summary>
 		/// 机构名称
 		/// </summary>

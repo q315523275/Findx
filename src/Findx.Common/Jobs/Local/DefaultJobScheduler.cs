@@ -116,7 +116,7 @@ namespace Findx.Jobs.Local
 
             if (!attribute.Interval.IsNullOrWhiteSpace())
             {
-                var span = Findx.Utils.Time.ToTimeSpan(attribute.Interval);
+                var span = Utils.Time.ToTimeSpan(attribute.Interval);
                 jobDetail.IsSingle = false;
                 jobDetail.FixedDelay = span.TotalSeconds;
                 jobDetail.NextRunTime = DateTimeOffset.UtcNow.Add(span).LocalDateTime;
@@ -141,7 +141,7 @@ namespace Findx.Jobs.Local
         public async Task PauseJob(long id)
         {
             var jobInfo = await _storage.FindAsync(id);
-            if (jobInfo != null && jobInfo.IsEnable)
+            if (jobInfo is { IsEnable: true })
             {
                 jobInfo.IsEnable = false;
                 await _storage.UpdateAsync(jobInfo);
@@ -156,7 +156,7 @@ namespace Findx.Jobs.Local
         public async Task ResumeJob(long id)
         {
             var jobInfo = await _storage.FindAsync(id);
-            if (jobInfo != null && !jobInfo.IsEnable)
+            if (jobInfo is { IsEnable: false })
             {
                 jobInfo.IsEnable = true;
                 await _storage.UpdateAsync(jobInfo);
@@ -186,7 +186,7 @@ namespace Findx.Jobs.Local
                 CreateTime = DateTimeOffset.UtcNow.LocalDateTime,
                 IsEnable = true,
                 NextRunTime = DateTimeOffset.UtcNow.LocalDateTime,
-                Id = Findx.Utils.SnowflakeId.Default().NextId(),
+                Id = Utils.SnowflakeId.Default().NextId(),
                 JsonParam = _serializer.Serialize(parameter ?? new Dictionary<string, string>()),
                 Name = jobType.Name,
                 FullName = jobType.FullName,

@@ -168,8 +168,11 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             var appRepo = GetRequiredService<IRepository<SysAppInfo>>();
 
             var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, selectExpression: x => new RoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }).DistinctBy(x => x.Id);
+            // ReSharper disable once PossibleMultipleEnumeration
             var roleIds = roles.Select(x => x.Id);
+            // ReSharper disable once PossibleMultipleEnumeration
             var menus = roleIds.Any() ?
+                               // ReSharper disable once PossibleMultipleEnumeration
                                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, selectExpression: x => new MenuDto { MenuId = x.MenuId })
                                : new List<MenuDto>();
 
@@ -177,6 +180,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             var appList = appRepo.Select(x => appCodes.Contains(x.Code), x => new AppDto());
 
             var result = userInfo.MapTo<UserAuthDto>();
+            // ReSharper disable once PossibleMultipleEnumeration
             result.Roles = roles;
             result.Authorities = menus.DistinctBy(x => x.MenuId).OrderBy(x => x.Sort);
             result.Apps = appList;

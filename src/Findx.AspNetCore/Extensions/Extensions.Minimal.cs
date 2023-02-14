@@ -90,7 +90,7 @@ namespace Findx.AspNetCore.Extensions
             });
 
             watch.Stop();
-            logger.LogInformation(0, "框架初始化完成，耗时：{ElapsedTotalMilliseconds}毫秒\\r\\n", watch.Elapsed.TotalMilliseconds);
+            logger.LogInformation(0, "框架初始化完成，耗时：{ElapsedTotalMilliseconds}毫秒\r\n", watch.Elapsed.TotalMilliseconds);
 
             return app;
         }

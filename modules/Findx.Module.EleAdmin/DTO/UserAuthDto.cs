@@ -68,6 +68,11 @@ namespace Findx.Module.EleAdmin.DTO
 		/// 机构id
 		/// </summary>
 		public Guid? OrgId { get; set; }
+		
+		/// <summary>
+		/// 机构名称
+		/// </summary>
+		public string OrgName { get; set; }
 
 		/// <summary>
         /// 角色集合

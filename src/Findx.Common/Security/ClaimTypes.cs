@@ -129,5 +129,24 @@
         public static string RoleNames { get; set; } = "role_names";
 
         #endregion
+        
+        #region Org(组织机构)
+
+        /// <summary>
+        /// 组织标识。默认："org_id"
+        /// </summary>
+        public static string OrgId { get; set; } = "org_id";
+
+        /// <summary>
+        /// 组织编码。默认："org_code"
+        /// </summary>
+        public static string OrgCode { get; set; } = "org_code";
+
+        /// <summary>
+        /// 组织名称。默认："org_name"
+        /// </summary>
+        public static string OrgName { get; set; } = "org_name";
+
+        #endregion
     }
 }
