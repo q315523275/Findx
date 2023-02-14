@@ -93,5 +93,10 @@ namespace Findx.FreeSql
         /// 数据库类型
         /// </summary>
         public DataType DbType { set; get; }
+
+        /// <summary>
+        /// 数据源共享
+        /// </summary>
+        public List<string> DataSourceSharing { set; get; } = new List<string>();
     }
 }

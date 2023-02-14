@@ -106,6 +106,14 @@ namespace Findx.FreeSql
                 };
                 // 注入
                 freeSqlClient.TryAdd(item.Key, freeSql);
+                // 数据源共享
+                if (item.Value.DataSourceSharing != null && item.Value.DataSourceSharing.Count > 0)
+                {
+                    foreach (var sourceKey in item.Value.DataSourceSharing)
+                    {
+                        freeSqlClient.TryAdd(sourceKey, freeSql);
+                    }
+                }
                 if (item.Key == FreeSqlOptions.Primary)
                     services.AddSingleton(freeSql);
             }
