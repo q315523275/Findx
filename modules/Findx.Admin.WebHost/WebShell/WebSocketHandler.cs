@@ -6,7 +6,7 @@ namespace Findx.Admin.WebHost.WebShell;
 
 public class WebSocketHandler: WebSocketHandlerBase
 {
-    public WebSocketHandler(WebSocketConnectionManager webSocketConnectionManager, IWebSocketSerializer serializer) : base(webSocketConnectionManager, serializer)
+    public WebSocketHandler(IWebSocketClientManager clientManager, IWebSocketSerializer serializer) : base(clientManager, serializer)
     {
     }
     /// <summary>
@@ -15,13 +15,14 @@ public class WebSocketHandler: WebSocketHandlerBase
     /// <param name="socket"></param>
     /// <param name="result"></param>
     /// <param name="receivedMessage"></param>
-    public override async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, WebSocketMessage receivedMessage)
+    public override async Task ReceiveAsync(WebSocketClient socket, WebSocketReceiveResult result, string receivedMessage)
     {
         try
         {
-            var res = await ProcessX.StartAsync(receivedMessage.Data).ToListAsync();
-                
-            await SendMessageAsync(socket, new WebSocketMessage<IEnumerable<string>> { MessageType = MessageType.Text, Data = res }).ConfigureAwait(false);
+            await foreach(var item in ProcessX.StartAsync(receivedMessage))
+            {
+                await SendMessageAsync(socket, new WebSocketMessage<string> { MessageType = MessageType.Text, Data = item }).ConfigureAwait(false);
+            }
         }
         catch (TargetParameterCountException)
         {

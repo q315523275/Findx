@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Threading;
@@ -12,9 +13,9 @@ namespace Findx.WebSocketCore
     public abstract class WebSocketHandlerBase
     {
         /// <summary>
-        /// 管理器
+        /// 连接管理器
         /// </summary>
-        private WebSocketConnectionManager WebSocketConnectionManager { get; }
+        protected IWebSocketClientManager ClientManager { get; }
 
         /// <summary>
         /// 序列化工具
@@ -24,96 +25,70 @@ namespace Findx.WebSocketCore
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="webSocketConnectionManager"></param>
+        /// <param name="clientManager"></param>
         /// <param name="serializer"></param>
-        protected WebSocketHandlerBase(WebSocketConnectionManager webSocketConnectionManager, IWebSocketSerializer serializer)
+        protected WebSocketHandlerBase(IWebSocketClientManager clientManager, IWebSocketSerializer serializer)
         {
-            WebSocketConnectionManager = webSocketConnectionManager;
+            ClientManager = clientManager;
             _serializer = serializer;
         }
 
         /// <summary>
         /// 连接成功
         /// </summary>
-        /// <param name="socket"></param>
-        public virtual async Task OnConnected(WebSocket socket)
+        /// <param name="client"></param>
+        public virtual async Task OnConnected(WebSocketClient client)
         {
-            WebSocketConnectionManager.AddSocket(socket);
+            ClientManager.AddClient(client);
 
-            await SendMessageAsync(socket, new WebSocketMessage<string>
-            {
-                MessageType = MessageType.ConnectionEvent,
-                Data = WebSocketConnectionManager.GetConnectionId(socket)
-            }).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 连接成功
-        /// </summary>
-        /// <param name="socketId"></param>
-        /// <param name="socket"></param>
-        public virtual async Task OnConnected(string socketId, WebSocket socket)
-        {
-            WebSocketConnectionManager.AddSocket(socketId, socket);
-
-            await SendMessageAsync(socket, new WebSocketMessage<string>
-            {
-                MessageType = MessageType.ConnectionEvent,
-                Data = WebSocketConnectionManager.GetConnectionId(socket)
-            }).ConfigureAwait(false);
+            await SendMessageAsync(client, new WebSocketMessage<string> { MessageType = MessageType.ConnectionEvent, Data = $"{client.Id},{client.Name},{client.RemoteIp},{client.ServerIp}" }).ConfigureAwait(false);
         }
 
         /// <summary>
         /// 关闭连接
         /// </summary>
-        /// <param name="socket"></param>
-        public virtual async Task OnDisconnected(WebSocket socket)
+        /// <param name="client"></param>
+        public virtual async Task OnDisconnected(WebSocketClient client)
         {
-            var socketId = WebSocketConnectionManager.GetConnectionId(socket);
-            if (!string.IsNullOrWhiteSpace(socketId))
-                await WebSocketConnectionManager.RemoveSocket(socketId).ConfigureAwait(false);
+            await ClientManager.RemoveClientAsync(client).ConfigureAwait(false);
         }
 
         /// <summary>
         /// 发送消息
         /// </summary>
-        /// <param name="socket"></param>
+        /// <param name="client"></param>
         /// <param name="message"></param>
-        public async Task SendMessageAsync<T>(WebSocket socket, WebSocketMessage<T> message)
+        public async Task SendMessageAsync<T>(WebSocketClient client, WebSocketMessage<T> message)
         {
-            if (socket.State != WebSocketState.Open)
+            if (client.Client.State != WebSocketState.Open)
                 return;
-            
-            var body = _serializer.Serialize(message);
-            
+
             try
             {
-                await socket.SendAsync(buffer: new ArraySegment<byte>(array: body,
-                                                                      offset: 0,
-                                                                      count: body.Length),
-                                       messageType: WebSocketMessageType.Text,
-                                       endOfMessage: true,
-                                       cancellationToken: CancellationToken.None).ConfigureAwait(false);
+                var content = _serializer.Serialize(message);
+                var body = new ArraySegment<byte>(array: content, offset: 0, count: content.Length);
+                
+                await client.Client.SendAsync(buffer: body, messageType: WebSocketMessageType.Text, endOfMessage: true, cancellationToken: CancellationToken.None).ConfigureAwait(false);
             }
             catch (WebSocketException e)
             {
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
                 {
-                    await OnDisconnected(socket);
+                    await OnDisconnected(client);
                 }
             }
         }
-
+        
         /// <summary>
         /// 发送消息
         /// </summary>
-        /// <param name="socketId"></param>
+        /// <param name="id"></param>
         /// <param name="message"></param>
-        public async Task SendMessageAsync<T>(string socketId, WebSocketMessage<T> message)
+        public async Task SendMessageAsync<T>(string id, WebSocketMessage<T> message)
         {
-            var socket = WebSocketConnectionManager.GetSocketById(socketId);
-            if (socket != null)
-                await SendMessageAsync(socket, message).ConfigureAwait(false);
+            var client = ClientManager.GetClient(id);
+            if (client != null)
+                await SendMessageAsync(client, message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -122,18 +97,22 @@ namespace Findx.WebSocketCore
         /// <param name="message"></param>
         public async Task SendMessageToAllAsync<T>(WebSocketMessage<T> message)
         {
-            foreach (var pair in WebSocketConnectionManager.GetAll())
+            var allClients = ClientManager.GetAllClients();
+            if (allClients != null)
             {
-                try
+                foreach (var client in allClients)
                 {
-                    if (pair.Value.State == WebSocketState.Open)
-                        await SendMessageAsync(pair.Value, message).ConfigureAwait(false);
-                }
-                catch (WebSocketException e)
-                {
-                    if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+                    try
                     {
-                        await OnDisconnected(pair.Value);
+                        if (client.Client?.State == WebSocketState.Open)
+                            await SendMessageAsync(client, message).ConfigureAwait(false);
+                    }
+                    catch (WebSocketException e)
+                    {
+                        if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+                        {
+                            await OnDisconnected(client);
+                        }
                     }
                 }
             }
@@ -146,10 +125,10 @@ namespace Findx.WebSocketCore
         /// <param name="message"></param>
         public async Task SendMessageToGroupAsync<T>(string groupId, WebSocketMessage<T> message)
         {
-            var sockets = WebSocketConnectionManager.GetAllFromGroup(groupId);
-            if (sockets != null)
+            var clients = ClientManager.GetAllClientsFromGroup(groupId);
+            if (clients != null)
             {
-                foreach (var socket in sockets)
+                foreach (var socket in clients)
                 {
                     await SendMessageAsync(socket, message);
                 }
@@ -161,16 +140,16 @@ namespace Findx.WebSocketCore
         /// </summary>
         /// <param name="groupId"></param>
         /// <param name="message"></param>
-        /// <param name="except">不发送id</param>
-        public async Task SendMessageToGroupAsync<T>(string groupId, WebSocketMessage<T> message, string except)
+        /// <param name="excepts">不发送id</param>
+        public async Task SendMessageToGroupAsync<T>(string groupId, WebSocketMessage<T> message, params string[] excepts)
         {
-            var sockets = WebSocketConnectionManager.GetAllFromGroup(groupId);
-            if (sockets != null)
+            var clients = ClientManager.GetAllClientsFromGroup(groupId);
+            if (clients != null)
             {
-                foreach (var id in sockets)
+                foreach (var client in clients)
                 {
-                    if (id != except)
-                        await SendMessageAsync(id, message);
+                    if (!excepts.Contains(client))
+                        await SendMessageAsync(client, message);
                 }
             }
         }
@@ -178,23 +157,23 @@ namespace Findx.WebSocketCore
         /// <summary>
         /// 接收消息
         /// </summary>
-        /// <param name="socket"></param>
+        /// <param name="client"></param>
         /// <param name="result"></param>
         /// <param name="receivedMessage"></param>
-        public virtual async Task ReceiveAsync(WebSocket socket, WebSocketReceiveResult result, WebSocketMessage receivedMessage)
+        public virtual async Task ReceiveAsync(WebSocketClient client, WebSocketReceiveResult result, string receivedMessage)
         {
             try
             {
-                await SendMessageAsync(socket, new WebSocketMessage<string> { MessageType = MessageType.Text, Data = $"receive content:{receivedMessage.Data}" }).ConfigureAwait(false);
+                await SendMessageAsync(client, new WebSocketMessage<string> { MessageType = MessageType.Text, Data = $"{client.Id},{client.Name},{client.RemoteIp},{client.ServerIp}:{receivedMessage}" }).ConfigureAwait(false);
             }
             catch (TargetParameterCountException)
             {
-                await SendMessageAsync(socket, new WebSocketMessage<string> { MessageType = MessageType.Error, Data = $"does not take parameters!" }).ConfigureAwait(false);
+                await SendMessageAsync(client, new WebSocketMessage<string> { MessageType = MessageType.Error, Data = $"does not take parameters!" }).ConfigureAwait(false);
             }
 
             catch (ArgumentException)
             {
-                await SendMessageAsync(socket, new WebSocketMessage<string> { MessageType = MessageType.Error, Data = $"takes different arguments!" }).ConfigureAwait(false);
+                await SendMessageAsync(client, new WebSocketMessage<string> { MessageType = MessageType.Error, Data = $"takes different arguments!" }).ConfigureAwait(false);
             }
         }
     }

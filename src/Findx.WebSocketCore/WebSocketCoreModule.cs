@@ -30,8 +30,9 @@ namespace Findx.WebSocketCore
         /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<WebSocketConnectionManager>();
+            services.AddSingleton<IWebSocketClientManager, WebSocketClientManager>();
             services.AddSingleton<IWebSocketSerializer, WebSocketSerializer>();
+            services.AddSingleton<IWebSocketAuthorization, NullWebSocketAuthorization>();
             
             var handlerTypeFinder = services.GetOrAddTypeFinder<IWebSocketHandlerTypeFinder>(assemblyFinder => new WebSocketHandlerTypeFinder(assemblyFinder));
             var moduleTypes = handlerTypeFinder.FindAll();
