@@ -1,8 +1,6 @@
 ﻿using Findx.Extensions;
-using System;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
+
 namespace Findx.Utils
 {
     /// <summary>
@@ -78,7 +76,7 @@ namespace Findx.Utils
         /// <summary>
         /// DES密钥,24位字符串
         /// </summary>
-        public static string DesKey = "3pk0y1rx";
+        private const string DesKey = "3pk0y1rx";
 
         /// <summary>
         /// DES加密
@@ -191,10 +189,12 @@ namespace Findx.Utils
         #endregion
 
         #region AES加密
+
         /// <summary>
         /// AES密钥
         /// </summary>
-        private static string _aeskey = "0123456789abcdef";
+        private const string Aeskey = "0123456789abcdef";
+
         /// <summary>
         /// Aes加密
         /// </summary>
@@ -202,7 +202,7 @@ namespace Findx.Utils
         /// <returns></returns>
         public static string AesEncrypt(string content)
         {
-            return AesEncrypt(content, _aeskey);
+            return AesEncrypt(content, Aeskey);
         }
         /// <summary>
         /// Aes加密
@@ -212,14 +212,12 @@ namespace Findx.Utils
         /// <returns></returns>
         public static string AesEncrypt(string content, string key)
         {
-            byte[] toEncryptArray = Encoding.UTF8.GetBytes(content);
+            var toEncryptArray = Encoding.UTF8.GetBytes(content);
             var des = CreateSymmetricAlgorithm(key);
 
-            using (var cTransform = des.CreateEncryptor())
-            {
-                byte[] resultArray = GetTransformFinalBlock(cTransform, toEncryptArray);
-                return Convert.ToBase64String(resultArray);
-            }
+            using var cTransform = des.CreateEncryptor();
+            var resultArray = GetTransformFinalBlock(cTransform, toEncryptArray);
+            return Convert.ToBase64String(resultArray);
         }
         /// <summary>
         /// Aes解密
@@ -228,7 +226,7 @@ namespace Findx.Utils
         /// <returns></returns>
         public static string AesDecrypt(string content)
         {
-            return AesDecrypt(content, _aeskey);
+            return AesDecrypt(content, Aeskey);
         }
         /// <summary>
         /// Aes解密
@@ -238,14 +236,12 @@ namespace Findx.Utils
         /// <returns></returns>
         public static string AesDecrypt(string content, string key)
         {
-            byte[] toEncryptArray = System.Convert.FromBase64String(content);
+            var toEncryptArray = Convert.FromBase64String(content);
             var des = CreateSymmetricAlgorithm(key);
 
-            using (var cTransform = des.CreateDecryptor())
-            {
-                byte[] resultArray = GetTransformFinalBlock(cTransform, toEncryptArray);
-                return Encoding.Default.GetString(resultArray);
-            }
+            using var cTransform = des.CreateDecryptor();
+            var resultArray = GetTransformFinalBlock(cTransform, toEncryptArray);
+            return Encoding.Default.GetString(resultArray);
         }
         /// <summary>
         /// 创建SymmetricAlgorithm
@@ -254,7 +250,7 @@ namespace Findx.Utils
         /// <returns></returns>
         private static SymmetricAlgorithm CreateSymmetricAlgorithm(string aesKey)
         {
-            byte[] keyArray = Encoding.UTF8.GetBytes(aesKey);
+            var keyArray = Encoding.UTF8.GetBytes(aesKey);
             SymmetricAlgorithm des = Aes.Create();
             des.Key = keyArray;
             des.Mode = CipherMode.ECB;
@@ -271,10 +267,10 @@ namespace Findx.Utils
         /// <summary>
         /// SHA256加密
         /// </summary>
-        public static string SHA256(string str)
+        public static string Sha256(string str)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(str);
-            SHA256Managed managed = new SHA256Managed();
+            var bytes = Encoding.UTF8.GetBytes(str);
+            var managed = new SHA256Managed();
             return ToHexString(managed.ComputeHash(bytes));
         }
         #endregion
@@ -315,9 +311,9 @@ namespace Findx.Utils
             {
                 if (!string.IsNullOrEmpty(hexString))
                 {
-                    int length = hexString.Length / 2;
+                    var length = hexString.Length / 2;
                     data = new byte[length];
-                    for (int i = 0; i < length; i++)
+                    for (var i = 0; i < length; i++)
                     {
                         data[i] = Convert.ToByte(hexString.Substring(2 * i, 2), 16);
                     }
@@ -325,8 +321,9 @@ namespace Findx.Utils
             }
             catch
             {
-
+                // ignored
             }
+
             return data;
         }
         #endregion

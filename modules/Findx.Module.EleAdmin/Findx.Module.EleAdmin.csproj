@@ -6,6 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <PackageVersion>1.0.6</PackageVersion>
+    <UserSecretsId>d8300641-e05e-4c99-a4a7-81271fcd8d0f</UserSecretsId>
   </PropertyGroup>
 
 

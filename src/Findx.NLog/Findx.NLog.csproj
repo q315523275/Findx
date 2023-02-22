@@ -6,11 +6,11 @@
 		<Company>Findx</Company>
 		<Version>1.5.1</Version>
 		<Description>NLog日志组件包</Description>
-		<PackageVersion>1.8.3</PackageVersion>
+		<PackageVersion>1.8.4-beta1</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="NLog" Version="5.0.1" />
+		<PackageReference Include="NLog" Version="5.1.2" />
 	</ItemGroup>
 
 	<ItemGroup>

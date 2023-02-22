@@ -70,10 +70,10 @@ namespace Findx.NLog
                         _log.Warn(message);
                         break;
                     case Microsoft.Extensions.Logging.LogLevel.Error:
-                        _log.Error(message, exception);
+                        _log.Error(exception, message);
                         break;
                     case Microsoft.Extensions.Logging.LogLevel.Critical:
-                        _log.Fatal(message, exception);
+                        _log.Fatal(exception, message);
                         break;
                     case Microsoft.Extensions.Logging.LogLevel.None:
                         break;

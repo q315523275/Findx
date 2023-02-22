@@ -24,7 +24,7 @@
         /// <returns></returns>
         public T GetObject<T>(string key) where T : new()
         {
-            return _configuration.GetSection("key").Get<T>();
+            return _configuration.GetSection(key).Get<T>();
         }
 
         /// <summary>

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-
-namespace Findx.Extensions
+﻿namespace Findx.Extensions
 {
     /// <summary>
     /// 系统扩展 - 字典
@@ -30,7 +26,7 @@ namespace Findx.Extensions
         /// <returns></returns>
         public static TValue GetOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key)
         {
-            return dictionary.TryGetValue(key, out TValue obj) ? obj : default;
+            return dictionary.TryGetValue(key, out var obj) ? obj : default;
         }
 
         /// <summary>
@@ -83,7 +79,7 @@ namespace Findx.Extensions
         /// <returns></returns>
         public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> factory)
         {
-            if (dictionary.TryGetValue(key, out TValue obj))
+            if (dictionary.TryGetValue(key, out var obj))
             {
                 return obj;
             }

@@ -36,7 +36,7 @@ namespace Findx.Data
         /// </summary>
         public static IUnitOfWork GetEntityUnitOfWork(this ScopedDictionary dict, Type entityType)
         {
-            string key = $"UnitOfWork_EntityType_{entityType.FullName}";
+            var key = $"UnitOfWork_EntityType_{entityType.FullName}";
             return dict.TryGetValue<IUnitOfWork>(key, out var uow) ? uow : default;
         }
 
@@ -53,7 +53,7 @@ namespace Findx.Data
         /// </summary>
         public static void SetEntityUnitOfWork(this ScopedDictionary dict, Type entityType, IUnitOfWork unitOfWork)
         {
-            string key = $"UnitOfWork_EntityType_{entityType.FullName}";
+            var key = $"UnitOfWork_EntityType_{entityType.FullName}";
             dict.TryAdd(key, unitOfWork);
         }
     }

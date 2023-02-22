@@ -24,8 +24,9 @@ namespace Findx.Data
         /// </summary>
         /// <param name="dbPrimary"></param>
         /// <param name="enableTransaction">是否启用事务</param>
+        /// <param name="beginTransaction">是否开启事物</param>
         /// <returns></returns>
-        public IUnitOfWork GetConnUnitOfWork(bool enableTransaction = false, string dbPrimary = default)
+        public IUnitOfWork GetConnUnitOfWork(bool enableTransaction = false, bool beginTransaction = false, string dbPrimary = default)
         {
             var unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary ?? "system");
             if (unitOfWork != null)
@@ -33,6 +34,11 @@ namespace Findx.Data
                 if (enableTransaction)
                 {
                     unitOfWork.EnableTransaction();
+                }
+
+                if (beginTransaction)
+                {
+                    unitOfWork.BeginOrUseTransaction();
                 }
                 return unitOfWork;
             }
@@ -43,7 +49,10 @@ namespace Findx.Data
             {
                 unitOfWork.EnableTransaction();
             }
-
+            if (beginTransaction)
+            {
+                unitOfWork.BeginOrUseTransaction();
+            }
             return unitOfWork;
         }
 
@@ -51,8 +60,9 @@ namespace Findx.Data
         /// 根据实体获取工作单元
         /// </summary>
         /// <param name="enableTransaction">是否启用事务</param>
+        /// <param name="beginTransaction">是否启用事务</param>
         /// <returns></returns>
-        public IUnitOfWork GetEntityUnitOfWork<TEntity>(bool enableTransaction = false)
+        public IUnitOfWork GetEntityUnitOfWork<TEntity>(bool enableTransaction = false, bool beginTransaction = false)
         {
             var entityType = typeof(TEntity);
             var extensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(entityType, () => entityType.GetAttribute<EntityExtensionAttribute>());
@@ -65,6 +75,10 @@ namespace Findx.Data
                 {
                     unitOfWork.EnableTransaction();
                 }
+                if (beginTransaction)
+                {
+                    unitOfWork.BeginOrUseTransaction();
+                }
                 return unitOfWork;
             }
 
@@ -73,6 +87,10 @@ namespace Findx.Data
             if (enableTransaction)
             {
                 unitOfWork.EnableTransaction();
+            }
+            if (beginTransaction)
+            {
+                unitOfWork.BeginOrUseTransaction();
             }
 
             return unitOfWork;

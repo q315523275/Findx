@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-using System.Collections.Generic;
-namespace Findx.Reflection
+﻿namespace Findx.Reflection
 {
     /// <summary>
     /// 方法信息查询器

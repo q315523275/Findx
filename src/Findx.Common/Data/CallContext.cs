@@ -10,14 +10,14 @@ public static class CallContext<T>
     /// <summary>
     /// 设置对象
     /// </summary>
-    /// <param name="name"></param>
+    /// <param name="key"></param>
     /// <param name="data"></param>
-    public static void SetData(string name, T data) => state.GetOrAdd(name, _ => new AsyncLocal<T>()).Value = data;
+    public static void SetData(string key, T data) => state.GetOrAdd(key, _ => new AsyncLocal<T>()).Value = data;
 
     /// <summary>
     /// 获取对象
     /// </summary>
-    /// <param name="name"></param>
+    /// <param name="key"></param>
     /// <returns></returns>
-    public static T GetData(string name) => state.TryGetValue(name, out var data) ? data.Value : default(T);
+    public static T GetData(string key) => state.TryGetValue(key, out var data) ? data.Value : default(T);
 }

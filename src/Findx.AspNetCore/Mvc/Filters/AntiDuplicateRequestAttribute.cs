@@ -48,11 +48,11 @@ namespace Findx.AspNetCore.Mvc.Filters
         {
             Check.NotNull(context, nameof(context));
 
-            var rlock = GetLock(context);
+            var redLock = GetLock(context);
             var key = GetLockKey(context);
-            var expir = Time.ToTimeSpan(Interval);
+            var expire = Time.ToTimeSpan(Interval);
 
-            var getLock = await rlock.AcquireAsync(key, timeUntilExpires: expir, renew: true);
+            var getLock = await redLock.AcquireAsync(key, timeUntilExpires: expire, renew: true);
             if (getLock.IsLocked())
             {
                 try
@@ -76,12 +76,10 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        private ILock GetLock(ActionExecutingContext context)
+        private ILock GetLock(ActionContext context)
         {
             var provider = context.HttpContext.RequestServices.GetRequiredService<ILockProvider>();
-            if (IsDistributed)
-                return provider.Get(Locks.LockType.Distributed);
-            return provider.Get(Locks.LockType.Local);
+            return provider.Get(IsDistributed ? Locks.LockType.Distributed : Locks.LockType.Local);
         }
 
         /// <summary>
@@ -89,7 +87,7 @@ namespace Findx.AspNetCore.Mvc.Filters
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        private string GetLockKey(ActionExecutingContext context)
+        private string GetLockKey(ActionContext context)
         {
             var currentUser = context.HttpContext.RequestServices.GetCurrentUser();
 

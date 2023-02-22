@@ -21,7 +21,19 @@ namespace Findx.Extensions
         /// <returns></returns>
         public static Task PublishEventAsync(this IApplicationContext context, IApplicationEvent applicationEvent, CancellationToken cancellationToken = default)
         {
-            return ServiceLocator.GetService<IApplicationEventPublisher>()?.PublishAsync(applicationEvent, cancellationToken);
+            return ServiceLocator.GetService<IApplicationEventPublisher>().PublishAsync(applicationEvent, cancellationToken);
+        }
+        
+        /// <summary>
+        /// 推送异步执行事件
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="applicationEvent"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public static bool PublishEvent(this IApplicationContext context, IApplicationEvent applicationEvent, CancellationToken cancellationToken = default)
+        {
+            return ServiceLocator.GetService<IApplicationEventPublisher>().Publish(applicationEvent);
         }
 
         /// <summary>

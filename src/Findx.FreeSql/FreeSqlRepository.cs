@@ -10,6 +10,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Principal;
+using Findx.Domain;
 using Findx.Security;
 
 namespace Findx.FreeSql
@@ -18,6 +19,7 @@ namespace Findx.FreeSql
     {
         private readonly IPrincipal _principal;
         private readonly IFreeSql _fsql;
+        private readonly IApplicationContext _applicationContext;
         private readonly IOptionsMonitor<FreeSqlOptions> _options;
         private readonly bool _softDeletable;
 
@@ -35,38 +37,30 @@ namespace Findx.FreeSql
             var clients = serviceProvider.GetRequiredService<FreeSqlClient>();
             _options = serviceProvider.GetRequiredService<IOptionsMonitor<FreeSqlOptions>>();
             _principal = serviceProvider.GetService<IPrincipal>();
+            _applicationContext = serviceProvider.GetService<IApplicationContext>();
 
+            // 实体实现接口集合
+            var baseOns = SingletonDictionary<Type, (bool softDeletable, bool customSharding)>.Instance.GetOrAdd(_entityType, () => (softDeletable: _entityType.IsBaseOn(typeof(ISoftDeletable)), customSharding: false));
+            _softDeletable = baseOns.softDeletable;
+            
             // 实体属性
             var extensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(_entityType, () => _entityType.GetAttribute<EntityExtensionAttribute>());
+            
             // 数据库连接标识
             var dataSource = extensionAttribute?.DataSource ?? Options.Primary ?? "";
+            
             // Orm实例
             clients.TryGetValue(dataSource, out _fsql);
+            
             // Orm实例检查
             if (Options.Strict)
                 Check.NotNull(_fsql, nameof(_fsql));
+            
             // 默认数据库连接标识
             if (_fsql == null)
             {
                 clients.TryGetValue(Options.Primary, out _fsql);
                 Check.NotNull(_fsql, nameof(_fsql));
-            }
-            // 实体实现接口集合
-            var baseOns = SingletonDictionary<Type, (bool softDeletable, bool customSharding)>.Instance.GetOrAdd(_entityType, () =>
-            {
-                // 是否标记实体逻辑删除
-                var softDeletable = _entityType.IsBaseOn(typeof(ISoftDeletable));
-                // 是否标记自定义分表函数
-                var customSharding = _entityType.IsBaseOn(typeof(ITableSharding));
-                return (softDeletable, customSharding);
-            });
-            // 是否逻辑删除
-            _softDeletable = baseOns.softDeletable;
-            // 固定时间规则分表计算
-            if (extensionAttribute?.TableShardingType == ShardingType.Time)
-            {
-                AsTableValueInternal = (oldName) => $"{oldName}_{DateTime.Now.ToString(extensionAttribute.TableShardingExt)}";
-                AsTableSelectValueInternal = (type, oldName) => $"{oldName}_{DateTime.Now.ToString(extensionAttribute.TableShardingExt)}";
             }
         }
 
@@ -84,25 +78,37 @@ namespace Findx.FreeSql
         public int Insert(TEntity entity)
         {
             entity = CheckInsert(entity)[0];
-            return _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+            var result = _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+            CheckDomain(entity);
+            return result;
         }
 
         public int Insert(IEnumerable<TEntity> entities)
         {
             entities = CheckInsert(entities);
-            return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+            // ReSharper disable once PossibleMultipleEnumeration
+            var result = _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+            // ReSharper disable once PossibleMultipleEnumeration
+            CheckDomain(entities);
+            return result;
         }
 
         public Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             entity = CheckInsert(entity)[0];
-            return _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            var result = _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            CheckDomain(entity);
+            return result;
         }
 
         public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
             entities = CheckInsert(entities);
-            return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            // ReSharper disable once PossibleMultipleEnumeration
+            var result = _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            // ReSharper disable once PossibleMultipleEnumeration
+            CheckDomain(entities);
+            return result;
         }
         #endregion
 
@@ -182,7 +188,11 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+            var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+            
+            CheckDomain(entity);
+            
+            return result;
         }
 
         public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
@@ -202,13 +212,18 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            
+            CheckDomain(entity);
+            
+            return result;
         }
 
         public int Update(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
         {
             entities = CheckUpdate(entities);
 
+            // ReSharper disable once PossibleMultipleEnumeration
             var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entities);
 
             if (updateColumns != null)
@@ -217,13 +232,19 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+            var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+            
+            // ReSharper disable once PossibleMultipleEnumeration
+            CheckDomain(entities);
+            
+            return result;
         }
 
         public Task<int> UpdateAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
         {
             entities = CheckUpdate(entities);
 
+            // ReSharper disable once PossibleMultipleEnumeration
             var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetSource(entities);
 
             if (updateColumns != null)
@@ -232,7 +253,12 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+
+            // ReSharper disable once PossibleMultipleEnumeration
+            CheckDomain(entities);
+            
+            return result;
         }
 
         public int UpdateColumns(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression)
@@ -658,6 +684,11 @@ namespace Findx.FreeSql
         #endregion
 
         #region 私有方法
+        /// <summary>
+        /// 检查插入信息
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns></returns>
         private TEntity[] CheckInsert(params TEntity[] entities)
         {
             if (!Options.CheckInsert)
@@ -693,6 +724,11 @@ namespace Findx.FreeSql
             return entities;
         }
 
+        /// <summary>
+        /// 检查更新信息
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns></returns>
         private TEntity[] CheckUpdate(params TEntity[] entities)
         {
             if (!Options.CheckUpdate)
@@ -727,6 +763,11 @@ namespace Findx.FreeSql
             return entities;
         }
 
+        /// <summary>
+        /// 检查插入信息
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns></returns>
         private IEnumerable<TEntity> CheckInsert(IEnumerable<TEntity> entities)
         {
             if (!Options.CheckInsert)
@@ -735,6 +776,7 @@ namespace Findx.FreeSql
             }
 
             var userIdTypeName = _principal?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.UserIdTypeName);
+            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var entity in entities)
             {
                 entity.CheckCreatedTime();
@@ -757,9 +799,15 @@ namespace Findx.FreeSql
                 }
             }
 
+            // ReSharper disable once PossibleMultipleEnumeration
             return entities;
         }
 
+        /// <summary>
+        /// 检查更新信息
+        /// </summary>
+        /// <param name="entities"></param>
+        /// <returns></returns>
         private IEnumerable<TEntity> CheckUpdate(IEnumerable<TEntity> entities)
         {
             if (!Options.CheckUpdate)
@@ -768,6 +816,7 @@ namespace Findx.FreeSql
             }
 
             var userIdTypeName = _principal?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.UserIdTypeName);
+            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var entity in entities)
             {
                 entity.CheckUpdateTime();
@@ -790,7 +839,52 @@ namespace Findx.FreeSql
                 }
             }
 
+            // ReSharper disable once PossibleMultipleEnumeration
             return entities;
+        }
+
+        /// <summary>
+        /// 检查领域信息
+        /// </summary>
+        /// <param name="entities"></param>
+        private void CheckDomain(params TEntity[] entities)
+        {
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            var domains = entities.OfType<AggregateRootBase>();
+            
+            if (UnitOfWork != null)
+            {
+                (UnitOfWork as FreeSqlUnitOfWork)?.AddDomain(domains);
+            }
+            else
+            {
+                foreach (var domainEvent in domains.SelectMany(x => x.DomainEvents))
+                {
+                    _applicationContext.PublishEvent(domainEvent);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// 检查领域信息
+        /// </summary>
+        /// <param name="entities"></param>
+        private void CheckDomain(IEnumerable<TEntity> entities)
+        {
+            // ReSharper disable once SuspiciousTypeConversion.Global
+            var domains = entities.OfType<AggregateRootBase>();
+            
+            if (UnitOfWork != null)
+            {
+                (UnitOfWork as FreeSqlUnitOfWork)?.AddDomain(domains);
+            }
+            else
+            {
+                foreach (var domainEvent in domains.SelectMany(x => x.DomainEvents))
+                {
+                    _applicationContext.PublishEvent(domainEvent);
+                }
+            }
         }
 
         #endregion

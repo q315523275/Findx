@@ -1,12 +1,6 @@
 ﻿using Findx.Extensions;
 using Findx.Finders;
 using Microsoft.Extensions.DependencyModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Xml.Linq;
 
 namespace Findx.Reflection
 {
@@ -19,6 +13,11 @@ namespace Findx.Reflection
         /// 是否过滤系统程序集
         /// </summary>
         private readonly bool _filterSystemAssembly;
+        
+        /// <summary>
+        /// 待过滤类型
+        /// </summary>
+        private readonly string[] _filter = { "System", "Microsoft", "netstandard", "dotnet", "Window", "mscorlib", "Newtonsoft", "Remotion.Linq" };
 
         /// <summary>
         /// Ctor
@@ -48,24 +47,12 @@ namespace Findx.Reflection
         /// <returns></returns>
         protected override IEnumerable<Assembly> FindAllItems()
         {
-            // 待过滤类型
-            var filter = new string[]{
-                "System",
-                "Microsoft",
-                "netstandard",
-                "dotnet",
-                "Window",
-                "mscorlib",
-                "Newtonsoft",
-                "Remotion.Linq"
-            };
-
             // Core 中获取依赖对象的方式
             var context = DependencyContext.Default;
             if (context != null)
             {
                 var lt = context.GetDefaultAssemblyNames()
-                                .Where(x => x.Name != null && !filter.Any(m => x.Name.StartsWith(m, StringComparison.OrdinalIgnoreCase)))
+                                .Where(x => x.Name != null && !_filter.Any(m => x.Name.StartsWith(m, StringComparison.OrdinalIgnoreCase)))
                                 .Select(Assembly.Load);
                 return lt;
             }
@@ -75,7 +62,7 @@ namespace Findx.Reflection
             var files = Directory.GetFiles(pathBase, "*.dll", SearchOption.TopDirectoryOnly)
                                  .Concat(Directory.GetFiles(pathBase, ".exe", SearchOption.TopDirectoryOnly));
 
-            return files.WhereIf(_filterSystemAssembly, name => !filter.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase))).Distinct().Select(Assembly.LoadFrom);
+            return files.WhereIf(_filterSystemAssembly, name => !_filter.Any(n => name.StartsWith(n, StringComparison.OrdinalIgnoreCase))).Distinct().Select(Assembly.LoadFrom);
         }
     }
 }

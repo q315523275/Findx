@@ -7,6 +7,8 @@ using Findx.Builders;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Security;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -26,8 +28,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <returns></returns>
         [HttpGet("modules")]
         [Description("模块列表")]
-        public CommonResult Modules([FromServices] IFindxBuilder builder,
-            [FromServices] IKeyGenerator<long> keyGenerator)
+        public CommonResult Modules([FromServices] IFindxBuilder builder, [FromServices] IKeyGenerator<long> keyGenerator)
         {
             var res = builder.Modules.Select(m => new
             {
@@ -37,7 +38,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 m.Level,
                 m.Order,
                 m.IsEnabled,
-                Id = Findx.Utils.SnowflakeId.Default().NextId()
+                Id = keyGenerator.Create()
             });
             return CommonResult.Success(res);
         }
@@ -112,6 +113,23 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         public CommonResult Functions([FromServices] IFunctionStore<MvcFunction> store)
         {
             return CommonResult.Success(store.GetFromDatabase());
+        }
+        
+        
+        [HttpGet("test")]
+        [AllowAnonymous]
+        public CommonResult Test([FromServices] ILogger<FindxController> logger)
+        {
+            try
+            {
+                throw new Exception("这是一条来自测试的异常");
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "findx");
+            }
+
+            return CommonResult.Success();
         }
     }
 }

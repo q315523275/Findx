@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Extensions;
@@ -54,7 +55,9 @@ namespace Findx.FreeSql
             foreach (var item in FreeSqlOptions.DataSource)
             {
                 // FreeSQL构建开始
-                var freeSql = new FreeSqlBuilder().UseConnectionString(item.Value.DbType, item.Value.ConnectionString).UseAutoSyncStructure(FreeSqlOptions.UseAutoSyncStructure).Build();
+                var freeSql = new FreeSqlBuilder().UseConnectionString(item.Value.DbType, item.Value.ConnectionString)
+                                                  .UseAutoSyncStructure(FreeSqlOptions.UseAutoSyncStructure)
+                                                  .Build();
                 // 开启逻辑删除
                 if (FreeSqlOptions.SoftDeletable)
                 {
@@ -114,6 +117,7 @@ namespace Findx.FreeSql
                         freeSqlClient.TryAdd(sourceKey, freeSql);
                     }
                 }
+                // 注册单独主IFreeSql
                 if (item.Key == FreeSqlOptions.Primary)
                     services.AddSingleton(freeSql);
             }

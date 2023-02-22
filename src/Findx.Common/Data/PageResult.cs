@@ -10,22 +10,27 @@
         /// 当前分页数
         /// </summary>
         public int PageNo { get; }
+        
         /// <summary>
         /// 当前分页记录数
         /// </summary>
         public int PageSize { get; }
+        
         /// <summary>
         /// 总记录数
         /// </summary>
         public int TotalRows { get; }
+        
         /// <summary>
         /// 分页数据
         /// </summary>
         public TList Rows { get; }
+        
         /// <summary>
         /// Ctor
         /// </summary>
         public PageResult() { }
+        
         /// <summary>
         /// Ctor
         /// </summary>

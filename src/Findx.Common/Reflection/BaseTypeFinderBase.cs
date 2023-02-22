@@ -1,9 +1,5 @@
 ﻿using Findx.Extensions;
 using Findx.Finders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 
 namespace Findx.Reflection
 {

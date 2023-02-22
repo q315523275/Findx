@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-
-namespace Findx.Reflection
+﻿namespace Findx.Reflection
 {
     /// <summary>
     /// 目录程序集查找器

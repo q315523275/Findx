@@ -3,6 +3,7 @@ using Findx.Caching;
 using Findx.Caching.InMemory;
 using Findx.Data;
 using Findx.DependencyInjection;
+using Findx.Domain;
 using Findx.Email;
 using Findx.ExceptionHandling;
 using Findx.Extensions;
@@ -62,6 +63,10 @@ namespace Findx
 
             // 工作单元
             services.AddScoped<IUnitOfWorkManager, NullUnitOfWorkManager>();
+            
+            // Entity、Domain
+            services.TryAddSingleton<IEntityFinder, EntityFinder>();
+            services.TryAddSingleton<IDomainEventsDispatcher, DomainEventsDispatcher>();
 
             // 邮件
             services.AddSingleton<IEmailSender, DefaultEmailSender>();
@@ -104,17 +109,17 @@ namespace Findx
 
             // 有序Guid
             services.Configure<SequentialGuidOptions>(configuration.GetSection("Findx:SequentialGuid"));
-            services.AddSingleton<IGuidGenerator, Findx.Guids.SequentialGuidGenerator>();
+            services.AddSingleton<IGuidGenerator, Guids.SequentialGuidGenerator>();
 
             // 主键生成器
             services.AddSingleton<IKeyGenerator<long>, SnowflakeIdGenerator>();
-            services.AddSingleton<IKeyGenerator<Guid>, Findx.Data.SequentialGuidGenerator>();
+            services.AddSingleton<IKeyGenerator<Guid>, Data.SequentialGuidGenerator>();
             
             // 功能权限
             services.AddSingleton<IFunctionAuthorization, FunctionAuthorization>();
             
             // 审计配置
-            services.Configure<Findx.Data.AuditingOptions>(configuration.GetSection("Findx:Auditing"));
+            services.Configure<AuditingOptions>(configuration.GetSection("Findx:Auditing"));
 
             return services;
         }

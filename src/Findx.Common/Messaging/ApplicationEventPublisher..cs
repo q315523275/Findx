@@ -53,6 +53,20 @@ namespace Findx.Messaging
         /// <param name="applicationEvent"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
+        public bool Publish<TEvent>(TEvent applicationEvent) where TEvent : IApplicationEvent
+        {
+            Check.NotNull(applicationEvent, nameof(applicationEvent));
+
+            return _channel.Writer.TryWrite(applicationEvent);
+        }
+        
+        /// <summary>
+        /// 推送消息
+        /// </summary>
+        /// <typeparam name="TEvent"></typeparam>
+        /// <param name="applicationEvent"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default) where TEvent : IApplicationEvent
         {
             Check.NotNull(applicationEvent, nameof(applicationEvent));
