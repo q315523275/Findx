@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Findx.Utils
 {
     /// <summary>
     /// 正则操作
     /// </summary>
-    public static partial class RegexUtil
+    public static class RegexUtil
     {
         /// <summary>
         /// 获取匹配值集合

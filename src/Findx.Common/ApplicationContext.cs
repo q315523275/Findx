@@ -28,7 +28,10 @@ namespace Findx
                 Port = GlobalListener.GetAvailablePort(5000);
             }
             Version = configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
-            Uris = configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string> { $"http://*:{Port}" };
+            Uris = configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string>
+                {
+                    $"htt" + $"p://*:{Port}"
+                };
             InstanceIp = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());
             InternalIp = InstanceIp;
 
@@ -85,7 +88,6 @@ namespace Findx
         /// <summary>
         /// 停止应用
         /// </summary>
-        /// <exception cref="NotImplementedException"></exception>
         public void StopApplication()
         {
             _hostApplicationLifetime.StopApplication();

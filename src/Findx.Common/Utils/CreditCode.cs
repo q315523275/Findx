@@ -17,15 +17,16 @@ namespace Findx.Utils
     /// </summary>
     public static class CreditCode
     {
-        private static readonly int[] WEIGHT = { 1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28 };
-        private static readonly char[] BASE_CODE_ARRAY = "0123456789ABCDEFGHJKLMNPQRTUWXY".ToCharArray();
-        private static readonly IDictionary<char, int> CODE_INDEX_MAP = new Dictionary<char, int>();
+        private static readonly int[] Weight = { 1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28 };
+        // ReSharper disable once StringLiteralTypo
+        private static readonly char[] BaseCodeArray = "0123456789ABCDEFGHJKLMNPQRTUWXY".ToCharArray();
+        private static readonly IDictionary<char, int> CodeIndexMap = new Dictionary<char, int>();
 
         static CreditCode()
         {
-            for (int i = 0; i < BASE_CODE_ARRAY.Length; i++)
+            for (int i = 0; i < BaseCodeArray.Length; i++)
             {
-                CODE_INDEX_MAP[BASE_CODE_ARRAY[i]] = i;
+                CodeIndexMap[BaseCodeArray[i]] = i;
             }
         }
 
@@ -61,7 +62,7 @@ namespace Findx.Utils
                 return false;
             }
 
-            return creditCode[17] == BASE_CODE_ARRAY[parityBit];
+            return creditCode[17] == BaseCodeArray[parityBit];
         }
 
         /// <summary>
@@ -74,23 +75,23 @@ namespace Findx.Utils
 
             for (int i = 0; i < 2; i++)
             {
-                int num = RandomUtil.RandomInt(BASE_CODE_ARRAY.Length - 1);
-                buf.Append(char.ToUpper(BASE_CODE_ARRAY[num]));
+                int num = RandomUtil.RandomInt(BaseCodeArray.Length - 1);
+                buf.Append(char.ToUpper(BaseCodeArray[num]));
             }
             for (int i = 2; i < 8; i++)
             {
                 int num = RandomUtil.RandomInt(10);
-                buf.Append(BASE_CODE_ARRAY[num]);
+                buf.Append(BaseCodeArray[num]);
             }
             for (int i = 8; i < 17; i++)
             {
-                int num = RandomUtil.RandomInt(BASE_CODE_ARRAY.Length - 1);
-                buf.Append(BASE_CODE_ARRAY[num]);
+                int num = RandomUtil.RandomInt(BaseCodeArray.Length - 1);
+                buf.Append(BaseCodeArray[num]);
             }
 
             string code = buf.ToString();
 
-            return code + BASE_CODE_ARRAY[GetParityBit(code)];
+            return code + BaseCodeArray[GetParityBit(code)];
         }
 
 
@@ -100,12 +101,12 @@ namespace Findx.Utils
             int codeIndex;
             for (int i = 0; i < 17; i++)
             {
-                if (!CODE_INDEX_MAP.ContainsKey(creditCode[i]))
+                if (!CodeIndexMap.ContainsKey(creditCode[i]))
                 {
                     return -1;
                 }
-                codeIndex = CODE_INDEX_MAP[creditCode[i]];
-                sum += codeIndex * WEIGHT[i];
+                codeIndex = CodeIndexMap[creditCode[i]];
+                sum += codeIndex * Weight[i];
             }
             int result = 31 - sum % 31;
             return result == 31 ? 0 : result;

@@ -1,17 +1,17 @@
-﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.EventBus
 {
     /// <summary>
-    /// 事件发送者
+    /// 事件调度器
     /// </summary>
     public interface IEventDispatcher
     {
-        void EnqueueToPublish(EventMediumMessage message);
-
-        Task EnqueueToPublishAsync(EventMediumMessage message, CancellationToken cancellationToken = default);
-
-        Task EnqueueToExecuteAsync(EventMediumMessage message, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// 入队发布
+        /// </summary>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        ValueTask EnqueueToPublish(Message message);
     }
 }

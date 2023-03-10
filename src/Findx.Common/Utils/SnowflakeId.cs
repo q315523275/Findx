@@ -7,7 +7,7 @@ namespace Findx.Utils
     /// 雪花算法生成ID
     /// https://github.com/dotnetcore/cap/blob/master/src/DotNetCore.CAP/Internal/SnowflakeId.cs
     /// </summary>
-    public class SnowflakeId
+    public sealed class SnowflakeId
     {
         /// <summary>
         /// Start time 2010-11-04 09:42:54
@@ -101,7 +101,7 @@ namespace Findx.Utils
         /// ID
         /// </summary>
         /// <returns></returns>
-        public virtual long NextId()
+        public long NextId()
         {
             lock (_lock)
             {

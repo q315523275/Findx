@@ -14,11 +14,6 @@ public class DomainEventsDispatcher: IDomainEventsDispatcher
     private readonly IDomainEventsAccessor _domainEventsProvider;
 
     /// <summary>
-    /// 消息调度器
-    /// </summary>
-    private readonly IMessageDispatcher _messageDispatcher;
-
-    /// <summary>
     /// 应用事件推送者
     /// </summary>
     private readonly IApplicationEventPublisher _applicationEventPublisher;
@@ -27,12 +22,10 @@ public class DomainEventsDispatcher: IDomainEventsDispatcher
     /// Ctor
     /// </summary>
     /// <param name="domainEventsProvider"></param>
-    /// <param name="messageDispatcher"></param>
     /// <param name="applicationEventPublisher"></param>
-    public DomainEventsDispatcher(IDomainEventsAccessor domainEventsProvider, IMessageDispatcher messageDispatcher, IApplicationEventPublisher applicationEventPublisher)
+    public DomainEventsDispatcher(IDomainEventsAccessor domainEventsProvider, IApplicationEventPublisher applicationEventPublisher)
     {
         _domainEventsProvider = domainEventsProvider;
-        _messageDispatcher = messageDispatcher;
         _applicationEventPublisher = applicationEventPublisher;
     }
 
@@ -41,7 +34,6 @@ public class DomainEventsDispatcher: IDomainEventsDispatcher
     /// 调度领域事件
     /// </summary>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public async Task DispatchEventsAsync()
     {
         var domainEvents = _domainEventsProvider.GetAllDomainEvents();

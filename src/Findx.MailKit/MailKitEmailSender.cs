@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Threading;
 using System.Threading.Tasks;
+using MimeKit;
+using MimeKit.Utils;
 
 namespace Findx.MailKit
 {
@@ -25,7 +27,9 @@ namespace Findx.MailKit
 
         protected override async Task SendEmailAsync(System.Net.Mail.MailMessage mail, CancellationToken token = default)
         {
-            var message = mail.ToMimeMessage();
+            // var message = mail.ToMimeMessage();
+            var message = MimeMessage.CreateFromMailMessage(mail);
+            message.MessageId = MimeUtils.GenerateMessageId();
             
             using var client = new SmtpClient();
             client.MessageSent += (s, e) =>

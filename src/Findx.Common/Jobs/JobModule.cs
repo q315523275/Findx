@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using Findx.Extensions;
-using Findx.Jobs.Local;
+using Findx.Jobs.Internal;
 using Findx.Messaging;
 using Findx.Modularity;
 

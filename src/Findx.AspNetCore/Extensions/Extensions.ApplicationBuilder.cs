@@ -60,7 +60,7 @@ namespace Findx.AspNetCore.Extensions
         {
             #region Findx图标
             var defaultColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Green;
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.WriteLine(@"
     #########################################################
     ##       ___________.__            .___                ##

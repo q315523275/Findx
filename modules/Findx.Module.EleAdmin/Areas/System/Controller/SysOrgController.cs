@@ -5,6 +5,7 @@ using Findx.Extensions;
 using Findx.Linq;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
+using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

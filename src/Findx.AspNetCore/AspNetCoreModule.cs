@@ -38,7 +38,7 @@ namespace Findx.AspNetCore
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services.AddMemoryCache();
-
+            
             services.AddHttpContextAccessor();
             services.TryAddTransient<IPrincipal>(provider => provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
             services.TryAddSingleton<ICurrentUser, CurrentUser>();

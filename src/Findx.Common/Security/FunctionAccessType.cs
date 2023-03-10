@@ -24,7 +24,19 @@ namespace Findx.Security
         /// 指定角色可访问
         /// </summary>
         [Description("角色")]
-        RoleLimit = 2
+        RoleLimit = 2,
+        
+        /// <summary>
+        /// 指定权限可访问
+        /// </summary>
+        [Description("权限资源")]
+        AuthorityLimit = 3,
+        
+        /// <summary>
+        /// 指定角色权限可访问
+        /// </summary>
+        [Description("角色及权限资源")]
+        RoleAuthorityLimit = 4
     }
 }
 

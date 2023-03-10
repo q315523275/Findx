@@ -1,30 +1,25 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
+using Findx.Threading;
 
 namespace Findx.EventBus
 {
     /// <summary>
-    /// 事件推送器
+    /// 事件发布器
     /// </summary>
     public interface IEventPublisher
     {
         /// <summary>
-        /// 事务
+        /// 事件工作单元
         /// </summary>
-        AsyncLocal<IEventTransaction> Transaction { get; }
-
+        IValueAccessor<IEventUnitOfWork> UnitOfWork { get; }
+        
         /// <summary>
-        /// 推送事件
-        /// </summary>
-        /// <param name="eventData"></param>
-        void Publish(IntegrationEvent eventData);
-
-        /// <summary>
-        /// 推送事件
+        /// 异步发布事件
         /// </summary>
         /// <param name="eventData"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task PublishAsync(IntegrationEvent eventData, CancellationToken cancellationToken = default);
+        Task PublishAsync(IEventData eventData, CancellationToken cancellationToken = default);
     }
 }

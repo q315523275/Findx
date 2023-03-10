@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Pipelines
 {
@@ -13,7 +12,7 @@ namespace Findx.Pipelines
     /// 泛型管道接口
     /// </summary>
     /// <typeparam name="TContext"></typeparam>
-    public interface IPipelineBehavior<TContext>
+    public interface IPipelineBehavior<in TContext>
     {
         /// <summary>
         /// 管道调用执行

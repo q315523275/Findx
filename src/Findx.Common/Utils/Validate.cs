@@ -9,7 +9,7 @@ namespace Findx.Utils
     /// <summary>
     /// 验证操作
     /// </summary>
-    public class Validate
+    public static class Validate
     {
         /// <summary>
         /// 模型校验

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Findx
+﻿namespace Findx
 {
     /// <summary>
     /// 值Null检测
@@ -21,7 +19,7 @@ namespace Findx
         /// <summary>
         /// 对象值
         /// </summary>
-        public T Value { get; set; }
+        public T Value { get; }
 
         /// <summary>
         /// 判断是否为Null

@@ -5,7 +5,7 @@ namespace Findx.Utils
     /// <summary>
     /// 重试辅助操作
     /// </summary>
-    public static partial class Retry
+    public static class Retry
     {
         /// <summary>
         /// 执行同步方法

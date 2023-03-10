@@ -6,11 +6,11 @@ namespace Findx;
 /// <summary>
 /// 监听器
 /// </summary>
-public class GlobalListener
+public static class GlobalListener
 {
-    private static readonly IPGlobalProperties global = IPGlobalProperties.GetIPGlobalProperties();
-    private static readonly HashSet<int> tcpListenPorts = GetListenPorts(global.GetActiveTcpListeners);
-    private static readonly HashSet<int> udpListenPorts = GetListenPorts(global.GetActiveUdpListeners);
+    private static readonly IPGlobalProperties Global = IPGlobalProperties.GetIPGlobalProperties();
+    private static readonly HashSet<int> TcpListenPorts = GetListenPorts(Global.GetActiveTcpListeners);
+    private static readonly HashSet<int> UdpListenPorts = GetListenPorts(Global.GetActiveUdpListeners);
 
     /// <summary>
     /// ssh端口
@@ -49,6 +49,7 @@ public class GlobalListener
         }
         catch (Exception)
         {
+            // ignored
         }
 
         return hashSet;
@@ -61,7 +62,7 @@ public class GlobalListener
     /// <returns></returns>
     public static bool CanListenTcp(int port)
     {
-        return tcpListenPorts.Contains(port) == false;
+        return TcpListenPorts.Contains(port) == false;
     }
 
     /// <summary>
@@ -71,7 +72,7 @@ public class GlobalListener
     /// <returns></returns>
     public static bool CanListenUdp(int port)
     {
-        return udpListenPorts.Contains(port) == false;
+        return UdpListenPorts.Contains(port) == false;
     }
 
     /// <summary>
@@ -125,7 +126,7 @@ public class GlobalListener
     {
         for (var port = minPort; port < IPEndPoint.MaxPort; port++)
         {
-            if (canFunc(port) == true)
+            if (canFunc(port))
             {
                 return port;
             }

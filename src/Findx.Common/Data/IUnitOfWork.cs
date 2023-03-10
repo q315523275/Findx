@@ -10,6 +10,11 @@ namespace Findx.Data
     public interface IUnitOfWork: IDisposable
     {
         /// <summary>
+        /// 工作单元编号
+        /// </summary>
+        Guid Id { get; }
+        
+        /// <summary>
         /// 服务提供起
         /// </summary>
         IServiceProvider ServiceProvider { get; }
@@ -72,5 +77,11 @@ namespace Findx.Data
         /// </summary>
         /// <returns></returns>
         Task RollbackAsync(CancellationToken cancellationToken = default);
+        
+        /// <summary>
+        /// 添加事物完成事件
+        /// </summary>
+        /// <param name="handler"></param>
+        void OnCompleted(Func<IUnitOfWork, Task> handler);
     }
 }

@@ -3,7 +3,7 @@
 namespace Findx.Messaging
 {
     /// <summary>
-    /// 消息调度器
+    /// 消息调度器(同步执行)
     /// </summary>
     public interface IMessageDispatcher
     {
@@ -15,9 +15,9 @@ namespace Findx.Messaging
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task<TResponse> SendAsync<TResponse>(IMessageRequest<TResponse> message, CancellationToken cancellationToken = default);
-
+        
         /// <summary>
-        /// 推送事件
+        /// 推送异步执行事件
         /// </summary>
         /// <typeparam name="TEvent"></typeparam>
         /// <param name="applicationEvent"></param>

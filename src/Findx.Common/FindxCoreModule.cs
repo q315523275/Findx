@@ -65,8 +65,8 @@ namespace Findx
             services.AddScoped<IUnitOfWorkManager, NullUnitOfWorkManager>();
             
             // Entity、Domain
-            services.TryAddSingleton<IEntityFinder, EntityFinder>();
-            services.TryAddSingleton<IDomainEventsDispatcher, DomainEventsDispatcher>();
+            // services.TryAddSingleton<IEntityFinder, EntityFinder>();
+            // services.TryAddSingleton<IDomainEventsDispatcher, DomainEventsDispatcher>();
 
             // 邮件
             services.AddSingleton<IEmailSender, DefaultEmailSender>();
@@ -116,7 +116,7 @@ namespace Findx
             services.AddSingleton<IKeyGenerator<Guid>, Data.SequentialGuidGenerator>();
             
             // 功能权限
-            services.AddSingleton<IFunctionAuthorization, FunctionAuthorization>();
+            services.AddScoped<IFunctionAuthorization, FunctionAuthorization>();
             
             // 审计配置
             services.Configure<AuditingOptions>(configuration.GetSection("Findx:Auditing"));

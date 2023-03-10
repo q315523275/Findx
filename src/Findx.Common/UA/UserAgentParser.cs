@@ -1,11 +1,10 @@
-﻿using System;
-using Findx.Extensions;
+﻿using Findx.Extensions;
 namespace Findx.UA
 {
 	/// <summary>
 	/// User-Agent解析器
 	/// </summary>
-	public class UserAgentParser
+	public static class UserAgentParser
 	{
 		/// <summary>
 		/// 解析User-Agent
@@ -31,7 +30,7 @@ namespace Findx.UA
 			userAgent.EngineVersion =engine.GetVersion(userAgentString);
 
 			// 操作系统
-			OS os = ParseOS(userAgentString);
+			Os os = ParseOs(userAgentString);
 			userAgent.OS = os;
 			userAgent.OsVersion = os.GetVersion(userAgentString);
 
@@ -82,16 +81,16 @@ namespace Findx.UA
 		/// </summary>
 		/// <param name="userAgentString"></param>
 		/// <returns></returns>
-		private static OS ParseOS(string userAgentString)
+		private static Os ParseOs(string userAgentString)
 		{
-			foreach (OS os in OS.Oses)
+			foreach (Os os in Os.Oses)
 			{
 				if (os.IsMatch(userAgentString))
 				{
 					return os;
 				}
 			}
-			return OS.Unknown;
+			return Os.Unknown;
 		}
 
 		/// <summary>

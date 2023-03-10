@@ -1,5 +1,4 @@
-﻿using System;
-namespace Findx.UA
+﻿namespace Findx.UA
 {
 	/// <summary>
 	/// User-Agent信息对象
@@ -29,7 +28,7 @@ namespace Findx.UA
 		/// <summary>
 		/// 系统类型
 		/// </summary>
-		public OS OS { set; get; }
+		public Os OS { set; get; }
 
 		/// <summary>
 		/// 系统版本

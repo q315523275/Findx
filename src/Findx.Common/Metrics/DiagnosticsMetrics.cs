@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Diagnostics.Metrics;
+﻿using System.Diagnostics.Metrics;
 
 namespace Findx.Metrics
 {
@@ -12,7 +10,11 @@ namespace Findx.Metrics
         private readonly ConcurrentDictionary<string, Counter<long>> _counters = new();
         private readonly ConcurrentDictionary<string, GaugeInfo> _gauges = new();
         private readonly ConcurrentDictionary<string, Histogram<double>> _timers = new();
-        private readonly Meter _meter;
+
+        private static readonly AssemblyName AssemblyName = typeof(DiagnosticsMetrics).Assembly.GetName();
+        private static readonly string MeterName = AssemblyName.Name;
+
+        private readonly Meter MeterInstance;
         private readonly string _prefix;
 
         /// <summary>
@@ -21,7 +23,7 @@ namespace Findx.Metrics
         public DiagnosticsMetrics()
         {
             _prefix = "";
-            _meter = new Meter("Findx.Metrics", this.GetType().Assembly.GetName().Version.ToString());
+            MeterInstance = new Meter(MeterName, AssemblyName.Version.ToString());
         }
 
         /// <summary>
@@ -31,7 +33,7 @@ namespace Findx.Metrics
         /// <param name="value"></param>
         public void Counter(string name, long value = 1)
         {
-            var counter = _counters.GetOrAdd(_prefix + name, _meter.CreateCounter<long>(name));
+            var counter = _counters.GetOrAdd(_prefix + name, MeterInstance.CreateCounter<long>(name));
             counter.Add(value);
         }
 
@@ -42,7 +44,7 @@ namespace Findx.Metrics
         /// <param name="value"></param>
         public void Gauge(string name, double value)
         {
-            var gauge = _gauges.GetOrAdd(_prefix + name, new GaugeInfo(_meter, name));
+            var gauge = _gauges.GetOrAdd(_prefix + name, new GaugeInfo(MeterInstance, name));
             gauge.Value = value;
         }
 
@@ -53,7 +55,7 @@ namespace Findx.Metrics
         /// <param name="milliseconds"></param>
         public void Timer(string name, long milliseconds)
         {
-            var timer = _timers.GetOrAdd(_prefix + name, _meter.CreateHistogram<double>(name, "ms"));
+            var timer = _timers.GetOrAdd(_prefix + name, MeterInstance.CreateHistogram<double>(name, "ms"));
             timer.Record(milliseconds);
         }
 
@@ -62,7 +64,7 @@ namespace Findx.Metrics
         /// </summary>
         public void Dispose()
         {
-            _meter.Dispose();
+            MeterInstance.Dispose();
         }
 
         /// <summary>

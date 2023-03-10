@@ -1,4 +1,4 @@
-﻿namespace Findx.EventBus
+namespace Findx.EventBus
 {
     /// <summary>
     /// 事件订阅器
@@ -6,42 +6,19 @@
     public interface IEventSubscriber
     {
         /// <summary>
-        /// 事件订阅
+        /// 订阅指定事件与事件处理
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TH"></typeparam>
-        void Subscribe<T, TH>()
-            where T : IntegrationEvent
-            where TH : IEventHandler<T>;
-
+        /// <typeparam name="TEventData">事件数据</typeparam>
+        /// <typeparam name="TEventHandler">事件处理器</typeparam>
+        void Subscribe<TEventData, TEventHandler>() where TEventData : IEventData where TEventHandler : IEventHandler, new();
+        
         /// <summary>
-        /// 动态事件订阅
+        /// 取消订阅指定事件数据的事件处理委托
         /// </summary>
-        /// <typeparam name="TH"></typeparam>
-        /// <param name="eventName"></param>
-        void SubscribeDynamic<TH>(string eventName)
-            where TH : IDynamicEventHandler;
-
-        /// <summary>
-        /// 取消订阅事件
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <typeparam name="TH"></typeparam>
-        void Unsubscribe<T, TH>()
-            where TH : IEventHandler<T>
-            where T : IntegrationEvent;
-
-        /// <summary>
-        /// 取消动态订阅事件
-        /// </summary>
-        /// <typeparam name="TH"></typeparam>
-        /// <param name="eventName"></param>
-        void UnsubscribeDynamic<TH>(string eventName)
-            where TH : IDynamicEventHandler;
-
-        /// <summary>
-        /// 开始事件消费处理
-        /// </summary>
-        void StartConsuming();
+        /// <typeparam name="TEventData">事件数据类型</typeparam>
+        /// <typeparam name="TEventHandler">事件处理器</typeparam>
+        void Unsubscribe<TEventData, TEventHandler>() where TEventData : IEventData where TEventHandler : IEventHandler, new();
+        
+        
     }
 }

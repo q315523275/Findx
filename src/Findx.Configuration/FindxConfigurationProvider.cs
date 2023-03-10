@@ -105,7 +105,7 @@ namespace Findx.Configuration
             var queryPath = $"/configs/{_options.AppId}/{_options.Group}/{_options.Namespace}";
             var queryString = $"version={version}";
             var signString = $"/configs/{_options.AppId}/{_options.AppSercet}/{_options.Group}/{_options.Namespace}/{version}";
-            var pathAndQuery = $"{queryPath}?{queryString}&sign=" + Encrypt.SHA256(signString);
+            var pathAndQuery = $"{queryPath}?{queryString}&sign=" + Encrypt.Sha256(signString);
             return $"{_options.Endpoint.TrimEnd('/')}{pathAndQuery}";
         }
 

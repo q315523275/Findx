@@ -9,7 +9,7 @@
         /// 错误成员列表
         /// </summary>
         public List<ErrorMember> ErrorMembers { get; set; }
-        
+
         /// <summary>
         /// 是否有效
         /// </summary>

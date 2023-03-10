@@ -1,4 +1,5 @@
-﻿using Findx.Modularity;
+﻿using System;
+using Findx.Modularity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;

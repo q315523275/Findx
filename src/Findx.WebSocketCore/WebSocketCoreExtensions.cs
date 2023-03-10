@@ -19,7 +19,7 @@ namespace Findx.WebSocketCore
         /// <returns></returns>
         public static IApplicationBuilder MapWebSocketManager(this IApplicationBuilder app, PathString path, WebSocketHandlerBase handler)
         {
-            return app.Map(path, (x) => x.UseMiddleware<WebSocketManagerMiddleware>(handler));
+            return app.Map(path, (x) => x.UseMiddleware<WebSocketMiddleware>(handler));
         }
         
         /// <summary>

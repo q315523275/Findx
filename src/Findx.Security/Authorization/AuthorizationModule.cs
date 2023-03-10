@@ -44,7 +44,7 @@ namespace Findx.Security.Authorization
             {
                 opts.AddPolicy(FunctionRequirement.Policy, policy => policy.Requirements.Add(new FunctionRequirement()));
             });
-            services.AddSingleton<IAuthorizationHandler, FunctionRequirementHandler>();
+            services.AddScoped<IAuthorizationHandler, FunctionRequirementHandler>();
             return services;
         }
         

@@ -51,12 +51,11 @@ namespace Findx.Messaging
         /// </summary>
         /// <typeparam name="TEvent"></typeparam>
         /// <param name="applicationEvent"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public bool Publish<TEvent>(TEvent applicationEvent) where TEvent : IApplicationEvent
         {
             Check.NotNull(applicationEvent, nameof(applicationEvent));
-
+            
             return _channel.Writer.TryWrite(applicationEvent);
         }
         
@@ -111,7 +110,7 @@ namespace Findx.Messaging
                     try
                     {
                         using var scope = ServiceLocator.Instance.CreateScope();
-                        await handler.Handle(message, scope.ServiceProvider, cancellationToken);
+                        await handler.HandleAsync(message, scope.ServiceProvider, cancellationToken);
                     }
                     catch (Exception ex)
                     {

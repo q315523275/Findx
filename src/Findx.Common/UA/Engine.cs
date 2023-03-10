@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using Findx.Utils;
+﻿using Findx.Utils;
 
 namespace Findx.UA
 {
@@ -27,7 +25,7 @@ namespace Findx.UA
 				new Engine("MIDP", "MIDP")//
 		};
 
-		private string VersionPattern;
+		private readonly string _versionPattern;
 
 		/// <summary>
 		/// Ctor
@@ -36,7 +34,7 @@ namespace Findx.UA
 		/// <param name="regex">关键字或表达式</param>
 		public Engine(string name, string regex) : base(name, regex)
 		{
-			this.VersionPattern = name + "[/\\- ]([\\d\\w.\\-]+)";
+			this._versionPattern = name + "[/\\- ]([\\d\\w.\\-]+)";
 		}
 
 		/// <summary>
@@ -50,7 +48,7 @@ namespace Findx.UA
 			{
 				return null;
 			}
-			return RegexUtil.GetValue(userAgentString, this.VersionPattern);
+			return RegexUtil.GetValue(userAgentString, this._versionPattern);
 		}
 	}
 }

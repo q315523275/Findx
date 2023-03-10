@@ -5,7 +5,7 @@ namespace Findx.Utils
     /// <summary>
     /// UserAgent操作类
     /// </summary>
-    public class UserAgentUtil
+    public static class UserAgentUtil
 	{
 		/// <summary>
 		/// 解析User-Agent

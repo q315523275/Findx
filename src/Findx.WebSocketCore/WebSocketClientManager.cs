@@ -138,6 +138,10 @@ public class WebSocketClientManager : IWebSocketClientManager
             await client.Client.CloseAsync(closeStatus: WebSocketCloseStatus.NormalClosure,
                                            statusDescription: "Closed by the WebSocketManager",
                                            cancellationToken: CancellationToken.None).ConfigureAwait(false);
+            
+            client.Client?.Abort();
+            client.Client?.Dispose();
+            client.Client = default;
         }
     }
 }

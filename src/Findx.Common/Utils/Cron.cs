@@ -6,7 +6,7 @@ namespace Findx.Utils
     /// <summary>
     /// Cron操作类
     /// </summary>
-    public class Cron
+    public static class Cron
     {
         /// <summary>
         /// 根据Cron表达式获取下次执行时间

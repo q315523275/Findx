@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using Findx.Setting;
@@ -91,7 +88,30 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
         }
 
         // 已登录，无角色限制
-        return function.AccessType == FunctionAccessType.Login ? AuthorizationStatus.Ok : AuthorizeRoleLimit(function, principal);
+        if (function.AccessType == FunctionAccessType.Login)
+        {
+            return AuthorizationStatus.Ok;
+        }
+        
+        // 已登录，验证角色
+        if (function.AccessType == FunctionAccessType.RoleLimit)
+        {
+            return AuthorizeRoleLimit(function, principal);
+        }
+        
+        // 已登录，验证权限
+        if (function.AccessType == FunctionAccessType.AuthorityLimit)
+        {
+            return AuthorizeAuthorityLimit(function, principal);
+        }
+        
+        // 已登录，验证角色及权限资源
+        if (function.AccessType == FunctionAccessType.AuthorityLimit)
+        {
+            return AuthorizeRoleAuthorityLimit(function, principal);
+        }
+        
+        return AuthorizationStatus.NoFound;
     }
 
     /// <summary>
@@ -115,19 +135,55 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     /// <returns>功能权限检查结果</returns>
     protected virtual AuthorizationStatus AuthorizeRoleNames(IFunction function, IEnumerable<string> roleNames)
     {
+        // ReSharper disable once PossibleMultipleEnumeration
         Check.NotNull(roleNames, nameof(roleNames));
 
+        // ReSharper disable once PossibleMultipleEnumeration
         if (!roleNames.Any())
         {
             return AuthorizationStatus.Forbidden;
         }
 
+        // ReSharper disable once PossibleMultipleEnumeration
         if (function.AccessType != FunctionAccessType.RoleLimit || roleNames.Contains(SuperRoleName))
         {
             return AuthorizationStatus.Ok;
         }
 
         var functionRoleNames = function.Roles.Split(",");
+        // ReSharper disable once PossibleMultipleEnumeration
         return roleNames.Intersect(functionRoleNames).Any() ? AuthorizationStatus.Ok : AuthorizationStatus.Forbidden;
+    }
+    
+    
+    /// <summary>
+    /// 重写以实现 权限限制 的功能的功能权限检查
+    /// </summary>
+    /// <param name="function">要验证的功能信息</param>
+    /// <param name="principal">用户在线信息</param>
+    /// <returns>功能权限验证结果</returns>
+    protected virtual AuthorizationStatus AuthorizeAuthorityLimit(IFunction function, IPrincipal principal)
+    {
+        // 拥有权限资源限制
+        return AuthorizationStatus.Ok;
+    }
+    
+    /// <summary>
+    /// 重写以实现 角色及权限资源限制 的功能的功能权限检查
+    /// </summary>
+    /// <param name="function">要验证的功能信息</param>
+    /// <param name="principal">用户在线信息</param>
+    /// <returns>功能权限验证结果</returns>
+    protected virtual AuthorizationStatus AuthorizeRoleAuthorityLimit(IFunction function, IPrincipal principal)
+    {
+        // 角色限制
+        // 检查角色-功能的权限
+        var roleLimitAuthorizeStatus = AuthorizeRoleLimit(function, principal);
+        if (AuthorizeRoleLimit(function, principal) != AuthorizationStatus.Ok)
+            return roleLimitAuthorizeStatus;
+
+        // 权限资源限制
+        // 检查权限资源-功能的权限
+        return AuthorizeAuthorityLimit(function, principal);
     }
 }

@@ -6,7 +6,7 @@
 		<Company>Findx</Company>
 		<Version>1.6.0</Version>
 		<Description>RabbitMQ功能增强,属性标注消费、连接池管理、自定义消费等</Description>
-		<PackageVersion>1.8.5</PackageVersion>
+		<PackageVersion>1.8.6-beta1</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

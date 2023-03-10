@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Findx
+﻿namespace Findx
 {
     /// <summary>
     /// 应用实例信息

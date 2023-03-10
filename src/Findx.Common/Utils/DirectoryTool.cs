@@ -164,7 +164,7 @@
         /// <param name="searchPattern"> 匹配规则 </param>
         /// <param name="topDirectoryOnly"> 是否递归查询 </param>
         /// <returns></returns>
-        public virtual string[] GetDirectories(string path, string searchPattern = "", bool topDirectoryOnly = true)
+        public string[] GetDirectories(string path, string searchPattern = "", bool topDirectoryOnly = true)
         {
             if (string.IsNullOrEmpty(searchPattern))
                 searchPattern = "*";

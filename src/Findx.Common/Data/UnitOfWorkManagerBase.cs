@@ -28,7 +28,7 @@ namespace Findx.Data
         /// <returns></returns>
         public IUnitOfWork GetConnUnitOfWork(bool enableTransaction = false, bool beginTransaction = false, string dbPrimary = default)
         {
-            var unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary ?? "system");
+            var unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary ?? "null");
             if (unitOfWork != null)
             {
                 if (enableTransaction)
@@ -44,7 +44,7 @@ namespace Findx.Data
             }
 
             unitOfWork = CreateConnUnitOfWork(dbPrimary);
-            _scopedDictionary.SetConnUnitOfWork(dbPrimary ?? "system", unitOfWork);
+            _scopedDictionary.SetConnUnitOfWork(dbPrimary ?? "null", unitOfWork);
             if (enableTransaction)
             {
                 unitOfWork.EnableTransaction();

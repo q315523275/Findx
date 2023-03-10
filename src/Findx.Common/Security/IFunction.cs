@@ -49,9 +49,14 @@ namespace Findx.Security
         string Roles { get; set; }
         
         /// <summary>
+        /// 获取或设置 限定权限
+        /// </summary>
+        string Authority { get; set; }
+        
+        /// <summary>
         /// 获取或设置 是否锁定
         /// </summary>
         public bool IsLocked { get; set; }
-    }
+	}
 }
 

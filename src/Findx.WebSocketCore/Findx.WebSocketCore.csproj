@@ -3,10 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<Nullable>disable</Nullable>
 		<Version>1.5.1</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
-		<PackageVersion>1.8.2-beta1</PackageVersion>
+		<PackageVersion>1.8.2-beta2</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,7 +16,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-		<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.2.1" />
+		<PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="2.3.2" />
 	</ItemGroup>
 
 	<ItemGroup>

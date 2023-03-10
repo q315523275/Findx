@@ -159,7 +159,7 @@ namespace Findx.Utils
         /// <returns>单位：KB</returns>
         public static (double gen0, double gen1, double gen2, double totalMemory) GetGcInfo()
         {
-            return (GCUtil.Gen0CollectCount / 1024.0, GCUtil.Gen1CollectCount / 1024.0, GCUtil.Gen2CollectCount / 1024.0, GCUtil.TotalMemory / 1024.0);
+            return (GcUtil.Gen0CollectCount / 1024.0, GcUtil.Gen1CollectCount / 1024.0, GcUtil.Gen2CollectCount / 1024.0, GcUtil.TotalMemory / 1024.0);
         }
     }
 }

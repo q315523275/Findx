@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-namespace Findx.UA
+﻿namespace Findx.UA
 {
     /// <summary>
     /// 平台对象
@@ -15,43 +13,43 @@ namespace Findx.UA
         /// <summary>
         /// Iphone
         /// </summary>
-        public static Platform IPHONE = new Platform("iPhone", "iphone");
+        public static readonly Platform Iphone = new Platform("iPhone", "iphone");
 
         /// <summary>
         /// ipod
         /// </summary>
-        public static Platform IPOD = new Platform("iPod", "ipod");
+        public static readonly Platform Ipod = new Platform("iPod", "ipod");
 
         /// <summary>
         /// ipad
         /// </summary>
-        public static Platform IPAD = new Platform("iPad", "ipad");
+        public static readonly Platform Ipad = new Platform("iPad", "ipad");
 
         /// <summary>
         /// android
         /// </summary>
-        public static Platform ANDROID = new Platform("Android", "android");
+        public static readonly Platform Android = new Platform("Android", "android");
 
         /// <summary>
         /// GOOGLE_TV
         /// </summary>
-        public static Platform GOOGLE_TV = new Platform("GoogleTV", "googletv");
+        public static readonly Platform GoogleTv = new Platform("GoogleTV", "googletv");
 
         /// <summary>
         /// Windows Phone
         /// </summary>
-        public static Platform WINDOWS_PHONE = new Platform("Windows Phone", "windows (ce|phone|mobile)( os)?");
+        public static readonly Platform WindowsPhone = new Platform("Windows Phone", "windows (ce|phone|mobile)( os)?");
 
         /// <summary>
         /// 支持的移动平台类型
         /// </summary>
         public static List<Platform> MobilePlatforms = new List<Platform> { //
-        		WINDOWS_PHONE, //
-        		IPAD, //
-        		IPOD, //
-        		IPHONE, //
-        		ANDROID, //
-        		GOOGLE_TV, //
+        		WindowsPhone, //
+        		Ipad, //
+        		Ipod, //
+        		Iphone, //
+        		Android, //
+        		GoogleTv, //
         		new Platform("htcFlyer", "htc_flyer"), //
         		new Platform("Symbian", "symbian(os)?"), //
         		new Platform("Blackberry", "blackberry") //
@@ -73,12 +71,12 @@ namespace Findx.UA
         /// 支持的平台类型
         /// </summary>
         public static List<Platform> Platforms = new List<Platform> {
-                WINDOWS_PHONE, //
-				IPAD, //
-				IPOD, //
-				IPHONE, //
-				ANDROID, //
-				GOOGLE_TV, //
+                WindowsPhone, //
+				Ipad, //
+				Ipod, //
+				Iphone, //
+				Android, //
+				GoogleTv, //
 				new Platform("htcFlyer", "htc_flyer"), //
 				new Platform("Symbian", "symbian(os)?"), //
 				new Platform("Blackberry", "blackberry"), //
@@ -114,7 +112,7 @@ namespace Findx.UA
         /// <returns></returns>
         public bool IsIPhoneOrIPod()
         {
-            return this.Name == IPHONE.Name || this.Name == IPOD.Name;
+            return this.Name == Iphone.Name || this.Name == Ipod.Name;
         }
 
         /// <summary>
@@ -123,7 +121,7 @@ namespace Findx.UA
         /// <returns></returns>
         public bool IsIPad()
         {
-            return this.Name == IPAD.Name;
+            return this.Name == Ipad.Name;
         }
 
         /// <summary>
@@ -141,7 +139,7 @@ namespace Findx.UA
         /// <returns></returns>
         public bool IsAndroid()
         {
-            return this.Name == ANDROID.Name || this.Name == GOOGLE_TV.Name;
+            return this.Name == Android.Name || this.Name == GoogleTv.Name;
         }
 
         /// <summary>

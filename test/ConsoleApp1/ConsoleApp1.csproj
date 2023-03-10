@@ -9,6 +9,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\src\Findx.Common\Findx.csproj" />
+      <ProjectReference Include="..\..\src\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
     </ItemGroup>
 
 </Project>

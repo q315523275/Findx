@@ -7,7 +7,6 @@ using RabbitMQ.Client.Exceptions;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.RabbitMQ
@@ -103,7 +102,7 @@ namespace Findx.RabbitMQ
             {
                 try
                 {
-                    // Channel.BasicNack(basicDeliverEventArgs.DeliveryTag, multiple: false, requeue: true);
+                    Channel.BasicNack(basicDeliverEventArgs.DeliveryTag, multiple: false, requeue: true);
 
                     if (FailedCallback != null)
                         await FailedCallback(Channel, basicDeliverEventArgs);

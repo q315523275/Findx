@@ -51,7 +51,7 @@
 	<ItemGroup>
 	  <Folder Include="Setting\" />
 	  <Folder Include="Jobs\" />
-	  <Folder Include="Jobs\Local\" />
+	  <Folder Include="Jobs\Internal\" />
 	  <Folder Include="ConsistentHash\" />
 	  <Folder Include="Data\Entity\" />
 	  <Folder Include="Data\Audit\" />

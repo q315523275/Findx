@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
-using Findx.Extensions;
+﻿using Findx.Extensions;
 using Findx.Utils;
 
 namespace Findx.UA
@@ -18,7 +16,7 @@ namespace Findx.UA
 		/// <summary>
 		/// 其它版本
 		/// </summary>
-		public static string Other_Version = "[\\/ ]([\\d\\w\\.\\-]+)";
+		private const string OtherVersion = "[\\/ ]([\\d\\w\\.\\-]+)";
 
 		/// <summary>
 		/// 支持的浏览器类型
@@ -26,20 +24,20 @@ namespace Findx.UA
 		public static List<Browser> Browers = new List<Browser> {
 			new Browser("MSEdge", "Edge|Edg", "(?:edge|Edg)\\/([\\d\\w\\.\\-]+)"),
 			new Browser("Chrome", "chrome", "chrome\\/([\\d\\w\\.\\-]+)"),
-			new Browser("Firefox", "firefox", Other_Version),
-			new Browser("IEMobile", "iemobile", Other_Version),
+			new Browser("Firefox", "firefox", OtherVersion),
+			new Browser("IEMobile", "iemobile", OtherVersion),
 			new Browser("Android Browser", "android", "version\\/([\\d\\w\\.\\-]+)"),
 			new Browser("Safari", "safari", "version\\/([\\d\\w\\.\\-]+)"),
-			new Browser("Opera", "opera", Other_Version),
-			new Browser("Konqueror", "konqueror", Other_Version),
+			new Browser("Opera", "opera", OtherVersion),
+			new Browser("Konqueror", "konqueror", OtherVersion),
 			new Browser("PS3", "playstation 3", "([\\d\\w\\.\\-]+)\\)\\s*$"),
 			new Browser("PSP", "playstation portable", "([\\d\\w\\.\\-]+)\\)?\\s*$"),
 			new Browser("Lotus", "lotus.notes", "Lotus-Notes\\/([\\w.]+)"),
-			new Browser("Thunderbird", "thunderbird", Other_Version),
-			new Browser("Netscape", "netscape", Other_Version),
-			new Browser("Seamonkey", "seamonkey", Other_Version),
-			new Browser("Outlook", "microsoft.outlook", Other_Version),
-			new Browser("Evolution", "evolution", Other_Version),
+			new Browser("Thunderbird", "thunderbird", OtherVersion),
+			new Browser("Netscape", "netscape", OtherVersion),
+			new Browser("Seamonkey", "seamonkey", OtherVersion),
+			new Browser("Outlook", "microsoft.outlook", OtherVersion),
+			new Browser("Evolution", "evolution", OtherVersion),
 			new Browser("MSIE", "msie", "msie ([\\d\\w\\.\\-]+)"),
 			new Browser("MSIE11", "rv:11", "rv:([\\d\\w\\.\\-]+)"),
 			new Browser("Gabble", "Gabble", "Gabble\\/([\\d\\w\\.\\-]+)"),
@@ -68,7 +66,7 @@ namespace Findx.UA
 			Browers.Add(new Browser(name, regex, versionRegex));
 		}
 
-		private string VersionPattern;
+		private readonly string _versionPattern;
 
 		/// <summary>
 		/// Ctor
@@ -78,13 +76,13 @@ namespace Findx.UA
 		/// <param name="versionRegex">匹配版本的正则</param>
 		public Browser(string name, string regex, string versionRegex): base(name, regex)
 		{
-			if (versionRegex == Other_Version)
+			if (versionRegex == OtherVersion)
 			{
 				versionRegex = name + versionRegex;
 			}
 			if (!versionRegex.IsNullOrWhiteSpace())
 			{
-				this.VersionPattern = versionRegex;
+				this._versionPattern = versionRegex;
 			}
 		}
 
@@ -99,7 +97,7 @@ namespace Findx.UA
 			{
 				return null;
 			}
-			return RegexUtil.GetValue(userAgentString, this.VersionPattern);
+			return RegexUtil.GetValue(userAgentString, this._versionPattern);
 		}
 
 		/// <summary>

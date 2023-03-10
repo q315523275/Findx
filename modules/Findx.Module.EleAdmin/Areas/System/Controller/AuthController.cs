@@ -13,6 +13,7 @@ using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Enum;
 using Findx.Module.EleAdmin.Models;
 using System.ComponentModel;
+using Findx.Setting;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -33,6 +34,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         private readonly IRepository<SysUserInfo> _repo;
         private readonly IRepository<SysLoginRecordInfo> _recordRepo;
 
+        private readonly bool _enabledCaptcha;
+
         /// <summary>
         /// Ctor
         /// </summary>
@@ -42,7 +45,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <param name="cacheProvider"></param>
         /// <param name="repo"></param>
         /// <param name="recordRepo"></param>
-        public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheProvider cacheProvider, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo)
+        /// <param name="settingProvider"></param>
+        public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheProvider cacheProvider, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo, ISettingProvider settingProvider)
         {
             _tokenBuilder = tokenBuilder;
             _options = options;
@@ -50,6 +54,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             _cacheProvider = cacheProvider;
             _repo = repo;
             _recordRepo = recordRepo;
+            _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdmin:EnabledCaptcha");
         }
 
         /// <summary>
@@ -61,17 +66,24 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         [HttpPost("/api/login")]
         public async Task<CommonResult> Login([FromBody] LoginRequest req)
         {
-            // 验证码正确性验证
             var cache = _cacheProvider.Get();
-            var cacheKey = $"verifyCode:" + req.Uuid;
-            var errorCacheKey = $"error:" + req.UserName;
+            var errorCount = 0;
+            var cacheKey = string.Empty;
+            var errorCacheKey = string.Empty;
+            // 是否开启验证码
+            if (_enabledCaptcha)
+            {
+                // 验证码正确性验证
+                cacheKey = $"verifyCode:" + req.Uuid;
+                errorCacheKey = $"error:" + req.UserName;
 
-            if (cache.Get<string>(cacheKey) != req.Code.ToLower())
-                return CommonResult.Fail("50500", "验证码错误");
+                if (cache.Get<string>(cacheKey) != req.Code.ToLower())
+                    return CommonResult.Fail("50500", "验证码错误");
 
-            var errorCount = cache.Get<int>(errorCacheKey);
-            if (errorCount >= 5)
-                return CommonResult.Fail("50509", "密码错误次数超出限制");
+                errorCount = cache.Get<int>(errorCacheKey);
+                if (errorCount >= 5)
+                    return CommonResult.Fail("50509", "密码错误次数超出限制");
+            }
 
             var accountInfo = await _repo.FirstAsync(it => it.UserName == req.UserName && it.TenantId == req.TenantId);
             // 验证帐号是否存在
@@ -100,11 +112,16 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             // 验证帐号密码是否正确
             if (accountInfo.Password != Utils.Encrypt.Md5By32(req.Password))
             {
-                // 增加错误次数
-                errorCount++;
-                await cache.AddAsync(errorCacheKey, errorCount, TimeSpan.FromMinutes(15));
-                var returnMsg = $"账号密码错误,剩余重试次数{(5 - errorCount)}次";
-                
+                var returnMsg = $"账号密码错误";
+                // 是否开启验证码
+                if (_enabledCaptcha)
+                {
+                    // 增加错误次数
+                    errorCount++;
+                    await cache.AddAsync(errorCacheKey, errorCount, TimeSpan.FromMinutes(15));
+                    returnMsg = $"{returnMsg},剩余重试次数{(5 - errorCount)}次";
+                }
+
                 loginLog.LoginType = 1;
                 loginLog.Comments = returnMsg;
                 fail = CommonResult.Fail("D1000", returnMsg);
@@ -119,7 +136,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             }
 
             // 清空验证码
-            await cache.RemoveAsync(cacheKey);
+            if (_enabledCaptcha)
+                await cache.RemoveAsync(cacheKey);
 
             // 登录日志
             if (fail != null)

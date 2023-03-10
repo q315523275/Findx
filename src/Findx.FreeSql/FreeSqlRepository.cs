@@ -10,7 +10,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Principal;
-using Findx.Domain;
+using Findx.Messaging;
 using Findx.Security;
 
 namespace Findx.FreeSql
@@ -19,7 +19,6 @@ namespace Findx.FreeSql
     {
         private readonly IPrincipal _principal;
         private readonly IFreeSql _fsql;
-        private readonly IApplicationContext _applicationContext;
         private readonly IOptionsMonitor<FreeSqlOptions> _options;
         private readonly bool _softDeletable;
 
@@ -37,7 +36,6 @@ namespace Findx.FreeSql
             var clients = serviceProvider.GetRequiredService<FreeSqlClient>();
             _options = serviceProvider.GetRequiredService<IOptionsMonitor<FreeSqlOptions>>();
             _principal = serviceProvider.GetService<IPrincipal>();
-            _applicationContext = serviceProvider.GetService<IApplicationContext>();
 
             // 实体实现接口集合
             var baseOns = SingletonDictionary<Type, (bool softDeletable, bool customSharding)>.Instance.GetOrAdd(_entityType, () => (softDeletable: _entityType.IsBaseOn(typeof(ISoftDeletable)), customSharding: false));
@@ -79,7 +77,6 @@ namespace Findx.FreeSql
         {
             entity = CheckInsert(entity)[0];
             var result = _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
-            CheckDomain(entity);
             return result;
         }
 
@@ -89,25 +86,22 @@ namespace Findx.FreeSql
             // ReSharper disable once PossibleMultipleEnumeration
             var result = _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             // ReSharper disable once PossibleMultipleEnumeration
-            CheckDomain(entities);
             return result;
         }
 
-        public Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
+        public async Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
             entity = CheckInsert(entity)[0];
-            var result = _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
-            CheckDomain(entity);
+            var result = await _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             return result;
         }
 
-        public Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
+        public async Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
         {
             entities = CheckInsert(entities);
             // ReSharper disable once PossibleMultipleEnumeration
-            var result = _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            var result = await _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             // ReSharper disable once PossibleMultipleEnumeration
-            CheckDomain(entities);
             return result;
         }
         #endregion
@@ -189,13 +183,10 @@ namespace Findx.FreeSql
                 update.IgnoreColumns(ignoreColumns);
 
             var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
-            
-            CheckDomain(entity);
-            
             return result;
         }
 
-        public Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
+        public async Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
             entity = CheckUpdate(entity)[0];
 
@@ -212,10 +203,7 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
-            
-            CheckDomain(entity);
-            
+            var result = await update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             return result;
         }
 
@@ -235,12 +223,10 @@ namespace Findx.FreeSql
             var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             
             // ReSharper disable once PossibleMultipleEnumeration
-            CheckDomain(entities);
-            
             return result;
         }
 
-        public Task<int> UpdateAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
+        public async Task<int> UpdateAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
         {
             entities = CheckUpdate(entities);
 
@@ -253,11 +239,9 @@ namespace Findx.FreeSql
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
 
-            var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+            var result = await update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
 
             // ReSharper disable once PossibleMultipleEnumeration
-            CheckDomain(entities);
-            
             return result;
         }
 
@@ -684,6 +668,7 @@ namespace Findx.FreeSql
         #endregion
 
         #region 私有方法
+        
         /// <summary>
         /// 检查插入信息
         /// </summary>
@@ -841,50 +826,6 @@ namespace Findx.FreeSql
 
             // ReSharper disable once PossibleMultipleEnumeration
             return entities;
-        }
-
-        /// <summary>
-        /// 检查领域信息
-        /// </summary>
-        /// <param name="entities"></param>
-        private void CheckDomain(params TEntity[] entities)
-        {
-            // ReSharper disable once SuspiciousTypeConversion.Global
-            var domains = entities.OfType<AggregateRootBase>();
-            
-            if (UnitOfWork != null)
-            {
-                (UnitOfWork as FreeSqlUnitOfWork)?.AddDomain(domains);
-            }
-            else
-            {
-                foreach (var domainEvent in domains.SelectMany(x => x.DomainEvents))
-                {
-                    _applicationContext.PublishEvent(domainEvent);
-                }
-            }
-        }
-        
-        /// <summary>
-        /// 检查领域信息
-        /// </summary>
-        /// <param name="entities"></param>
-        private void CheckDomain(IEnumerable<TEntity> entities)
-        {
-            // ReSharper disable once SuspiciousTypeConversion.Global
-            var domains = entities.OfType<AggregateRootBase>();
-            
-            if (UnitOfWork != null)
-            {
-                (UnitOfWork as FreeSqlUnitOfWork)?.AddDomain(domains);
-            }
-            else
-            {
-                foreach (var domainEvent in domains.SelectMany(x => x.DomainEvents))
-                {
-                    _applicationContext.PublishEvent(domainEvent);
-                }
-            }
         }
 
         #endregion

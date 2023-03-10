@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Findx.Extensions;
 
 namespace Findx.Messaging
 {
@@ -21,20 +20,22 @@ namespace Findx.Messaging
         }
 
         /// <summary>
-        /// 异步发送消息
+        /// 发送消息
         /// </summary>
         /// <param name="message"></param>
         /// <param name="cancellationToken"></param>
         /// <typeparam name="TResponse"></typeparam>
         /// <returns></returns>
-        public Task<TResponse> SendAsync<TResponse>(IMessageRequest<TResponse> message, CancellationToken cancellationToken = default)
+        public Task<TResponse> SendAsync<TResponse>(IMessageRequest<TResponse> message,
+            CancellationToken cancellationToken = default)
         {
             Check.NotNull(message, nameof(message));
 
             var messageType = message.GetType();
 
             var handler = (MessageHandlerWrapper<TResponse>)MessageConst.RequestMessageHandlers.GetOrAdd(messageType,
-                         t => Activator.CreateInstance(typeof(MessageHandlerWrapperImpl<,>).MakeGenericType(messageType, typeof(TResponse))));
+                _ => Activator.CreateInstance(
+                    typeof(MessageHandlerWrapperImpl<,>).MakeGenericType(messageType, typeof(TResponse))));
 
             Check.NotNull(handler, nameof(handler));
 
@@ -42,19 +43,18 @@ namespace Findx.Messaging
         }
 
         /// <summary>
-        /// 异步推送事件
+        /// 发布应用事件
         /// </summary>
-        /// <typeparam name="TEvent"></typeparam>
         /// <param name="applicationEvent"></param>
         /// <param name="cancellationToken"></param>
+        /// <typeparam name="TEvent"></typeparam>
         /// <returns></returns>
-        public async Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default) where TEvent : IApplicationEvent
+        /// <exception cref="NotImplementedException"></exception>
+        public Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default) where TEvent : IApplicationEvent
         {
             var eventType = applicationEvent.GetType();
-
             var handler = (ApplicationEventHandlerWrapper)MessageConst.ApplicationEventHandlers.GetOrAdd(eventType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(eventType)));
-
-            await handler.Handle(applicationEvent, _serviceProvider, cancellationToken);
+            return handler.HandleAsync(applicationEvent, _serviceProvider, cancellationToken);
         }
     }
 }

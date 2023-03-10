@@ -64,6 +64,12 @@ namespace Findx.Security
         public virtual bool IsLocked { get; set; }
 
         /// <summary>
+        /// 获取或设置 限定权限
+        /// </summary>
+        [DisplayName("限定权限")]
+        public virtual string Authority { get; set; }
+
+        /// <summary>
         /// 返回一个表示当前对象的 string。
         /// </summary>
         /// <returns>表示当前对象的字符串。</returns>

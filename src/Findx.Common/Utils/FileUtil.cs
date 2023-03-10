@@ -87,7 +87,7 @@ namespace Findx.Utils
         /// <param name="isSet">true为设置，false为取消</param>
         public static void SetAttribute(string fileName, FileAttributes attribute, bool isSet)
         {
-            FileInfo fi = new FileInfo(fileName);
+            var fi = new FileInfo(fileName);
             if (!fi.Exists)
             {
                 throw new FileNotFoundException("要设置属性的文件不存在。", fileName);

@@ -31,7 +31,7 @@ namespace Findx.AspNetCore
         /// <returns></returns>
         public T GetService<T>()
         {
-            return _httpContextAccessor.HttpContext.RequestServices.GetService<T>();
+            return _httpContextAccessor.HttpContext != null ? _httpContextAccessor.HttpContext.RequestServices.GetService<T>() : default;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Findx.AspNetCore
         /// <returns></returns>
         public object GetService(Type serviceType)
         {
-            return _httpContextAccessor.HttpContext.RequestServices.GetService(serviceType);
+            return _httpContextAccessor.HttpContext?.RequestServices.GetService(serviceType);
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Findx.AspNetCore
         /// <returns></returns>
         public IEnumerable<T> GetServices<T>()
         {
-            return _httpContextAccessor.HttpContext.RequestServices.GetServices<T>();
+            return _httpContextAccessor.HttpContext?.RequestServices.GetServices<T>();
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Findx.AspNetCore
         /// <returns></returns>
         public IEnumerable<object> GetServices(Type serviceType)
         {
-            return _httpContextAccessor.HttpContext.RequestServices.GetServices(serviceType);
+            return _httpContextAccessor.HttpContext?.RequestServices.GetServices(serviceType);
         }
     }
 }

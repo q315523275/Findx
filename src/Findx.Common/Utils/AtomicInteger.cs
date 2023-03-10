@@ -1,5 +1,4 @@
-﻿using System.Threading;
-namespace Findx.Utils
+﻿namespace Findx.Utils
 {
     /// <summary>
     /// 原子整型对象

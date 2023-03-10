@@ -11,6 +11,7 @@ using Findx.Machine.Memory;
 using Findx.Machine.Network;
 using Findx.Metrics;
 using Findx.Utils;
+using Findx.WebSocketCore;
 
 Console.WriteLine("Hello, World!");
 
@@ -52,8 +53,35 @@ Console.WriteLine("Hello, World!");
 //     Console.WriteLine($"监测流量:{nodeRate.Size} {nodeRate.SizeType} 上传速率:{speed.Sent.Size} {speed.Sent.SizeType}/s 下载速率:{speed.Received.Size} {speed.Received.SizeType}/s");
 // }
 
-// 机器占用端口
-foreach (var activeTcpListener in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
+// // 机器占用端口
+// foreach (var activeTcpListener in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
+// {
+//     Console.WriteLine($"{activeTcpListener.Address.MapToIPv4().ToString()}:{activeTcpListener.Port}");
+// }
+
+var webSocketClient = new XWebSocketClient("ws://127.0.0.1:10021/ws")
 {
-    Console.WriteLine($"{activeTcpListener.Address.MapToIPv4().ToString()}:{activeTcpListener.Port}");
+    MessageReceived = (session, message, _) =>
+    {
+        Console.WriteLine(message);
+        return Task.CompletedTask;
+    },
+    OnClosed = () =>
+    {
+        Console.WriteLine("websocket closed");
+        return Task.CompletedTask;
+    },
+    OnError = (message, ex) =>
+    {
+        Console.WriteLine("ex:" + ex.Message);
+        return Task.CompletedTask;
+    }
+};
+webSocketClient.Headers.Add("name", "控制台测试哦");
+webSocketClient.StartAsync().Wait();
+while (true)
+{
+    Console.WriteLine($"请输入websocket发送内容");
+    var msg = Console.ReadLine();
+    webSocketClient.SendAsync(msg).Wait();
 }

@@ -1,11 +1,9 @@
-﻿using System;
-
-namespace Findx.Utils
+﻿namespace Findx.Utils
 {
     /// <summary>
     /// 时间转换工具类
     /// </summary>
-    public class Time
+    public static class Time
     {
         /// <summary>
         /// 字符串时间值转TimsSpan

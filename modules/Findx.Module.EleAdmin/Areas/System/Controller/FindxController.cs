@@ -96,11 +96,11 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 { "tickCount", $"{Environment.TickCount / 1000 / 60}" }
             };
 
-            var sysDict = Findx.Utils.SystemUtil.GetMachineInfo();
-            foreach(var item in sysDict)
-            {
-                sysOsInfo.TryAdd(item.Key, item.Value.SafeString());
-            }
+            // var sysDict = Findx.Utils.SystemUtil.GetMachineInfo();
+            // foreach(var item in sysDict)
+            // {
+            //     sysOsInfo.TryAdd(item.Key, item.Value.SafeString());
+            // }
             
             return CommonResult.Success(new { sysOsInfo, runtimeInfo });
         }

@@ -45,7 +45,7 @@ namespace Findx.Module.WebHost
 
             services.AddWebSockets(x =>
             {
-                x.KeepAliveInterval = TimeSpan.FromMinutes(2);
+                x.KeepAliveInterval = TimeSpan.FromMinutes(1);
             });
         }
 

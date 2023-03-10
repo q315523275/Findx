@@ -31,6 +31,7 @@ namespace Findx.MailKit
                     headers.Add(new Header(key, value));
             }
 
+            // ReSharper disable once CoVariantArrayConversion
             var message = new MimeMessage(headers.ToArray());
             MimeEntity body = null;
             if (mail.Sender != null)
@@ -151,8 +152,7 @@ namespace Findx.MailKit
                 body = alternative;
             }
 
-            if (body == null)
-                body = new TextPart(mail.IsBodyHtml ? "html" : "plain");
+            body ??= new TextPart(mail.IsBodyHtml ? "html" : "plain");
             if (mail.Attachments.Count > 0)
             {
                 var mixed = new Multipart("mixed");
@@ -183,21 +183,13 @@ namespace Findx.MailKit
         {
             var mimeType = item.ContentType.ToString();
             var contentType = ContentType.Parse(mimeType);
-            var attachemt = item as Attachment;
-            MimePart part;
+            var attachment = item as Attachment;
 
-            if (contentType.MediaType.Equals("text", StringComparison.OrdinalIgnoreCase))
-            {
-                part = new TextPart();
-            }
-            else
-            {
-                part = new MimePart(contentType);
-            }
+            var part = contentType.MediaType.Equals("text", StringComparison.OrdinalIgnoreCase) ? new TextPart() : new MimePart(contentType);
 
-            if (attachemt != null)
+            if (attachment != null)
             {
-                //var disposition = attachemt.ContentDisposition.ToString();
+                //var disposition = attachment.ContentDisposition.ToString();
                 //part.ContentDisposition = ContentDisposition.Parse(disposition);
                 part.ContentDisposition = new ContentDisposition(ContentDisposition.Attachment);
             }
@@ -231,13 +223,13 @@ namespace Findx.MailKit
             stream.Position = 0;
 
             part.Content = new MimeContent(stream);
-            if (attachemt != null)
+            if (attachment != null)
             {
                 // 解决中文文件名乱码
                 var charset = "GB18030";
                 part.ContentType.Parameters.Clear();
                 part.ContentDisposition.Parameters.Clear();
-                var fileName = attachemt.Name;
+                var fileName = attachment.Name;
                 part.ContentType.Parameters.Add(charset, "name", fileName);
                 part.ContentDisposition.Parameters.Add(charset, "filename", fileName);
                 // 解决文件名不能超过41字符

@@ -3,12 +3,12 @@ namespace Findx.Messaging
 {
     internal abstract class ApplicationEventHandlerWrapper
     {
-        public abstract Task Handle(IApplicationEvent message, IServiceProvider serviceProvider, CancellationToken cancellationToken = default);
+        public abstract Task HandleAsync(IApplicationEvent message, IServiceProvider serviceProvider, CancellationToken cancellationToken = default);
     }
 
     internal class ApplicationEventHandlerWrapperImpl<TEvent> : ApplicationEventHandlerWrapper where TEvent : IApplicationEvent
     {
-        public override async Task Handle(IApplicationEvent message, IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
+        public override async Task HandleAsync(IApplicationEvent message, IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
         {
             var handlers = serviceProvider.GetServices<IApplicationEventHandler<TEvent>>();
             foreach (var handler in handlers)
