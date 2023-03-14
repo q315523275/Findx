@@ -4,11 +4,11 @@
 		<TargetFramework>net6.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<Nullable>disable</Nullable>
-		<Version>1.7.5</Version>
+		<Version>1.8.7-beta5</Version>
 		<Description>限速、限流、防重提交、内网限定、请求策略、动态API、上传、MVC扩展等</Description>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
-		<PackageVersion>1.8.7-beta2</PackageVersion>
+		<PackageVersion>1.8.7-beta5</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

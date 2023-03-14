@@ -1,9 +1,6 @@
-﻿using System;
-using Findx.Modularity;
-using Microsoft.AspNetCore.Builder;
+﻿using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
 using System.ComponentModel;
-using System.Threading.Tasks;
 using Findx.Security;
 
 namespace Findx.AspNetCore.Mvc
@@ -33,21 +30,10 @@ namespace Findx.AspNetCore.Mvc
         {
             services.AddSingleton<IFunctionHandler, MvcFunctionHandler>();
             services.AddSingleton<IFunctionStore<MvcFunction>, MvcFunctionStore>();
+
+            services.AddHostedService<MvcFunctionWorker>();
             
             return services;
-        }
-        
-        /// <summary>
-        /// 启用模块
-        /// </summary>
-        /// <param name="app"></param>
-        public override void UseModule(IApplicationBuilder app)
-        {
-            Task.Run(() =>
-            {
-                app.ApplicationServices.GetRequiredService<IFunctionHandler>().Initialize();
-            });
-            base.UseModule(app);
         }
     }
 }

@@ -41,9 +41,9 @@ namespace Findx.RabbitMQ
         public IDictionary<string, object> Arguments { get; set; }
 
         /// <summary>
-        /// 是否自动确认消费
+        /// 是否自动确认消费，无异常自动ack
         /// </summary>
-        public bool AutoAck { get; set; } 
+        public bool AutoAck { get; set; }
 
         /// <summary>
         /// Ctor
@@ -53,7 +53,8 @@ namespace Findx.RabbitMQ
         /// <param name="exclusive"></param>
         /// <param name="autoDelete"></param>
         /// <param name="qos"></param>
-        public QueueDeclareConfiguration(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false, int qos = 1, bool autoAck = false)
+        /// <param name="autoAck"></param>
+        public QueueDeclareConfiguration(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false, int qos = 1, bool autoAck = true)
         {
             Check.NotNull(queueName, nameof(queueName));
 

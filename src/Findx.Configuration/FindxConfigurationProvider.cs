@@ -17,7 +17,7 @@ namespace Findx.Configuration
     {
         private readonly string _localBackupPath;
         private readonly FindxConfigurationOptions _options;
-        private FindxAsyncTimer _timer;
+        private AsyncTimer _timer;
         private bool _polling;
         private long _version;
         private HttpClient _httpClient;
@@ -29,7 +29,7 @@ namespace Findx.Configuration
             _httpClient = new HttpClient { Timeout = new TimeSpan(0, 0, 30) };
         }
         public override void Load() => LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
-        private async Task PollingRefreshTask(FindxAsyncTimer timer)
+        private async Task PollingRefreshTask(AsyncTimer timer)
         {
             if (_polling) return;
 
@@ -64,7 +64,7 @@ namespace Findx.Configuration
                 // 第一次成功后,开启定时获取最新变更配置
                 if (_timer == null && _options.RefreshInteval > 0)
                 {
-                    _timer = new FindxAsyncTimer(null, null)
+                    _timer = new AsyncTimer(null, null)
                     {
                         Elapsed = PollingRefreshTask,
                         Period = _options.RefreshInteval * 1000,

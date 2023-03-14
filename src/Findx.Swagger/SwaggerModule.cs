@@ -48,7 +48,6 @@ namespace Findx.Swagger
             if (!_swaggerOptions.Enabled)
                 return services;
 
-            // services.AddMvcCore().AddApiExplorer();
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(options =>
             {

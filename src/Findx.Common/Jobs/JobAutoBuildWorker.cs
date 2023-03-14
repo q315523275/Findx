@@ -1,0 +1,45 @@
+using System.Threading.Tasks;
+using Findx.Extensions;
+
+namespace Findx.Jobs;
+
+/// <summary>
+/// 任务自动构建工作器
+/// </summary>
+public class JobAutoBuildWorker: BackgroundService
+{
+    private readonly IJobScheduler _scheduler;
+    private readonly IJobFinder _jobFinder;
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="scheduler"></param>
+    /// <param name="jobFinder"></param>
+    public JobAutoBuildWorker(IJobScheduler scheduler, IJobFinder jobFinder)
+    {
+        _scheduler = scheduler;
+        _jobFinder = jobFinder;
+    }
+
+    /// <summary>
+    /// 执行
+    /// </summary>
+    /// <param name="stoppingToken"></param>
+    /// <returns></returns>
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        var jobTypes = _jobFinder.FindAll(true);
+
+        foreach (var jobType in jobTypes)
+        {
+            // 需要自动载入执行的任务
+            if (jobType.HasAttribute<JobAttribute>())
+            {
+                _scheduler.ScheduleAsync(jobType);
+            }
+        }
+        
+        return Task.CompletedTask;
+    }
+}

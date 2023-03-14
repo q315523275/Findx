@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Findx.Security;
 using Findx.Extensions;
@@ -8,8 +7,8 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Findx.Caching;
 using Findx.Data;
+using Findx.Logging;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.Extensions.Logging;
 
 namespace Findx.AspNetCore.Mvc
 {
@@ -19,18 +18,16 @@ namespace Findx.AspNetCore.Mvc
     public class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
     {
         private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
-
         private readonly ICacheProvider _cacheProvider;
 
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="serviceProvider"></param>
-        /// <param name="store"></param>
         /// <param name="logger"></param>
+        /// <param name="store"></param>
         /// <param name="actionDescriptorCollectionProvider"></param>
         /// <param name="cacheProvider"></param>
-        public MvcFunctionHandler(IServiceProvider serviceProvider, IFunctionStore<MvcFunction> store, ILogger<MvcFunctionHandler> logger, IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, ICacheProvider cacheProvider) : base(serviceProvider, store, logger)
+        public MvcFunctionHandler(StartupLogger logger, IFunctionStore<MvcFunction> store, IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, ICacheProvider cacheProvider) : base(store, logger)
         {
             _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
             _cacheProvider = cacheProvider;
@@ -51,7 +48,7 @@ namespace Findx.AspNetCore.Mvc
                     return functions;
                 }
             }
-
+            
             // 耗时大致20毫秒左右
             var result = new List<MvcFunction>();
             var controllerActionList = _actionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>();

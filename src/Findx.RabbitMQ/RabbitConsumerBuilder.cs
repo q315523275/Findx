@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Findx.RabbitMQ
         private readonly IMethodInfoFinder _methodFinder;
         private readonly IRabbitMqConsumerFactory _factory;
         private readonly IJsonSerializer _serializer;
-        private readonly List<IRabbitMqConsumer> _consumers;
+        private readonly List<IRabbitMqConsumer> _consumerList;
 
         public RabbitConsumerBuilder(IRabbitConsumerFinder finder, IMethodInfoFinder methodFinder, IRabbitMqConsumerFactory factory, IJsonSerializer serializer)
         {
@@ -26,54 +27,64 @@ namespace Findx.RabbitMQ
             _methodFinder = methodFinder;
             _factory = factory;
             _serializer = serializer;
-            _consumers = new List<IRabbitMqConsumer>();
-            MethodParameter = new Dictionary<MethodInfo, Type>();
-            Handlers = new Dictionary<MethodInfo, Func<object, object[], object>>();
+            _consumerList = new List<IRabbitMqConsumer>();
+            
+            MethodParameterType = new Dictionary<MethodInfo, Type>();
+            MethodHandlers = new Dictionary<MethodInfo, Func<object, object[], object>>();
         }
 
         public void Build()
         {
-            var types = _finder.FindAll(true);
-
-            foreach (var type in types)
+            var consumerList = FindAllConsumerExecutor();
+            var queueList = consumerList.GroupBy(x => x.QueueName);
+            foreach (var group in queueList)
             {
-                var methods = _methodFinder.Find(type, it => it.HasAttribute<RabbitConsumerAttribute>());
-                foreach (var method in methods)
+                var defaultQueue = group.First();
+
+                var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(defaultQueue.ExchangeName, defaultQueue.ExchangeType, durable: defaultQueue.Durable);
+                var queueDeclareConfiguration = new QueueDeclareConfiguration(defaultQueue.QueueName, qos: defaultQueue.Qos) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
+                
+                var routingKeyDict = group.GroupBy(x => x.RoutingKey).ToDictionary(x => x.Key, x => x);
+                
+                var consumer = _factory.Create(exchange: exchangeDeclareConfiguration, queue: queueDeclareConfiguration, defaultQueue.ConnectionName);
+                consumer.OnMessageReceived(async (channel, eventArgs) =>
                 {
-                    var attr = method.GetAttribute<RabbitConsumerAttribute>();
-                    var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(attr.ExchangeName, attr.Type, durable: attr.Durable);
-                    var queueDeclareConfiguration = new QueueDeclareConfiguration(attr.QueueName, qos: attr.Qos) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
-
-                    var consumer = _factory.Create(exchange: exchangeDeclareConfiguration, queue: queueDeclareConfiguration, attr.ConnectionName);
-
-                    consumer.OnMessageReceived(async (channel, eventArgs) =>
+                    Console.WriteLine($"未寻址消息:{Encoding.UTF8.GetString(eventArgs.Body.ToArray())}");
+                    // direct模式指定routingKey
+                    // fanout模式时RabbitConsumer的routingKey需设置为"",发送消息时routingKey需设置为""
+                    // topic模式暂时模式不支持,可升级为startWith匹配
+                    var routingKey = eventArgs.RoutingKey;
+                    if (routingKeyDict.TryGetValue(routingKey, out var typeList))
                     {
                         var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
-
+                
                         using var scope = ServiceLocator.Instance.CreateScope();
                         var serviceProvider = scope.ServiceProvider;
 
-                        var instance = serviceProvider.GetService(type);
+                        foreach (var typeInfo in typeList)
+                        {
+                            var instance = serviceProvider.GetService(typeInfo.Type);
+                            var parameterType = MethodParameterType.GetOrAdd(typeInfo.MethodInfo, it => typeInfo.MethodInfo.GetParameters()[0].ParameterType);
+                            var parameter = ConvertToParameter(parameterType, message);
+                            var handler = MethodHandlers.GetOrAdd(typeInfo.MethodInfo, it => FastInvokeHandler.Create(typeInfo.MethodInfo));
+                
+                            var result = handler.Invoke(instance, new[] { parameter, eventArgs, channel });
+                            if (typeInfo.MethodInfo.IsAsync()) await (Task)result;
+                        }
+                    }
+                });
 
-                        var parameterType = MethodParameter.GetOrAdd(method, it => method.GetParameters()[0].ParameterType);
-
-                        var parameter = ConvertToParameter(parameterType, message);
-
-                        var handler = Handlers.GetOrAdd(method, it => FastInvokeHandler.Create(method));
-
-                        var result = handler.Invoke(instance, new[] { parameter, eventArgs, channel });
-
-                        if (method.IsAsync()) await (Task)result;
-                    });
-
-                    consumer.BindAsync(attr.RoutingKey);
-
-                    _consumers.Add(consumer);
+                // 循环绑定RoutingKey
+                foreach (var item in group.DistinctBy2(x => x.RoutingKey))
+                {
+                    consumer.BindAsync(item.RoutingKey);
                 }
+                
+                _consumerList.Add(consumer);
             }
         }
-        private IDictionary<MethodInfo, Type> MethodParameter { get; }
-        private IDictionary<MethodInfo, Func<object, object[], object>> Handlers { get; }
+        private IDictionary<MethodInfo, Type> MethodParameterType { get; }
+        private IDictionary<MethodInfo, Func<object, object[], object>> MethodHandlers { get; }
 
         /// <summary>
         /// 转换参数值
@@ -109,6 +120,38 @@ namespace Findx.RabbitMQ
             }
 
             return _serializer.Deserialize(message, parameterType);
+        }
+
+        /// <summary>
+        /// 查找所有消费执行者
+        /// </summary>
+        /// <returns></returns>
+        private IReadOnlyList<ConsumerExecutorDescriptor> FindAllConsumerExecutor()
+        {
+            var result = new List<ConsumerExecutorDescriptor>();
+            var types = _finder.FindAll(true);
+            foreach (var type in types)
+            {
+                foreach (var method in _methodFinder.Find(type, it => it.HasAttribute<RabbitConsumerAttribute>()))
+                {
+                    foreach (var attr in method.GetAttributes<RabbitConsumerAttribute>())
+                    {
+                        result.Add(new ConsumerExecutorDescriptor
+                        {
+                            ExchangeType = attr.ExchangeType,
+                            ExchangeName = attr.ExchangeName, 
+                            ConnectionName = attr.ConnectionName, 
+                            QueueName = attr.QueueName, 
+                            Durable = attr.Durable, 
+                            Qos = attr.Qos, 
+                            RoutingKey = attr.RoutingKey, 
+                            MethodInfo = method, 
+                            Type = type
+                        });
+                    }
+                }
+            }
+            return result;
         }
     }
 }

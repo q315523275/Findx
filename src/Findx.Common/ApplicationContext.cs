@@ -8,32 +8,31 @@ namespace Findx
     /// </summary>
     public class ApplicationContext : IApplicationContext
     {
-        private const string FindxApplicationRoot = "Findx:Application";
         private readonly IHostApplicationLifetime _hostApplicationLifetime;
-
+        private readonly Lazy<string> _version;
+        private readonly Lazy<string> _instanceIp;
+        private readonly Lazy<string> _internalIp;
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="configuration"></param>
+        /// <param name="options"></param>
         /// <param name="environment"></param>
         /// <param name="hostApplicationLifetime"></param>
-        public ApplicationContext(IConfiguration configuration, IHostEnvironment environment, IHostApplicationLifetime hostApplicationLifetime)
+        public ApplicationContext(IOptions<ApplicationOptions> options, IHostEnvironment environment, IHostApplicationLifetime hostApplicationLifetime)
         {
             _hostApplicationLifetime = hostApplicationLifetime;
-            ApplicationId = configuration?.GetValue<string>($"{FindxApplicationRoot}:Id") ?? Guid.NewGuid().ToString();
-            ApplicationName = configuration?.GetValue<string>($"{FindxApplicationRoot}:Name") ?? environment.ApplicationName;
-            Port = configuration?.GetValue<int>($"{FindxApplicationRoot}:Port") ?? GlobalListener.GetAvailablePort(5000);
-            if (!GlobalListener.CanListen(Port))
-            {
+            
+            ApplicationId = options.Value.Id ?? Guid.NewGuid().ToString();
+            ApplicationName = options.Value.Name ?? environment.ApplicationName;
+            Port = options.Value.Port > 0 ? options.Value.Port : GlobalListener.GetAvailablePort(5000);
+            // 验证端口是否被占用
+            if (options.Value.AvailablePort && !GlobalListener.CanListen(Port)) 
                 Port = GlobalListener.GetAvailablePort(5000);
-            }
-            Version = configuration?.GetValue<string>($"{FindxApplicationRoot}:Version") ?? this.GetType().Assembly.GetProductVersion();
-            Uris = configuration?.GetValue<IEnumerable<string>>($"{FindxApplicationRoot}:Uris") ?? new List<string>
-                {
-                    $"htt" + $"p://*:{Port}"
-                };
-            InstanceIp = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName());
-            InternalIp = InstanceIp;
+            Uris = options.Value.Uris ?? $"htt" + $"p://*:{Port}";
+            
+            _version = new Lazy<string>(() => options.Value.Version ?? this.GetType().Assembly.GetProductVersion());
+            _instanceIp = new Lazy<string>(() => options.Value.InstanceIp ?? DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName()));
+            _internalIp = new Lazy<string>(() => options.Value.InternalIp ?? _instanceIp.Value);
 
             RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;
         }
@@ -51,7 +50,7 @@ namespace Findx
         /// <summary>
         /// Uri集合
         /// </summary>
-        public IEnumerable<string> Uris { get; }
+        public string Uris { get; }
 
         /// <summary>
         /// 端口
@@ -61,17 +60,17 @@ namespace Findx
         /// <summary>
         /// 版本
         /// </summary>
-        public string Version { get; }
+        public string Version => _version.Value;
 
         /// <summary>
         /// 实例Ip
         /// </summary>
-        public string InstanceIp { get; }
+        public string InstanceIp => _instanceIp.Value;
 
         /// <summary>
         /// 内网Ip
         /// </summary>
-        public string InternalIp { get; }
+        public string InternalIp => _internalIp.Value;
 
         /// <summary>
         /// 根目录

@@ -27,7 +27,7 @@ namespace Findx.Discovery.Consul
 
         }
 
-        public async Task<bool> Register(IConsulRegistration registration, CancellationToken cancellationToken = default)
+        public async Task<bool> RegisterAsync(IConsulRegistration registration, CancellationToken cancellationToken = default)
         {
             Check.NotNull(registration, nameof(registration));
 
@@ -36,7 +36,7 @@ namespace Findx.Discovery.Consul
             return response.StatusCode == HttpStatusCode.OK;
         }
 
-        public async Task<bool> Deregister(IConsulRegistration registration, CancellationToken cancellationToken = default)
+        public async Task<bool> DeregisterAsync(IConsulRegistration registration, CancellationToken cancellationToken = default)
         {
             Check.NotNull(registration, nameof(registration));
 
@@ -45,7 +45,7 @@ namespace Findx.Discovery.Consul
             return response.StatusCode == HttpStatusCode.OK;
         }
 
-        public async Task<string> GetStatus(IConsulRegistration registration, CancellationToken cancellationToken = default)
+        public async Task<string> GetStatusAsync(IConsulRegistration registration, CancellationToken cancellationToken = default)
         {
             Check.NotNull(registration, nameof(registration));
 
@@ -63,7 +63,7 @@ namespace Findx.Discovery.Consul
             return UP;
         }
 
-        public async Task SetStatus(IConsulRegistration registration, string status, CancellationToken cancellationToken = default)
+        public async Task SetStatusAsync(IConsulRegistration registration, string status, CancellationToken cancellationToken = default)
         {
             Check.NotNull(registration, nameof(registration));
 

@@ -18,7 +18,7 @@ namespace Findx.Locks
         
         private readonly ILogger<RLock> _logger;
         
-        private FindxAsyncTimer _timer;
+        private AsyncTimer _timer;
         private int _renewalCount = 0;
         private bool _isReleased;
 
@@ -117,7 +117,7 @@ namespace Findx.Locks
         {
             _timer?.Stop();
             _timer = null;
-            _timer = new FindxAsyncTimer(ServiceLocator.GetService<IExceptionNotifier>(), ServiceLocator.GetService<ILogger<FindxAsyncTimer>>())
+            _timer = new AsyncTimer(ServiceLocator.GetService<IExceptionNotifier>(), ServiceLocator.GetService<ILogger<AsyncTimer>>())
             {
                 Period = _period,
                 Elapsed = Timer_Elapsed,
@@ -130,7 +130,7 @@ namespace Findx.Locks
         /// 定时续期方法
         /// </summary>
         /// <param name="timer"></param>
-        private async Task Timer_Elapsed(FindxAsyncTimer timer)
+        private async Task Timer_Elapsed(AsyncTimer timer)
         {
             await RenewAsync(_timeUntilExpires);
         }

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Findx.Data;
-using Findx.Extensions;
-using Microsoft.Extensions.Logging;
+﻿using Findx.Data;
+using Findx.Logging;
 
 namespace Findx.Security
 {
@@ -14,37 +10,28 @@ namespace Findx.Security
 		where TFunction : class, IEntity<Guid>, IFunction, new()
 	{
 		private readonly List<TFunction> _functions = new();
-		private readonly IServiceProvider _serviceProvider;
 		private readonly IFunctionStore<TFunction> _store;
+		private readonly StartupLogger _startupLogger;
 
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="serviceProvider"></param>
 		/// <param name="store"></param>
 		/// <param name="logger"></param>
-		protected FunctionHandlerBase(IServiceProvider serviceProvider, IFunctionStore<TFunction> store, ILogger logger)
+		/// <param name="startupLogger"></param>
+		protected FunctionHandlerBase(IFunctionStore<TFunction> store, StartupLogger startupLogger)
 		{
-			_serviceProvider = serviceProvider;
 			_store = store;
-			Logger = logger;
+			_startupLogger = startupLogger;
 		}
 		
-		/// <summary>
-		/// 获取 日志记录对象
-		/// </summary>
-		private ILogger Logger { get; }
-
 		/// <summary>
 		/// 从程序集中获取功能信息（如MVC的Controller-Action）
 		/// </summary>
 		public void Initialize()
 		{
 			var functions = GetFunctions();
-			_serviceProvider.ExecuteScopedWork(provider =>
-			{
-			   _store.SyncToDatabase(functions);
-			});
+			_store.SyncToDatabase(functions);
 			RefreshCache();
 		}
 
@@ -73,12 +60,9 @@ namespace Findx.Security
 		/// </summary>
 		public void RefreshCache()
 		{
-			_serviceProvider.ExecuteScopedWork(provider =>
-			{
-				_functions.Clear();
-				_functions.AddRange(_store.GetFromDatabase());
-				Logger.LogInformation($"刷新功能信息缓存，从数据库获取到 {_functions.Count} 个功能信息");
-			});
+			_functions.Clear();
+			_functions.AddRange(_store.GetFromDatabase());
+			_startupLogger.LogInformation($"刷新功能信息缓存，从数据库获取到 {_functions.Count} 个功能信息", GetType().Name);
 		}
 
 		/// <summary>
@@ -90,7 +74,7 @@ namespace Findx.Security
 		}
 
 		/// <summary>
-		/// 
+		/// 获取所有功能
 		/// </summary>
 		/// <param name="fromCache"></param>
 		/// <returns></returns>

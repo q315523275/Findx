@@ -4,13 +4,13 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
-		<Version>1.6.0</Version>
+		<Version>1.8.6-beta4</Version>
 		<Description>RabbitMQ功能增强,属性标注消费、连接池管理、自定义消费等</Description>
-		<PackageVersion>1.8.6-beta1</PackageVersion>
+		<PackageVersion>1.8.6-beta4</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="RabbitMQ.Client" Version="6.2.4" />
+		<PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
 	</ItemGroup>
 
 	<ItemGroup>

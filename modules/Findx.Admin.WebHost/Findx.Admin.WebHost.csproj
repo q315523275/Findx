@@ -22,11 +22,12 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Findx.DinkToPdf" Version="1.8.5" />
-    <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.665" />
+    <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.691" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Findx.ImageSharp\Findx.ImageSharp.csproj" />
     <ProjectReference Include="..\..\src\Findx.NLog\Findx.NLog.csproj" />
+    <ProjectReference Include="..\..\src\Findx.RabbitMQ\Findx.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
     <ProjectReference Include="..\..\src\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
     <ProjectReference Include="..\Findx.Module.EleAdmin\Findx.Module.EleAdmin.csproj">

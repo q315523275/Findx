@@ -4,7 +4,6 @@ using Castle.DynamicProxy;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Castle;
-using Findx.Configuration;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.WebHost.Aspect;
@@ -16,7 +15,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddFindx().AddModules(
-                //typeof(Findx.FindxRabbitMqModule)
+                // typeof(Findx.FindxRabbitMqModule)
                 //, typeof(Findx.EventBus.RabbitMQ.EventBusRabbitMqModule)
                 typeof(Findx.Discovery.Consul.ConsulDiscoveryModule)
                 , typeof(Findx.Redis.FindxRedisModule)

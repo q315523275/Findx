@@ -579,7 +579,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// 获取所有的Hash键
         /// </summary>
         /// <param name="key">key</param>
-        /// <param name="commandFlags"></param>
         /// <returns></returns>
         public IEnumerable<string> HashKeys(string key)
         {
@@ -590,7 +589,6 @@ namespace Findx.Redis.StackExchangeRedis
         /// 获取hash键的个数
         /// </summary>
         /// <param name="key">key</param>
-        /// <param name="commandFlags"></param>
         /// <returns></returns>
         public long HashLength(string key)
         {

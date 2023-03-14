@@ -23,7 +23,7 @@ namespace Findx.AspNetCore.Extensions
         public static WebApplication UseFindxStartup(this WebApplication app)
         {
             var appInfo = app.Services.GetRequiredService<IApplicationContext>();
-            foreach (var uri in appInfo.Uris)
+            foreach (var uri in appInfo.Uris.Split(";"))
                 app.Urls.Add(uri);
 
             return app;

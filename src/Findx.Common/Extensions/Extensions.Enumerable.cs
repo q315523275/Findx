@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Extensions
 {
@@ -182,6 +177,7 @@ namespace Findx.Extensions
                         await func(item).ContinueWith(res =>
                         {
                             // action is completed, so decrement the number of currently running tasks
+                            // ReSharper disable once AccessToDisposedClosure
                             semaphoreSlim.Release();
                         });
                     }));
@@ -192,7 +188,7 @@ namespace Findx.Extensions
             }
             else
             {
-                await Task.WhenAll(enumerable.Select(item => func(item)));
+                await Task.WhenAll(enumerable.Select(func));
             }
         }
     }

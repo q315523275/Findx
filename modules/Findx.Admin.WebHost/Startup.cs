@@ -3,9 +3,7 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Extensions;
 using Findx.Serialization;
 using Microsoft.Extensions.FileProviders;
-using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Unicode;
 using Findx.Admin.WebHost.WebShell;
 using Findx.WebSocketCore;
 using Microsoft.AspNetCore.WebSockets;
@@ -27,6 +25,8 @@ namespace Findx.Module.WebHost
                         options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
                         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                     });
+
+            services.AddEndpointsApiExplorer();
 
             services.AddCors(options =>
             {

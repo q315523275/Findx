@@ -17,7 +17,7 @@ namespace Findx.Discovery
         /// <param name="registration"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> Register(T registration, CancellationToken cancellationToken = default);
+        Task<bool> RegisterAsync(T registration, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 注销服务
@@ -25,7 +25,7 @@ namespace Findx.Discovery
         /// <param name="registration"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<bool> Deregister(T registration, CancellationToken cancellationToken = default);
+        Task<bool> DeregisterAsync(T registration, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 获取服务状态
@@ -34,7 +34,7 @@ namespace Findx.Discovery
         /// <param name="status"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetStatus(T registration, string status, CancellationToken cancellationToken = default);
+        Task SetStatusAsync(T registration, string status, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 设置服务状态
@@ -42,6 +42,6 @@ namespace Findx.Discovery
         /// <param name="registration"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<string> GetStatus(T registration, CancellationToken cancellationToken = default);
+        Task<string> GetStatusAsync(T registration, CancellationToken cancellationToken = default);
     }
 }

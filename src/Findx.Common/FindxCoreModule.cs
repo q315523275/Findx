@@ -48,6 +48,9 @@ namespace Findx
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             var configuration = services.GetConfiguration();
+            
+            // 应用基础
+            services.Configure<ApplicationOptions>(configuration.GetSection("Findx:Application"));
 
             // 配置
             services.AddSingleton<ISettingProvider, ConfigurationSettingProvider>();

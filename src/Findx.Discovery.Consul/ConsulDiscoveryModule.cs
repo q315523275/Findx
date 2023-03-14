@@ -43,26 +43,12 @@ namespace Findx.Discovery.Consul
             services.Replace(descriptor);
             services.TryAddSingleton<IConsulClient>(sp => ConsulClientFactory.CreateClient(sp.GetRequiredService<IOptionsMonitor<ConsulOptions>>().CurrentValue));
 
+            // 自动注册服务发现
+            services.AddHostedService<ConsulDiscoveryAutoRegistryWorker>();
+            
             return services;
         }
-
-        /// <summary>
-        /// 模块启用
-        /// </summary>
-        /// <param name="provider"></param>
-        public override void UseModule(IServiceProvider provider)
-        {
-            Task.Run(() =>
-            {
-                var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DiscoveryOptions>>();
-                if (!optionsMonitor.CurrentValue.Enabled || !optionsMonitor.CurrentValue.Register) return;
-                var consulServiceRegistry = provider.GetRequiredService<IConsulServiceRegistry>();
-                var consulRegistration = provider.GetRequiredService<IConsulRegistration>();
-                consulServiceRegistry.Register(consulRegistration).ConfigureAwait(false).GetAwaiter();
-            });
-            base.UseModule(provider);
-        }
-
+        
         /// <summary>
         /// 模块销毁
         /// </summary>
@@ -74,7 +60,7 @@ namespace Findx.Discovery.Consul
             {
                 var consulServiceRegistry = provider.GetRequiredService<IConsulServiceRegistry>();
                 var consulRegistration = provider.GetRequiredService<IConsulRegistration>();
-                consulServiceRegistry.Deregister(consulRegistration).ConfigureAwait(false).GetAwaiter();
+                consulServiceRegistry.DeregisterAsync(consulRegistration).ConfigureAwait(false).GetAwaiter();
             }
             base.OnShutdown(provider);
         }

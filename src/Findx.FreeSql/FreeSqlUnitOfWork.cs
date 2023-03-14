@@ -23,8 +23,6 @@ namespace Findx.FreeSql
 
         private readonly Stack<string> _transactionStack = new Stack<string>();
 
-        private readonly ConcurrentBag<Func<IUnitOfWork, Task>> _completedHandlers = new ConcurrentBag<Func<IUnitOfWork, Task>>();
-
         /// <summary>
         /// Ctor
         /// </summary>
@@ -80,15 +78,6 @@ namespace Findx.FreeSql
             var token = Guid.NewGuid().ToString();
             _transactionStack.Push(token);
             _logger.LogDebug("允许事务提交，标识：{Token}，当前总标识数：{TransactionStackCount}", token, _transactionStack.Count);
-        }
-        
-        /// <summary>
-        /// 添加事物完成事件
-        /// </summary>
-        /// <param name="handler"></param>
-        public void OnCompleted(Func<IUnitOfWork, Task> handler)
-        {
-            _completedHandlers.Add(handler);
         }
 
         #region Dispose

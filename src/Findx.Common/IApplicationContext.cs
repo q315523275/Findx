@@ -18,7 +18,7 @@
         /// <summary>
         /// 应用绑定URI
         /// </summary>
-        IEnumerable<string> Uris { get; }
+        string Uris { get; }
 
         /// <summary>
         /// 应用端口
@@ -31,12 +31,12 @@
         string Version { get; }
 
         /// <summary>
-        /// 提供服务IP
+        /// 服务IP
         /// </summary>
         string InstanceIp { get; }
 
         /// <summary>
-        /// 真实IP,Docker容器等
+        /// 内网Ip
         /// </summary>
         string InternalIp { get; }
 

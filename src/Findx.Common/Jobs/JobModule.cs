@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Threading.Tasks;
 using Findx.Extensions;
 using Findx.Jobs.Internal;
 using Findx.Messaging;
@@ -65,53 +64,12 @@ namespace Findx.Jobs
             // 调度工作者
             services.AddHostedService<InMemorySchedulerWorker>();
 
+            // 自动载入任务
+            services.AddHostedService<JobAutoBuildWorker>();
+
             return services;
         }
         
-        /// <summary>
-        /// 线程通知
-        /// </summary>
-        private CancellationTokenSource CancellationToken { get; set; }
-
-        /// <summary>
-        /// 启用模块
-        /// </summary>
-        /// <param name="provider"></param>
-        public override void UseModule(IServiceProvider provider)
-        {
-            if (_options is not { Enabled: true }) return;
-            CancellationToken = new CancellationTokenSource();
-            Task.Run(() =>
-            {
-                var scheduler = provider.GetRequiredService<IJobScheduler>();
-                var jobFinder = provider.GetRequiredService<IJobFinder>();
-                var jobTypes = jobFinder.FindAll(true);
-
-                foreach (var jobType in jobTypes)
-                {
-                    // 需要自动载入执行的任务
-                    if (jobType.HasAttribute<JobAttribute>())
-                    {
-                        scheduler.ScheduleAsync(jobType);
-                    }
-                }
-
-            }, CancellationToken.Token);
-            base.UseModule(provider);
-        }
-
-        /// <summary>
-        /// 应用销毁
-        /// </summary>
-        /// <param name="provider"></param>
-        public override void OnShutdown(IServiceProvider provider)
-        {
-            if (_options is { Enabled: true })
-            {
-                CancellationToken.Cancel();
-            }
-            base.OnShutdown(provider);
-        }
     }
 }
 

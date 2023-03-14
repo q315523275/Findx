@@ -9,49 +9,6 @@ namespace Findx.Utils
     public static class RuntimeUtil
     {
         /// <summary>
-        /// 执行系统命令
-        /// </summary>
-        /// <param name="exePath"></param>
-        /// <returns></returns>
-        public static List<string> ExecForStringList(string exePath)
-        {
-            var results = new List<string>();
-
-            using (var executor = new ProcessExecutor(exePath))
-            {
-                executor.OnOutputDataReceived += (_, str) =>
-                {
-                    results.Add(str);
-                };
-                executor.Execute();
-            }
-
-            return results;
-        }
-
-        /// <summary>
-        /// 执行系统命令,命令带参数
-        /// </summary>
-        /// <param name="exePath"></param>
-        /// <param name="arguments"></param>
-        /// <returns></returns>
-        public static List<string> ExecForStringList(string exePath, string arguments)
-        {
-            var results = new List<string>();
-
-            using (var executor = new ProcessExecutor(exePath, arguments))
-            {
-                executor.OnOutputDataReceived += (_, str) =>
-                {
-                    results.Add(str);
-                };
-                executor.Execute();
-            }
-
-            return results;
-        }
-
-        /// <summary>
         /// 销毁进程
         /// </summary>
         public static void Destroy()

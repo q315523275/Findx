@@ -50,19 +50,10 @@ namespace Findx.RabbitMQ
             services.AddSingleton<IRabbitConsumerBuilder, RabbitConsumerBuilder>();
             services.GetOrAddTypeFinder<IRabbitConsumerFinder>(assemblyFinder => new RabbitConsumerFinder(assemblyFinder));
 
+            // 消费者自动构建
+            services.AddHostedService<RabbitConsumerBuildWorker>();
+            
             return services;
         }
-
-        /// <summary>
-        /// 启用模块
-        /// </summary>
-        /// <param name="provider"></param>
-        public override void UseModule(IServiceProvider provider)
-        {
-            Task.Run(() => { provider.GetService<IRabbitConsumerBuilder>()?.Build(); });
-
-            base.UseModule(provider);
-        }
-
     }
 }

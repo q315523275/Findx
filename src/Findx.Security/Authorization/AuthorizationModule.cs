@@ -42,7 +42,7 @@ namespace Findx.Security.Authorization
             if (!_enabled) return services;
             services.AddAuthorization(opts =>
             {
-                opts.AddPolicy(FunctionRequirement.Policy, policy => policy.Requirements.Add(new FunctionRequirement()));
+                opts.AddPolicy(FunctionRequirement.Policy, policy => policy.AddRequirements(new FunctionRequirement()));
             });
             services.AddScoped<IAuthorizationHandler, FunctionRequirementHandler>();
             return services;

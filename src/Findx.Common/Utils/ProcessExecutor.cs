@@ -8,7 +8,6 @@ namespace Findx.Utils
     /// 进程执行器
     /// WeihanLi.Common.Helpers
     /// </summary>
-    [Obsolete("Please use ProcessX")]
     public sealed class ProcessExecutor : IDisposable
     {
         /// <summary>

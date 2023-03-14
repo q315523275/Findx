@@ -40,7 +40,7 @@ namespace Findx.Storage
             Serializer = serializer;
             _logger = logger;
 
-            _mediaRootFolder = setting.GetValue<string>("Findx:Storage:Folder:DefaultFolder") ?? app.MapPath("~/storage");
+            _mediaRootFolder = setting.GetValue<string>("Findx:Storage:Folder:DefaultFolder") ?? app.MapPath("~/");
         }
 
         /// <summary>

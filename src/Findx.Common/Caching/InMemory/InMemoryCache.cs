@@ -36,13 +36,13 @@ namespace Findx.Caching.InMemory
         /// <summary>
         /// 定时器
         /// </summary>
-        private FindxAsyncTimer Timer { get; }
+        private AsyncTimer Timer { get; }
 
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="timer"></param>
-        public InMemoryCache(FindxAsyncTimer timer)
+        public InMemoryCache(AsyncTimer timer)
         {
             _cache = new ConcurrentDictionary<string, CacheItem>();
 
@@ -105,7 +105,7 @@ namespace Findx.Caching.InMemory
         /// 调度执行方法
         /// </summary>
         /// <param name="timer"></param>
-        private async Task Timer_Elapsed(FindxAsyncTimer timer)
+        private async Task Timer_Elapsed(AsyncTimer timer)
         {
             var now = DateTime.Now;
             foreach (var item in _cache)

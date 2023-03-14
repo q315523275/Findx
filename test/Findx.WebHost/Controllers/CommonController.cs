@@ -164,16 +164,14 @@ namespace Findx.WebHost.Controllers
         /// <summary>
         /// 命令执行
         /// </summary>
-        /// <param name="exePath"></param>
+        /// <param name="command"></param>
         /// <param name="arguments"></param>
+        /// <param name="workingDirectory"></param>
         /// <returns></returns>
         [HttpGet("/cmd")]
-        public object Cmd([Required] string exePath, string arguments)
+        public async Task<string> Cmd([Required] string command, string arguments, string workingDirectory)
         {
-            if (arguments.IsNullOrWhiteSpace())
-                return Findx.Utils.RuntimeUtil.ExecForStringList(exePath);
-            else
-                return Findx.Utils.RuntimeUtil.ExecForStringList(exePath, arguments);
+            return await ProcessX.StartAsync(command: command, workingDirectory: workingDirectory).FirstAsync();
         }
 
         /// <summary>

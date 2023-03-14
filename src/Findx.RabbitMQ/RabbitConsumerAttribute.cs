@@ -2,18 +2,21 @@
 
 namespace Findx.RabbitMQ
 {
-    [AttributeUsage(AttributeTargets.Method)]
+    /// <summary>
+    /// 
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class RabbitConsumerAttribute : Attribute
     {
-        public RabbitConsumerAttribute(string exchangeName, string type, string queueName, int qos, string routingKey, string connectionName = null)
+        public RabbitConsumerAttribute(string exchangeName, string exchangeType, string queueName, int qos, string routingKey, string connectionName = null)
         {
             Check.NotNull(exchangeName, nameof(exchangeName));
-            Check.NotNull(type, nameof(type));
+            Check.NotNull(exchangeType, nameof(exchangeType));
             Check.NotNull(queueName, nameof(queueName));
             Check.NotNull(routingKey, nameof(routingKey));
 
             ExchangeName = exchangeName;
-            Type = type;
+            ExchangeType = exchangeType;
             QueueName = queueName;
             Qos = qos;
             RoutingKey = routingKey;
@@ -28,7 +31,7 @@ namespace Findx.RabbitMQ
         /// <summary>
         /// 交换机类型，常见的如fanout、direct、topic
         /// </summary>
-        public string Type { get; } = "direct";
+        public string ExchangeType { get; } = "direct";
 
         /// <summary>
         /// 交换机是否持久化

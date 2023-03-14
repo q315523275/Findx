@@ -74,8 +74,8 @@ namespace Findx.AspNetCore.Extensions
             Console.ForegroundColor = defaultColor;
             #endregion
 
-            IServiceProvider provider = builder.ApplicationServices;
-            ILogger logger = provider.GetLogger("ApplicationBuilderExtensions");
+            var provider = builder.ApplicationServices;
+            var logger = provider.GetLogger("ApplicationBuilderExtensions");
             logger.LogInformation(0, "框架初始化开始");
 
             // 打印框架启动日志
@@ -100,7 +100,7 @@ namespace Findx.AspNetCore.Extensions
                 logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now -jsTime).TotalMilliseconds}ms");
             }
             // 所有模块停止委托注册
-            IHostApplicationLifetime hostApplicationLifetime = provider.GetService<IHostApplicationLifetime>();
+            var hostApplicationLifetime = provider.GetService<IHostApplicationLifetime>();
             hostApplicationLifetime?.ApplicationStopping.Register(() =>
             {
                 foreach (var module in findxBuilder.Modules)

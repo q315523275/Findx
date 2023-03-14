@@ -6,12 +6,12 @@ namespace Findx.Threading
     /// <summary>
     /// 异步定时器
     /// </summary>
-    public class FindxAsyncTimer : DependencyInjection.ITransientDependency
+    public class AsyncTimer : DependencyInjection.ITransientDependency
     {
         /// <summary>
         /// 执行方法
         /// </summary>
-        public Func<FindxAsyncTimer, Task> Elapsed = _ => Task.CompletedTask;
+        public Func<AsyncTimer, Task> Elapsed = _ => Task.CompletedTask;
 
         /// <summary>
         /// 循环间隔时间
@@ -26,7 +26,7 @@ namespace Findx.Threading
         /// <summary>
         /// logger
         /// </summary>
-        public ILogger<FindxAsyncTimer> Logger { get; set; }
+        public ILogger<AsyncTimer> Logger { get; set; }
 
         /// <summary>
         /// 异常通知器
@@ -42,7 +42,7 @@ namespace Findx.Threading
         /// </summary>
         /// <param name="exceptionNotifier"></param>
         /// <param name="logger"></param>
-        public FindxAsyncTimer(IExceptionNotifier exceptionNotifier, ILogger<FindxAsyncTimer> logger)
+        public AsyncTimer(IExceptionNotifier exceptionNotifier, ILogger<AsyncTimer> logger)
         {
             ExceptionNotifier = exceptionNotifier;
             Logger = logger;

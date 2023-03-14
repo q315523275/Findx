@@ -35,9 +35,9 @@ namespace Findx.RabbitMQ
 
         protected object ChannelSendSyncLock { get; } = new object();
 
-        protected FindxAsyncTimer Timer { get; }
+        protected AsyncTimer Timer { get; }
 
-        public RabbitMqConsumer(IConnectionPool connectionPool, FindxAsyncTimer timer, IExceptionNotifier exceptionNotifier, ILogger<RabbitMqConsumer> logger)
+        public RabbitMqConsumer(IConnectionPool connectionPool, AsyncTimer timer, IExceptionNotifier exceptionNotifier, ILogger<RabbitMqConsumer> logger)
         {
             ConnectionPool = connectionPool;
             Timer = timer;
@@ -60,7 +60,7 @@ namespace Findx.RabbitMQ
             Timer.Start();
         }
 
-        protected virtual async Task Timer_Elapsed(FindxAsyncTimer timer)
+        protected virtual async Task Timer_Elapsed(AsyncTimer timer)
         {
             if (Channel == null || Channel.IsOpen == false)
             {
@@ -95,14 +95,15 @@ namespace Findx.RabbitMQ
                     await callback(Channel, basicDeliverEventArgs);
                 }
             
-                if (!Queue.AutoAck)
+                if (Queue.AutoAck)
                     Channel.BasicAck(basicDeliverEventArgs.DeliveryTag, multiple: false);
             }
             catch (Exception ex)
             {
                 try
                 {
-                    Channel.BasicNack(basicDeliverEventArgs.DeliveryTag, multiple: false, requeue: true);
+                    if (Queue.AutoAck)
+                        Channel.BasicNack(basicDeliverEventArgs.DeliveryTag, multiple: false, requeue: true);
 
                     if (FailedCallback != null)
                         await FailedCallback(Channel, basicDeliverEventArgs);
