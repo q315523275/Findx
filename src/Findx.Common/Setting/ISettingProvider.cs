@@ -5,7 +5,12 @@
     /// </summary>
 	public interface ISettingProvider
 	{
-        /// <summary>
+		/// <summary>
+		/// 配置类型
+		/// </summary>
+		SettingType Type { get; }
+
+		/// <summary>
         /// 获取值
         /// </summary>
         /// <typeparam name="T"></typeparam>

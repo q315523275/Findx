@@ -8,7 +8,7 @@
         /// <summary>
         /// 对象结果值
         /// </summary>
-        protected volatile int _value;
+        private int _value;
 
         /// <summary>
         /// Ctor
@@ -34,7 +34,7 @@
         {
             get => _value;
 
-            set => _value = value;
+            set => Interlocked.Exchange(ref _value, value);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@
         }
 
         /// <summary>
-        /// 设置新值并返回结果值
+        /// 添加指定数值并返回添加后的结果
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>

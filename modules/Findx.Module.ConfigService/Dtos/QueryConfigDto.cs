@@ -11,16 +11,11 @@ public class QueryConfigDto: PageBase
     /// 数据编号
     /// </summary>
     public string DataId { set; get; }
-    
-    /// <summary>
-    /// 组
-    /// </summary>
-    public string Group { set; get; }
-    
+
     /// <summary>
     /// 应用名称
     /// </summary>
-    public string AppName { get; set; }
+    public string AppId { get; set; }
     
     /// <summary>
     /// 环境

@@ -4,6 +4,7 @@ using System;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
+using Findx.Configuration;
 using Findx.Extensions;
 using Findx.Machine;
 using Findx.Machine.Cpu;
@@ -59,29 +60,39 @@ Console.WriteLine("Hello, World!");
 //     Console.WriteLine($"{activeTcpListener.Address.MapToIPv4().ToString()}:{activeTcpListener.Port}");
 // }
 
-var webSocketClient = new XWebSocketClient("ws://127.0.0.1:10021/ws")
+// var webSocketClient = new XWebSocketClient("ws://127.0.0.1:10021/ws")
+// {
+//     MessageReceived = (session, message, _) =>
+//     {
+//         Console.WriteLine(message);
+//         return Task.CompletedTask;
+//     },
+//     OnClosed = () =>
+//     {
+//         Console.WriteLine("websocket closed");
+//         return Task.CompletedTask;
+//     },
+//     OnError = (message, ex) =>
+//     {
+//         Console.WriteLine("ex:" + ex.Message);
+//         return Task.CompletedTask;
+//     }
+// };
+// webSocketClient.Headers.Add("name", "控制台测试哦");
+// webSocketClient.StartAsync().Wait();
+// while (true)
+// {
+//     Console.WriteLine($"请输入websocket发送内容");
+//     var msg = Console.ReadLine();
+//     webSocketClient.SendAsync(msg).Wait();
+// }
+
+var client = new ConfigClient("1", "2", "dev", "http://localhost:10021");
+client.OnConfigDataChange(x =>
 {
-    MessageReceived = (session, message, _) =>
-    {
-        Console.WriteLine(message);
-        return Task.CompletedTask;
-    },
-    OnClosed = () =>
-    {
-        Console.WriteLine("websocket closed");
-        return Task.CompletedTask;
-    },
-    OnError = (message, ex) =>
-    {
-        Console.WriteLine("ex:" + ex.Message);
-        return Task.CompletedTask;
-    }
-};
-webSocketClient.Headers.Add("name", "控制台测试哦");
-webSocketClient.StartAsync().Wait();
-while (true)
-{
-    Console.WriteLine($"请输入websocket发送内容");
-    var msg = Console.ReadLine();
-    webSocketClient.SendAsync(msg).Wait();
-}
+    Console.WriteLine(x.ToJson());
+    return Task.CompletedTask;
+});
+await client.LoadAsync().ConfigureAwait(false);
+Console.WriteLine("开始配置监听");
+Console.ReadLine();

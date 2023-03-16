@@ -10,8 +10,8 @@ public class FunctionAuthorization : FunctionAuthorizationBase
     /// <summary>
     /// Ctor
     /// </summary>
-    /// <param name="setting"></param>
-    public FunctionAuthorization(ISettingProvider setting) : base(setting)
+    /// <param name="settingFactory"></param>
+    public FunctionAuthorization(ISettingProviderFactory settingFactory) : base(settingFactory)
     {
     }
 }

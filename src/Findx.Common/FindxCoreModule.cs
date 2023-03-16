@@ -54,6 +54,7 @@ namespace Findx
 
             // 配置
             services.AddSingleton<ISettingProvider, ConfigurationSettingProvider>();
+            services.AddSingleton<ISettingProviderFactory, SettingProviderFactory>();
 
             // 缓存
             services.TryAddSingleton<ICacheProvider, CacheProvider>();

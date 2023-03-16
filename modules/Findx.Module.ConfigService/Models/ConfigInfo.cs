@@ -18,20 +18,15 @@ public class ConfigInfo: FullAuditedBase<Guid, Guid>, ISoftDeletable, IResponse
     public override Guid Id { get; set; }
     
     /// <summary>
+    /// 应用编号
+    /// </summary>
+    public string AppId { get; set; }
+    
+    /// <summary>
     /// 数据编号
     /// </summary>
     public string DataId { get; set; }
-    
-    /// <summary>
-    /// 组别编号
-    /// </summary>
-    public string GroupId { get; set; }
-    
-    /// <summary>
-    /// 应用名称
-    /// </summary>
-    public string AppName { get; set; }
-    
+
     /// <summary>
     /// 数据类型
     /// </summary>
@@ -46,6 +41,21 @@ public class ConfigInfo: FullAuditedBase<Guid, Guid>, ISoftDeletable, IResponse
     /// 环境
     /// </summary>
     public string Environment { get; set; }
+    
+    /// <summary>
+    /// 版本号
+    /// </summary>
+    public long Version { get; set; }
+    
+    /// <summary>
+    /// Md5
+    /// </summary>
+    public string Md5 { get; set; }
+    
+    /// <summary>
+    /// 描述
+    /// </summary>
+    public string Comment { get; set; }
 
     /// <summary>
     /// 是否删除

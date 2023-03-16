@@ -33,14 +33,15 @@ namespace Findx.Extensions
         /// <param name="httpClient"></param>
         /// <param name="requestUri"></param>
         /// <param name="parameter"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task<HttpResponseMessage> PostAsJsonAsync<T>(this HttpClient httpClient, string requestUri, T parameter)
+        public static Task<HttpResponseMessage> PostAsJsonAsync<T>(this HttpClient httpClient, string requestUri, T parameter, CancellationToken cancellationToken = default)
         {
             Check.NotNull(httpClient, nameof(httpClient));
             Check.NotNull(requestUri, nameof(requestUri));
             Check.NotNull(parameter, nameof(parameter));
 
-            return httpClient.PostAsync(requestUri, new StringContent(parameter.ToJson<T>(), Encoding.UTF8, JsonMediaType));
+            return httpClient.PostAsync(requestUri, new StringContent(parameter.ToJson<T>(), Encoding.UTF8, JsonMediaType), cancellationToken);
         }
 
         /// <summary>
@@ -49,14 +50,17 @@ namespace Findx.Extensions
         /// <param name="httpClient"></param>
         /// <param name="requestUri"></param>
         /// <param name="paramDic"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task<HttpResponseMessage> PostAsFormAsync(this HttpClient httpClient, string requestUri, IEnumerable<KeyValuePair<string, string>> paramDic)
+        public static Task<HttpResponseMessage> PostAsFormAsync(this HttpClient httpClient, string requestUri, IEnumerable<KeyValuePair<string, string>> paramDic, CancellationToken cancellationToken = default)
         {
             Check.NotNull(httpClient, nameof(httpClient));
             Check.NotNull(requestUri, nameof(requestUri));
+            // ReSharper disable once PossibleMultipleEnumeration
             Check.NotNull(paramDic, nameof(paramDic));
 
-            return httpClient.PostAsync(requestUri, new FormUrlEncodedContent(paramDic));
+            // ReSharper disable once PossibleMultipleEnumeration
+            return httpClient.PostAsync(requestUri, new FormUrlEncodedContent(paramDic), cancellationToken);
         }
 
         /// <summary>
@@ -67,8 +71,9 @@ namespace Findx.Extensions
         /// <param name="filePath"></param>
         /// <param name="fileKey"></param>
         /// <param name="formFields"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUrl, string filePath, string fileKey = "file", IEnumerable<KeyValuePair<string, string>> formFields = null)
+        public static Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUrl, string filePath, string fileKey = "file", IEnumerable<KeyValuePair<string, string>> formFields = null, CancellationToken cancellationToken = default)
         {
             Check.NotNull(httpClient, nameof(httpClient));
             Check.NotNull(requestUrl, nameof(requestUrl));
@@ -85,7 +90,7 @@ namespace Findx.Extensions
 
             content.Add(new StreamContent(File.OpenRead(filePath)), fileKey, Path.GetFileName(filePath));
 
-            return httpClient.PostAsync(requestUrl, content);
+            return httpClient.PostAsync(requestUrl, content, cancellationToken);
         }
 
         /// <summary>
@@ -97,12 +102,13 @@ namespace Findx.Extensions
         /// <param name="fileName"></param>
         /// <param name="fileKey"></param>
         /// <param name="formFields"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUrl, Stream file, string fileName, string fileKey = "file", IEnumerable<KeyValuePair<string, string>> formFields = null)
+        public static async Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUrl, Stream file, string fileName, string fileKey = "file", IEnumerable<KeyValuePair<string, string>> formFields = null, CancellationToken cancellationToken = default)
         {
             if (file == null)
             {
-                return await httpClient.PostAsFormAsync(requestUrl, formFields);
+                return await httpClient.PostAsFormAsync(requestUrl, formFields, cancellationToken);
             }
 
             var content = new MultipartFormDataContent($"form--{DateTime.Now.Ticks:X}");
@@ -117,7 +123,7 @@ namespace Findx.Extensions
 
             content.Add(new StreamContent(file), fileKey, fileName);
 
-            return await httpClient.PostAsync(requestUrl, content);
+            return await httpClient.PostAsync(requestUrl, content, cancellationToken);
         }
 
         /// <summary>
@@ -127,12 +133,13 @@ namespace Findx.Extensions
         /// <param name="requestUri"></param>
         /// <param name="files"></param>
         /// <param name="formFields"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUri, IEnumerable<KeyValuePair<string, Stream>> files, IEnumerable<KeyValuePair<string, string>> formFields = null)
+        public static async Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUri, IEnumerable<KeyValuePair<string, Stream>> files, IEnumerable<KeyValuePair<string, string>> formFields = null, CancellationToken cancellationToken = default)
         {
             if (files == null)
             {
-                return await httpClient.PostAsFormAsync(requestUri, formFields);
+                return await httpClient.PostAsFormAsync(requestUri, formFields, cancellationToken);
             }
 
             var content = new MultipartFormDataContent($"form--{DateTime.Now.Ticks:X}");
@@ -150,7 +157,7 @@ namespace Findx.Extensions
                 content.Add(new StreamContent(file.Value), Path.GetFileNameWithoutExtension(file.Key), Path.GetFileName(file.Key));
             }
 
-            return await httpClient.PostAsync(requestUri, content);
+            return await httpClient.PostAsync(requestUri, content, cancellationToken);
         }
 
     }

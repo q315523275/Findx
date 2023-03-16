@@ -29,15 +29,9 @@
         /// </summary>
         public long Value
         {
-            get
-            {
-                return Interlocked.Read(ref _value);
-            }
+            get => Interlocked.Read(ref _value);
 
-            set
-            {
-                Interlocked.Exchange(ref _value, value);
-            }
+            set => Interlocked.Exchange(ref _value, value);
         }
 
         /// <summary>
@@ -62,7 +56,7 @@
         }
 
         /// <summary>
-        /// 添加指定值并返回结果
+        /// 添加指定值并返回求和结果
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>

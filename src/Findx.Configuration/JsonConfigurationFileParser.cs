@@ -13,10 +13,9 @@ namespace Findx.Configuration
         private readonly SortedDictionary<string, string> _data = new SortedDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Stack<string> _paths = new Stack<string>();
 
-        public static IDictionary<string, string> Parse(string input)
-            => new JsonConfigurationFileParser().ParseStream(input);
+        public static IDictionary<string, string> Parse(string input) => new JsonConfigurationFileParser().ParseString(input);
 
-        private IDictionary<string, string> ParseStream(string json)
+        private IDictionary<string, string> ParseString(string json)
         {
             var jsonDocumentOptions = new JsonDocumentOptions
             {
@@ -30,13 +29,13 @@ namespace Findx.Configuration
                 {
                     throw new FormatException($"{doc.RootElement.ValueKind}顶层JSON元素无效");
                 }
-                VisitElement(doc.RootElement);
+                VisitObjectElement(doc.RootElement);
             }
 
             return _data;
         }
 
-        private void VisitElement(JsonElement element)
+        private void VisitObjectElement(JsonElement element)
         {
             var isEmpty = true;
 
@@ -48,6 +47,26 @@ namespace Findx.Configuration
                 ExitContext();
             }
 
+            SetNullIfElementIsEmpty(isEmpty);
+        }
+
+        private void VisitArrayElement(JsonElement element)
+        {
+            int index = 0;
+
+            foreach (JsonElement arrayElement in element.EnumerateArray())
+            {
+                EnterContext(index.ToString());
+                VisitValue(arrayElement);
+                ExitContext();
+                index++;
+            }
+
+            SetNullIfElementIsEmpty(isEmpty: index == 0);
+        }
+
+        private void SetNullIfElementIsEmpty(bool isEmpty)
+        {
             if (isEmpty && _paths.Count > 0)
             {
                 _data[_paths.Peek()] = null;
@@ -61,18 +80,11 @@ namespace Findx.Configuration
             switch (value.ValueKind)
             {
                 case JsonValueKind.Object:
-                    VisitElement(value);
+                    VisitObjectElement(value);
                     break;
 
                 case JsonValueKind.Array:
-                    int index = 0;
-                    foreach (JsonElement arrayElement in value.EnumerateArray())
-                    {
-                        EnterContext(index.ToString());
-                        VisitValue(arrayElement);
-                        ExitContext();
-                        index++;
-                    }
+                    VisitArrayElement(value);
                     break;
 
                 case JsonValueKind.Number:
@@ -93,10 +105,7 @@ namespace Findx.Configuration
             }
         }
 
-        private void EnterContext(string context) =>
-            _paths.Push(_paths.Count > 0 ?
-                _paths.Peek() + ConfigurationPath.KeyDelimiter + context :
-                context);
+        private void EnterContext(string context) => _paths.Push(_paths.Count > 0 ? _paths.Peek() + ConfigurationPath.KeyDelimiter + context : context);
 
         private void ExitContext() => _paths.Pop();
     }

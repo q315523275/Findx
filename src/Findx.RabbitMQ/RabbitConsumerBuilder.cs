@@ -49,7 +49,6 @@ namespace Findx.RabbitMQ
                 var consumer = _factory.Create(exchange: exchangeDeclareConfiguration, queue: queueDeclareConfiguration, defaultQueue.ConnectionName);
                 consumer.OnMessageReceived(async (channel, eventArgs) =>
                 {
-                    Console.WriteLine($"未寻址消息:{Encoding.UTF8.GetString(eventArgs.Body.ToArray())}");
                     // direct模式指定routingKey
                     // fanout模式时RabbitConsumer的routingKey需设置为"",发送消息时routingKey需设置为""
                     // topic模式暂时模式不支持,可升级为startWith匹配

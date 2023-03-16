@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\src\Findx.RabbitMQ\Findx.RabbitMQ.csproj" />
     <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
     <ProjectReference Include="..\..\src\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
+    <ProjectReference Include="..\Findx.Module.ConfigService\Findx.Module.ConfigService.csproj" />
     <ProjectReference Include="..\Findx.Module.EleAdmin\Findx.Module.EleAdmin.csproj">
       <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
     </ProjectReference>

@@ -34,13 +34,13 @@ namespace Findx.Storage
         /// <param name="serializer"></param>
         /// <param name="app"></param>
         /// <param name="logger"></param>
-        /// <param name="setting"></param>
-        public FolderFileStorage(ISerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, ISettingProvider setting)
+        /// <param name="settingFactory"></param>
+        public FolderFileStorage(ISerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, ISettingProviderFactory settingFactory)
         {
             Serializer = serializer;
             _logger = logger;
 
-            _mediaRootFolder = setting.GetValue<string>("Findx:Storage:Folder:DefaultFolder") ?? app.MapPath("~/");
+            _mediaRootFolder = settingFactory.Get().GetValue<string>("Findx:Storage:Folder:DefaultFolder") ?? app.MapPath("~/");
         }
 
         /// <summary>

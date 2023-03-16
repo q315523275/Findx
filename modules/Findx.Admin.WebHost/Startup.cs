@@ -26,7 +26,7 @@ namespace Findx.Module.WebHost
                         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
                     });
 
-            services.AddEndpointsApiExplorer();
+            services.AddHttpClient();
 
             services.AddCors(options =>
             {

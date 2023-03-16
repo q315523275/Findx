@@ -28,6 +28,11 @@
         }
 
         /// <summary>
+        /// 配置类型
+        /// </summary>
+        public SettingType Type => SettingType.Default;
+
+        /// <summary>
         /// 获取值
         /// </summary>
         /// <param name="key"></param>
