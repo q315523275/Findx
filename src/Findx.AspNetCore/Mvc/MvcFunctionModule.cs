@@ -9,7 +9,7 @@ namespace Findx.AspNetCore.Mvc
     /// Findx-Mvc功能信息模块
     /// </summary>
     [Description("Findx-Mvc功能信息模块")]
-    public class AuthorizationModule : AspNetCoreModuleBase
+    public class MvcFunctionModule : FindxModule
     {
         /// <summary>
         /// 等级

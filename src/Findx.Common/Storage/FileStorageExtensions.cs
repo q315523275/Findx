@@ -22,7 +22,7 @@ namespace Findx.Storage
             Check.NotNull(path, nameof(path));
 
             var bytes = storage.Serializer.Serialize(data);
-            return storage.SaveFileAsync(path, new MemoryStream(bytes), cancellationToken);
+            return storage.SaveFileAsync(path, bytes, cancellationToken);
         }
 
         /// <summary>

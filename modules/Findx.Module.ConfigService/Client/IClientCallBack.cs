@@ -5,7 +5,7 @@ namespace Findx.Module.ConfigService.Client;
 /// <summary>
 /// 客户端回调
 /// </summary>
-public interface IClientCallBack
+public interface IClientCallBack: IDisposable
 {
     /// <summary>
     /// 创建新的回调任务

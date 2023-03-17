@@ -308,7 +308,6 @@ namespace Findx.Storage
         /// <param name="byteArray"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         public async Task<bool> SaveFileAsync(string path, byte[] byteArray, CancellationToken cancellationToken = default)
         {
             Check.NotNull(path, nameof(path));

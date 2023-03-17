@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Findx.Extensions;
 using Findx.Module.ConfigService.Dtos;
 
 namespace Findx.Module.ConfigService.Client;
@@ -52,10 +51,24 @@ public class ClientCallBack: IClientCallBack
         {
             foreach (var client in clients)
             {
-                client.Task.SetResult(content);
+                if (!client.Task.Task.IsCompleted)
+                    client.Task.SetResult(content);
                 client.CancellationTokenSource.Dispose();
             }
             _callBacks.TryRemove(appId, out _);
+        }
+    }
+
+    public void Dispose()
+    {
+        foreach (var callBack in _callBacks)
+        {
+            foreach (var client in callBack.Value)
+            {
+                if (!client.Task.Task.IsCompleted)
+                    client.Task.TrySetCanceled();
+                client.CancellationTokenSource.Dispose();
+            }
         }
     }
 }

@@ -7,11 +7,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.692" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj" />
       <ProjectReference Include="..\..\src\Findx.Configuration\Findx.Configuration.csproj" />
+      <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
     </ItemGroup>
 
 </Project>

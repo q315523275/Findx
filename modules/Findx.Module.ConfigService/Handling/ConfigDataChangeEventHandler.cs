@@ -55,7 +55,6 @@ public class ConfigDataChangeEventHandler: IApplicationEventHandler<ConfigDataCh
                 notifyTasks.Add(_clusterService.ConfigChangeClusterSyncNotify(nodeInfo, changeDataDto, cancellationToken));
             }
         }
-
         await Task.WhenAll(notifyTasks);
     }
 }

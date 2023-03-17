@@ -87,7 +87,7 @@ Console.WriteLine("Hello, World!");
 //     webSocketClient.SendAsync(msg).Wait();
 // }
 
-var client = new ConfigClient("1", "2", "dev", "http://localhost:10021");
+var client = new ConfigClient("1", "2", "dev", "http://localhost:10020;http://localhost:10021");
 client.OnConfigDataChange(x =>
 {
     Console.WriteLine(x.ToJson());

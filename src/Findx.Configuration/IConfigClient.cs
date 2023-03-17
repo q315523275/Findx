@@ -70,6 +70,6 @@ namespace Findx.Configuration
         /// 配置变更事件
         /// </summary>
         /// <param name="callback"></param>
-        void OnConfigDataChange(Func<List<ConfigItemDto>, Task> callback);
+        void OnConfigDataChange(Func<IEnumerable<ConfigItemDto>, Task> callback);
     }
 }

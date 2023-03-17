@@ -1,12 +1,6 @@
-﻿using Findx.Extensions;
-using Findx.Utils;
-using Microsoft.Extensions.Configuration;
-using System;
+﻿using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
-using Findx.Threading;
 
 namespace Findx.Configuration
 {
@@ -22,7 +16,7 @@ namespace Findx.Configuration
             _client = (ConfigClient)client;
             _client.OnConfigDataChange(x =>
             {
-                foreach (var kv in ConfigClient.ConvertChangeDataToDictionary(x))
+                foreach (var kv in ConfigClient.ConvertChangeDataToJsonConfigDictionary(x))
                 {
                     Data[kv.Key] = kv.Value;
                 }

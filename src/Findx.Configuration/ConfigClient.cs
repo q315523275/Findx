@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text.Json;
@@ -17,13 +18,21 @@ namespace Findx.Configuration
     /// </summary>
     public class ConfigClient: IConfigClient, IDisposable
     {
-        private readonly ConcurrentBag<Func<List<ConfigItemDto>, Task>> _configDataChangeCallbacks;
+        private readonly ConcurrentBag<Func<IEnumerable<ConfigItemDto>, Task>> _configDataChangeCallbacks;
         private readonly AtomicInteger _nodeIndex;
         private readonly AtomicBoolean _polling;
-        private Task _pollingTask;
         private readonly CancellationTokenSource _cts;
-        
-        public ConfigClient(string appId, string secret, string environment, string servers)
+        private Task _pollingTask;
+
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="appId"></param>
+        /// <param name="secret"></param>
+        /// <param name="environment"></param>
+        /// <param name="servers"></param>
+        /// <param name="isRecover"></param>
+        public ConfigClient(string appId, string secret, string environment, string servers, bool isRecover = false)
         {
             Check.NotNullOrWhiteSpace(appId, nameof(appId));
             Check.NotNullOrWhiteSpace(secret, nameof(secret));
@@ -34,16 +43,21 @@ namespace Findx.Configuration
             AppSecret = secret;
             Environment = environment;
             Servers = servers;
+            IsRecover = isRecover;
 
             _nodeIndex = new AtomicInteger(0);
             _polling = new AtomicBoolean(false);
-            _configDataChangeCallbacks = new ConcurrentBag<Func<List<ConfigItemDto>, Task>>();
+            _configDataChangeCallbacks = new ConcurrentBag<Func<IEnumerable<ConfigItemDto>, Task>>();
             _cts = new CancellationTokenSource();
 
             CurrentDataVersion = 0;
             ClientId = Guid.NewGuid().ToString();
         }
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="options"></param>
         public ConfigClient(ConfigOptions options)
         {
             Check.NotNull(options, nameof(options));
@@ -54,10 +68,11 @@ namespace Findx.Configuration
             AppSecret = options.Secret;
             Environment = options.Environment;
             Servers = options.Servers;
+            IsRecover = options.IsRecover;
 
             _nodeIndex = new AtomicInteger(0);
             _polling = new AtomicBoolean(false);
-            _configDataChangeCallbacks = new ConcurrentBag<Func<List<ConfigItemDto>, Task>>();
+            _configDataChangeCallbacks = new ConcurrentBag<Func<IEnumerable<ConfigItemDto>, Task>>();
             _cts = new CancellationTokenSource();
 
             CurrentDataVersion = 0;
@@ -69,7 +84,7 @@ namespace Findx.Configuration
         /// <summary>
         /// 配置字典
         /// </summary>
-        public readonly ConcurrentDictionary<string, string> Data = new ConcurrentDictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, ConfigItemDto> _data = new Dictionary<string, ConfigItemDto>(StringComparer.OrdinalIgnoreCase);
         
         /// <summary>
         /// 应用编号
@@ -85,6 +100,11 @@ namespace Findx.Configuration
         /// 环境变量
         /// </summary>
         public string Environment { get; }
+        
+        /// <summary>
+        /// 是否异常恢复
+        /// </summary>
+        public bool IsRecover { get; }
 
         /// <summary>
         /// 客户端编号
@@ -108,7 +128,7 @@ namespace Findx.Configuration
         
         #endregion
 
-        #region 获取配置值
+        #region 公开方法
         /// <summary>
         /// 获取配置值
         /// </summary>
@@ -117,8 +137,8 @@ namespace Findx.Configuration
         {
             get
             {
-                Data.TryGetValue(key, out var val);
-                return val;
+                _data.TryGetValue(key, out var val);
+                return val?.Content;
             }
         }
 
@@ -129,8 +149,17 @@ namespace Findx.Configuration
         /// <returns></returns>
         public string Get(string key)
         {
-            Data.TryGetValue(key, out var val);
-            return val;
+            _data.TryGetValue(key, out var val);
+            return val?.Content;
+        }
+
+        /// <summary>
+        /// 添加配置变更回调
+        /// </summary>
+        /// <param name="callback"></param>
+        public void OnConfigDataChange(Func<IEnumerable<ConfigItemDto>, Task> callback)
+        {
+            _configDataChangeCallbacks.Add(callback);
         }
         #endregion
 
@@ -164,12 +193,16 @@ namespace Findx.Configuration
             return serverList[index];
         }
 
+        /// <summary>
+        /// 加载配置
+        /// </summary>
         public async Task LoadAsync()
         {
             try
             {
                 CurrentServer = GenerateServer().TrimEnd('/');
                 var apiUrl = GenerateApiUrl();
+                Console.WriteLine($"监听请求服务:{CurrentServer},{CurrentDataVersion}");
                 using var response = await HttpUtil.GetAsync(apiUrl, null, null);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -177,42 +210,32 @@ namespace Findx.Configuration
                     var configItem = ConvertToConfigItem(body);
                     if (configItem.Any(x => x.Version > CurrentDataVersion))
                     {
-                        // 本地配置更新
-                        foreach (var item in configItem)
-                        {
-                            Data[item.DataId] = item.Content;
-                        }
-                        // 有配置更新
-                        foreach (var callback in _configDataChangeCallbacks)
-                        {
-                            await callback(configItem);
-                        }
-                        CurrentDataVersion = configItem.Max(x => x.Version);
+                        // 更新配置
+                        await AddOrUpdateConfigAsync(configItem);
+                        // 保存备份配置
+                        if (IsRecover)
+                            await SaveObjectFileAsync("appsettings.ConfigClientCache.json", _data.Values);
                     }
-                    
-                    // 开启polling
-                    if (!_polling.Value && CurrentDataVersion > 0)
-                    {
-                        _polling.CompareAndSet(false, true);
-                        _pollingTask = Task.Factory.StartNew(async ()=>
-                        {
-                            while (!_cts.IsCancellationRequested)
-                            {
-                                await LoadAsync();
-                            }
-                        }, _cts.Token);
-                    }
+
+                    // 监听更新
+                    StartListenConfigChange();
                 }
             }
             catch (Exception ex)
             {
-                if (!_polling.Value)
+                if (!_polling.Value && IsRecover)
+                {
+                    // 容灾恢复
+                    var rows = await GetFileObjectAsync<List<ConfigItemDto>>("appsettings.ConfigClientCache.json");
+                    await AddOrUpdateConfigAsync(rows);
+                    StartListenConfigChange();
+                }
+                else if (!_polling.Value)
                 {
                     ex.ReThrow();
                 }
                 else
                 {
-                    Console.WriteLine($"配置中心循环获取Exception异常:{ex.FormatMessage()}");
                     // 循环存在异常时,进行60秒等待
                     await Task.Delay(60 * 1000);
                 }
@@ -221,6 +244,47 @@ namespace Findx.Configuration
         #endregion
 
         #region 私有方法
+
+        /// <summary>
+        /// 执行循环
+        /// </summary>
+        private void StartListenConfigChange()
+        {
+            // 开启polling
+            if (!_polling.Value && CurrentDataVersion > 0)
+            {
+                _polling.CompareAndSet(false, true);
+                _pollingTask = Task.Factory.StartNew(async ()=>
+                {
+                    while (!_cts.IsCancellationRequested)
+                    {
+                        await LoadAsync();
+                    }
+                }, _cts.Token);
+            }
+        }
+        
+        /// <summary>
+        /// 更新配置
+        /// </summary>
+        /// <param name="rows"></param>
+        private async Task AddOrUpdateConfigAsync(IEnumerable<ConfigItemDto> rows)
+        {
+            Check.NotNull(rows, nameof(rows));
+            // 本地配置更新
+            foreach (var item in rows)
+            {
+                _data[item.DataId] = item;
+            }
+            // 有配置更新
+            foreach (var callback in _configDataChangeCallbacks)
+            {
+                await callback(rows);
+            }
+            // 刷新配置版本号
+            CurrentDataVersion = rows.Max(x => x.Version);
+        }
+        
         /// <summary>
         /// 转换配置项
         /// </summary>
@@ -232,11 +296,84 @@ namespace Findx.Configuration
         }
 
         /// <summary>
-        /// 转换变更数据为字典
+        /// 根据文件内容返回范型对象
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="cancellationToken"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        private static async Task<T> GetFileObjectAsync<T>(string path, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(path, nameof(path));
+            
+            var file = Path.Combine(System.Environment.CurrentDirectory, path);
+            
+            try
+            {
+                var content = await File.ReadAllBytesAsync(file, cancellationToken);
+                return JsonSerializer.Deserialize<T>(content, SystemTextUtf8ByteSerializer.Options);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error trying to get file: {path}");
+            }
+        }
+
+        /// <summary>
+        /// 保存文件
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="obj"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        private static async Task SaveObjectFileAsync(string path, object obj, CancellationToken cancellationToken = default)
+        {
+            Check.NotNull(path, nameof(path));
+            Check.NotNull(obj, nameof(obj));
+            
+            var content = JsonSerializer.SerializeToUtf8Bytes(obj, SystemTextUtf8ByteSerializer.Options);
+
+            path = path.NormalizePath();
+            var file = Path.Combine(System.Environment.CurrentDirectory, path);
+
+            try
+            {
+                await using var fileStream = CreateFileStream(file);
+                await fileStream.WriteAsync(content, 0, content.Length, cancellationToken);
+            }
+            catch (Exception)
+            {
+                throw new Exception($"Error trying to save file: {path}");
+            }
+        }
+        
+        /// <summary>
+        /// 创建真实文件
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        private static Stream CreateFileStream(string filePath)
+        {
+            try
+            {
+                return File.Create(filePath);
+            }
+            catch (DirectoryNotFoundException) { }
+
+            var directory = Path.GetDirectoryName(filePath);
+            if (directory != null)
+                DirectoryTool.CreateIfNotExists(directory);
+
+            return File.Create(filePath);
+        }
+
+        /// <summary>
+        /// 转换变更数据为字典 Json内容也变为字典数据
         /// </summary>
         /// <param name="list"></param>
         /// <returns></returns>
-        public static IDictionary<string, string> ConvertChangeDataToDictionary(List<ConfigItemDto> list)
+        public static IDictionary<string, string> ConvertChangeDataToJsonConfigDictionary(IEnumerable<ConfigItemDto> list)
         {
             var dict = new Dictionary<string, string>();
             foreach (var item in list)
@@ -260,25 +397,18 @@ namespace Findx.Configuration
         }
         #endregion
 
+        #region Dispose
         /// <summary>
-        /// 添加配置变更回调
-        /// </summary>
-        /// <param name="callback"></param>
-        public void OnConfigDataChange(Func<List<ConfigItemDto>, Task> callback)
-        {
-            _configDataChangeCallbacks.Add(callback);
-        }
-
-        /// <summary>
-        /// 是否资源
+        /// 释放资源
         /// </summary>
         public void Dispose()
         {
             _pollingTask?.Dispose();
             _cts?.Cancel();
             _cts?.Dispose();
-            Data.Clear();
+            _data.Clear();
             _configDataChangeCallbacks?.Clear();
         }
+        #endregion
     }
 }

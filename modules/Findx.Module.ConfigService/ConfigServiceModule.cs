@@ -33,4 +33,11 @@ public class ConfigServiceModule: FindxModule
 
         return base.ConfigureServices(services);
     }
+
+    public override void OnShutdown(IServiceProvider provider)
+    {
+        var clientCallBack = provider.GetRequiredService<IClientCallBack>();
+        clientCallBack.Dispose();
+        base.OnShutdown(provider);
+    }
 }

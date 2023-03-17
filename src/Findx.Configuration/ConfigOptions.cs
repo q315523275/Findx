@@ -31,5 +31,10 @@ namespace Findx.Configuration
         /// </summary>
         [Required]
         public string Servers { set; get; }
+        
+        /// <summary>
+        /// 是否进行异常恢复
+        /// </summary>
+        public bool IsRecover { set; get; }
     }
 }
