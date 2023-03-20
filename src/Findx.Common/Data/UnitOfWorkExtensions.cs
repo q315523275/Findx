@@ -1,4 +1,6 @@
-﻿namespace Findx.Data
+﻿using Findx.Messaging;
+
+namespace Findx.Data
 {
     /// <summary>
     /// 工作单元扩展
@@ -29,6 +31,19 @@
         {
             repo.UnitOfWork = uow;
             return repo;
+        }
+
+        /// <summary>
+        /// 添加工作单元事件
+        /// </summary>
+        /// <param name="uow"></param>
+        /// <param name="event"></param>
+        /// <typeparam name="T"></typeparam>
+        public static void AddEvent<T>(this IUnitOfWork uow, T @event) where T : IApplicationEvent, ICommitAfter
+        {
+            Check.NotNull(uow, nameof(uow));
+            
+            uow.AddEvent(@event);
         }
     }
 }

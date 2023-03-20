@@ -9,6 +9,8 @@ using System.Threading;
 using Findx.Exceptions;
 using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using Findx.Messaging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.FreeSql
 {
@@ -19,10 +21,14 @@ namespace Findx.FreeSql
     {
         private readonly ILogger<FreeSqlUnitOfWork> _logger;
         private readonly IFreeSql _fsql;
-        private Object<DbConnection> _conn;
-
+        private readonly IApplicationEventPublisher _applicationEventPublisher;
+        private readonly IMessageDispatcher _messageDispatcher;
         private readonly Stack<string> _transactionStack = new Stack<string>();
+        private readonly ConcurrentBag<IApplicationEvent> _commitBeforeEvents = new ConcurrentBag<IApplicationEvent>();
+        private readonly ConcurrentBag<IApplicationEvent> _commitAfterEvents = new ConcurrentBag<IApplicationEvent>();
 
+        private Object<DbConnection> _conn;
+        
         /// <summary>
         /// Ctor
         /// </summary>
@@ -35,12 +41,15 @@ namespace Findx.FreeSql
 
             _fsql = fsql;
             _logger = logger;
+            _applicationEventPublisher = serviceProvider.GetRequiredService<IApplicationEventPublisher>();
+            _messageDispatcher = serviceProvider.GetRequiredService<IMessageDispatcher>();
 
             Check.NotNull(fsql, nameof(fsql));
 
             Id = Guid.NewGuid();
         }
 
+        #region 属性
         public bool HasCommitted { get; private set; }
         
         public bool IsEnabledTransaction => _transactionStack.Count > 0;
@@ -52,7 +61,9 @@ namespace Findx.FreeSql
         public Guid Id { get; }
         
         public IServiceProvider ServiceProvider { get; }
+        #endregion
 
+        #region 辅助方法
         /// <summary>
         /// 归还数据库连接
         /// </summary>
@@ -79,35 +90,8 @@ namespace Findx.FreeSql
             _transactionStack.Push(token);
             _logger.LogDebug("允许事务提交，标识：{Token}，当前总标识数：{TransactionStackCount}", token, _transactionStack.Count);
         }
-
-        #region Dispose
-
-        /// <summary>
-        /// 释放次数
-        /// </summary>
-        private int _disposeCounter;
-
-        /// <summary>
-        /// 释放
-        /// </summary>
-        public void Dispose()
-        {
-            if (Interlocked.Increment(ref _disposeCounter) != 1)
-                return;
-            try
-            {
-                Rollback();
-
-                _logger.LogDebug("工作单元生命周期结束，单元标识：{Id}，释放计量：{DisposeCounter}", Id, _disposeCounter);
-            }
-            finally
-            {
-                GC.SuppressFinalize(this);
-            }
-        }
-
         #endregion
-        
+
         #region 同步事物
 
         /// <summary>
@@ -277,7 +261,17 @@ namespace Findx.FreeSql
             {
                 if (Transaction?.Connection != null)
                 {
+                    foreach (var applicationEvent in _commitBeforeEvents)
+                    {
+                        await _messageDispatcher.PublishAsync(applicationEvent, cancellationToken);
+                    }
+                    
                     await Transaction.CommitAsync(cancellationToken);
+                    
+                    foreach (var applicationEvent in _commitAfterEvents)
+                    {
+                        await _applicationEventPublisher.PublishAsync(applicationEvent, cancellationToken);
+                    }
 
                     _logger.LogDebug("提交事务，标识：{Token}，事务标识：{HashCode}", token, Transaction.GetHashCode());
                 }
@@ -319,6 +313,49 @@ namespace Findx.FreeSql
             }
 
             HasCommitted = true;
+        }
+
+        #endregion
+
+        #region 应用事件
+        /// <summary>
+        /// 添加应用事件
+        /// </summary>
+        /// <param name="applicationEvent"></param>
+        public void AddEvent<T>(T applicationEvent) where T: IApplicationEvent, ICommitAfter
+        {
+            _commitAfterEvents.Add(applicationEvent);
+        }
+        #endregion
+        
+        #region Dispose
+
+        /// <summary>
+        /// 释放次数
+        /// </summary>
+        private int _disposeCounter;
+
+        /// <summary>
+        /// 释放
+        /// </summary>
+        public void Dispose()
+        {
+            if (Interlocked.Increment(ref _disposeCounter) != 1)
+                return;
+            try
+            {
+                Rollback();
+                
+                _transactionStack.Clear();
+                _commitBeforeEvents.Clear();
+                _commitAfterEvents.Clear();
+
+                _logger.LogDebug("工作单元生命周期结束，单元标识：{Id}，释放计量：{DisposeCounter}", Id, _disposeCounter);
+            }
+            finally
+            {
+                GC.SuppressFinalize(this);
+            }
         }
 
         #endregion

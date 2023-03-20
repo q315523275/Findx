@@ -1,5 +1,6 @@
 ﻿using System.Data.Common;
 using System.Threading.Tasks;
+using Findx.Messaging;
 
 namespace Findx.Data
 {
@@ -76,5 +77,10 @@ namespace Findx.Data
         /// </summary>
         /// <returns></returns>
         Task RollbackAsync(CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 添加工作单元事件
+        /// </summary>
+        void AddEvent<T>(T applicationEvent) where T: IApplicationEvent, ICommitAfter;
     }
 }

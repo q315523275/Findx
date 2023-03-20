@@ -2,15 +2,15 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
-		<Version>1.5.8</Version>
+		<Version>1.9.0</Version>
 		<Description>服务发现-Consul实现</Description>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
-		<PackageVersion>1.8.5</PackageVersion>
+		<PackageVersion>1.9.0</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Consul" Version="1.6.10.4" />
+		<PackageReference Include="Consul" Version="1.6.10.8" />
 	</ItemGroup>
 
 	<ItemGroup>

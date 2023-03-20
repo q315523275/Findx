@@ -403,9 +403,10 @@ namespace Findx.Configuration
         /// </summary>
         public void Dispose()
         {
-            _pollingTask?.Dispose();
             _cts?.Cancel();
+            _pollingTask?.Dispose();
             _cts?.Dispose();
+
             _data.Clear();
             _configDataChangeCallbacks?.Clear();
         }

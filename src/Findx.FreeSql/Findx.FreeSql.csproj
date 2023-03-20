@@ -4,15 +4,15 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 		<Description>通用仓储-FreeSql实现</Description>
-		<Version>1.8.7-beta2</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
-		<PackageVersion>1.8.7-beta2</PackageVersion>
+		<Version>1.9.0</Version>
+		<PackageVersion>1.9.0</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
-		<PackageReference Include="FreeSql" Version="3.2.691" />
+		<PackageReference Include="FreeSql" Version="3.2.692" />
 	</ItemGroup>
 
 	<ItemGroup>

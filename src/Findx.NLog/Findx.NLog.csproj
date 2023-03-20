@@ -4,9 +4,9 @@
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
-		<Version>1.5.1</Version>
+		<Version>1.9.0</Version>
 		<Description>NLog日志组件包</Description>
-		<PackageVersion>1.8.4-beta1</PackageVersion>
+		<PackageVersion>1.9.0</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

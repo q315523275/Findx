@@ -2,6 +2,7 @@
 using Findx.Extensions;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Findx.ExceptionHandling;
 
 namespace Findx.Messaging
 {
@@ -10,6 +11,7 @@ namespace Findx.Messaging
     /// </summary>
     public class ApplicationEventPublisher : IApplicationEventPublisher, IDisposable
     {
+        private readonly IExceptionNotifier _exceptionNotifier;
         private readonly Channel<IApplicationEvent> _channel;
         private readonly ILogger<ApplicationEventPublisher> _logger;
         private readonly CancellationTokenSource _cts;
@@ -19,9 +21,11 @@ namespace Findx.Messaging
         /// </summary>
         /// <param name="configuration"></param>
         /// <param name="logger"></param>
-        public ApplicationEventPublisher(IConfiguration configuration, ILogger<ApplicationEventPublisher> logger)
+        /// <param name="exceptionNotifier"></param>
+        public ApplicationEventPublisher(IConfiguration configuration, ILogger<ApplicationEventPublisher> logger, IExceptionNotifier exceptionNotifier)
         {
             _logger = logger;
+            _exceptionNotifier = exceptionNotifier;
 
             var queueCapacity = configuration.GetValue<int>("Findx:MessageQueueCapacity");
             _channel = queueCapacity > 0 ? Channel.CreateBounded<IApplicationEvent>(new BoundedChannelOptions(queueCapacity) { FullMode = BoundedChannelFullMode.Wait }) : Channel.CreateUnbounded<IApplicationEvent>();
@@ -83,24 +87,6 @@ namespace Findx.Messaging
         {
             try
             {
-                //while (await channel.Reader.WaitToReadAsync(cancellationToken))
-                //{
-                //    while (channel.Reader.TryRead(out var message))
-                //    {
-                //        var messageType = message.GetType();
-                //        var handler = (ApplicationEventHandlerWrapper)_eventHandlers.GetOrAdd(messageType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
-                //        try
-                //        {
-                //            using var scope = ServiceLocator.ServiceProvider.CreateScope();
-                //            await handler.Handle(message, scope.ServiceProvider, cancellationToken);
-                //        }
-                //        catch (Exception ex)
-                //        {
-                //            _logger.LogError(ex, $"执行应用事件“{messageType.Name}”的处理器“{handler.GetType()}”时引发异常：{ex.Message}");
-                //        }
-                //    }
-                //}
-
                 // 异步流方式
                 
                 await foreach (var message in channelReader.ReadAllAsync(cancellationToken))
@@ -115,6 +101,8 @@ namespace Findx.Messaging
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "执行应用事件“{MessageTypeName}”的处理器“{Type}”时引发异常：{ExMessage}", messageType.Name, handler.GetType(), ex.Message);
+                        
+                        await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex), cancellationToken);
                     }
                 }
             }
