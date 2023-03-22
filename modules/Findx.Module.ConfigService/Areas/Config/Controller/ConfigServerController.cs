@@ -8,6 +8,7 @@ using Findx.Extensions;
 using Findx.Module.ConfigService.Client;
 using Findx.Module.ConfigService.Dtos;
 using Findx.Module.ConfigService.Models;
+using Findx.Serialization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.ConfigService.Areas.Config.Controller;
@@ -20,6 +21,7 @@ public class ConfigServerController: AreaApiControllerBase
     private readonly IClientCallBack _clientCallBack;
     private readonly IRepository<AppInfo> _appRepo;
     private readonly IRepository<ConfigInfo> _configRepo;
+    private readonly ISerializer _serializer;
 
     /// <summary>
     /// Ctor
@@ -27,11 +29,13 @@ public class ConfigServerController: AreaApiControllerBase
     /// <param name="clientCallBack"></param>
     /// <param name="appRepo"></param>
     /// <param name="configRepo"></param>
-    public ConfigServerController(IClientCallBack clientCallBack, IRepository<AppInfo> appRepo, IRepository<ConfigInfo> configRepo)
+    /// <param name="serializer"></param>
+    public ConfigServerController(IClientCallBack clientCallBack, IRepository<AppInfo> appRepo, IRepository<ConfigInfo> configRepo, ISerializer serializer)
     {
         _clientCallBack = clientCallBack;
         _appRepo = appRepo;
         _configRepo = configRepo;
+        _serializer = serializer;
     }
 
     /// <summary>
@@ -42,8 +46,9 @@ public class ConfigServerController: AreaApiControllerBase
     /// <param name="sign">签名</param>
     /// <param name="environment">环境变量</param>
     /// <param name="version">版本号</param>
+    /// <param name="load"></param>
     [HttpGet]
-    public async Task GetAsync([Required] string appId, [Required] string sign, [Required] string environment, [Required] string reqId, [Required] long version = 0)
+    public async Task GetAsync([Required] string appId, [Required] string sign, [Required] string environment, [Required] string reqId, [Required] long version = 0, bool load = false)
     {
         var model = await _appRepo.FirstAsync(x => x.AppId == appId);
         Check.NotNull(model, nameof(model));
@@ -54,13 +59,13 @@ public class ConfigServerController: AreaApiControllerBase
             Response.StatusCode = HttpStatusCode.Forbidden.To<int>();
             return;
         }
-        // 是否初次加载
-        if (version == 0)
+        // 是否初次加载或指定加载
+        if (version == 0 || load)
         {
-            var rows = await _configRepo.SelectAsync(x => x.AppId == appId && x.Environment == environment, x => new { x.DataId, x.DataType, x.Content, x.Version });
+            var rows = await _configRepo.SelectAsync(x => x.AppId == appId && x.Environment == environment && x.Version > version, x => new { x.DataId, x.DataType, x.Content, x.Version });
             // 返回监听结果
             Response.ContentType = "application/json; charset=utf-8";
-            await Response.Body.WriteAsync(rows.ToJson().ToBytes());
+            await Response.Body.WriteAsync(_serializer.Serialize(rows));
             return;
         }
         // 变更监听
@@ -71,7 +76,7 @@ public class ConfigServerController: AreaApiControllerBase
             var rows = new List<ConfigDataChangeDto> { res };
             // 返回监听结果
             Response.ContentType = "application/json; charset=utf-8";
-            await Response.Body.WriteAsync(rows.ToJson().ToBytes());
+            await Response.Body.WriteAsync(_serializer.Serialize(rows));
         }
         catch (TimeoutException)
         {
@@ -79,6 +84,13 @@ public class ConfigServerController: AreaApiControllerBase
         }
     }
     
+    /// <summary>
+    /// 设置数据(演示)
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="environment"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
     [HttpPut]
     public CommonResult PutAsync(string appId, string environment, [FromBody] ConfigDataChangeDto value)
     {

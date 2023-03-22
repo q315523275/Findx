@@ -40,11 +40,11 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public override Task<CommonResult> ListAsync([FromQuery] QueryMenuRequest request)
+        public override Task<CommonResult<List<SysMenuInfo>>> ListAsync(QueryMenuRequest request)
         {
-            request.PageSize = 9999;
-            return base.ListAsync(request);
+	        request.PageSize = 9999;
+	        return base.ListAsync(request);
         }
-    }
+	}
 }
 

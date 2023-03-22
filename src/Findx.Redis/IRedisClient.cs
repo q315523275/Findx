@@ -70,14 +70,14 @@ namespace Findx.Redis
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        long TTL(string key);
+        long Ttl(string key);
 
         /// <summary>
         /// 查看缓存剩余时间
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        Task<long> TTLAsync(string key);
+        Task<long> TtlAsync(string key);
 
         /// <summary>
         /// 判断是否存在当前的Key

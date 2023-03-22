@@ -97,8 +97,7 @@ namespace Findx.Machine.System
         /// 用户网络域名称，即 hostname
         /// </summary>
         public static string UserDomainName => Environment.UserDomainName;
-
-
+        
         /// <summary>
         /// 是否在交互模式中运行
         /// </summary>

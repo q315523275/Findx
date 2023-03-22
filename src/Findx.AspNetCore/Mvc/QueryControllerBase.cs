@@ -63,7 +63,7 @@ namespace Findx.AspNetCore.Mvc
         /// <returns></returns>
         [HttpGet("page")]
         [Description("分页")]
-        public virtual async Task<CommonResult> PageAsync([FromQuery] TQueryParameter request)
+        public virtual async Task<CommonResult<PageResult<List<TListDto>>>> PageAsync([FromQuery] TQueryParameter request)
         {
             Check.NotNull(request, nameof(request));
 
@@ -86,7 +86,7 @@ namespace Findx.AspNetCore.Mvc
         /// <returns></returns>
         [HttpGet("list")]
         [Description("列表")]
-        public virtual async Task<CommonResult> ListAsync([FromQuery] TQueryParameter request)
+        public virtual async Task<CommonResult<List<TListDto>>> ListAsync([FromQuery] TQueryParameter request)
         {
             Check.NotNull(request, nameof(request));
 
@@ -109,7 +109,7 @@ namespace Findx.AspNetCore.Mvc
         /// <returns></returns>
         [HttpGet("detail")]
         [Description("详情")]
-        public virtual async Task<CommonResult> Detail(TKey id)
+        public virtual async Task<CommonResult<TDetailDto>> Detail(TKey id)
         {
             Check.NotNull(id, nameof(id));
 

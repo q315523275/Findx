@@ -106,7 +106,7 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
         }
         
         // 已登录，验证角色及权限资源
-        if (function.AccessType == FunctionAccessType.AuthorityLimit)
+        if (function.AccessType == FunctionAccessType.RoleAuthorityLimit)
         {
             return AuthorizeRoleAuthorityLimit(function, principal);
         }

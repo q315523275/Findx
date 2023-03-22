@@ -13,5 +13,6 @@ public class FunctionAuthorization : FunctionAuthorizationBase
     /// <param name="settingFactory"></param>
     public FunctionAuthorization(ISettingProviderFactory settingFactory) : base(settingFactory)
     {
+        
     }
 }

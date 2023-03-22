@@ -9,7 +9,6 @@ using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Findx.Security;
 using System.ComponentModel;
-using Findx.Security.Authorization;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -80,21 +79,20 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             orderExp.OrderByDescending(it => it.Id);
             return orderExp.ToSort();
         }
-
+        
         /// <summary>
         /// 分页查询
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpGet("page")]
-        public override async Task<CommonResult> PageAsync([FromQuery] QueryUserRequest request)
+        public override async Task<CommonResult<PageResult<List<UserDto>>>> PageAsync(QueryUserRequest request)
         {
             var repo = GetRepository<SysUserInfo>();
             var roleRepo = GetRepository<SysUserRoleInfo>();
-
+            
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
-
+            
             var result = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
             var ids = result.Rows.Select(x => x.Id).Distinct();
             var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId));

@@ -23,6 +23,7 @@ namespace Findx.Configuration
         private readonly AtomicBoolean _polling;
         private readonly CancellationTokenSource _cts;
         private Task _pollingTask;
+        private bool _requestException = true;
 
         /// <summary>
         /// Ctor
@@ -172,7 +173,7 @@ namespace Findx.Configuration
         {
             var reqId = Guid.NewGuid().ToString();
             var sign = Encrypt.Md5By32($"{AppId}{AppSecret}{reqId}{Environment}{CurrentDataVersion}");
-            return $"{CurrentServer}/api/config?appId={AppId}&sign={sign}&environment={Environment}&reqId={reqId}&version={CurrentDataVersion}";
+            return $"{CurrentServer}/api/config?appId={AppId}&sign={sign}&environment={Environment}&reqId={reqId}&version={CurrentDataVersion}&load={_requestException}";
         }
 
         /// <summary>
@@ -206,6 +207,7 @@ namespace Findx.Configuration
                 using var response = await HttpUtil.GetAsync(apiUrl, null, null);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
+                    _requestException = false;
                     var body = await response.ReadAsStringAsync();
                     var configItem = ConvertToConfigItem(body);
                     if (configItem.Any(x => x.Version > CurrentDataVersion))
@@ -223,6 +225,7 @@ namespace Findx.Configuration
             }
             catch (Exception ex)
             {
+                // 首次请求异常但开启了容灾备份恢复
                 if (!_polling.Value && IsRecover)
                 {
                     // 容灾恢复
@@ -230,14 +233,17 @@ namespace Findx.Configuration
                     await AddOrUpdateConfigAsync(rows);
                     StartListenConfigChange();
                 }
+                // 首次请求异常
                 else if (!_polling.Value)
                 {
                     ex.ReThrow();
                 }
+                // 循环中请求异常
                 else
                 {
+                    _requestException = true;
                     // 循环存在异常时,进行60秒等待
-                    await Task.Delay(60 * 1000);
+                    await Task.Delay(30 * 1000);
                 }
             }
         }

@@ -179,7 +179,7 @@ namespace Findx.Extensions
         {
             try
             {
-                IPrincipal user = provider.GetService<IPrincipal>();
+                var user = provider.GetService<IPrincipal>();
                 return user as ClaimsPrincipal;
             }
             catch
@@ -193,21 +193,21 @@ namespace Findx.Extensions
         /// </summary>
         public static IServiceProvider UseFindx(this IServiceProvider provider)
         {
-            ILogger logger = provider.GetLogger(typeof(Extensions));
+            var logger = provider.GetLogger(typeof(Extensions));
             logger.LogInformation("框架初始化开始");
-            Stopwatch watch = Stopwatch.StartNew();
+            var watch = Stopwatch.StartNew();
 
             var modules = provider.GetServices<FindxModule>();
-            foreach (FindxModule module in modules)
+            foreach (var module in modules)
             {
                 var jsTime = DateTime.Now;
-                Type moduleType = module.GetType();
+                var moduleType = module.GetType();
                 module.UseModule(provider);
                 logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now - jsTime).TotalMilliseconds}ms");
             }
 
             watch.Stop();
-            logger.LogInformation($"框架初始化完毕，耗时：{watch.Elapsed}");
+            logger.LogInformation($"框架初始化完毕，耗时：{watch.Elapsed.TotalMilliseconds}毫秒");
 
             return provider;
         }
@@ -219,7 +219,7 @@ namespace Findx.Extensions
         /// <returns>日志对象</returns>
         public static ILogger<T> GetLogger<T>(this IServiceProvider provider)
         {
-            ILoggerFactory factory = provider.GetService<ILoggerFactory>();
+            var factory = provider.GetService<ILoggerFactory>();
             return factory.CreateLogger<T>();
         }
 
@@ -232,7 +232,7 @@ namespace Findx.Extensions
         public static ILogger GetLogger(this IServiceProvider provider, Type type)
         {
             Check.NotNull(type, nameof(type));
-            ILoggerFactory factory = provider.GetService<ILoggerFactory>();
+            var factory = provider.GetService<ILoggerFactory>();
             return factory.CreateLogger(type);
         }
 
@@ -244,7 +244,7 @@ namespace Findx.Extensions
         public static ILogger GetLogger(this IServiceProvider provider, object instance)
         {
             Check.NotNull(instance, nameof(instance));
-            ILoggerFactory factory = provider.GetService<ILoggerFactory>();
+            var factory = provider.GetService<ILoggerFactory>();
             return factory.CreateLogger(instance.GetType());
         }
 
@@ -253,7 +253,7 @@ namespace Findx.Extensions
         /// </summary>
         public static ILogger GetLogger(this IServiceProvider provider, string name)
         {
-            ILoggerFactory factory = provider.GetService<ILoggerFactory>();
+            var factory = provider.GetService<ILoggerFactory>();
             return factory.CreateLogger(name);
         }
 
@@ -262,7 +262,7 @@ namespace Findx.Extensions
         /// </summary>
         public static void ExecuteScopedWork(this IServiceProvider provider, Action<IServiceProvider> action)
         {
-            using IServiceScope scope = provider.CreateScope();
+            using var scope = provider.CreateScope();
             action(scope.ServiceProvider);
         }
 
@@ -271,7 +271,7 @@ namespace Findx.Extensions
         /// </summary>
         public static async Task ExecuteScopedWorkAsync(this IServiceProvider provider, Func<IServiceProvider, Task> action)
         {
-            using IServiceScope scope = provider.CreateScope();
+            using var scope = provider.CreateScope();
             await action(scope.ServiceProvider);
         }
 
@@ -280,7 +280,7 @@ namespace Findx.Extensions
         /// </summary>
         public static TResult ExecuteScopedWork<TResult>(this IServiceProvider provider, Func<IServiceProvider, TResult> func)
         {
-            using IServiceScope scope = provider.CreateScope();
+            using var scope = provider.CreateScope();
             return func(scope.ServiceProvider);
         }
 
@@ -289,7 +289,7 @@ namespace Findx.Extensions
         /// </summary>
         public static async Task<TResult> ExecuteScopedWorkAsync<TResult>(this IServiceProvider provider, Func<IServiceProvider, Task<TResult>> func)
         {
-            using IServiceScope scope = provider.CreateScope();
+            using var scope = provider.CreateScope();
             return await func(scope.ServiceProvider);
         }
         #endregion
@@ -300,7 +300,7 @@ namespace Findx.Extensions
         /// </summary>
         public static IServiceCollection LogDebug(this IServiceCollection services, string message, string logName)
         {
-            StartupLogger logger = services.GetOrAddSingletonInstance(() => new StartupLogger());
+            var logger = services.GetOrAddSingletonInstance(() => new StartupLogger());
             logger.LogDebug(message, logName);
             return services;
         }
@@ -310,7 +310,7 @@ namespace Findx.Extensions
         /// </summary>
         public static IServiceCollection LogInformation(this IServiceCollection services, string message, string logName)
         {
-            StartupLogger logger = services.GetOrAddSingletonInstance(() => new StartupLogger());
+            var logger = services.GetOrAddSingletonInstance(() => new StartupLogger());
             logger.LogInformation(message, logName);
             return services;
         }

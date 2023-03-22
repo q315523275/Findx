@@ -3,11 +3,11 @@
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<Version>1.9.0</Version>
+		<Version>1.9.1</Version>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Description>自定义认证授权、token自动续期、自定义权限控制等</Description>
-		<PackageVersion>1.9.0</PackageVersion>
+		<PackageVersion>1.9.1</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

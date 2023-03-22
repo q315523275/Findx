@@ -167,7 +167,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public long TTL(string key)
+        public long Ttl(string key)
         {
             var ts = _cache.KeyTimeToLive(key);
             return ts.HasValue ? (long)ts.Value.TotalSeconds : -1;
@@ -178,7 +178,7 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public async Task<long> TTLAsync(string key)
+        public async Task<long> TtlAsync(string key)
         {
             var ts = await _cache.KeyTimeToLiveAsync(key);
             return ts.HasValue ? (long)ts.Value.TotalSeconds : -1;
