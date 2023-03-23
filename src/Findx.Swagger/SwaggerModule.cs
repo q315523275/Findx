@@ -117,7 +117,7 @@ namespace Findx.Swagger
                                 })
                             })
                         </script>";
-                    
+
                     options.DocExpansion(_swaggerOptions.DocExpansion);
                     
                     if (_swaggerOptions.HideSchemas)

@@ -12,7 +12,7 @@ public class ClusterService: IClusterService
         _httpClientFactory = httpClientFactory;
     }
 
-    public async Task ConfigChangeClusterSyncNotify(string nodeInfo, ConfigDataChangeDto changeDto, CancellationToken cancellationToken = default)
+    public async Task ConfigChangeClusterSyncNotifyAsync(string nodeInfo, ConfigDataChangeDto changeDto, CancellationToken cancellationToken = default)
     {
         var client = _httpClientFactory.CreateClient();
         var httpUrl = $"http://{nodeInfo}/api/config/cluster/configChangeNotify";

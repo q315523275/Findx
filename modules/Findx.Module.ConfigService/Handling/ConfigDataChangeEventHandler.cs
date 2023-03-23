@@ -52,7 +52,7 @@ public class ConfigDataChangeEventHandler: IApplicationEventHandler<ConfigDataCh
         {
             if (nodeInfo != _options.Value.CurrentNode)
             {
-                notifyTasks.Add(_clusterService.ConfigChangeClusterSyncNotify(nodeInfo, changeDataDto, cancellationToken));
+                notifyTasks.Add(_clusterService.ConfigChangeClusterSyncNotifyAsync(nodeInfo, changeDataDto, cancellationToken));
             }
         }
         await Task.WhenAll(notifyTasks);

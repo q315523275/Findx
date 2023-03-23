@@ -88,5 +88,33 @@ namespace Findx
             return value;
         }
 
+        /// <summary>
+        /// 检查对象是否为NULL 为NULL时抛出异常
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="name"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static void ThrowIfNull<T>(this T data, string name) where T : class
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException(name);
+            }
+        }
+        
+        /// <summary>
+        /// 检查对象是否为NULL 为NULL时抛出异常
+        /// </summary>
+        /// <param name="data"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <exception cref="ArgumentNullException"></exception>
+        public static void ThrowIfNull<T>(this T data) where T : class
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException();
+            }
+        }
     }
 }

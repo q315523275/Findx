@@ -14,5 +14,5 @@ public interface IClusterService
     /// <param name="changeDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task ConfigChangeClusterSyncNotify(string nodeInfo, ConfigDataChangeDto changeDto, CancellationToken cancellationToken = default);
+    Task ConfigChangeClusterSyncNotifyAsync(string nodeInfo, ConfigDataChangeDto changeDto, CancellationToken cancellationToken = default);
 }

@@ -5,6 +5,7 @@ using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
 using Findx.Mapping;
+using Findx.Messaging;
 using Findx.Module.ConfigService.Dtos;
 using Findx.Module.ConfigService.Handling;
 using Findx.Module.ConfigService.Models;
@@ -20,7 +21,8 @@ namespace Findx.Module.ConfigService.Areas.Config.Controller;
 [ApiExplorerSettings(GroupName = "config")]
 public class ConfigController: AreaApiControllerBase
 {
-    private readonly IApplicationContext _applicationContext;
+    private readonly IUnitOfWorkManager _unitOfWorkManager;
+    private readonly IMessageDispatcher _messageDispatcher;
     private readonly IRepository<ConfigInfo> _configRepo;
     private readonly IRepository<ConfigHistoryInfo> _configHistoryRepo;
     private readonly IPrincipal _principal;
@@ -28,15 +30,17 @@ public class ConfigController: AreaApiControllerBase
     /// <summary>
     /// Ctor
     /// </summary>
-    /// <param name="applicationContext"></param>
     /// <param name="configRepo"></param>
     /// <param name="principal"></param>
-    public ConfigController(IApplicationContext applicationContext, IRepository<ConfigInfo> configRepo, IPrincipal principal, IRepository<ConfigHistoryInfo> configHistoryRepo)
+    /// <param name="configHistoryRepo"></param>
+    /// <param name="messageDispatcher"></param>
+    public ConfigController(IRepository<ConfigInfo> configRepo, IPrincipal principal, IRepository<ConfigHistoryInfo> configHistoryRepo, IMessageDispatcher messageDispatcher, IUnitOfWorkManager unitOfWorkManager)
     {
-        _applicationContext = applicationContext;
         _configRepo = configRepo;
         _principal = principal;
         _configHistoryRepo = configHistoryRepo;
+        _messageDispatcher = messageDispatcher;
+        _unitOfWorkManager = unitOfWorkManager;
     }
 
     /// <summary>
@@ -98,9 +102,13 @@ public class ConfigController: AreaApiControllerBase
             model.CheckCreationAudited<ConfigInfo, Guid>(_principal);
             model.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
             model.Md5 = Utils.Encrypt.Md5By32(req.Content);
-            await _configRepo.InsertAsync(model);
-            // 发布ConfigDataChangeEvent事件
-            await _applicationContext.PublishEventAsync(model.MapTo<ConfigDataChangeEvent>());
+            // 保存并通知集群
+            using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true);
+            await _configRepo.WithUnitOfWork(uow).InsertAsync(model);
+            // 发布ConfigDataChangeEvent事件,等待执行
+            await _messageDispatcher.PublishAsync(model.MapTo<ConfigDataChangeEvent>());
+            // 提交事物
+            await uow.CommitAsync();
         }
         else if (dbConfig.Md5 != Utils.Encrypt.Md5By32(req.Content))
         {
@@ -116,10 +124,14 @@ public class ConfigController: AreaApiControllerBase
             dbConfig.Content = req.Content;
             dbConfig.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
             dbConfig.Md5 = Utils.Encrypt.Md5By32(req.Content);
-            await _configRepo.UpdateAsync(dbConfig, ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId });
-            await _configHistoryRepo.InsertAsync(hisConfig);
-            // 发布ConfigDataChangeEvent事件
-            await _applicationContext.PublishEventAsync(dbConfig.MapTo<ConfigDataChangeEvent>());
+            // 保存并通知集群
+            using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true);
+            await _configRepo.WithUnitOfWork(uow).UpdateAsync(dbConfig, ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId });
+            await _configHistoryRepo.WithUnitOfWork(uow).InsertAsync(hisConfig);
+            // 发布ConfigDataChangeEvent事件,等待执行
+            await _messageDispatcher.PublishAsync(dbConfig.MapTo<ConfigDataChangeEvent>());
+            // 提交事物
+            await uow.CommitAsync();
         }
         else
         {
