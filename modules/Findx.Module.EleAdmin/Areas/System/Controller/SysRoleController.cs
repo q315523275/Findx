@@ -18,6 +18,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 	[Route("api/[area]/role")]
     [Authorize]
 	[Description("系统-角色")]
+	[ApiExplorerSettings(GroupName = "eleAdmin")]
 	public class SysRoleController: CrudControllerBase<SysRoleInfo, SetRoleRequest, QueryRoleRequest, Guid, Guid>
 	{
 		/// <summary>

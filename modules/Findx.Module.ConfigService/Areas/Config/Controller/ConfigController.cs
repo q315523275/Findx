@@ -17,6 +17,7 @@ namespace Findx.Module.ConfigService.Areas.Config.Controller;
 [Route("api/config/manage")]
 [Authorize]
 [Description("配置服务-管理")]
+[ApiExplorerSettings(GroupName = "config")]
 public class ConfigController: AreaApiControllerBase
 {
     private readonly IApplicationContext _applicationContext;

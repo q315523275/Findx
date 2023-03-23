@@ -11,6 +11,7 @@ namespace Findx.Module.ConfigService.Areas.Config.Controller;
 [Area("findx")]
 [Route("api/config/cluster")]
 [Description("配置服务集群")]
+[ApiExplorerSettings(GroupName = "config")]
 public class ClusterController: AreaApiControllerBase
 {
     private readonly IDumpService _dumpService;

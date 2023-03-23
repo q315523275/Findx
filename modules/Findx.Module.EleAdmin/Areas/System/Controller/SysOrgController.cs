@@ -18,6 +18,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 	[Route("api/[area]/org")]
 	[Authorize]
 	[Description("系统-机构")]
+	[ApiExplorerSettings(GroupName = "eleAdmin")]
 	public class SysOrgController: CrudControllerBase<SysOrgInfo, SetOrgRequest, QueryOrgRequest, Guid, Guid>
 	{
 		/// <summary>

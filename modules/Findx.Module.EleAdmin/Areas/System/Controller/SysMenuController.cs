@@ -17,7 +17,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 	[Route("api/[area]/menu")]
     [Authorize]
     [Description("系统-菜单")]
-    public class SysMeunController: CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, Guid, Guid>
+	[ApiExplorerSettings(GroupName = "eleAdmin")]
+    public class SysMenuController: CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, Guid, Guid>
 	{
         /// <summary>
         /// 构建查询条件

@@ -7,6 +7,7 @@ using Findx.Module.EleAdmin.Models;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
@@ -17,6 +18,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller;
 [Route("api/[area]/app")]
 [Authorize]
 [Description("系统-应用")]
+[ApiExplorerSettings(GroupName = "eleAdmin")]
 public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, QueryAppRequest, Guid, Guid>
 {
     /// <summary>

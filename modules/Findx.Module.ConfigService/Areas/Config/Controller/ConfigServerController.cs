@@ -16,6 +16,7 @@ namespace Findx.Module.ConfigService.Areas.Config.Controller;
 [Area("findx")]
 [Route("api/config")]
 [Description("配置服务-获取")]
+[ApiExplorerSettings(GroupName = "config")]
 public class ConfigServerController: AreaApiControllerBase
 {
     private readonly IClientCallBack _clientCallBack;

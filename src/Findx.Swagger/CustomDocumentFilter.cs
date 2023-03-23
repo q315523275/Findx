@@ -8,9 +8,9 @@ using System.Reflection;
 namespace Findx.Swagger
 {
     /// <summary>
-    /// 对进行标记了忽略Api属性的接口进行过滤
+    /// 自定义过滤器
     /// </summary>
-    public class IgnoreApiFilter : IDocumentFilter
+    public class CustomDocumentFilter : IDocumentFilter
     {
         public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
         {

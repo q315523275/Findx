@@ -39,4 +39,9 @@
     <ProjectReference Include="..\..\src\Findx.MailKit\Findx.MailKit.csproj" />
     <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Swashbuckle.AspNetCore.Annotations">
+      <HintPath>..\..\..\..\.nuget\packages\swashbuckle.aspnetcore.annotations\6.5.0\lib\net6.0\Swashbuckle.AspNetCore.Annotations.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

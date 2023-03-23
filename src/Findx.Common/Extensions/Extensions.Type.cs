@@ -71,8 +71,18 @@ namespace Findx.Extensions
         /// <returns>返回Description特性描述信息，如不存在则返回类型的全名</returns>
         public static string GetDescription(this Type type, bool inherit = true)
         {
-            DescriptionAttribute desc = type.GetAttribute<DescriptionAttribute>(inherit);
-            return desc == null ? type.FullName : desc.Description;
+            var desc = type.GetAttribute<DescriptionAttribute>(inherit);
+            if (desc != null)
+            {
+                return desc.Description;
+            }
+            var displayName = type.GetAttribute<DisplayNameAttribute>(inherit);
+            if (displayName != null)
+            {
+                return displayName.DisplayName;
+            }
+            var display = type.GetAttribute<DisplayAttribute>(inherit);
+            return display != null ? display.Name : type.Name;
         }
 
         /// <summary>
@@ -83,17 +93,17 @@ namespace Findx.Extensions
         /// <returns>返回Description特性描述信息，如不存在则返回成员的名称</returns>
         public static string GetDescription(this MemberInfo member, bool inherit = true)
         {
-            DescriptionAttribute desc = member.GetAttribute<DescriptionAttribute>(inherit);
+            var desc = member.GetAttribute<DescriptionAttribute>(inherit);
             if (desc != null)
             {
                 return desc.Description;
             }
-            DisplayNameAttribute displayName = member.GetAttribute<DisplayNameAttribute>(inherit);
+            var displayName = member.GetAttribute<DisplayNameAttribute>(inherit);
             if (displayName != null)
             {
                 return displayName.DisplayName;
             }
-            DisplayAttribute display = member.GetAttribute<DisplayAttribute>(inherit);
+            var display = member.GetAttribute<DisplayAttribute>(inherit);
             if (display != null)
             {
                 return display.Name;
@@ -102,7 +112,7 @@ namespace Findx.Extensions
         }
 
         /// <summary>
-        /// 检查指定指定类型成员中是否存在指定的Attribute特性
+        /// 检查指定类型成员中是否存在指定的Attribute特性
         /// </summary>
         /// <typeparam name="T">要检查的Attribute特性类型</typeparam>
         /// <param name="memberInfo">要检查的类型成员</param>
@@ -167,7 +177,7 @@ namespace Findx.Extensions
                 throw new ArgumentException("该功能只支持泛型类型的调用，非泛型类型可使用 IsAssignableFrom 方法。");
             }
 
-            List<Type> allOthers = new List<Type> { type };
+            var allOthers = new List<Type> { type };
             if (genericType.IsInterface)
             {
                 allOthers.AddRange(type.GetInterfaces());

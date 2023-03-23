@@ -23,6 +23,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Area("system")]
     [Route("api/[area]/auth")]
     [Description("系统-账户")]
+    [ApiExplorerSettings(GroupName = "eleAdmin")]
     public class AuthController : AreaApiControllerBase
     {
         private readonly IOptions<JwtOptions> _options;

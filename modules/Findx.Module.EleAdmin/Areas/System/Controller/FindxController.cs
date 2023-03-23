@@ -18,6 +18,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Area("system")]
     [Route("api/[area]/findx")]
     // [Authorize]
+    [ApiExplorerSettings(GroupName = "eleAdmin")]
+    [Description("Findx框架")]
     public class FindxController: AreaApiControllerBase
     {
         /// <summary>

@@ -82,7 +82,7 @@ namespace Findx
         /// </summary>
         /// <param name="virtualPath"></param>
         /// <returns></returns>
-        public string MapPath(string virtualPath) => RootPath + virtualPath.RemovePreFix("~/");
+        public string MapPath(string virtualPath) => Path.Combine(RootPath, virtualPath.RemovePreFix("~/"));
 
         /// <summary>
         /// 停止应用
