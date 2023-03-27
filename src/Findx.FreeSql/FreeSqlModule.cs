@@ -48,8 +48,9 @@ namespace Findx.FreeSql
             var configuration = services.GetConfiguration();
             var section = configuration.GetSection("Findx:FreeSql");
             services.Configure<FreeSqlOptions>(section);
+            FreeSqlOptions = new FreeSqlOptions();
             section.Bind(FreeSqlOptions);
-            if (!(FreeSqlOptions is { Enabled: true }))
+            if (!FreeSqlOptions.Enabled)
                 return services;
 
             // 构建FreeSql
