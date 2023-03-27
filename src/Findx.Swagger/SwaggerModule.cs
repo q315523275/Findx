@@ -50,7 +50,7 @@ namespace Findx.Swagger
         {
             // 配置服务
             var configuration = services.GetConfiguration();
-            configuration.Bind("Findx:Swagger", _swaggerOptions);
+            configuration.GetSection("Findx:Swagger").Bind(_swaggerOptions);
             if (!_swaggerOptions.Enabled)
                 return services;
 
@@ -229,15 +229,11 @@ namespace Findx.Swagger
                     return new List<string> { desc.RelativePath };
                 }
 
-                var tag = string.Empty;
+                string tag;
                 
                 if (desc.ActionDescriptor is ControllerActionDescriptor controllerActionDescriptor)
                 {
-                    if (!controllerActionDescriptor.ControllerTypeInfo.IsDefined(typeof(ApiDescriptionSettingsAttribute), true))
-                    {
-                        tag = controllerActionDescriptor.ControllerTypeInfo.GetAttribute<ApiDescriptionSettingsAttribute>()?.Tag;
-                    }
-                    
+                    tag = controllerActionDescriptor.ControllerTypeInfo.GetAttribute<ApiDescriptionSettingsAttribute>()?.Tag;
                     tag ??= controllerActionDescriptor.ControllerTypeInfo.GetDescription();
                     tag ??= controllerActionDescriptor.ControllerName;
                     

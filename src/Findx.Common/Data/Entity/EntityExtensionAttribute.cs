@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Findx.Data
+﻿namespace Findx.Data
 {
     /// <summary>
     /// 定义一个数据源配置属性
@@ -14,13 +12,13 @@ namespace Findx.Data
         public string DataSource { get; set; }
 
         /// <summary>
-        /// 表分片类型
+        /// 是否包含软删除
         /// </summary>
-        public ShardingType TableShardingType { get; set; } = ShardingType.None;
-
+        public bool? HasSoftDeletable { get; set; }
+        
         /// <summary>
-        /// 表分片扩展
+        /// 是否包含分表
         /// </summary>
-        public string TableShardingExt { get; set; }
+        public bool? HasTableSharding { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
 using Findx.Data;
@@ -47,10 +48,11 @@ namespace Findx.FreeSql
             var configuration = services.GetConfiguration();
             var section = configuration.GetSection("Findx:FreeSql");
             services.Configure<FreeSqlOptions>(section);
-            FreeSqlOptions = section.Get<FreeSqlOptions>();
+            section.Bind(FreeSqlOptions);
             if (!(FreeSqlOptions is { Enabled: true }))
                 return services;
 
+            // 构建FreeSql
             var freeSqlClient = services.GetOrAddSingletonInstance(() => new FreeSqlClient());
             foreach (var item in FreeSqlOptions.DataSource)
             {
@@ -129,6 +131,9 @@ namespace Findx.FreeSql
             var descriptor2 = new ServiceDescriptor(typeof(IUnitOfWorkManager), typeof(FreeSqlUnitOfWorkManager), ServiceLifetime.Scoped);
             services.Replace(descriptor2);
 
+            // Entity属性字典初始化
+            SingletonDictionary<Type, EntityExtensionAttribute>.Instance.ThrowIfNull();
+            
             return services;
         }
     }

@@ -28,9 +28,7 @@ namespace Findx.Configuration.Extensions
             builder.ConfigureAppConfiguration((_, conf) =>
             {
                 var config = conf.Build();
-                var options = new ConfigOptions();
-                config.GetSection("Findx:Config").Bind(options);
-                conf.AddFindxConfig(options);
+                conf.AddFindxConfig(config.GetSection("Findx:Config").Get<ConfigOptions>());
             });
             return builder;
         }

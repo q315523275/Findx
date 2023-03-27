@@ -1,10 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using Findx.Configuration;
+using Findx.ConsistentHash;
 using Findx.Extensions;
 using Findx.Machine;
 using Findx.Machine.Cpu;
@@ -13,8 +15,30 @@ using Findx.Machine.Network;
 using Findx.Metrics;
 using Findx.Utils;
 using Findx.WebSocketCore;
+using Findx.Extensions;
 
 Console.WriteLine("Hello, World!");
+// Console.Clear();
+// // 服务节点
+// var nodes = new ConsistentHash<string>();
+// nodes.Add("192.168.1.101");
+// nodes.Add("192.168.1.102");
+// nodes.Add("192.168.1.103");
+// nodes.Add("192.168.1.104");
+// nodes.Add("192.168.1.105");
+// nodes.Add("192.168.1.106");
+// var dict = new ConcurrentDictionary<string, int>();
+// // 用户
+// for (int i = 0; i < 100000; i++)
+// {
+//     var node = nodes.GetItemNode("172.1.0.12"); // 指定固定内容
+//     dict.AddOrUpdate(node, 1, (_, value) => value + 1);
+// }
+// foreach (var item in dict)
+// {
+//     Console.WriteLine($"{item.Key}:{item.Value}");
+// }
+// Console.ReadLine();
 
 // var a = Findx.Utils.RegexUtil.GetValue("abc4d5e6hh5654", @"\d+");
 // Console.WriteLine($"a的值为：{a};");

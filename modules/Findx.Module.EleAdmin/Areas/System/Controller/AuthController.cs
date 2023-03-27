@@ -14,6 +14,7 @@ using Findx.Module.EleAdmin.Enum;
 using Findx.Module.EleAdmin.Models;
 using System.ComponentModel;
 using Findx.Setting;
+using Findx.Swagger;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -23,7 +24,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Area("system")]
     [Route("api/[area]/auth")]
     [Description("系统-账户")]
-    [ApiExplorerSettings(GroupName = "eleAdmin")]
+    [ApiDescriptionSettings(GroupName = "eleAdmin", Tag = "系统-账户")]
     public class AuthController : AreaApiControllerBase
     {
         private readonly IOptions<JwtOptions> _options;

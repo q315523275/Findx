@@ -21,8 +21,7 @@ namespace Findx.Configuration.Extensions
         public static IConfigurationBuilder AddFindxConfig(this IConfigurationBuilder configurationBuilder)
         {
             var config = configurationBuilder.Build();
-            var options = new ConfigOptions();
-            config.GetSection("Findx:Config").Bind(options);
+            var options = config.GetSection("Findx:Config").Get<ConfigOptions>();
             configurationBuilder.Add(new ConfigSource(new ConfigClient(options)));
             return configurationBuilder;
         }

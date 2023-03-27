@@ -86,7 +86,8 @@ namespace Findx.Security.Authentication
             var configuration = services.GetConfiguration();
             var section = configuration.GetSection("Findx:Authentication:Jwt");
             services.Configure<JwtOptions>(section);
-            var jwt = section.Get<JwtOptions>();
+            var jwt = new JwtOptions();
+            section.Bind(jwt);
             if (!jwt.Enabled)
             {
                 return;
@@ -116,8 +117,8 @@ namespace Findx.Security.Authentication
         private static void AddCookie(IServiceCollection services, AuthenticationBuilder builder)
         {
             var configuration = services.GetConfiguration();
-            CookieOptions cookie = new();
-            configuration.Bind("Findx:Authentication:Cookie", cookie);
+            var cookie = new CookieOptions();
+            configuration.GetSection("Findx:Authentication:Cookie").Bind(cookie);
             if (!cookie.Enabled)
             {
                 return;
@@ -136,9 +137,9 @@ namespace Findx.Security.Authentication
                     opts.ReturnUrlParameter = cookie.ReturnUrlParameter ?? opts.ReturnUrlParameter;
                     opts.SlidingExpiration = cookie.SlidingExpiration;
 
-                    if (cookie.ExpireMins > 0)
+                    if (cookie.ExpireMinutes > 0)
                     {
-                        opts.ExpireTimeSpan = TimeSpan.FromMinutes(cookie.ExpireMins);
+                        opts.ExpireTimeSpan = TimeSpan.FromMinutes(cookie.ExpireMinutes);
                     }
 
                     opts.EventsType = typeof(FindxCookieAuthenticationEvents);

@@ -36,7 +36,8 @@ namespace Findx.Jobs
         {
             var configuration = services.GetConfiguration();
             var section = configuration.GetSection("Findx:Jobs");
-            _options = section.Get<JobOptions>();
+            _options = new JobOptions();
+            section.Bind(_options);
             if (_options is not { Enabled: true })
                 return services;
 

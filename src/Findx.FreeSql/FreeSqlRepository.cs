@@ -10,7 +10,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Principal;
-using Findx.Messaging;
 using Findx.Security;
 
 namespace Findx.FreeSql
@@ -20,7 +19,7 @@ namespace Findx.FreeSql
         private readonly IPrincipal _principal;
         private readonly IFreeSql _fsql;
         private readonly IOptionsMonitor<FreeSqlOptions> _options;
-        private readonly bool _softDeletable;
+        private readonly EntityExtensionAttribute _entityExtensionAttribute;
 
         private readonly Type _entityType = typeof(TEntity);
         private Func<string, string> AsTableValueInternal { get; set; }
@@ -38,17 +37,20 @@ namespace Findx.FreeSql
             _principal = serviceProvider.GetService<IPrincipal>();
 
             // 实体实现接口集合
-            var baseOns = SingletonDictionary<Type, (bool softDeletable, bool customSharding)>.Instance.GetOrAdd(_entityType, () => (softDeletable: _entityType.IsBaseOn(typeof(ISoftDeletable)), customSharding: false));
-            _softDeletable = baseOns.softDeletable;
-            
-            // 实体属性
-            var extensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(_entityType, () => _entityType.GetAttribute<EntityExtensionAttribute>());
-            
-            // 数据库连接标识
-            var dataSource = extensionAttribute?.DataSource ?? Options.Primary ?? "";
+            _entityExtensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(_entityType, () =>
+            {
+                var attribute = _entityType.GetAttribute<EntityExtensionAttribute>() ?? new EntityExtensionAttribute { DataSource = _options.CurrentValue.Primary };
+                // 数据源标识
+                attribute.DataSource ??= _options.CurrentValue.Primary ?? "";
+                // 是否包含软删除
+                attribute.HasSoftDeletable ??= _entityType.IsBaseOn<ISoftDeletable>();
+                // 是否包含表分片
+                attribute.HasTableSharding ??= _entityType.IsBaseOn<ITableSharding>();
+                return attribute;
+            });
             
             // Orm实例
-            clients.TryGetValue(dataSource, out _fsql);
+            clients.TryGetValue(_entityExtensionAttribute.DataSource, out _fsql);
             
             // Orm实例检查
             if (Options.Strict)
@@ -109,7 +111,7 @@ namespace Findx.FreeSql
         #region 删除
         public int Delete(object key)
         {
-            if (_softDeletable)
+            if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault())
             {
                 return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             }
@@ -119,7 +121,7 @@ namespace Findx.FreeSql
 
         public Task<int> DeleteAsync(object key, CancellationToken cancellationToken = default)
         {
-            if (_softDeletable)
+            if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault())
             {
                 return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
@@ -129,12 +131,12 @@ namespace Findx.FreeSql
 
         public int Delete(Expression<Func<TEntity, bool>> whereExpression = null)
         {
-            if (_softDeletable && whereExpression == null)
+            if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault() && whereExpression == null)
             {
                 return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             }
 
-            if (_softDeletable && whereExpression != null)
+            if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault() && whereExpression != null)
             {
                 return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
             }
@@ -147,12 +149,12 @@ namespace Findx.FreeSql
 
         public Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
         {
-            if (_softDeletable && whereExpression == null)
+            if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault() && whereExpression == null)
             {
                 return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
 
-            if (_softDeletable && whereExpression != null)
+            if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault() && whereExpression != null)
             {
                 return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(it => (it as ISoftDeletable).IsDeleted == true).Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
             }
@@ -642,13 +644,13 @@ namespace Findx.FreeSql
         #region 库表
         public string GetDbTableName()
         {
-            var dbName = _fsql.CodeFirst.GetTableByEntity(_entityType ).DbName;
+            var dbName = _fsql.CodeFirst.GetTableByEntity(_entityType).DbName;
             return AsTableValueInternal?.Invoke(dbName) ?? dbName;
         }
 
         public List<string> GetDbColumnName()
         {
-            var columns = _fsql.CodeFirst.GetTableByEntity(_entityType ).Columns;
+            var columns = _fsql.CodeFirst.GetTableByEntity(_entityType).Columns;
             return columns.Keys.ToList();
         }
 
