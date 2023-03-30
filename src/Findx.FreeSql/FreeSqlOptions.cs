@@ -1,6 +1,7 @@
 ﻿using FreeSql;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
+using FreeSql.Internal;
 
 namespace Findx.FreeSql
 {
@@ -28,12 +29,47 @@ namespace Findx.FreeSql
         /// 严格匹配数据源,默认false. true未匹配到指定数据源时抛异常,false使用默认数据源
         /// </summary>
         public bool Strict { set; get; }
+        
+        /// <summary>
+        /// 检查插入属性
+        /// </summary>
+        public bool CheckInsert { set; get; }
+
+        /// <summary>
+        /// 检查更新属性
+        /// </summary>
+        public bool CheckUpdate { set; get; }
 
         /// <summary>
         /// 数据源列表
         /// </summary>
         public Dictionary<string, FreeSqlConnectionConfig> DataSource { set; get; } = new Dictionary<string, FreeSqlConnectionConfig>();
+    }
+    /// <summary>
+    /// FreeSql数据库连接配置
+    /// </summary>
+    public class FreeSqlConnectionConfig
+    {
+        /// <summary>
+        /// 数据库连接字符串
+        /// </summary>
+        public string ConnectionString { set; get; }
 
+        /// <summary>
+        /// 数据库类型
+        /// </summary>
+        public DataType DbType { set; get; }
+
+        /// <summary>
+        /// 数据源共享
+        /// </summary>
+        public List<string> DataSourceSharing { set; get; } = new List<string>();
+
+        /// <summary>
+        /// 字段名称转换类型
+        /// </summary>
+        public NameConvertType NameConvertType { set; get; } = NameConvertType.None;
+        
         /// <summary>
         /// 是否打印SQL日志调试
         /// </summary>
@@ -68,35 +104,5 @@ namespace Findx.FreeSql
         /// 自动同步实体结构【开发环境必备】，FreeSql不会扫描程序集，只有CRUD时才会生成表。
         /// </summary>
         public bool UseAutoSyncStructure { set; get; }
-
-        /// <summary>
-        /// 检查插入属性
-        /// </summary>
-        public bool CheckInsert { set; get; }
-
-        /// <summary>
-        /// 检查更新属性
-        /// </summary>
-        public bool CheckUpdate { set; get; }
-    }
-    /// <summary>
-    /// FreeSql数据库连接配置
-    /// </summary>
-    public class FreeSqlConnectionConfig
-    {
-        /// <summary>
-        /// 数据库连接字符串
-        /// </summary>
-        public string ConnectionString { set; get; }
-
-        /// <summary>
-        /// 数据库类型
-        /// </summary>
-        public DataType DbType { set; get; }
-
-        /// <summary>
-        /// 数据源共享
-        /// </summary>
-        public List<string> DataSourceSharing { set; get; } = new List<string>();
     }
 }

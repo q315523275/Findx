@@ -77,9 +77,19 @@ namespace Findx.FreeSql
         #region 插入
         public int Insert(TEntity entity)
         {
+            entity.ThrowIfNull();
             entity = CheckInsert(entity)[0];
-            var result = _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
-            return result;
+            var fInsert = _fsql.Insert(entity);
+            // 存在分表标签
+            // 动态自定义分表为Null
+            if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
+                // ReSharper disable once PossibleNullReferenceException
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                fInsert.AsTable((x) => (entity as ITableSharding).GetShardingTableName());
+            else
+                fInsert.AsTable(AsTableValueInternal);
+            
+            return fInsert.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public int Insert(IEnumerable<TEntity> entities)
@@ -93,9 +103,19 @@ namespace Findx.FreeSql
 
         public async Task<int> InsertAsync(TEntity entity, CancellationToken cancellationToken = default)
         {
+            entity.ThrowIfNull();
             entity = CheckInsert(entity)[0];
-            var result = await _fsql.Insert(entity).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
-            return result;
+            var fInsert = _fsql.Insert(entity);
+            // 存在分表标签
+            // 动态自定义分表为Null
+            if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
+                // ReSharper disable once PossibleNullReferenceException
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                fInsert.AsTable((x) => (entity as ITableSharding).GetShardingTableName());
+            else
+                fInsert.AsTable(AsTableValueInternal);
+            
+            return await fInsert.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
         public async Task<int> InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default)
@@ -169,9 +189,19 @@ namespace Findx.FreeSql
         #region 更新
         public int Update(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
         {
+            entity.ThrowIfNull();
             entity = CheckUpdate(entity)[0];
 
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
+            var update = _fsql.Update<TEntity>();
+            
+            // 存在分表标签
+            // 动态自定义分表为Null
+            if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
+                // ReSharper disable once PossibleNullReferenceException
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                update.AsTable((x) => (entity as ITableSharding).GetShardingTableName());
+            else
+                update.AsTable(AsTableValueInternal);
 
             if (ignoreNullColumns)
                 update.SetSourceIgnore(entity, col => col == null);
@@ -183,16 +213,24 @@ namespace Findx.FreeSql
 
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
-
-            var result = update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
-            return result;
+            
+            return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
         }
 
         public async Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
         {
             entity = CheckUpdate(entity)[0];
 
-            var update = _fsql.Update<TEntity>().AsTable(AsTableValueInternal);
+            var update = _fsql.Update<TEntity>();
+            
+            // 存在分表标签
+            // 动态自定义分表为Null
+            if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
+                // ReSharper disable once PossibleNullReferenceException
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                update.AsTable(x => (entity as ITableSharding).GetShardingTableName());
+            else
+                update.AsTable(AsTableValueInternal);
 
             if (ignoreNullColumns)
                 update.SetSourceIgnore(entity, col => col == null);
@@ -204,9 +242,8 @@ namespace Findx.FreeSql
 
             if (ignoreColumns != null)
                 update.IgnoreColumns(ignoreColumns);
-
-            var result = await update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
-            return result;
+            
+            return await update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
         }
 
         public int Update(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)

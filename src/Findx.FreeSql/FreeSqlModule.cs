@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.ComponentModel;
-using System.Diagnostics;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Extensions;
@@ -12,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using System.Text;
-using Microsoft.Extensions.Options;
 
 namespace Findx.FreeSql
 {
@@ -59,15 +56,16 @@ namespace Findx.FreeSql
             {
                 // FreeSQL构建开始
                 var freeSql = new FreeSqlBuilder().UseConnectionString(item.Value.DbType, item.Value.ConnectionString)
-                                                  .UseAutoSyncStructure(FreeSqlOptions.UseAutoSyncStructure)
+                                                  .UseAutoSyncStructure(item.Value.UseAutoSyncStructure)
+                                                  .UseNameConvert(item.Value.NameConvertType)
                                                   .Build();
                 // 开启逻辑删除
-                if (FreeSqlOptions.SoftDeletable)
+                if (item.Value.SoftDeletable)
                 {
                     freeSql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
                 }
                 // 开启租户隔离
-                if (FreeSqlOptions.MultiTenant)
+                if (item.Value.MultiTenant)
                 {
                     freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current != Guid.Empty, it => it.TenantId == TenantManager.Current);
                 }
@@ -75,7 +73,7 @@ namespace Findx.FreeSql
                 freeSql.Aop.CurdAfter += (s, e) =>
                 {
                     // 开启SQL打印
-                    if (FreeSqlOptions.PrintSql)
+                    if (item.Value.PrintSql)
                     {
                         var sb = new StringBuilder("Creating a new SqlSession");
                         sb.AppendLine("==>  Preparing:" + e.Sql);
@@ -85,8 +83,7 @@ namespace Findx.FreeSql
                             if (e.DbParms != null)
                                 foreach (var pa in e.DbParms)
                                 {
-                                    sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" +
-                                                  pa?.Value);
+                                    sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value);
                                 }
                         }
                         sb.Append($"==>  ExecuteTime:{e.ElapsedMilliseconds:0.000}ms");
@@ -95,17 +92,18 @@ namespace Findx.FreeSql
                         logger?.LogInformation(sb.ToString());
                     }
                     // 开启慢SQL记录
-                    if (FreeSqlOptions.OutageDetection && e.ElapsedMilliseconds > FreeSqlOptions.OutageDetectionInterval * 1000)
+                    if (item.Value.OutageDetection && e.ElapsedMilliseconds > item.Value.OutageDetectionInterval * 1000)
                     {
-                        ServiceLocator.GetService<ILogger<FreeSqlModule>>()?.LogInformation("FreeSql触发慢日志:执行sql({ESql})耗时({EElapsedMilliseconds})毫秒", e.Sql, e.ElapsedMilliseconds);
+                        // 推送慢sql事件
+                        ServiceLocator.GetService<IApplicationContext>()?.PublishEvent(new SlowSqlEvent { ElapsedMilliseconds  = e.ElapsedMilliseconds, SqlRaw = e.Sql });
                     }
                 };
                 freeSql.Aop.AuditValue += (_, e) =>
                 {
                     // 租户自动赋值
-                    if (FreeSqlOptions.MultiTenant && TenantManager.Current != Guid.Empty 
-                                                   && e.Property.PropertyType == typeof(Guid?) 
-                                                   && e.Property.Name == FreeSqlOptions.MultiTenantFieldName)
+                    if (item.Value.MultiTenant && TenantManager.Current != Guid.Empty 
+                                               && e.Property.PropertyType == typeof(Guid?) 
+                                               && e.Property.Name == item.Value.MultiTenantFieldName)
                     {
                         e.Value = TenantManager.Current;
                     }

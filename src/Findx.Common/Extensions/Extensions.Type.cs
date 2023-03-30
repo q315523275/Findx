@@ -234,7 +234,7 @@ namespace Findx.Extensions
         /// <returns></returns>
         public static bool IsBaseOn<TBaseType>(this Type type)
         {
-            Type baseType = typeof(TBaseType);
+            var baseType = typeof(TBaseType);
             return type.IsBaseOn(baseType);
         }
 
@@ -283,14 +283,36 @@ namespace Findx.Extensions
         /// </summary>
         public static string DisplayName(this Type type, bool fullName = true)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             ProcessType(sb, type, fullName);
             return sb.ToString();
+        }
+        
+        /// <summary>
+        /// 判断类型是否为基元类型
+        /// </summary>
+        /// <remarks>基元类型为 Boolean、、Byte、SByte、Int16、Int32UInt16、UInt32Int64、UInt64IntPtr、、UIntPtr、、Char、 Double和 。Single</remarks>
+        /// <param name="type"></param>
+        /// <param name="includeEnums"></param>
+        /// <returns></returns>
+        public static bool IsPrimitiveExtendedIncludingNullable(this Type type, bool includeEnums = false)
+        {
+            if (IsPrimitiveExtended(type, includeEnums))
+            {
+                return true;
+            }
+
+            if (type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
+            {
+                return IsPrimitiveExtended(type.GenericTypeArguments[0], includeEnums);
+            }
+
+            return false;
         }
 
         #region 私有方法
 
-        private static readonly Dictionary<Type, string> _builtInTypeNames = new Dictionary<Type, string>
+        private static readonly Dictionary<Type, string> BuiltInTypeNames = new()
         {
             { typeof(bool), "bool" },
             { typeof(byte), "byte" },
@@ -321,7 +343,7 @@ namespace Findx.Extensions
             {
                 ProcessArrayType(builder, type, fullName);
             }
-            else if (_builtInTypeNames.TryGetValue(type, out var builtInName))
+            else if (BuiltInTypeNames.TryGetValue(type, out var builtInName))
             {
                 builder.Append(builtInName);
             }
@@ -334,6 +356,7 @@ namespace Findx.Extensions
         private static void ProcessArrayType(StringBuilder builder, Type type, bool fullName)
         {
             var innerType = type;
+            // ReSharper disable once PossibleNullReferenceException
             while (innerType.IsArray)
             {
                 innerType = innerType.GetElementType();
@@ -341,6 +364,7 @@ namespace Findx.Extensions
 
             ProcessType(builder, innerType, fullName);
 
+            // ReSharper disable once PossibleNullReferenceException
             while (type.IsArray)
             {
                 builder.Append('[');
@@ -352,12 +376,14 @@ namespace Findx.Extensions
 
         private static void ProcessGenericType(StringBuilder builder, Type type, Type[] genericArguments, int length, bool fullName)
         {
+            // ReSharper disable once PossibleNullReferenceException
             var offset = type.IsNested ? type.DeclaringType.GetGenericArguments().Length : 0;
 
             if (fullName)
             {
                 if (type.IsNested)
                 {
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalse
                     ProcessGenericType(builder, type.DeclaringType, genericArguments, offset, fullName);
                     builder.Append('+');
                 }
@@ -396,6 +422,26 @@ namespace Findx.Extensions
             builder.Append('>');
         }
 
+        private static bool IsPrimitiveExtended(Type type, bool includeEnums)
+        {
+            if (type.GetTypeInfo().IsPrimitive)
+            {
+                return true;
+            }
+
+            if (includeEnums && type.GetTypeInfo().IsEnum)
+            {
+                return true;
+            }
+
+            return type == typeof(string) ||
+                   type == typeof(decimal) ||
+                   type == typeof(DateTime) ||
+                   type == typeof(DateTimeOffset) ||
+                   type == typeof(TimeSpan) ||
+                   type == typeof(Guid);
+        }
+        
         #endregion
     }
 }

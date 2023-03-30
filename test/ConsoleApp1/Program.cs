@@ -1,25 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
-
-using System;
-using System.Collections.Concurrent;
-using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
-using Findx.Configuration;
-using Findx.ConsistentHash;
-using Findx.Extensions;
-using Findx.Machine;
-using Findx.Machine.Cpu;
-using Findx.Machine.Memory;
-using Findx.Machine.Network;
-using Findx.Metrics;
-using Findx.Utils;
-using Findx.WebSocketCore;
-using Findx.Extensions;
+using Findx.Data;
 
 Console.WriteLine("Hello, World!");
-// Console.Clear();
-// // 服务节点
+
+// 一致哈希
 // var nodes = new ConsistentHash<string>();
 // nodes.Add("192.168.1.101");
 // nodes.Add("192.168.1.102");
@@ -28,7 +12,6 @@ Console.WriteLine("Hello, World!");
 // nodes.Add("192.168.1.105");
 // nodes.Add("192.168.1.106");
 // var dict = new ConcurrentDictionary<string, int>();
-// // 用户
 // for (int i = 0; i < 100000; i++)
 // {
 //     var node = nodes.GetItemNode("172.1.0.12"); // 指定固定内容
@@ -40,15 +23,17 @@ Console.WriteLine("Hello, World!");
 // }
 // Console.ReadLine();
 
+// 正则
 // var a = Findx.Utils.RegexUtil.GetValue("abc4d5e6hh5654", @"\d+");
 // Console.WriteLine($"a的值为：{a};");
 // var b = Findx.Utils.RegexUtil.GetValues("abc4d5e6hh5654", @"\d+");
 // Console.WriteLine($"b的值为：{JsonSerializer.Serialize(b)}");
-//
-// // receive string result from stdout.
+
+// 进程执行
 // var version = await ProcessX.StartAsync("dotnet --version").FirstAsync();
 // Console.WriteLine(version);
 
+// 机器信息
 // var network = NetworkInfo.TryGetRealNetworkInfo();
 // if (network == null) return;
 // var oldRate = network.IpvSpeed();
@@ -78,12 +63,13 @@ Console.WriteLine("Hello, World!");
 //     Console.WriteLine($"监测流量:{nodeRate.Size} {nodeRate.SizeType} 上传速率:{speed.Sent.Size} {speed.Sent.SizeType}/s 下载速率:{speed.Received.Size} {speed.Received.SizeType}/s");
 // }
 
-// // 机器占用端口
+// 机器占用端口
 // foreach (var activeTcpListener in IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpListeners())
 // {
 //     Console.WriteLine($"{activeTcpListener.Address.MapToIPv4().ToString()}:{activeTcpListener.Port}");
 // }
 
+// webSocketClient测试
 // var webSocketClient = new XWebSocketClient("ws://127.0.0.1:10021/ws")
 // {
 //     MessageReceived = (session, message, _) =>
@@ -111,12 +97,27 @@ Console.WriteLine("Hello, World!");
 //     webSocketClient.SendAsync(msg).Wait();
 // }
 
-var client = new ConfigClient("1", "2", "dev", "http://localhost:10020;http://localhost:10021");
-client.OnConfigDataChange(x =>
-{
-    Console.WriteLine(x.ToJson());
-    return Task.CompletedTask;
-});
-await client.LoadAsync().ConfigureAwait(false);
-Console.WriteLine("开始配置监听");
+// 配置中心测试
+//var client = new ConfigClient("1", "2", "dev", "http://localhost:10020;http://localhost:10021");
+//client.OnConfigDataChange(x =>
+//{
+//    Console.WriteLine(x.ToJson());
+//    return Task.CompletedTask;
+//});
+//await client.LoadAsync().ConfigureAwait(false);
+//Console.WriteLine("开始配置监听");
+//Console.ReadLine();
+
+var user = new User();
+
+user.SetProperty("name", "测试");
+Console.WriteLine($"GetProperty:{user.GetProperty<string>("name")}");
+Console.WriteLine($"ExtraProperties:{user.ExtraProperties}");
 Console.ReadLine();
+
+
+
+class User : IExtraObject
+{
+    public string ExtraProperties { get; set; }
+}

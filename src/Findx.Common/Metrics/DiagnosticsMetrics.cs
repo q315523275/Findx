@@ -14,7 +14,7 @@ namespace Findx.Metrics
         private static readonly AssemblyName AssemblyName = typeof(DiagnosticsMetrics).Assembly.GetName();
         private static readonly string MeterName = AssemblyName.Name;
 
-        private readonly Meter MeterInstance;
+        private readonly Meter _meterInstance;
         private readonly string _prefix;
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Findx.Metrics
         public DiagnosticsMetrics()
         {
             _prefix = "";
-            MeterInstance = new Meter(MeterName, AssemblyName.Version.ToString());
+            _meterInstance = new Meter(MeterName, AssemblyName.Version.ToString());
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Findx.Metrics
         /// <param name="value"></param>
         public void Counter(string name, long value = 1)
         {
-            var counter = _counters.GetOrAdd(_prefix + name, MeterInstance.CreateCounter<long>(name));
+            var counter = _counters.GetOrAdd(_prefix + name, _meterInstance.CreateCounter<long>(name));
             counter.Add(value);
         }
 
@@ -44,7 +44,7 @@ namespace Findx.Metrics
         /// <param name="value"></param>
         public void Gauge(string name, double value)
         {
-            var gauge = _gauges.GetOrAdd(_prefix + name, new GaugeInfo(MeterInstance, name));
+            var gauge = _gauges.GetOrAdd(_prefix + name, new GaugeInfo(_meterInstance, name));
             gauge.Value = value;
         }
 
@@ -55,7 +55,7 @@ namespace Findx.Metrics
         /// <param name="milliseconds"></param>
         public void Timer(string name, long milliseconds)
         {
-            var timer = _timers.GetOrAdd(_prefix + name, MeterInstance.CreateHistogram<double>(name, "ms"));
+            var timer = _timers.GetOrAdd(_prefix + name, _meterInstance.CreateHistogram<double>(name, "ms"));
             timer.Record(milliseconds);
         }
 
@@ -64,7 +64,7 @@ namespace Findx.Metrics
         /// </summary>
         public void Dispose()
         {
-            MeterInstance.Dispose();
+            _meterInstance.Dispose();
         }
 
         /// <summary>

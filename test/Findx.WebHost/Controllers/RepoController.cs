@@ -3,6 +3,7 @@ using Findx.WebHost.Model;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc.Filters;
 
@@ -13,9 +14,7 @@ namespace Findx.WebHost.Controllers
         [HttpGet("/repo/test")]
         public async Task<string> RepoTest([FromServices] IRepository<TestNewsInfo> repo1, [FromServices] IRepository<TestUserInfo> repo2, [FromServices] IUnitOfWorkManager uowManager)
         {
-            var uow =  uowManager.GetConnUnitOfWork(true);
-
-            uow.BeginOrUseTransaction();
+            var uow =  uowManager.GetConnUnitOfWork(true, true);
 
             try
             {
@@ -27,6 +26,8 @@ namespace Findx.WebHost.Controllers
 
                 var x = await repo1.DeleteAsync();
                 var y = await repo2.DeleteAsync().WaitAsync(TimeSpan.FromSeconds(10));
+                
+                a1.Rows.First().GetProperty<string>("title");
 
                 throw new Exception("123");
 
