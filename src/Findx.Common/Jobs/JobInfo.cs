@@ -36,7 +36,7 @@ namespace Findx.Jobs
         /// <summary>
         /// 执行中
         /// </summary>
-        public bool IsRuning { get; set; }
+        public bool IsRunning { get; set; }
 
         /// <summary>
         /// 执行次数
@@ -88,8 +88,8 @@ namespace Findx.Jobs
         public void Increment()
         {
             TryCount++;
-            IsRuning = false;
-            LastRunTime = NextRunTime.Value;
+            IsRunning = false;
+            LastRunTime = NextRunTime;
             if (IsSingle)
             {
                 NextRunTime = null;
@@ -111,7 +111,7 @@ namespace Findx.Jobs
         /// <returns></returns>
         public bool ShouldRun(DateTime currentTime)
         {
-            return IsEnable && !IsRuning && NextRunTime.HasValue && NextRunTime <= currentTime && LastRunTime != NextRunTime;
+            return IsEnable && !IsRunning && NextRunTime.HasValue && NextRunTime <= currentTime && LastRunTime != NextRunTime;
         }
     }
 }

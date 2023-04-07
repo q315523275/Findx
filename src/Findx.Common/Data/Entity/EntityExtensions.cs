@@ -18,7 +18,41 @@ namespace Findx.Data
         public static bool IsEntityType(this Type type)
         {
             Check.NotNull(type, nameof(type));
-            return typeof(IEntity<>).IsGenericAssignableFrom(type) && !type.IsAbstract && !type.IsInterface;
+            return type.IsBaseOn<IEntity>() && !type.IsAbstract && !type.IsInterface;
+        }
+
+        /// <summary>
+        /// 获取指定实体扩展属性信息
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public static EntityExtensionAttribute GetEntityExtensionAttribute(this Type entityType)
+        {
+            var attribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(entityType, () =>
+            {
+                var attribute = entityType.GetAttribute<EntityExtensionAttribute>() ?? new EntityExtensionAttribute();
+                
+                // 是否包含软删除
+                attribute.HasSoftDeletable ??= entityType.IsBaseOn<ISoftDeletable>();
+                
+                // 是否包含表分片
+                attribute.HasTableSharding ??= entityType.IsBaseOn<ITableSharding>();
+                
+                return attribute;
+            });
+
+            return attribute;
+        }
+        
+        /// <summary>
+        /// 获取指定实体扩展属性信息
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        public static EntityExtensionAttribute GetEntityExtensionAttribute<TEntity>(this TEntity entity) where TEntity : IEntity
+        {
+            return entity.GetType().GetEntityExtensionAttribute();
         }
 
         /// <summary>

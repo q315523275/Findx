@@ -44,6 +44,7 @@ namespace Findx.AspNetCore.Mvc.Filters
             var serializer = provider.GetRequiredService<IJsonSerializer>();
             var options = provider.GetRequiredService<IOptions<AuditingOptions>>();
             var dict = provider.GetRequiredService<ScopedDictionary>();
+            
             // 数据权限有效角色，即有当前功能权限的角色
             var functionAuthorization = provider.GetRequiredService<IFunctionAuthorization>();
             var roleName = functionAuthorization.GetOkRoles(function, context.HttpContext.User);
@@ -56,6 +57,7 @@ namespace Findx.AspNetCore.Mvc.Filters
                 UserAgent = httpContext.Request.Headers.GetOrDefault("User-Agent"),
                 CreatedTime = DateTime.Now
             };
+            
             // 认证参数
             if (httpContext.User.Identity is { IsAuthenticated: true } and ClaimsIdentity identity)
             {

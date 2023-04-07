@@ -1,6 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
+
+using System.Diagnostics;
 using Findx.Data;
 
+Console.Title = "Findx 控制台测试";
 Console.WriteLine("Hello, World!");
 
 // 一致哈希
@@ -98,24 +101,24 @@ Console.WriteLine("Hello, World!");
 // }
 
 // 配置中心测试
-//var client = new ConfigClient("1", "2", "dev", "http://localhost:10020;http://localhost:10021");
-//client.OnConfigDataChange(x =>
-//{
-//    Console.WriteLine(x.ToJson());
-//    return Task.CompletedTask;
-//});
-//await client.LoadAsync().ConfigureAwait(false);
-//Console.WriteLine("开始配置监听");
-//Console.ReadLine();
+// var client = new ConfigClient("1", "2", "dev", "http://localhost:10020;http://localhost:10021");
+// client.OnConfigDataChange(x =>
+// {
+//     Console.WriteLine(x.ToJson());
+//     return Task.CompletedTask;
+// });
+// await client.LoadAsync().ConfigureAwait(false);
+// Console.WriteLine("开始配置监听");
+// Console.ReadLine();
 
 var user = new User();
 
 user.SetProperty("name", "测试");
 Console.WriteLine($"GetProperty:{user.GetProperty<string>("name")}");
 Console.WriteLine($"ExtraProperties:{user.ExtraProperties}");
+
+
 Console.ReadLine();
-
-
 
 class User : IExtraObject
 {

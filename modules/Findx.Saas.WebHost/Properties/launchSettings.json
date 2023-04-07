@@ -3,18 +3,19 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:2728",
-      "sslPort": 0
+      "applicationUrl": "http://localhost:8233",
+      "sslPort": 44335
     }
   },
   "profiles": {
-    "Findx.Admin.WebHost": {
+    "Findx.Saas.WebHost": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:5134",
+      "applicationUrl": "https://localhost:7278;http://localhost:5153",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      },
+      "dotnetRunMessages": true
     },
     "IIS Express": {
       "commandName": "IISExpress",

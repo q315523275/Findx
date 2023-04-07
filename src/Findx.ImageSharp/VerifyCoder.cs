@@ -20,31 +20,31 @@ namespace Findx.ImageSharp
     /// </summary>
     public class VerifyCoder : IVerifyCoder
     {
-        private static readonly string[] _colorHexArr = new string[] { "#00E5EE", "#000000", "#2F4F4F", "#000000", "#43CD80", "#191970", "#006400", "#458B00", "#8B7765", "#CD5B45" };
-        private static readonly string[] _lightColorHexArr = new string[] { "#FFFACD", "#FDF5E6", "#F0FFFF", "#BBFFFF", "#FAFAD2", "#FFE4E1", "#DCDCDC", "#F0E68C" };
+        private static readonly string[] ColorHexArr = { "#00E5EE", "#000000", "#2F4F4F", "#000000", "#43CD80", "#191970", "#006400", "#458B00", "#8B7765", "#CD5B45" };
+        private static readonly string[] LightColorHexArr = { "#FFFACD", "#FDF5E6", "#F0FFFF", "#BBFFFF", "#FAFAD2", "#FFE4E1", "#DCDCDC", "#F0E68C" };
         private static Font[] _fontArr;
 
-        public VerifyCoder() => initFonts(50);
+        public VerifyCoder() => InitFonts(50);
 
         /// <summary>
         /// 初始化字体池
         /// </summary>
         /// <param name="fontSize">一个初始大小</param>
-        private void initFonts(int fontSize)
+        private static void InitFonts(int fontSize)
         {
             if (_fontArr == null)
             {
                 var assembly = Assembly.GetExecutingAssembly();
                 var names = assembly.GetManifestResourceNames();
 
-                if (names?.Length > 0)
+                if (names.Length > 0)
                 {
                     var fontList = new List<Font>();
                     var fontCollection = new FontCollection();
 
                     foreach (var name in names)
                     {
-                        fontList.Add(new Font(fontCollection.Add(assembly.GetManifestResourceStream(name)), fontSize));
+                        fontList.Add(new Font(fontCollection.Add(assembly.GetManifestResourceStream(name) ?? throw new InvalidOperationException()), fontSize));
                     }
 
                     _fontArr = fontList.ToArray();
@@ -59,34 +59,25 @@ namespace Findx.ImageSharp
         public async Task<byte[]> CreateImageAsync(string text, int imageWidth = 120, int imageHeight = 50)
         {
             // 图片太小容易导致
-            byte[] result;
+            using var imgText = new Image<Rgba32>(imageWidth, imageHeight);
 
-            using (var imgText = new Image<Rgba32>(imageWidth, imageHeight))
-            {
-                var colorTextHex = _colorHexArr[RandomUtil.RandomInt(0, _colorHexArr.Length)];
-                var lignthColorHex = _lightColorHexArr[RandomUtil.RandomInt(0, _lightColorHexArr.Length)];
+            var lightColorHex = LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)];
 
-                imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(_lightColorHexArr[RandomUtil.RandomInt(0, _lightColorHexArr.Length)])));
+            imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
+            imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(lightColorHex)));
+            imgText.Mutate(ctx => ctx.DrawingEnText(imageWidth, imageHeight, text, ColorHexArr, _fontArr));
+            imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
 
-                imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(lignthColorHex)));
-
-                imgText.Mutate(ctx => ctx.DrawingEnText(imageWidth, imageHeight, text, _colorHexArr, _fontArr));
-
-                imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
-
-                using (var ms = new MemoryStream())
-                {
-                    await imgText.SaveAsJpegAsync(ms);
-                    result = ms.ToArray();
-                }
-            }
+            using var ms = new MemoryStream();
+            await imgText.SaveAsJpegAsync(ms);
+            var result = ms.ToArray();
 
             return result;
         }
 
-        public string GetCode(int length, VerifyCodeType codeTyoe)
+        public string GetCode(int length, VerifyCodeType codeType)
         {
-            switch (codeTyoe)
+            switch (codeType)
             {
                 case VerifyCodeType.Number:
                     return GetRandomNums(length);
@@ -97,8 +88,8 @@ namespace Findx.ImageSharp
 
         private static string GetRandomNums(int length)
         {
-            int[] ints = new int[length];
-            for (int i = 0; i < length; i++)
+            var ints = new int[length];
+            for (var i = 0; i < length; i++)
             {
                 ints[i] = RandomUtil.RandomInt(0, 9);
             }
@@ -110,12 +101,12 @@ namespace Findx.ImageSharp
             const string allChar = "2,3,4,5,6,7,8,9," +
                 "A,B,C,D,E,F,G,H,J,K,M,N,P,Q,R,S,T,U,V,W,X,Y,Z," +
                 "a,b,c,d,e,f,g,h,k,m,n,p,q,r,s,t,u,v,w,x,y,z";
-            string[] allChars = allChar.Split(',');
-            List<string> result = new List<string>();
+            var allChars = allChar.Split(',');
+            var result = new List<string>();
             while (result.Count < length)
             {
-                int index = RandomUtil.RandomInt(allChars.Length);
-                string c = allChars[index];
+                var index = RandomUtil.RandomInt(allChars.Length);
+                var c = allChars[index];
                 result.Add(c);
             }
             return result.ExpandAndToString("");

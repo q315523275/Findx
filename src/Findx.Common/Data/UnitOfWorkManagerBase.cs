@@ -103,7 +103,7 @@ namespace Findx.Data
         public IUnitOfWork GetEntityUnitOfWork<TEntity>(bool enableTransaction = false, bool beginTransaction = false)
         {
             var entityType = typeof(TEntity);
-            var extensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(entityType, () => entityType.GetAttribute<EntityExtensionAttribute>());
+            var extensionAttribute = entityType.GetEntityExtensionAttribute();
             var dataSource = extensionAttribute?.DataSource;
 
             var unitOfWork = _scopedDictionary.GetEntityUnitOfWork(entityType);
@@ -143,7 +143,7 @@ namespace Findx.Data
         public async Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
         {
             var entityType = typeof(TEntity);
-            var extensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(entityType, () => entityType.GetAttribute<EntityExtensionAttribute>());
+            var extensionAttribute = entityType.GetEntityExtensionAttribute();
             var dataSource = extensionAttribute?.DataSource;
 
             var unitOfWork = _scopedDictionary.GetEntityUnitOfWork(entityType);

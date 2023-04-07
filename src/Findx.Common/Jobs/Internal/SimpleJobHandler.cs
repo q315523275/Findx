@@ -4,13 +4,13 @@ using Findx.Messaging;
 
 namespace Findx.Jobs.Internal
 {
-	internal class LocalJobHandler: IApplicationEventHandler<JobInfo>
+	internal class SimpleJobHandler: IApplicationEventHandler<JobInfo>
     {
         private readonly IServiceProvider _provider;
 
         private readonly IJobListener _listener;
 
-        public LocalJobHandler(IServiceProvider provider, IJobListener listener)
+        public SimpleJobHandler(IServiceProvider provider, IJobListener listener)
         {
             _provider = provider;
             _listener = listener;
@@ -20,7 +20,7 @@ namespace Findx.Jobs.Internal
         {
             Check.NotNull(message, nameof(message));
 
-            var context = new JobContext(_provider, message.Id, message.Id, message.FullName)
+            var context = new JobExecutionContext(_provider, message.Id, message.Id, message.FullName)
             {
                 Parameter = (message.JsonParam ?? "{}").ToObject<Dictionary<string, string>>(),
                 JobName = message.Name

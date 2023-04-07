@@ -45,10 +45,10 @@ namespace Findx.Jobs
 
             // 任务调度
             services.AddSingleton<IJobListener, InMemoryJobListener>();
-            services.AddSingleton<IJobScheduler, DefaultJobScheduler>();
+            services.AddSingleton<IJobScheduler, SimpleJobScheduler>();
             services.AddSingleton<IJobStorage, InMemoryJobStorage>();
             services.AddSingleton<ITriggerListener, InMemoryTriggerListener>();
-            services.AddScoped<IApplicationEventHandler<JobInfo>, LocalJobHandler>();
+            services.AddScoped<IApplicationEventHandler<JobInfo>, SimpleJobHandler>();
 
             // 自动注册作业
             var dict = new JobTypeDictionary();

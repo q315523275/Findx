@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Findx.Security;
 using Findx.Extensions;
@@ -15,7 +16,7 @@ namespace Findx.AspNetCore.Mvc
     /// <summary>
     /// Mvc功能信息提取实现
     /// </summary>
-    public class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
+    public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
     {
         private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
         private readonly ICacheProvider _cacheProvider;
@@ -110,6 +111,7 @@ namespace Findx.AspNetCore.Mvc
                     actionAuthority = methodAuthorize == null ? controller.Authority : (methodAuthorize as PreAuthorizeAttribute).Authority;
                 }
                 var auditOperationEnabled = !item.MethodInfo.HasAttribute<DisableAuditingAttribute>() && controller.AuditOperationEnabled;
+                
                 // 请求方法循环
                 foreach (var httpMethod in methodHttp.HttpMethods.Distinct())
                 {
@@ -148,7 +150,7 @@ namespace Findx.AspNetCore.Mvc
         /// </summary>
         /// <param name="authorizeAttribute"></param>
         /// <returns></returns>
-        protected virtual FunctionAccessType GetFunctionAccessType(AuthorizeAttribute authorizeAttribute)
+        private FunctionAccessType GetFunctionAccessType(AuthorizeAttribute authorizeAttribute)
         {
             var typeAccessType = FunctionAccessType.Anonymous;
             // 匿名访问

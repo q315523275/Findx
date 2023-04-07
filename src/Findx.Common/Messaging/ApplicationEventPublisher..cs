@@ -88,7 +88,6 @@ namespace Findx.Messaging
             try
             {
                 // 异步流方式
-                
                 await foreach (var message in channelReader.ReadAllAsync(cancellationToken))
                 {
                     var messageType = message.GetType();

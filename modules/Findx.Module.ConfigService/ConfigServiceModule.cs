@@ -21,6 +21,8 @@ public class ConfigServiceModule: FindxModule
 
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
+        services.AddHttpClient();
+        
         services.AddSingleton<IClientCallBack, ClientCallBack>();
         services.AddSingleton<IClusterService, ClusterService>();
         services.AddSingleton<IDumpService, DumpService>();

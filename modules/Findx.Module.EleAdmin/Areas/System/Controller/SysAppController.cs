@@ -7,7 +7,6 @@ using Findx.Module.EleAdmin.Models;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Swashbuckle.AspNetCore.Annotations;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 

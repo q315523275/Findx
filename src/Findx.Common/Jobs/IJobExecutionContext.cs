@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Findx.Jobs
+﻿namespace Findx.Jobs
 {
 	/// <summary>
 	/// 定义一个作业上下文信息
 	/// </summary>
-	public interface IJobContext
+	public interface IJobExecutionContext
 	{
         /// <summary>
         /// 服务提供器

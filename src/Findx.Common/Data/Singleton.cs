@@ -7,7 +7,7 @@
     {
         static Singleton()
         {
-            AllSingletons = new Dictionary<Type, object>();
+            AllSingletons = new ConcurrentDictionary<Type, object>();
         }
 
         /// <summary>

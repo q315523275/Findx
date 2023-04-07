@@ -14,7 +14,7 @@ namespace Findx.Jobs
 		/// <param name="context"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task RunAsync([NotNull] IJobContext context, CancellationToken cancellationToken = default);
+		Task RunAsync([NotNull] IJobExecutionContext context, CancellationToken cancellationToken = default);
 	}
 }
 

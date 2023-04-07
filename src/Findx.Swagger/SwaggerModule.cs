@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Findx.Data;
 using Findx.Reflection;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -158,7 +159,8 @@ namespace Findx.Swagger
                     var versions = classType.GetAttributes<ApiExplorerSettingsAttribute>(false).Select(m => m.GroupName);
                         
                     // ReSharper disable once PossibleMultipleEnumeration
-                    if (version.ToLower() == "v1" && !versions.Any()) return true;
+                    if (version.ToLower() == "v1" && !versions.Any()) 
+                        return true;
 
                     // ReSharper disable once PossibleMultipleEnumeration
                     return versions.Any(m => m != null && m.ToString() == version);

@@ -59,11 +59,13 @@ namespace Findx.Modularity
         {
             moduleType ??= GetType();
             var dependAttrs = moduleType.GetAttributes<DependsOnModulesAttribute>();
+            // ReSharper disable once PossibleMultipleEnumeration
             if (!dependAttrs.Any())
             {
                 return Type.EmptyTypes;
             }
             List<Type> dependTypes = new();
+            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var dependAttr in dependAttrs)
             {
                 var packTypes = dependAttr.DependedModuleTypes;

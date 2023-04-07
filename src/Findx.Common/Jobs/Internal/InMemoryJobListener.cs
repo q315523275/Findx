@@ -27,7 +27,7 @@ namespace Findx.Jobs.Internal
         /// </summary>
         /// <param name="context"></param>
         /// <param name="cancellationToken"></param>
-        public async Task JobToRunAsync([NotNull] IJobContext context, CancellationToken cancellationToken = default)
+        public async Task JobToRunAsync([NotNull] IJobExecutionContext context, CancellationToken cancellationToken = default)
         {
             if (!_dict.TryGetValue(context.FullName, out var jobType))
                 return;
@@ -42,7 +42,7 @@ namespace Findx.Jobs.Internal
             var job = context.ServiceProvider.GetRequiredService(jobType) as IJob;
             try
             {
-                await job.RunAsync(context, cancellationToken);
+                if (job != null) await job.RunAsync(context, cancellationToken);
             }
             catch (Exception ex)
             {

@@ -203,7 +203,7 @@ namespace Findx.Configuration
             {
                 CurrentServer = GenerateServer().TrimEnd('/');
                 var apiUrl = GenerateApiUrl();
-                Console.WriteLine($"监听请求服务:{CurrentServer},{CurrentDataVersion}");
+
                 using var response = await HttpUtil.GetAsync(apiUrl, null, null);
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
@@ -242,6 +242,7 @@ namespace Findx.Configuration
                 else
                 {
                     _requestException = true;
+
                     // 循环存在异常时,进行60秒等待
                     await Task.Delay(30 * 1000);
                 }

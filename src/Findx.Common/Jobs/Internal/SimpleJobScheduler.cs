@@ -8,7 +8,7 @@ namespace Findx.Jobs.Internal
     /// <summary>
     /// 默认工作调度
     /// </summary>
-    public class DefaultJobScheduler : IJobScheduler
+    public class SimpleJobScheduler : IJobScheduler
     {
         private readonly IJobStorage _storage;
 
@@ -19,7 +19,7 @@ namespace Findx.Jobs.Internal
         /// </summary>
         /// <param name="storage"></param>
         /// <param name="serializer"></param>
-        public DefaultJobScheduler(IJobStorage storage, IJsonSerializer serializer)
+        public SimpleJobScheduler(IJobStorage storage, IJsonSerializer serializer)
         {
             _storage = storage;
             _serializer = serializer;
@@ -199,7 +199,6 @@ namespace Findx.Jobs.Internal
                 detail.Name = attribute.Name;
                 detail.Remark = attribute.Description;
             }
-
             return detail;
         }
     }

@@ -73,7 +73,7 @@ public class ConfigServerController: AreaApiControllerBase
         try
         {
             // 注册变更监听TaskCompletionSource
-            var res = await _clientCallBack.NewCallBackTaskAsync($"{appId}-{environment}", reqId, HttpContext.GetClientIp(), 20);
+            var res = await _clientCallBack.NewCallBackTaskAsync($"{appId}-{environment}", reqId, HttpContext.GetClientIp(), 30);
             var rows = new List<ConfigDataChangeDto> { res };
             // 返回监听结果
             Response.ContentType = "application/json; charset=utf-8";

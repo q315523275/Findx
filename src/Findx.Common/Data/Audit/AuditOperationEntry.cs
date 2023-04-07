@@ -9,6 +9,7 @@ namespace Findx.Data
     /// </summary>
     public class AuditOperationEntry : IApplicationEvent
     {
+        #pragma warning disable CS8618
         /// <summary>
         /// 获取或设置 执行的功能名
         /// </summary>
@@ -69,6 +70,9 @@ namespace Findx.Data
         /// 获取 扩展数据字典
         /// </summary>
         public IDictionary<string, string> ExtendData { get; } = new Dictionary<string, string>();
+        
+        
+        #pragma warning restore CS8618
     }
 }
 

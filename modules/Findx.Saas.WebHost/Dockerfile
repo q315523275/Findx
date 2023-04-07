@@ -4,4 +4,4 @@ FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 10020
 COPY . .
-ENTRYPOINT ["dotnet", "Findx.Admin.WebHost.dll"]
+ENTRYPOINT ["dotnet", "Findx.Saas.WebHost.dll"]

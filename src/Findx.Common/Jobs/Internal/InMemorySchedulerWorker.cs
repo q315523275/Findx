@@ -81,7 +81,7 @@ namespace Findx.Jobs.Internal
 
                 // 固定间隔任务，从推送开始标识执行中
                 if (jobDetail.FixedDelay > 0)
-                    jobDetail.IsRuning = true;
+                    jobDetail.IsRunning = true;
 
                 // 当前使用最简单方式
                 await _trigger.TriggerFiredAsync(jobDetail, cancellationToken);

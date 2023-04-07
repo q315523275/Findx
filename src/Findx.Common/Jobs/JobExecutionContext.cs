@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace Findx.Jobs
 {
     /// <summary>
-    /// 作业上下文
+    /// 作业执行上下文
     /// </summary>
-	public class JobContext: IJobContext
+	public class JobExecutionContext: IJobExecutionContext
 	{
         /// <summary>
         /// Ctor
@@ -15,7 +15,7 @@ namespace Findx.Jobs
         /// <param name="jobId"></param>
         /// <param name="executionId"></param>
         /// <param name="fullName"></param>
-        public JobContext(IServiceProvider serviceProvider, long jobId, long executionId, string fullName)
+        public JobExecutionContext(IServiceProvider serviceProvider, long jobId, long executionId, string fullName)
         {
             ServiceProvider = serviceProvider;
             JobId = jobId;

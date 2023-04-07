@@ -26,6 +26,11 @@ namespace Findx.FreeSql
         private Func<Type, string, string> AsTableSelectValueInternal { get; set; }
 
         /// <summary>
+        /// 获取Orm配置
+        /// </summary>
+        private FreeSqlOptions Options => _options?.CurrentValue;
+
+        /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="serviceProvider"></param>
@@ -36,18 +41,12 @@ namespace Findx.FreeSql
             _options = serviceProvider.GetRequiredService<IOptionsMonitor<FreeSqlOptions>>();
             _principal = serviceProvider.GetService<IPrincipal>();
 
-            // 实体实现接口集合
-            _entityExtensionAttribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(_entityType, () =>
-            {
-                var attribute = _entityType.GetAttribute<EntityExtensionAttribute>() ?? new EntityExtensionAttribute { DataSource = _options.CurrentValue.Primary };
-                // 数据源标识
-                attribute.DataSource ??= _options.CurrentValue.Primary ?? "";
-                // 是否包含软删除
-                attribute.HasSoftDeletable ??= _entityType.IsBaseOn<ISoftDeletable>();
-                // 是否包含表分片
-                attribute.HasTableSharding ??= _entityType.IsBaseOn<ITableSharding>();
-                return attribute;
-            });
+            // 实体扩展属性
+            _entityExtensionAttribute = _entityType.GetEntityExtensionAttribute();
+            
+            // 设置缺省值
+            if (_entityExtensionAttribute.DataSource.IsNullOrWhiteSpace())
+                _entityExtensionAttribute.DataSource = _options.CurrentValue.Primary;
             
             // Orm实例
             clients.TryGetValue(_entityExtensionAttribute.DataSource, out _fsql);
@@ -65,11 +64,6 @@ namespace Findx.FreeSql
         }
 
         /// <summary>
-        /// 获取Orm配置
-        /// </summary>
-        private FreeSqlOptions Options => _options?.CurrentValue;
-
-        /// <summary>
         /// 获取或设置：工作单元
         /// </summary>
         public IUnitOfWork UnitOfWork { set; get; }
@@ -85,7 +79,7 @@ namespace Findx.FreeSql
             if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
                 // ReSharper disable once PossibleNullReferenceException
                 // ReSharper disable once SuspiciousTypeConversion.Global
-                fInsert.AsTable((x) => (entity as ITableSharding).GetShardingTableName());
+                fInsert.AsTable(x => (entity as ITableSharding).GetShardingTableName());
             else
                 fInsert.AsTable(AsTableValueInternal);
             
