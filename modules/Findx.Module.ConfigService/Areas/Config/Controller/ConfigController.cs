@@ -10,15 +10,19 @@ using Findx.Module.ConfigService.Dtos;
 using Findx.Module.ConfigService.Handling;
 using Findx.Module.ConfigService.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.ConfigService.Areas.Config.Controller;
 
+/// <summary>
+/// 
+/// </summary>
 [Area("findx")]
 [Route("api/config/manage")]
 [Authorize]
 [Description("配置服务-管理")]
-[ApiExplorerSettings(GroupName = "config")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-管理")]
 public class ConfigController: AreaApiControllerBase
 {
     private readonly IUnitOfWorkManager _unitOfWorkManager;

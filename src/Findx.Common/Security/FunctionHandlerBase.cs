@@ -17,7 +17,6 @@ namespace Findx.Security
 		/// Ctor
 		/// </summary>
 		/// <param name="store"></param>
-		/// <param name="logger"></param>
 		/// <param name="startupLogger"></param>
 		protected FunctionHandlerBase(IFunctionStore<TFunction> store, StartupLogger startupLogger)
 		{

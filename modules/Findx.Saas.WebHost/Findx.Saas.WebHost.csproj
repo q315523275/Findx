@@ -7,13 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx" Version="1.9.1.2-beta2" />
-      <PackageReference Include="Findx.AspNetCore" Version="1.9.1.1" />
-      <PackageReference Include="Findx.FreeSql" Version="1.9.1.3-beta1" />
-      <PackageReference Include="Findx.ImageSharp" Version="1.9.0" />
-      <PackageReference Include="Findx.NLog" Version="1.9.0" />
-      <PackageReference Include="Findx.Swagger" Version="1.9.1.1" />
-      <PackageReference Include="Findx.WebSocketCore" Version="1.9.0" />
+<!--      <PackageReference Include="Findx" Version="1.9.1.2-beta2" />-->
+<!--      <PackageReference Include="Findx.AspNetCore" Version="1.9.1.1" />-->
+<!--      <PackageReference Include="Findx.FreeSql" Version="1.9.1.3-beta1" />-->
+<!--      <PackageReference Include="Findx.ImageSharp" Version="1.9.0" />-->
+<!--      <PackageReference Include="Findx.NLog" Version="1.9.0" />-->
+<!--      <PackageReference Include="Findx.Swagger" Version="1.9.1.2-beta1" />-->
+<!--      <PackageReference Include="Findx.WebSocketCore" Version="1.9.0" />-->
       <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.693" />
     </ItemGroup>
 
@@ -24,6 +24,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\src\Findx.ImageSharp\Findx.ImageSharp.csproj" />
+      <ProjectReference Include="..\..\src\Findx.Mapster\Findx.Mapster.csproj" />
+      <ProjectReference Include="..\..\src\Findx.NLog\Findx.NLog.csproj" />
+      <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj" />
+      <ProjectReference Include="..\..\src\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
       <ProjectReference Include="..\Findx.Module.ConfigService\Findx.Module.ConfigService.csproj" />
       <ProjectReference Include="..\Findx.Module.EleAdmin\Findx.Module.EleAdmin.csproj" />
     </ItemGroup>

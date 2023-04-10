@@ -63,6 +63,7 @@ namespace Findx.Data
         /// <param name="dbPrimary"></param>
         /// <param name="enableTransaction">是否启用事务</param>
         /// <param name="beginTransaction">是否开启事物</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<IUnitOfWork> GetConnUnitOfWorkAsync(bool enableTransaction = false, bool beginTransaction = false, string dbPrimary = default, CancellationToken cancellationToken = default)
         {
@@ -139,6 +140,7 @@ namespace Findx.Data
         /// </summary>
         /// <param name="enableTransaction">是否启用事务</param>
         /// <param name="beginTransaction">是否启用事务</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
         {

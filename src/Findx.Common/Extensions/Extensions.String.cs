@@ -424,7 +424,7 @@ namespace Findx.Extensions
         }
 
         /// <summary>
-        /// 以<param name="c"></param>为结尾，不是则进行追加
+        /// 以参数c为结尾，不是则进行追加
         /// </summary>
         /// <param name="str"></param>
         /// <param name="c"></param>
@@ -443,7 +443,7 @@ namespace Findx.Extensions
         }
 
         /// <summary>
-        /// 以<param name="c"></param>为开始，不是则进行追加
+        /// 以参数c为开始，不是则进行追加
         /// </summary>
         /// <param name="str"></param>
         /// <param name="c"></param>

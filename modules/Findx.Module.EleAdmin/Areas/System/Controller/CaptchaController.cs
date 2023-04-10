@@ -4,6 +4,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Drawing;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
@@ -14,7 +15,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Description("系统-验证码")]
 	[Area("system")]
 	[Route("api/[area]/captcha")]
-    [ApiExplorerSettings(GroupName = "eleAdmin")]
+    [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-验证码")]
 	public class CaptchaController : AreaApiControllerBase
 	{
 		private readonly ICacheProvider _cacheProvider;

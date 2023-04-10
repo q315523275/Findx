@@ -8,7 +8,7 @@ namespace Findx.Serialization
     public class DateTimeJsonConverter : JsonConverter<DateTime>
     {
         /// <summary>
-        /// 读取
+        /// 读取时间
         /// </summary>
         /// <param name="reader"></param>
         /// <param name="typeToConvert"></param>
@@ -16,32 +16,18 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.String)
-            {
-                if (DateTime.TryParse(reader.GetString(), out DateTime date))
-                {
-                    return date;
-                }
-            }
             return reader.GetDateTime();
         }
 
         /// <summary>
-        /// 
+        /// 写入字符串
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
         public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
         {
-            if (value.Hour == 0 && value.Minute == 0 && value.Second == 0)
-            {
-                writer.WriteStringValue(value.ToString("yyyy-MM-dd"));
-            }
-            else
-            {
-                writer.WriteStringValue(value.ToString("yyyy-MM-dd HH:mm:ss"));
-            }
+            writer.WriteStringValue(value is { Hour: 0, Minute: 0, Second: 0 } ? value.ToString("yyyy-MM-dd") : value.ToString("yyyy-MM-dd HH:mm:ss"));
         }
     }
 
@@ -51,7 +37,7 @@ namespace Findx.Serialization
     public class DateTimeNullableJsonConverter : JsonConverter<DateTime?>
     {
         /// <summary>
-        /// 读取
+        /// 读取时间
         /// </summary>
         /// <param name="reader"></param>
         /// <param name="typeToConvert"></param>
@@ -59,32 +45,25 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.Null)
-            {
-                return default;
-            }
-
-            if (reader.TokenType == JsonTokenType.String)
-            {
-                if (DateTime.TryParse(reader.GetString(), out DateTime date))
-                {
-                    return date;
-                }
-            }
-            return reader.GetDateTime();
+            return reader.TokenType is JsonTokenType.Null or JsonTokenType.None ? default : reader.GetDateTime();
         }
 
         /// <summary>
-        /// 写入
+        /// 写入字符
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="value"></param>
         /// <param name="options"></param>
         public override void Write(Utf8JsonWriter writer, DateTime? value, JsonSerializerOptions options)
         {
-            writer.WriteStringValue(value is { Hour: 0, Minute: 0, Second: 0 }
-                ? value?.ToString("yyyy-MM-dd")
-                : value?.ToString("yyyy-MM-dd HH:mm:ss"));
+            if (value.HasValue)
+            {
+                writer.WriteStringValue(value is { Hour: 0, Minute: 0, Second: 0 } ? value.Value.ToString("yyyy-MM-dd") : value.Value.ToString("yyyy-MM-dd HH:mm:ss"));
+            }
+            else
+            {
+                writer.WriteNullValue();
+            }
         }
     }
 
@@ -102,7 +81,7 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return long.Parse(reader.GetString());
+            return reader.GetInt64();
         }
 
         /// <summary>
@@ -132,21 +111,11 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override decimal? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonTokenType.Null)
+            if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None)
             {
                 return default;
             }
-            if (reader.TokenType == JsonTokenType.String)
-            {
-                if (Decimal.TryParse(reader.GetString(), out decimal v))
-                {
-                    return v;
-                }
-                else
-                {
-                    return default;
-                }
-            }
+            
             return reader.GetDecimal();
         }
 

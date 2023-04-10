@@ -6,7 +6,5 @@ namespace Findx.Swagger
     /// 忽略API属性
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
-    public class IgnoreApiAttribute : Attribute
-    {
-    }
+    public class IgnoreApiAttribute : Attribute {}
 }

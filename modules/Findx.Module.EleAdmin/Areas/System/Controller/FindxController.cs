@@ -8,6 +8,7 @@ using Findx.Data;
 using Findx.Extensions;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
@@ -17,9 +18,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     /// </summary>
     [Area("system")]
     [Route("api/[area]/findx")]
-    // [Authorize]
-    [ApiExplorerSettings(GroupName = "eleAdmin")]
     [Description("Findx框架")]
+    [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("Findx框架")]
     public class FindxController: AreaApiControllerBase
     {
         /// <summary>
@@ -117,7 +117,12 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             return CommonResult.Success(store.GetFromDatabase());
         }
         
-        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         [HttpGet("test")]
         [AllowAnonymous]
         public CommonResult Test([FromServices] ILogger<FindxController> logger)

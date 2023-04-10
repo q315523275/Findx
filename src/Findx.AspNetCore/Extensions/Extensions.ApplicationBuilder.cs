@@ -97,7 +97,7 @@ namespace Findx.AspNetCore.Extensions
                     aspNetCoreModule.UseModule(builder);
                 else
                     module.UseModule(provider);
-                logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now -jsTime).TotalMilliseconds}ms");
+                logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now - jsTime).TotalMilliseconds}ms");
             }
             // 所有模块停止委托注册
             var hostApplicationLifetime = provider.GetService<IHostApplicationLifetime>();
@@ -110,7 +110,7 @@ namespace Findx.AspNetCore.Extensions
             });
 
             watch.Stop();
-            logger.LogInformation(0, $"框架初始化完成，耗时：{watch.Elapsed.TotalMilliseconds}毫秒\r\n");
+            logger.LogInformation(0, $"框架初始化完成，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Environment.ProcessId}\r\n");
 
             return builder;
         }

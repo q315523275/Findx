@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:8233",
+      "applicationUrl": "http://localhost:10021",
       "sslPort": 44335
     }
   },
@@ -11,7 +11,7 @@
     "Findx.Saas.WebHost": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:7278;http://localhost:5153",
+      "applicationUrl": "http://localhost:10021",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

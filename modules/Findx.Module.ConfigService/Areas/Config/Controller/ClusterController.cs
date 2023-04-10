@@ -4,14 +4,18 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Module.ConfigService.Dtos;
 using Findx.Module.ConfigService.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.ConfigService.Areas.Config.Controller;
 
+/// <summary>
+/// 
+/// </summary>
 [Area("findx")]
 [Route("api/config/cluster")]
 [Description("配置服务集群")]
-[ApiExplorerSettings(GroupName = "config")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务集群")]
 public class ClusterController: AreaApiControllerBase
 {
     private readonly IDumpService _dumpService;

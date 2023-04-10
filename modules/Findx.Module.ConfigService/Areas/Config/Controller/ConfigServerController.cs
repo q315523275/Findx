@@ -9,14 +9,18 @@ using Findx.Module.ConfigService.Client;
 using Findx.Module.ConfigService.Dtos;
 using Findx.Module.ConfigService.Models;
 using Findx.Serialization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.ConfigService.Areas.Config.Controller;
 
+/// <summary>
+/// 客户端调用服务
+/// </summary>
 [Area("findx")]
 [Route("api/config")]
 [Description("配置服务-获取")]
-[ApiExplorerSettings(GroupName = "config")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-获取")]
 public class ConfigServerController: AreaApiControllerBase
 {
     private readonly IClientCallBack _clientCallBack;

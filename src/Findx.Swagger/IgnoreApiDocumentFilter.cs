@@ -8,13 +8,13 @@ using System.Reflection;
 namespace Findx.Swagger
 {
     /// <summary>
-    /// 自定义过滤器
+    /// 隐藏Api过滤器
     /// </summary>
-    public class CustomDocumentFilter : IDocumentFilter
+    public class IgnoreApiDocumentFilter : IDocumentFilter
     {
         public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
         {
-            foreach (ApiDescription apiDescription in context.ApiDescriptions)
+            foreach (var apiDescription in context.ApiDescriptions)
             {
                 if (apiDescription.TryGetMethodInfo(out MethodInfo method))
                 {

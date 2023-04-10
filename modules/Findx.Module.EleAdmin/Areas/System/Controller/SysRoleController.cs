@@ -8,6 +8,7 @@ using Findx.Linq;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using System.ComponentModel;
+using Microsoft.AspNetCore.Http;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -18,7 +19,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
 	[Route("api/[area]/role")]
     [Authorize]
 	[Description("系统-角色")]
-	[ApiExplorerSettings(GroupName = "eleAdmin")]
+	[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-角色")]
 	public class SysRoleController: CrudControllerBase<SysRoleInfo, SetRoleRequest, QueryRoleRequest, Guid, Guid>
 	{
 		/// <summary>

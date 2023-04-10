@@ -9,6 +9,7 @@ using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Findx.Security;
 using System.ComponentModel;
+using Microsoft.AspNetCore.Http;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
@@ -19,7 +20,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Route("api/[area]/user")]
     [Authorize]
     [Description("系统-用户")]
-    [ApiExplorerSettings(GroupName = "eleAdmin")]
+    [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户")]
     public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
     {
         private readonly ICurrentUser _currentUser;

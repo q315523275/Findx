@@ -5,6 +5,7 @@ using Findx.Linq;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
@@ -16,7 +17,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller;
 [Route("api/[area]/operation-record")]
 [Authorize]
 [Description("系统-操作日志")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-操作日志")]
 public class OperationRecordController :  QueryControllerBase<SysOperationRecordInfo, SysOperationRecordInfo, QueryOperationRecordRequest, Guid>
 {
     /// <summary>

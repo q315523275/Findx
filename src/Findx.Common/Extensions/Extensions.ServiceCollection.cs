@@ -207,7 +207,7 @@ namespace Findx.Extensions
             }
 
             watch.Stop();
-            logger.LogInformation($"框架初始化完毕，耗时：{watch.Elapsed.TotalMilliseconds}毫秒");
+            logger.LogInformation($"框架初始化完毕，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Process.GetCurrentProcess().Id}");
 
             return provider;
         }
