@@ -3,7 +3,7 @@
     /// <summary>
     /// 默认配置提供器
     /// </summary>
-    public class ConfigurationSettingProvider : ISettingProvider
+    public class ConfigurationSettingValueProvider : ISettingValueProvider
     {
         private readonly IConfiguration _configuration;
 
@@ -11,9 +11,9 @@
         /// Ctor
         /// </summary>
         /// <param name="configuration"></param>
-        public ConfigurationSettingProvider(IConfiguration configuration)
+        public ConfigurationSettingValueProvider(IConfiguration configuration)
         {
-            this._configuration = configuration;
+            _configuration = configuration;
         }
 
         /// <summary>
@@ -28,11 +28,6 @@
         }
 
         /// <summary>
-        /// 配置类型
-        /// </summary>
-        public SettingType Type => SettingType.Default;
-
-        /// <summary>
         /// 获取值
         /// </summary>
         /// <param name="key"></param>
@@ -42,6 +37,16 @@
         {
             return _configuration.GetValue<T>(key);
         }
+        
+        /// <summary>
+        /// 提供器名称
+        /// </summary>
+        public string Name => "Configuration";
+        
+        /// <summary>
+        /// 排序号
+        /// </summary>
+        public int Order => 0;
     }
 }
 

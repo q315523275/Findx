@@ -6,11 +6,6 @@
 	public interface ISettingProvider
 	{
 		/// <summary>
-		/// 配置类型
-		/// </summary>
-		SettingType Type { get; }
-
-		/// <summary>
         /// 获取值
         /// </summary>
         /// <typeparam name="T"></typeparam>

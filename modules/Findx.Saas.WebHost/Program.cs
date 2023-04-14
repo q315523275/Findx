@@ -1,13 +1,13 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using Findx.Admin.WebHost.WebShell;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Extensions;
+using Findx.Saas.WebHost.WebShell;
 using Findx.Serialization;
 using Findx.WebSocketCore;
 using Microsoft.AspNetCore.WebSockets;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +30,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseJsonExceptionHandler();
 app.UseCors().UseRouting();
+app.UseStaticFiles(new StaticFileOptions { RequestPath = "/storage", FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "storage")) });
 app.UseWebSockets().MapWebSocketManager("/ws", app.Services.GetRequiredService<WebSocketHandler>());
 app.UseFindx();
 app.MapControllersWithAreaRoute();

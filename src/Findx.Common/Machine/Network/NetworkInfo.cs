@@ -1,6 +1,7 @@
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using Findx.Utils;
 
 namespace Findx.Machine.Network;
 
@@ -170,6 +171,13 @@ public class NetworkInfo
     /// <returns></returns>
     public static IPAddress TryGetRealIpv4()
     {
+        if (Common.IsLinux)
+        {
+            return NetworkInterface.GetAllNetworkInterfaces().Select(p => p.GetIPProperties()).SelectMany(p => p.UnicastAddresses)
+                                   .FirstOrDefault(p => p.Address.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(p.Address))
+                                   ?.Address;
+        }
+
         var address = GetIpAddresses();
         var ipv4 = address.FirstOrDefault(x => x.AddressFamily == AddressFamily.InterNetwork);
         return ipv4;

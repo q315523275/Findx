@@ -21,6 +21,13 @@ namespace Findx.RabbitMQ
         private readonly IJsonSerializer _serializer;
         private readonly List<IRabbitMqConsumer> _consumerList;
 
+        /// <summary>
+        /// Ctor
+        /// </summary>
+        /// <param name="finder"></param>
+        /// <param name="methodFinder"></param>
+        /// <param name="factory"></param>
+        /// <param name="serializer"></param>
         public RabbitConsumerBuilder(IRabbitConsumerFinder finder, IMethodInfoFinder methodFinder, IRabbitMqConsumerFactory factory, IJsonSerializer serializer)
         {
             _finder = finder;
@@ -125,7 +132,7 @@ namespace Findx.RabbitMQ
         /// 查找所有消费执行者
         /// </summary>
         /// <returns></returns>
-        private IReadOnlyList<ConsumerExecutorDescriptor> FindAllConsumerExecutor()
+        private IEnumerable<ConsumerExecutorDescriptor> FindAllConsumerExecutor()
         {
             var result = new List<ConsumerExecutorDescriptor>();
             var types = _finder.FindAll(true);

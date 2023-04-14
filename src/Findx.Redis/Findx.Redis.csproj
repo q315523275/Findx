@@ -7,7 +7,7 @@
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Description>Redis通用功能、分布式锁等(StackExchangeRedis)</Description>
-		<PackageVersion>1.9.0</PackageVersion>
+		<PackageVersion>1.9.1.1-beta1</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -2,7 +2,7 @@ using System.Net.WebSockets;
 using System.Reflection;
 using Findx.WebSocketCore;
 
-namespace Findx.Admin.WebHost.WebShell;
+namespace Findx.Saas.WebHost.WebShell;
 
 public class WebSocketHandler: WebSocketHandlerBase
 {

@@ -1,4 +1,6 @@
-﻿namespace Findx
+﻿using Findx.Setting;
+
+namespace Findx
 {
     /// <summary>
     /// 应用实例信息
@@ -56,5 +58,10 @@
         /// 停止应用
         /// </summary>
         void StopApplication();
+
+        /// <summary>
+        /// 设置提供器
+        /// </summary>
+        ISettingProvider Setting { get; }
     }
 }

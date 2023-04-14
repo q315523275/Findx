@@ -9,17 +9,17 @@ namespace Findx.Storage
     {
         private readonly IDictionary<string, IFileStorage> _storages;
 
-        private readonly ISettingProviderFactory _settingFactory;
+        private readonly ISettingProvider _settingProvider;
 
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="storages"></param>
-        /// <param name="settingFactory"></param>
-        public StorageProvider(IEnumerable<IFileStorage> storages, ISettingProviderFactory settingFactory)
+        /// <param name="settingProvider"></param>
+        public StorageProvider(IEnumerable<IFileStorage> storages, ISettingProvider settingProvider)
         {
             _storages = storages.ToDictionary(it => it.Name, it => it);
-            _settingFactory = settingFactory;
+            _settingProvider = settingProvider;
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Findx.Storage
         /// <returns></returns>
         public IFileStorage Get(string storageName = null)
         {
-            storageName ??= _settingFactory.Get().GetValue<string>("Findx:Storage:Primary") ?? FileStorageType.Folder.ToString();
+            storageName ??= _settingProvider.GetValue<string>("Findx:Storage:Primary") ?? FileStorageType.Folder.ToString();
 
             _storages.TryGetValue(storageName, out var storage);
 

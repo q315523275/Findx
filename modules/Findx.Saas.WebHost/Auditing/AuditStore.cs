@@ -1,9 +1,8 @@
-﻿using System;
-using Findx.Data;
+﻿using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 
-namespace Findx.Admin.WebHost.Auditing
+namespace Findx.Saas.WebHost.Auditing
 {
     public class AuditStore : IAuditStore, ISingletonDependency
     {

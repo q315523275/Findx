@@ -53,8 +53,8 @@ namespace Findx
             services.Configure<ApplicationOptions>(configuration.GetSection("Findx:Application"));
 
             // 配置
-            services.AddSingleton<ISettingProvider, ConfigurationSettingProvider>();
-            services.AddSingleton<ISettingProviderFactory, SettingProviderFactory>();
+            services.AddSingleton<ISettingProvider, DefaultSettingProvider>();
+            services.AddSingleton<ISettingValueProvider, ConfigurationSettingValueProvider>();
 
             // 缓存
             services.TryAddSingleton<ICacheProvider, CacheProvider>();

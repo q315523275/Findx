@@ -1,5 +1,7 @@
 using System.Text.Json.Nodes;
 using Findx.Extensions;
+using Findx.Serialization;
+
 namespace Findx.Data;
 
 /// <summary>
@@ -24,7 +26,13 @@ public static class ExtraObjectExtensions
 
         var jsonObject = JsonNode.Parse(extraObject.ExtraProperties)!.AsObject();
         
-        return !jsonObject.ContainsKey(name) ? default : jsonObject[name]!.GetValue<T>();
+        if (!jsonObject.ContainsKey(name))
+            return default;
+        
+        if (typeof(T).IsPrimitiveExtendedIncludingNullable(true))
+            return jsonObject[name]!.GetValue<T>();
+
+        return jsonObject[name].SafeString().ToObject<T>();
     }
 
     /// <summary>
@@ -49,7 +57,7 @@ public static class ExtraObjectExtensions
 
         jsonObject.ThrowIfNull(nameof(jsonObject));
     
-        if (EqualityComparer<T>.Default.Equals(value, default))
+        if (value == null || EqualityComparer<T>.Default.Equals(value, default))
         {
             // ReSharper disable once PossibleNullReferenceException
             if (jsonObject[name] != null) 
@@ -58,15 +66,16 @@ public static class ExtraObjectExtensions
         else if (value.GetType().IsPrimitiveExtendedIncludingNullable(true))
         {
             // ReSharper disable once PossibleNullReferenceException
-            jsonObject[name] = value.ToString();
+            jsonObject[name] = JsonValue.Create(value);
         }
         else
         {
-            throw new Exception("SetProperty 仅支持基元类型数据设置.");
+            // ReSharper disable once PossibleNullReferenceException
+            jsonObject[name] = value.ToJson();
         }
         
         // ReSharper disable once PossibleNullReferenceException
-        var data = jsonObject.ToJsonString(Findx.Serialization.SystemTextJsonStringSerializer.Options);
+        var data = jsonObject.ToJsonString(SystemTextJsonStringSerializer.Options);
         if (data == "{}")
         {
             data = null;
@@ -81,7 +90,6 @@ public static class ExtraObjectExtensions
     /// <param name="extraObject"></param>
     /// <param name="name"></param>
     /// <returns></returns>
-    /// <exception cref="ArgumentNullException"></exception>
     public static bool RemoveProperty(this IExtraObject extraObject, string name)
     {
         extraObject.ThrowIfNull(nameof(extraObject));
@@ -103,7 +111,7 @@ public static class ExtraObjectExtensions
     
         jsonObject.Remove(name);
     
-        var data = jsonObject.ToJsonString(Findx.Serialization.SystemTextJsonStringSerializer.Options);
+        var data = jsonObject.ToJsonString(SystemTextJsonStringSerializer.Options);
         if (data == "{}")
         {
             data = null;

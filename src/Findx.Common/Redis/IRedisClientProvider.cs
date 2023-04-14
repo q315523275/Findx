@@ -1,5 +1,8 @@
 ﻿namespace Findx.Redis
 {
+    /// <summary>
+    /// Redis客户端提供器
+    /// </summary>
     public interface IRedisClientProvider
     {
         /// <summary>

@@ -12,10 +12,10 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     /// <summary>
     /// Ctor
     /// </summary>
-    /// <param name="settingFactory"></param>
-    protected FunctionAuthorizationBase(ISettingProviderFactory settingFactory)
+    /// <param name="settingProvider"></param>
+    protected FunctionAuthorizationBase(ISettingProvider settingProvider)
     {
-        SuperRoleName = settingFactory.Get().GetValue<string>("Findx:Authorization:SuperRoleName");
+        SuperRoleName = settingProvider.GetValue<string>("Findx:Authorization:SuperRoleName");
     }
 
     /// <summary>

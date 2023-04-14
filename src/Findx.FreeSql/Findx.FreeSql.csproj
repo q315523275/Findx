@@ -6,8 +6,8 @@
 		<Description>通用仓储-FreeSql实现</Description>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
-		<Version>1.9.1.3-beta1</Version>
-		<PackageVersion>1.9.1.3-beta1</PackageVersion>
+		<Version>1.9.1.3</Version>
+		<PackageVersion>1.9.1.3</PackageVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

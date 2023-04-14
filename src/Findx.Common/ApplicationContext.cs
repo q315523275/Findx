@@ -1,4 +1,5 @@
 ﻿using Findx.Extensions;
+using Findx.Setting;
 using Findx.Utils;
 
 namespace Findx
@@ -12,13 +13,15 @@ namespace Findx
         private readonly Lazy<string> _version;
         private readonly Lazy<string> _instanceIp;
         private readonly Lazy<string> _internalIp;
+
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="options"></param>
         /// <param name="environment"></param>
         /// <param name="hostApplicationLifetime"></param>
-        public ApplicationContext(IOptions<ApplicationOptions> options, IHostEnvironment environment, IHostApplicationLifetime hostApplicationLifetime)
+        /// <param name="settingProvider"></param>
+        public ApplicationContext(IOptions<ApplicationOptions> options, IHostEnvironment environment, IHostApplicationLifetime hostApplicationLifetime, ISettingProvider settingProvider)
         {
             _hostApplicationLifetime = hostApplicationLifetime;
             
@@ -35,6 +38,8 @@ namespace Findx
             _internalIp = new Lazy<string>(() => options.Value.InternalIp ?? _instanceIp.Value);
 
             RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;
+
+            Setting = settingProvider;
         }
 
         /// <summary>
@@ -91,5 +96,10 @@ namespace Findx
         {
             _hostApplicationLifetime.StopApplication();
         }
+
+        /// <summary>
+        /// 设置值提供器
+        /// </summary>
+        public ISettingProvider Setting { get; }
     }
 }

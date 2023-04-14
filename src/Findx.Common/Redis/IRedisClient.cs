@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Findx.Redis
 {
+    /// <summary>
+    /// redis客户端服务
+    /// </summary>
     public interface IRedisClient
     {
         #region Public(公共操作)
+        /// <summary>
+        /// 客户端名称
+        /// </summary>
         string Name { get; }
 
 
@@ -614,71 +618,542 @@ namespace Findx.Redis
         #endregion lock
 
         #region List(集合操作)
+        /// <summary>
+        /// 获取列表中某个位置的元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="index"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         T ListGetByIndex<T>(string cacheKey, long index);
+        
+        /// <summary>
+        /// 列表中的元素个数
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
         long ListLength(string cacheKey);
+        
+        /// <summary>
+        /// 从列表的左侧取出一个值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         T ListLeftPop<T>(string cacheKey);
+        
+        /// <summary>
+        /// 从列表的左侧插入值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>列表中的元素个数</returns>
         long ListLeftPush<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 从列表的左侧插入一堆值 从数组的第一个开始
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>列表中的元素个数</returns>
         long ListLeftPush<T>(string cacheKey, IList<T> cacheValues);
+        
+        /// <summary>
+        /// 从列表的右侧取出一个值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         T ListRightPop<T>(string cacheKey);
+        
+        /// <summary>
+        /// 从列表的右侧插入值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         long ListRightPush<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 从列表的右侧插入一堆值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>列表中的元素个数</returns>
         long ListRightPush<T>(string cacheKey, IList<T> cacheValues);
+        
+        /// <summary>
+        /// 取出列表中的值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="start"></param>
+        /// <param name="stop">-1表示全部取出</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         List<T> ListRange<T>(string cacheKey, long start, long stop);
+        
+        /// <summary>
+        /// 删除列表中的一个元素,可设置要删除的数量,返回删除的数量
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="count">等于0删除所有,大于0从左到右删除最多count个与value相等的项,小于0从右到左删除最多count个与value相等的项</param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>删除的数量</returns>
         long ListRemove<T>(string cacheKey, long count, T cacheValue);
+        
+        /// <summary>
+        /// 设置列表中某个位置的元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="index"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         bool ListSetByIndex<T>(string cacheKey, long index, T cacheValue);
+        
+        /// <summary>
+        /// 按指定范围裁剪列表
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="start"></param>
+        /// <param name="stop"></param>
+        /// <returns></returns>
         bool ListTrim(string cacheKey, long start, long stop);
+        
+        /// <summary>
+        /// 在 pivot 元素前面插入一个元素 value 
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="pivot"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>插入成功返回列表总长度,插入失败返回-1</returns>
         long ListInsertBefore<T>(string cacheKey, T pivot, T cacheValue);
+        
+        /// <summary>
+        /// 在 pivot 元素的后面插入一个元素 value
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="pivot"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>插入成功返回的列表总长度,插入失败返回-1</returns>
         long ListInsertAfter<T>(string cacheKey, T pivot, T cacheValue);
+        
+        /// <summary>
+        /// 获取列表中某个位置的元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="index"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<T> ListGetByIndexAsync<T>(string cacheKey, long index);
+        
+        /// <summary>
+        /// 列表中的元素个数
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
         Task<long> ListLengthAsync(string cacheKey);
+        
+        /// <summary>
+        /// 从列表的左侧取出一个值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<T> ListLeftPopAsync<T>(string cacheKey);
+        
+        /// <summary>
+        /// 从列表的左侧插入值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>列表中的元素个数</returns>
         Task<long> ListLeftPushAsync<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 从列表的左侧插入一堆值 从数组的第一个开始
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>列表中的元素个数</returns>
         Task<long> ListLeftPushAsync<T>(string cacheKey, IList<T> cacheValues);
+        
+        /// <summary>
+        /// 从列表的右侧取出一个值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<T> ListRightPopAsync<T>(string cacheKey);
+        
+        /// <summary>
+        /// 从列表的右侧插入值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<long> ListRightPushAsync<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 从列表的右侧插入一堆值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>列表中的元素个数</returns>
         Task<long> ListRightPushAsync<T>(string cacheKey, IList<T> cacheValues);
+        
+        /// <summary>
+        /// 取出列表中的值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="start"></param>
+        /// <param name="stop">-1表示全部取出</param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<List<T>> ListRangeAsync<T>(string cacheKey, long start, long stop);
+        
+        /// <summary>
+        /// 删除列表中的一个元素,可设置要删除的数量,返回删除的数量
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="count">等于0删除所有,大于0从左到右删除最多count个与value相等的项,小于0从右到左删除最多count个与value相等的项</param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>删除的数量</returns>
         Task<long> ListRemoveAsync<T>(string cacheKey, long count, T cacheValue);
+        
+        /// <summary>
+        /// 设置列表中某个位置的元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="index"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<bool> ListSetByIndexAsync<T>(string cacheKey, long index, T cacheValue);
+        
+        /// <summary>
+        /// 按指定范围裁剪列表
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="start"></param>
+        /// <param name="stop"></param>
+        /// <returns></returns>
         Task<bool> ListTrimAsync(string cacheKey, long start, long stop);
+        
+        /// <summary>
+        /// 在 pivot 元素前面插入一个元素 value 
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="pivot"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>插入成功返回列表总长度,插入失败返回-1</returns>
         Task<long> ListInsertBeforeAsync<T>(string cacheKey, T pivot, T cacheValue);
+        
+        /// <summary>
+        /// 在 pivot 元素的后面插入一个元素 value
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="pivot"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>插入成功返回的列表总长度,插入失败返回-1</returns>
         Task<long> ListInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue);
         #endregion
 
         #region Set(数组操作)
+        /// <summary>
+        /// 向集合中添加一个元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <param name="expiration"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>返回是否添加成功</returns>
         long SetAdd<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null);
+        
+        /// <summary>
+        /// 向集合中添加一堆元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <returns>返回是否添加成功</returns>
         long SetLength(string cacheKey);
+        
+        /// <summary>
+        /// 判断集合中是否存在元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         bool SetContains<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 返回集合中的所有元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         List<T> SetMembers<T>(string cacheKey);
+        
+        /// <summary>
+        /// 从集合中随机取出一个元素(会删除集合中的元素)
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         T SetPop<T>(string cacheKey);
+        
+        /// <summary>
+        /// 从集合中随机返回一个元素(不删除集合中的元素)
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="count"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         List<T> SetRandomMembers<T>(string cacheKey, int count = 1);
+        
+        /// <summary>
+        /// 从集合中移除一堆元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>移除元素的个数</returns>
         long SetRemove<T>(string cacheKey, IList<T> cacheValues = null);
+        
+        /// <summary>
+        /// 向集合中添加一个元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <param name="expiration"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>返回是否添加成功</returns>
         Task<long> SetAddAsync<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null);
+        
+        /// <summary>
+        /// 向集合中添加一堆元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <returns>返回是否添加成功</returns>
         Task<long> SetLengthAsync(string cacheKey);
+        
+        /// <summary>
+        /// 判断集合中是否存在元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<bool> SetContainsAsync<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 返回集合中的所有元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<List<T>> SetMembersAsync<T>(string cacheKey);
+        
+        /// <summary>
+        /// 从集合中随机取出一个元素(会删除集合中的元素)
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<T> SetPopAsync<T>(string cacheKey);
+        
+        /// <summary>
+        /// 从集合中随机返回一个元素(不删除集合中的元素)
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="count"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<List<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1);
+        
+        /// <summary>
+        /// 从集合中移除一堆元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>移除元素的个数</returns>
         Task<long> SetRemoveAsync<T>(string cacheKey, IList<T> cacheValues = null);
         #endregion
 
         #region Sorted Set(有序数组)
+        /// <summary>
+        /// 添加一个元素到有序集合中,如果集合中存在 则会修改其对应的分值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>是否添加成功</returns>
         long SortedSetAdd<T>(string cacheKey, Dictionary<T, double> cacheValues);
+        
+        /// <summary>
+        /// 返回有序集合中分值min 到 max的元素个数
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
         long SortedSetLength(string cacheKey);
+        
+        /// <summary>
+        /// 返回有序集合中元素值min 到 max 的元素个数
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         long SortedSetLengthByValue(string cacheKey, double min, double max);
+        
+        /// <summary>
+        /// 对有序集合中的某个元素增加一个分值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="field"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
         double SortedSetIncrement(string cacheKey, string field, double val = 1);
+        
+        /// <summary>
+        /// 返回有序集合中元素值min 到 max 的元素个数
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         long SortedSetLengthByValue(string cacheKey, string min, string max);
+        
+        /// <summary>
+        /// 返回有序集合按索引升序
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="start"></param>
+        /// <param name="stop"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         List<T> SortedSetRangeByRank<T>(string cacheKey, long start, long stop);
+        
+        /// <summary>
+        /// 返回有序集合中的元素的索引
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         long? SortedSetRank<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 移除有序集合中的多个元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>移除的个数</returns>
         long SortedSetRemove<T>(string cacheKey, IList<T> cacheValues);
+        
+        /// <summary>
+        /// 返回有序集合中的元素的分值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         double? SortedSetScore<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 添加一个元素到有序集合中,如果集合中存在 则会修改其对应的分值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>是否添加成功</returns>
         Task<long> SortedSetAddAsync<T>(string cacheKey, Dictionary<T, double> cacheValues);
+        
+        /// <summary>
+        /// 返回有序集合中分值min 到 max的元素个数
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <returns></returns>
         Task<long> SortedSetLengthAsync(string cacheKey);
+        
+        /// <summary>
+        /// 返回有序集合中元素值min 到 max 的元素个数
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         Task<long> SortedSetLengthByValueAsync(string cacheKey, double min, double max);
+        
+        /// <summary>
+        /// 对有序集合中的某个元素增加一个分值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="field"></param>
+        /// <param name="val"></param>
+        /// <returns></returns>
         Task<double> SortedSetIncrementAsync(string cacheKey, string field, double val = 1);
+        
+        /// <summary>
+        /// 返回有序集合中元素值min 到 max 的元素个数
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         Task<long> SortedSetLengthByValueAsync(string cacheKey, string min, string max);
+        
+        /// <summary>
+        /// 返回有序集合按索引升序
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="start"></param>
+        /// <param name="stop"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<List<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop);
+        
+        /// <summary>
+        /// 返回有序集合中的元素的索引
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<long?> SortedSetRankAsync<T>(string cacheKey, T cacheValue);
+        
+        /// <summary>
+        /// 移除有序集合中的多个元素
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValues"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns>移除的个数</returns>
         Task<long> SortedSetRemoveAsync<T>(string cacheKey, IList<T> cacheValues);
+        
+        /// <summary>
+        /// 返回有序集合中的元素的分值
+        /// </summary>
+        /// <param name="cacheKey"></param>
+        /// <param name="cacheValue"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         Task<double?> SortedSetScoreAsync<T>(string cacheKey, T cacheValue);
         #endregion
 

@@ -114,8 +114,12 @@ Console.WriteLine("Hello, World!");
 var user = new User();
 
 user.SetProperty("name", "测试");
-Console.WriteLine($"GetProperty:{user.GetProperty<string>("name")}");
+user.SetProperty("obj", new Test { Title = "这是遥远的信息" });
+user.SetProperty("number", 9.88);
 Console.WriteLine($"ExtraProperties:{user.ExtraProperties}");
+Console.WriteLine($"GetProperty:{user.GetProperty<string>("name")}");
+Console.WriteLine($"GetProperty:{user.GetProperty<Test>("obj")?.Title}");
+Console.WriteLine($"GetProperty:{user.GetProperty<decimal>("number")}");
 
 
 Console.ReadLine();
@@ -123,4 +127,8 @@ Console.ReadLine();
 class User : IExtraObject
 {
     public string ExtraProperties { get; set; }
+}
+public class Test
+{
+    public string Title { get; set; }
 }
