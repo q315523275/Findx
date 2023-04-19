@@ -10,13 +10,11 @@ namespace Findx.Module.EleAdmin.Enum
         /// <summary>
         /// 正常
         /// </summary>
-        [Description("正常")]
-        ENABLE = 0,
+        [Description("正常")] ENABLE = 0,
 
         /// <summary>
         /// 停用
         /// </summary>
-        [Description("停用")]
-        DISABLE = 1,
+        [Description("停用")] DISABLE = 1,
     }
 }

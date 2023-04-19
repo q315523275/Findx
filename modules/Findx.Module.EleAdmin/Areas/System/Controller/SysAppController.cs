@@ -52,11 +52,13 @@ public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, Qu
         if (old.Code != request.Code)
         {
             var repoMenu = GetRepository<SysMenuInfo>();
-            await repoMenu.UpdateColumnsAsync(x => new SysMenuInfo { ApplicationCode = request.Code, ApplicationName = request.Name },
+            await repoMenu.UpdateColumnsAsync(
+                x => new SysMenuInfo { ApplicationCode = request.Code, ApplicationName = request.Name },
                 x => x.ApplicationCode == old.Code);
-            
+
             var repoRole = GetRepository<SysRoleInfo>();
-            await repoRole.UpdateColumnsAsync(x => new SysRoleInfo { ApplicationCode = request.Code, ApplicationName = request.Name },
+            await repoRole.UpdateColumnsAsync(
+                x => new SysRoleInfo { ApplicationCode = request.Code, ApplicationName = request.Name },
                 x => x.ApplicationCode == old.Code);
         }
     }

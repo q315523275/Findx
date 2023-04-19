@@ -21,7 +21,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Authorize]
     [Description("系统-用户")]
     [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户")]
-    public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
+    public class
+        SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
     {
         private readonly ICurrentUser _currentUser;
 
@@ -42,10 +43,10 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         protected override Expressionable<SysUserInfo> CreatePageWhereExpression(QueryUserRequest req)
         {
             var whereExp = ExpressionBuilder.Create<SysUserInfo>()
-                                            .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
-                                            .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-                                            .AndIF(req.Sex > 0, x => x.Sex == req.Sex)
-                                            .AndIF(req.OrgId.HasValue, x => x.OrgId == req.OrgId);
+                .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
+                .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
+                .AndIF(req.Sex > 0, x => x.Sex == req.Sex)
+                .AndIF(req.OrgId.HasValue, x => x.OrgId == req.OrgId);
             return whereExp;
         }
 
@@ -78,10 +79,11 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                     orderExp.Order(it => it.Status, request.SortDirection);
                     break;
             }
+
             orderExp.OrderByDescending(it => it.Id);
             return orderExp.ToSort();
         }
-        
+
         /// <summary>
         /// 分页查询
         /// </summary>
@@ -91,17 +93,19 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         {
             var repo = GetRepository<SysUserInfo>();
             var roleRepo = GetRepository<SysUserRoleInfo>();
-            
+
             var whereExpression = CreatePageWhereExpression(request);
             var orderByExpression = CreatePageOrderExpression(request);
-            
-            var result = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
+
+            var result = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize,
+                whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression.ToArray());
             var ids = result.Rows.Select(x => x.Id).Distinct();
             var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId));
             foreach (var item in result.Rows)
             {
                 item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
             }
+
             return CommonResult.Success(result);
         }
 
@@ -118,7 +122,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             repo.UpdateColumns(x => new SysUserInfo { Status = req.Status }, x => x.Id == req.Id);
             return CommonResult.Success();
         }
-        
+
         /// <summary>
         /// 修改密码
         /// </summary>
@@ -146,9 +150,9 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         public CommonResult Existence([Required] string field, [Required] string value, Guid id)
         {
             var whereExp = ExpressionBuilder.Create<SysUserInfo>()
-                                            .AndIF(field == "userName", x => x.UserName == value)
-                                            .And(x => x.Id != id)
-                                            .ToExpression();
+                .AndIF(field == "userName", x => x.UserName == value)
+                .And(x => x.Id != id)
+                .ToExpression();
             var repo = GetRepository<SysUserInfo>();
             return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
         }
@@ -179,6 +183,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             {
                 model.Password = Findx.Utils.Encrypt.Md5By32(req.Password);
             }
+
             await base.AddBeforeAsync(model, req);
         }
 
@@ -198,10 +203,12 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 var user = await repo.FirstAsync(x => x.UserName == req.UserName);
                 if (user != null)
                 {
-                    var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
+                    var list = req.Roles.Select(x => new SysUserRoleInfo
+                        { RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
                     await roleRepo.InsertAsync(list);
                 }
             }
+
             await base.AddAfterAsync(model, req, result);
         }
 
@@ -228,11 +235,11 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             {
                 var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
 
-                var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = model.Id, TenantId = Findx.Data.TenantManager.Current });
+                var list = req.Roles.Select(x => new SysUserRoleInfo
+                    { RoleId = x.Id, UserId = model.Id, TenantId = Findx.Data.TenantManager.Current });
                 await roleRepo.DeleteAsync(x => x.UserId == model.Id);
                 await roleRepo.InsertAsync(list);
             }
         }
     }
 }
-

@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-		<Description>通用仓储-FreeSql实现</Description>
+		<Description>ORM-FreeSql,逻辑删除、租户隔离、Sql打印、慢Sql事件、仓储、仓储事件、分表、实体扩展等扩展功能</Description>
 		<Authors>Findx</Authors>
 		<Company>Findx</Company>
 		<Version>1.9.1.3</Version>

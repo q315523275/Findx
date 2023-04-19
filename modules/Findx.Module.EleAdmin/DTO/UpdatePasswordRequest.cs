@@ -1,16 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
+
 namespace Findx.Module.EleAdmin.DTO
 {
     /// <summary>
     /// 修改密码
     /// </summary>
-	public class UpdatePasswordRequest
-	{
+    public class UpdatePasswordRequest
+    {
         /// <summary>
         /// 旧密码
         /// </summary>
         [Required]
-		public string OldPassword { set; get; }
+        public string OldPassword { set; get; }
 
         /// <summary>
         /// 旧密码
@@ -26,4 +27,3 @@ namespace Findx.Module.EleAdmin.DTO
         public string Password2 { set; get; }
     }
 }
-

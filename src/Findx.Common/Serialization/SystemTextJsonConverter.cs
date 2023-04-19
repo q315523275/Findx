@@ -16,6 +16,16 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None)
+            {
+                return default;
+            }
+            
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                return DateTime.TryParse(reader.GetString(), out var dateTime) ? dateTime : default;
+            }
+            
             return reader.GetDateTime();
         }
 
@@ -45,7 +55,17 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return reader.TokenType is JsonTokenType.Null or JsonTokenType.None ? default : reader.GetDateTime();
+            if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None)
+            {
+                return default;
+            }
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                return DateTime.TryParse(reader.GetString(), out var dateTime) ? dateTime : default;
+            }
+            
+            return reader.GetDateTime();
         }
 
         /// <summary>
@@ -81,6 +101,16 @@ namespace Findx.Serialization
         /// <returns></returns>
         public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
+            if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None)
+            {
+                return default;
+            }
+            
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                return long.TryParse(reader.GetString(), out var longValue) ? longValue : default;
+            }
+            
             return reader.GetInt64();
         }
 
@@ -114,6 +144,11 @@ namespace Findx.Serialization
             if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None)
             {
                 return default;
+            }
+            
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                return decimal.TryParse(reader.GetString(), out var decimalValue) ? decimalValue : default;
             }
             
             return reader.GetDecimal();

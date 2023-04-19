@@ -10,16 +10,17 @@ using Microsoft.AspNetCore.Http;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
-	/// <summary>
+    /// <summary>
     /// 字典值服务
     /// </summary>
-	[Area("system")]
-	[Route("api/[area]/dictData")]
+    [Area("system")]
+    [Route("api/[area]/dictData")]
     [Authorize]
     [Description("系统-字典值")]
     [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-字典值")]
-    public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest, Guid, Guid>
-	{
+    public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest,
+        Guid, Guid>
+    {
         /// <summary>
         /// 构建查询条件
         /// </summary>
@@ -36,11 +37,10 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             }
 
             var whereExp = ExpressionBuilder.Create<SysDictDataInfo>()
-                                            .AndIF(typeId != Guid.Empty, x => x.TypeId == typeId)
-                                            .AndIF(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords));
+                .AndIF(typeId != Guid.Empty, x => x.TypeId == typeId)
+                .AndIF(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords));
 
             return whereExp;
         }
     }
 }
-

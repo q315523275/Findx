@@ -1,10 +1,6 @@
 ﻿using Findx.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Threading;
 
 namespace Findx.Security
 {
@@ -109,9 +105,9 @@ namespace Findx.Security
         {
             if (_principal.Identity is not ClaimsIdentity claimsIdentity)
             {
-                return new Claim[0];
+                return Array.Empty<Claim>();
             }
-            return claimsIdentity?.Claims;
+            return claimsIdentity.Claims;
         }
 
         /// <summary>
@@ -121,7 +117,7 @@ namespace Findx.Security
         /// <returns></returns>
         public bool IsInRole(string roleName)
         {
-            return _principal?.Identity?.GetClaimValues(ClaimTypes.Role)?.Any(c => c == roleName) ?? false;
+            return _principal?.Identity?.GetClaimValues(System.Security.Claims.ClaimTypes.Role)?.Any(c => c == roleName) ?? false;
         }
     }
 }

@@ -11,16 +11,16 @@ using Microsoft.AspNetCore.Http;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
 {
-	/// <summary>
+    /// <summary>
     /// 菜单服务
     /// </summary>
-	[Area("system")]
-	[Route("api/[area]/menu")]
+    [Area("system")]
+    [Route("api/[area]/menu")]
     [Authorize]
     [Description("系统-菜单")]
-	[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-菜单")]
-    public class SysMenuController: CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, Guid, Guid>
-	{
+    [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-菜单")]
+    public class SysMenuController : CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, Guid, Guid>
+    {
         /// <summary>
         /// 构建查询条件
         /// </summary>
@@ -29,11 +29,12 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         protected override Expressionable<SysMenuInfo> CreatePageWhereExpression(QueryMenuRequest request)
         {
             var whereExp = ExpressionBuilder.Create<SysMenuInfo>()
-                                            .AndIF(!request.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(request.Title))
-                                            .AndIF(!request.Path.IsNullOrWhiteSpace(), x => x.Path.Contains(request.Path))
-                                            .AndIF(request.ParentId.HasValue , x => x.ParentId == request.ParentId)
-                                            .AndIF(!request.Authority.IsNullOrWhiteSpace(), x => x.Authority.Contains(request.Authority))
-                                            .AndIF(!request.ApplicationCode.IsNullOrWhiteSpace(), x => x.ApplicationCode == request.ApplicationCode);
+                .AndIF(!request.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(request.Title))
+                .AndIF(!request.Path.IsNullOrWhiteSpace(), x => x.Path.Contains(request.Path))
+                .AndIF(request.ParentId.HasValue, x => x.ParentId == request.ParentId)
+                .AndIF(!request.Authority.IsNullOrWhiteSpace(), x => x.Authority.Contains(request.Authority))
+                .AndIF(!request.ApplicationCode.IsNullOrWhiteSpace(),
+                    x => x.ApplicationCode == request.ApplicationCode);
             return whereExp;
         }
 
@@ -44,9 +45,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <returns></returns>
         public override Task<CommonResult<List<SysMenuInfo>>> ListAsync(QueryMenuRequest request)
         {
-	        request.PageSize = 9999;
-	        return base.ListAsync(request);
+            request.PageSize = 9999;
+            return base.ListAsync(request);
         }
-	}
+    }
 }
-

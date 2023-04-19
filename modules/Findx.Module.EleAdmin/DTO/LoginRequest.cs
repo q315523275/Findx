@@ -1,17 +1,18 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+
 namespace Findx.Module.EleAdmin.DTO
 {
     /// <summary>
     /// 登录参数
     /// </summary>
-	public class LoginRequest
-	{
+    public class LoginRequest
+    {
         /// <summary>
         /// 账号
         /// </summary>
         [Required]
-		public string UserName { set; get; }
+        public string UserName { set; get; }
 
         /// <summary>
         /// 密码
@@ -29,7 +30,7 @@ namespace Findx.Module.EleAdmin.DTO
         /// 租户
         /// </summary>
         public Guid TenantId { set; get; }
-        
+
         /// <summary>
         /// uuid
         /// </summary>

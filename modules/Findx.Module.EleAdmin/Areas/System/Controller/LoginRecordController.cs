@@ -18,7 +18,8 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller;
 [Authorize]
 [Description("系统-登录日志")]
 [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-登录日志")]
-public class LoginRecordController :  QueryControllerBase<SysLoginRecordInfo, SysLoginRecordInfo, QueryLoginRecordRequest, Guid>
+public class
+    LoginRecordController : QueryControllerBase<SysLoginRecordInfo, SysLoginRecordInfo, QueryLoginRecordRequest, Guid>
 {
     /// <summary>
     /// 构建查询条件
@@ -28,9 +29,10 @@ public class LoginRecordController :  QueryControllerBase<SysLoginRecordInfo, Sy
     protected override Expressionable<SysLoginRecordInfo> CreatePageWhereExpression(QueryLoginRecordRequest req)
     {
         var whereExp = ExpressionBuilder.Create<SysLoginRecordInfo>()
-                                        .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
-                                        .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-                                        .AndIF(req.CreatedTimeStart.HasValue, x => x.CreatedTime >= req.CreatedTimeStart && x.CreatedTime < req.CreatedTimeEnd);
+            .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
+            .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
+            .AndIF(req.CreatedTimeStart.HasValue,
+                x => x.CreatedTime >= req.CreatedTimeStart && x.CreatedTime < req.CreatedTimeEnd);
         return whereExp;
     }
 }

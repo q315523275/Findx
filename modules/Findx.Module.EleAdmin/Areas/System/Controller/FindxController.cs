@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Globalization;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc;
 using Findx.Builders;
@@ -25,7 +23,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     [Route("api/[area]/findx")]
     [Description("Findx框架")]
     [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("Findx框架")]
-    public class FindxController: AreaApiControllerBase
+    public class FindxController : AreaApiControllerBase
     {
         /// <summary>
         /// 模块列表
@@ -35,12 +33,13 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <returns></returns>
         [HttpGet("modules")]
         [Description("模块列表")]
-        public CommonResult Modules([FromServices] IFindxBuilder builder, [FromServices] IKeyGenerator<long> keyGenerator)
+        public CommonResult Modules([FromServices] IFindxBuilder builder,
+            [FromServices] IKeyGenerator<long> keyGenerator)
         {
             var res = builder.Modules.Select(m => new
             {
                 m.GetType().Name,
-                Display = m.GetType().GetDescription(true),
+                Display = m.GetType().GetDescription(),
                 Class = m.GetType().FullName,
                 m.Level,
                 m.Order,
@@ -119,11 +118,11 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             dict.Add("RuntimeInfo", new
             {
                 ip = app.InstanceIp,
-                Cpu = (await Findx.Utils.RuntimeUtil.GetCpuUsage()).ToString("0.000"),
-                Memory = (Findx.Utils.RuntimeUtil.GetMemoryUsage() / 1024).ToString("0.000") + "/" +
+                Cpu = (await Utils.RuntimeUtil.GetCpuUsage()).ToString("0.000"),
+                Memory = (Utils.RuntimeUtil.GetMemoryUsage() / 1024).ToString("0.000") + "/" +
                          (GC.GetTotalMemory(false) / 1024.0 / 1024.0).ToString("0.000"),
-                ThreadCount = Findx.Utils.RuntimeUtil.GetThreadCount(),
-                HandleCount = Findx.Utils.RuntimeUtil.GetHandleCount()
+                ThreadCount = Utils.RuntimeUtil.GetThreadCount(),
+                HandleCount = Utils.RuntimeUtil.GetHandleCount()
             });
 
             return CommonResult.Success(dict);
@@ -138,28 +137,44 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         {
             return CommonResult.Success(store.GetFromDatabase());
         }
-        
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="logger"></param>
+        /// <param name="dto"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        [HttpGet("test")]
+        [HttpPost("test")]
         [AllowAnonymous]
-        public CommonResult Test([FromServices] ILogger<FindxController> logger)
+        [DisableAuditing]
+        public CommonResult Test([FromServices] ILogger<FindxController> logger, [FromBody] TestDto dto)
         {
-            try
-            {
-                throw new Exception("这是一条来自测试的异常");
-            }
-            catch (Exception e)
-            {
-                logger.LogError(e, "findx");
-            }
-
+            Console.WriteLine(dto.ToJson());
+            // try
+            // {
+            //     throw new Exception("这是一条来自测试的异常");
+            // }
+            // catch (Exception e)
+            // {
+            //     logger.LogError(e, "findx");
+            // }
             return CommonResult.Success();
         }
     }
-}
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public class TestDto
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        public DateTime A { set; get; }
+        public DateTime? B { set; get; }
+        public long C { set; get; }
+        public decimal D { set; get; }
+        public decimal? E { set; get; }
+    }
+}

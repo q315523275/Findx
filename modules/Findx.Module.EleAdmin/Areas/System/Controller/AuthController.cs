@@ -5,15 +5,15 @@ using Findx.Data;
 using Findx.Extensions;
 using Findx.Security;
 using Findx.Security.Authentication.Jwt;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Authorization;
+using Findx.Setting;
 using Findx.Mapping;
 using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Enum;
 using Findx.Module.EleAdmin.Models;
 using System.ComponentModel;
-using Findx.Setting;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller
@@ -28,11 +28,11 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
     public class AuthController : AreaApiControllerBase
     {
         private readonly IOptions<JwtOptions> _options;
-        
+
         private readonly IJwtTokenBuilder _tokenBuilder;
         private readonly ICurrentUser _currentUser;
         private readonly ICacheProvider _cacheProvider;
-        
+
         private readonly IRepository<SysUserInfo> _repo;
         private readonly IRepository<SysLoginRecordInfo> _recordRepo;
 
@@ -48,7 +48,9 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         /// <param name="repo"></param>
         /// <param name="recordRepo"></param>
         /// <param name="settingProvider"></param>
-        public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheProvider cacheProvider, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo, ISettingProvider settingProvider)
+        public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser,
+            ICacheProvider cacheProvider, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo,
+            ISettingProvider settingProvider)
         {
             _tokenBuilder = tokenBuilder;
             _options = options;
@@ -108,9 +110,9 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 UserName = req.UserName,
                 Nickname = accountInfo.Nickname
             };
-            
+
             CommonResult fail = null;
-            
+
             // 验证帐号密码是否正确
             if (accountInfo.Password != Utils.Encrypt.Md5By32(req.Password))
             {
@@ -147,7 +149,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
                 await _recordRepo.InsertAsync(loginLog);
                 return fail;
             }
-            
+
             loginLog.LoginType = 0;
             loginLog.Comments = "登录成功";
             await _recordRepo.InsertAsync(loginLog);
@@ -187,14 +189,18 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
             var menuRepo = GetRequiredService<IRepository<SysRoleMenuInfo>>();
             var appRepo = GetRequiredService<IRepository<SysAppInfo>>();
 
-            var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, selectExpression: x => new RoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }).DistinctBy(x => x.Id);
+            var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id,
+                selectExpression: x => new RoleDto
+                    { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }).DistinctBy(x => x.Id);
             // ReSharper disable once PossibleMultipleEnumeration
             var roleIds = roles.Select(x => x.Id);
             // ReSharper disable once PossibleMultipleEnumeration
-            var menus = roleIds.Any() ?
-                               // ReSharper disable once PossibleMultipleEnumeration
-                               menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, selectExpression: x => new MenuDto { MenuId = x.MenuId })
-                               : new List<MenuDto>();
+            var menus = roleIds.Any()
+                ?
+                // ReSharper disable once PossibleMultipleEnumeration
+                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id,
+                    selectExpression: x => new MenuDto { MenuId = x.MenuId })
+                : new List<MenuDto>();
 
             var appCodes = menus.Select(x => x.ApplicationCode).Distinct();
             var appList = appRepo.Select(x => appCodes.Contains(x.Code), x => new AppDto());
@@ -234,4 +240,3 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller
         }
     }
 }
-

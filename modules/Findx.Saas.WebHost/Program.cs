@@ -21,6 +21,8 @@ builder.Services.AddControllers()
                     options.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
                     options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
                     options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
+                    options.JsonSerializerOptions.Converters.Add(new LongStringJsonConverter());
+                    options.JsonSerializerOptions.Converters.Add(new DecimalNullableJsonConverter());
                 });
 builder.Services.AddCors(options => { options.AddDefaultPolicy(policyBuilder => policyBuilder.AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetIsOriginAllowed(_ => true)); });
 builder.Services.AddWebSockets(x => { x.KeepAliveInterval = TimeSpan.FromMinutes(2); });

@@ -59,16 +59,19 @@ namespace Findx.FreeSql
                                                   .UseAutoSyncStructure(item.Value.UseAutoSyncStructure)
                                                   .UseNameConvert(item.Value.NameConvertType)
                                                   .Build();
+                
                 // 开启逻辑删除
                 if (item.Value.SoftDeletable)
                 {
                     freeSql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
                 }
+                
                 // 开启租户隔离
                 if (item.Value.MultiTenant)
                 {
                     freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current != Guid.Empty, it => it.TenantId == TenantManager.Current);
                 }
+                
                 // AOP
                 freeSql.Aop.CurdAfter += (s, e) =>
                 {
@@ -91,6 +94,7 @@ namespace Findx.FreeSql
                         // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                         logger?.LogInformation(sb.ToString());
                     }
+                    
                     // 开启慢SQL记录
                     if (item.Value.OutageDetection && e.ElapsedMilliseconds > item.Value.OutageDetectionInterval * 1000)
                     {
@@ -98,6 +102,7 @@ namespace Findx.FreeSql
                         ServiceLocator.GetService<IApplicationContext>()?.PublishEvent(new SlowSqlEvent { ElapsedMilliseconds  = e.ElapsedMilliseconds, SqlRaw = e.Sql });
                     }
                 };
+                
                 freeSql.Aop.AuditValue += (_, e) =>
                 {
                     // 租户自动赋值
@@ -108,8 +113,10 @@ namespace Findx.FreeSql
                         e.Value = TenantManager.Current;
                     }
                 };
+                
                 // 注入
                 freeSqlClient.TryAdd(item.Key, freeSql);
+                
                 // 数据源共享
                 if (item.Value.DataSourceSharing != null && item.Value.DataSourceSharing.Count > 0)
                 {
@@ -118,6 +125,7 @@ namespace Findx.FreeSql
                         freeSqlClient.TryAdd(sourceKey, freeSql);
                     }
                 }
+                
                 // 注册单独主IFreeSql
                 if (item.Key == FreeSqlOptions.Primary)
                     services.AddSingleton(freeSql);

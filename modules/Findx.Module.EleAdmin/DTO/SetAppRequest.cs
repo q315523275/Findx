@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdmin.DTO;
 /// <summary>
 /// 设置应用Dto模型
 /// </summary>
-public class SetAppRequest: IRequest
+public class SetAppRequest : IRequest
 {
     /// <summary>
     /// 编号

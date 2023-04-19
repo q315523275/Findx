@@ -1,4 +1,5 @@
 ﻿using System;
+
 namespace Findx.Module.EleAdmin.DTO
 {
     /// <summary>
@@ -17,4 +18,3 @@ namespace Findx.Module.EleAdmin.DTO
         public string Name { get; set; }
     }
 }
-

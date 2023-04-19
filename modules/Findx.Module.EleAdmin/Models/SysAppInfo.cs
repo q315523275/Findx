@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdmin.Models;
 /// </summary>
 [Table(Name = "sys_app")]
 [EntityExtension(DataSource = "system")]
-public class SysAppInfo: FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, ISort, IResponse
+public class SysAppInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, ISort, IResponse
 {
     /// <summary>
     /// 主键id
@@ -35,7 +35,7 @@ public class SysAppInfo: FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, I
     /// 排序
     /// </summary>
     public int Sort { get; set; }
-    
+
     /// <summary>
     /// 是否删除
     /// </summary>

@@ -8,7 +8,10 @@ namespace Findx.Module.System.Models;
 /// </summary>
 [Table(Name = "sys_user")]
 [EntityExtension(DataSource = "sys")]
-public class SysUserInfo
+public class SysUserInfo: FullAuditedBase<long, long>
 {
-    
+    /// <summary>
+    /// 头像
+    /// </summary>
+    public string Avatar { set; get; }
 }
