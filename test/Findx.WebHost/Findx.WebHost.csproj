@@ -26,6 +26,12 @@
 		<ProjectReference Include="..\..\src\Findx.Configuration\Findx.Configuration.csproj">
 		  <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
 		</ProjectReference>
+		<ProjectReference Include="..\..\src\Findx.RabbitMQ\Findx.RabbitMQ.csproj">
+		  <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+		</ProjectReference>
+		<ProjectReference Include="..\..\src\Findx.EventBus\Findx.EventBus.csproj">
+		  <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+		</ProjectReference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -48,6 +54,6 @@
 	  <Folder Include="EventHandlers\" />
 	</ItemGroup>
 	<ItemGroup>
-	  <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.691" />
+	  <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.693" />
 	</ItemGroup>
 </Project>

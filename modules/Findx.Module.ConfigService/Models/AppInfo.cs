@@ -3,6 +3,9 @@ using FreeSql.DataAnnotations;
 
 namespace Findx.Module.ConfigService.Models;
 
+/// <summary>
+/// 应用信息表
+/// </summary>
 [Table(Name = "config_apps")]
 [EntityExtension(DataSource = "config")]
 public class AppInfo: FullAuditedBase<Guid, Guid>, ISoftDeletable, IResponse

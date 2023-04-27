@@ -1,5 +1,3 @@
-using Findx.Setting;
-
 namespace Findx.Security;
 
 /// <summary>
@@ -11,7 +9,7 @@ public class FunctionAuthorization : FunctionAuthorizationBase
     /// Ctor
     /// </summary>
     /// <param name="settingProvider"></param>
-    public FunctionAuthorization(ISettingProvider settingProvider) : base(settingProvider)
+    public FunctionAuthorization(IConfiguration settingProvider) : base(settingProvider)
     {
         
     }

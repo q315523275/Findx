@@ -70,7 +70,7 @@ namespace Findx.Swagger
                 AddSecurity(options);
                 
                 // 标签分组
-                AddActionTag(options);
+                // AddActionTag(options);
             });
 
             return services;

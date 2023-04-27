@@ -10,12 +10,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.ConfigService.Areas.Config.Controller;
 
 /// <summary>
-/// 
+/// 配置服务 - 集群
 /// </summary>
 [Area("findx")]
 [Route("api/config/cluster")]
 [Description("配置服务集群")]
-[ApiExplorerSettings(GroupName = "config"), Tags("配置服务集群")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-集群")]
 public class ClusterController: AreaApiControllerBase
 {
     private readonly IDumpService _dumpService;

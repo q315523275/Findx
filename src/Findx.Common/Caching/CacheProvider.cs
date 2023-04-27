@@ -7,15 +7,16 @@
     {
         private readonly IDictionary<string, ICache> _caches;
         private readonly string _defaultCache;
+        
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="caches"></param>
-        /// <param name="configuration"></param>
-        public CacheProvider(IEnumerable<ICache> caches, IConfiguration configuration)
+        /// <param name="settingProvider"></param>
+        public CacheProvider(IEnumerable<ICache> caches, IConfiguration settingProvider)
         {
             _caches = caches.ToDictionary(it => it.Name, it => it);
-            _defaultCache = configuration.GetValue<string>("Findx:CacheType") ?? CacheType.DefaultMemory;
+            _defaultCache = settingProvider.GetValue<string>("Findx:CacheType") ?? CacheType.DefaultMemory;
         }
 
         /// <summary>
@@ -25,9 +26,9 @@
         /// <returns></returns>
         public ICache Get(string name = null)
         {
-            name = name ?? _defaultCache;
+            name ??= _defaultCache;
 
-            _caches.TryGetValue(name, out ICache cache);
+            _caches.TryGetValue(name, out var cache);
 
             Check.NotNull(cache, nameof(cache));
 

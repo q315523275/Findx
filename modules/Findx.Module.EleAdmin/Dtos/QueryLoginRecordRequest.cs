@@ -1,6 +1,6 @@
 using Findx.Data;
 
-namespace Findx.Module.EleAdmin.DTO;
+namespace Findx.Module.EleAdmin.Dtos;
 
 /// <summary>
 /// 查询登录日志参数

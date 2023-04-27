@@ -1,12 +1,11 @@
-﻿using System;
-using Findx.Data;
+﻿using Findx.Data;
 
-namespace Findx.Module.EleAdmin.DTO
+namespace Findx.Module.EleAdmin.Dtos
 {
     /// <summary>
-    /// 设置角色信息Dto模型
+    /// 设置字典类型入参
     /// </summary>
-    public class SetRoleRequest : IRequest
+    public class SetDictTypeRequest : IRequest
     {
         /// <summary>
         /// 编号
@@ -14,24 +13,19 @@ namespace Findx.Module.EleAdmin.DTO
         public Guid Id { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 应用编号
+        /// 字典标识
         /// </summary>
-        public string ApplicationCode { get; set; }
+        public string Code { get; set; }
 
         /// <summary>
-        /// 应用名称
-        /// </summary>
-        public string ApplicationName { get; set; }
-
-        /// <summary>
-        /// 角色名称
+        /// 字典名称
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// 角色标识
+        /// 排序号
         /// </summary>
-        public string Code { get; set; }
+        public int Sort { get; set; }
 
         /// <summary>
         /// 备注

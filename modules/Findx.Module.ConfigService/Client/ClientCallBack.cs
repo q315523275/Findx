@@ -11,6 +11,15 @@ public class ClientCallBack: IClientCallBack
 
     private readonly  ConcurrentDictionary<string, List<ClientCallBackInfo<ConfigDataChangeDto>>> _callBacks = new();
 
+    /// <summary>
+    /// 创建回调任务
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="reqId"></param>
+    /// <param name="clientIp"></param>
+    /// <param name="timeout"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     public Task<ConfigDataChangeDto> NewCallBackTaskAsync(string appId, string reqId, string clientIp, int timeout)
     {
         if (!_callBacks.ContainsKey(appId))
@@ -32,6 +41,7 @@ public class ClientCallBack: IClientCallBack
                 clients.RemoveAll(x => x.ReqId == reqId);
                 if (!clients.Any()) _callBacks.TryRemove(appId, out _);
             }
+            
             if (!source.Task.IsCompleted)
             {
                 source.TrySetException(new TimeoutException($"Call {appId} client {reqId} timeout."));
@@ -45,6 +55,11 @@ public class ClientCallBack: IClientCallBack
         return source.Task;
     }
 
+    /// <summary>
+    /// 设置回调任务结果
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="content"></param>
     public void CallBack(string appId, ConfigDataChangeDto content)
     {
         if (_callBacks.TryGetValue(appId, out var clients))
@@ -59,6 +74,9 @@ public class ClientCallBack: IClientCallBack
         }
     }
 
+    /// <summary>
+    /// 释放资源
+    /// </summary>
     public void Dispose()
     {
         foreach (var callBack in _callBacks)

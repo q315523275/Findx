@@ -1,6 +1,5 @@
 using System.Security.Claims;
 using System.Security.Principal;
-using Findx.Setting;
 
 namespace Findx.Security;
 
@@ -13,7 +12,7 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     /// Ctor
     /// </summary>
     /// <param name="settingProvider"></param>
-    protected FunctionAuthorizationBase(ISettingProvider settingProvider)
+    protected FunctionAuthorizationBase(IConfiguration settingProvider)
     {
         SuperRoleName = settingProvider.GetValue<string>("Findx:Authorization:SuperRoleName");
     }

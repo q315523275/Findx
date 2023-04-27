@@ -22,16 +22,15 @@ builder.Services.AddControllers()
                     options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
                     options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
                     options.JsonSerializerOptions.Converters.Add(new LongStringJsonConverter());
-                    options.JsonSerializerOptions.Converters.Add(new DecimalNullableJsonConverter());
                 });
-builder.Services.AddCors(options => { options.AddDefaultPolicy(policyBuilder => policyBuilder.AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetIsOriginAllowed(_ => true)); });
 builder.Services.AddWebSockets(x => { x.KeepAliveInterval = TimeSpan.FromMinutes(2); });
+builder.Services.AddCorsAccessor();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseJsonExceptionHandler();
-app.UseCors().UseRouting();
+app.UseCorsAccessor().UseRouting();
 app.UseStaticFiles(new StaticFileOptions { RequestPath = "/storage", FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "storage")) });
 app.UseWebSockets().MapWebSocketManager("/ws", app.Services.GetRequiredService<WebSocketHandler>());
 app.UseFindx();

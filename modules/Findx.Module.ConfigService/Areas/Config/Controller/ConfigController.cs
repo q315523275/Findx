@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.ConfigService.Areas.Config.Controller;
 
 /// <summary>
-/// 
+/// 配置服务-管理
 /// </summary>
 [Area("findx")]
 [Route("api/config/manage")]
@@ -38,6 +38,7 @@ public class ConfigController: AreaApiControllerBase
     /// <param name="principal"></param>
     /// <param name="configHistoryRepo"></param>
     /// <param name="messageDispatcher"></param>
+    /// <param name="unitOfWorkManager"></param>
     public ConfigController(IRepository<ConfigInfo> configRepo, IPrincipal principal, IRepository<ConfigHistoryInfo> configHistoryRepo, IMessageDispatcher messageDispatcher, IUnitOfWorkManager unitOfWorkManager)
     {
         _configRepo = configRepo;

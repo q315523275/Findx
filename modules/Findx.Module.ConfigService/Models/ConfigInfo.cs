@@ -5,7 +5,7 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.ConfigService.Models;
 
 /// <summary>
-/// 配置中心
+/// 配置信息表
 /// </summary>
 [Table(Name = "config_info")]
 [EntityExtension(DataSource = "config")]

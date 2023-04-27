@@ -7,19 +7,14 @@ using Findx.Castle;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.WebHost.Aspect;
-// using Findx.WebHost.RabbitMQ;
+using Findx.WebHost.RabbitMQ;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddFindx().AddModules(
-                // typeof(Findx.FindxRabbitMqModule)
-                //, typeof(Findx.EventBus.RabbitMQ.EventBusRabbitMqModule)
-                typeof(Findx.Discovery.Consul.ConsulDiscoveryModule)
-                , typeof(Findx.Redis.FindxRedisModule)
-                , typeof(Findx.FreeSql.FreeSqlModule));
+builder.Services.AddFindx().AddModules();
 builder.Services.AddHttpClient("policy")
                 .AddFallbackPolicy(CommonResult.Fail(), 200)
                 .AddCircuitBreakerPolicy(5, "5s")

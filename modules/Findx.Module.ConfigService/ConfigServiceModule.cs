@@ -15,10 +15,21 @@ namespace Findx.Module.ConfigService;
 [Description("Findx配置中心-服务端模块")]
 public class ConfigServiceModule: FindxModule
 {
+    /// <summary>
+    /// 等级
+    /// </summary>
     public override ModuleLevel Level => ModuleLevel.Application;
 
+    /// <summary>
+    /// 排序
+    /// </summary>
     public override int Order => 110;
 
+    /// <summary>
+    /// 配置服务
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
         services.AddHttpClient();
@@ -36,6 +47,10 @@ public class ConfigServiceModule: FindxModule
         return base.ConfigureServices(services);
     }
 
+    /// <summary>
+    /// 销毁回调
+    /// </summary>
+    /// <param name="provider"></param>
     public override void OnShutdown(IServiceProvider provider)
     {
         var clientCallBack = provider.GetRequiredService<IClientCallBack>();

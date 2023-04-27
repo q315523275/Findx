@@ -1,6 +1,4 @@
-﻿using Findx.Setting;
-
-namespace Findx.Storage
+﻿namespace Findx.Storage
 {
     /// <summary>
     /// 文件存储提供器
@@ -9,14 +7,14 @@ namespace Findx.Storage
     {
         private readonly IDictionary<string, IFileStorage> _storages;
 
-        private readonly ISettingProvider _settingProvider;
+        private readonly IConfiguration _settingProvider;
 
         /// <summary>
         /// Ctor
         /// </summary>
         /// <param name="storages"></param>
         /// <param name="settingProvider"></param>
-        public StorageProvider(IEnumerable<IFileStorage> storages, ISettingProvider settingProvider)
+        public StorageProvider(IEnumerable<IFileStorage> storages, IConfiguration settingProvider)
         {
             _storages = storages.ToDictionary(it => it.Name, it => it);
             _settingProvider = settingProvider;

@@ -1,27 +1,31 @@
-﻿using System;
-using Findx.Data;
+﻿using Findx.Data;
 
-namespace Findx.Module.EleAdmin.DTO
+namespace Findx.Module.EleAdmin.Dtos
 {
     /// <summary>
-    /// 设置字典类型入参
+    /// 设置字典数据Dto模型
     /// </summary>
-    public class SetDictTypeRequest : IRequest
+    public class SetDictDataRequest : IRequest
     {
         /// <summary>
-        /// 编号
+        /// 
         /// </summary>
         public Guid Id { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 字典标识
+        /// 字典id
         /// </summary>
-        public string Code { get; set; }
+        public Guid TypeId { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 字典名称
+        /// 字典项名称
         /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// 字典项值
+        /// </summary>
+        public string Value { get; set; }
 
         /// <summary>
         /// 排序号

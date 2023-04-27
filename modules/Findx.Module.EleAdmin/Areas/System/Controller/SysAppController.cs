@@ -2,7 +2,7 @@ using System.ComponentModel;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Exceptions;
-using Findx.Module.EleAdmin.DTO;
+using Findx.Module.EleAdmin.Dtos;
 using Findx.Module.EleAdmin.Models;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -30,14 +30,13 @@ public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, Qu
     protected override async Task AddBeforeAsync(SysAppInfo model, SetAppRequest request)
     {
         var repo = GetRepository<SysAppInfo>();
-
         var isExist = await repo.ExistAsync(x => x.Name == model.Name || x.Code == model.Code);
         if (isExist)
             throw new FindxException("500", "已存在同名或同编码应用");
     }
 
     /// <summary>
-    /// 编辑娇艳
+    /// 编辑前校验
     /// </summary>
     /// <param name="model"></param>
     /// <param name="request"></param>
@@ -52,19 +51,15 @@ public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, Qu
         if (old.Code != request.Code)
         {
             var repoMenu = GetRepository<SysMenuInfo>();
-            await repoMenu.UpdateColumnsAsync(
-                x => new SysMenuInfo { ApplicationCode = request.Code, ApplicationName = request.Name },
-                x => x.ApplicationCode == old.Code);
+            await repoMenu.UpdateColumnsAsync(x => new SysMenuInfo { ApplicationCode = request.Code, ApplicationName = request.Name }, x => x.ApplicationCode == old.Code);
 
             var repoRole = GetRepository<SysRoleInfo>();
-            await repoRole.UpdateColumnsAsync(
-                x => new SysRoleInfo { ApplicationCode = request.Code, ApplicationName = request.Name },
-                x => x.ApplicationCode == old.Code);
+            await repoRole.UpdateColumnsAsync(x => new SysRoleInfo { ApplicationCode = request.Code, ApplicationName = request.Name }, x => x.ApplicationCode == old.Code);
         }
     }
 
     /// <summary>
-    /// 删除
+    /// 删除记录
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>

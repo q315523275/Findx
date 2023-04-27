@@ -99,7 +99,8 @@ namespace Findx.FreeSql
                     if (item.Value.OutageDetection && e.ElapsedMilliseconds > item.Value.OutageDetectionInterval * 1000)
                     {
                         // 推送慢sql事件
-                        ServiceLocator.GetService<IApplicationContext>()?.PublishEvent(new SlowSqlEvent { ElapsedMilliseconds  = e.ElapsedMilliseconds, SqlRaw = e.Sql });
+                        ServiceLocator.GetService<IApplicationContext>()
+                            ?.PublishEvent(new SlowSqlEvent { ElapsedMilliseconds  = e.ElapsedMilliseconds, SqlRaw = e.Sql });
                     }
                 };
                 

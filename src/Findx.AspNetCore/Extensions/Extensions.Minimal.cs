@@ -105,5 +105,16 @@ namespace Findx.AspNetCore.Extensions
             app.UseMiddleware<JsonExceptionHandlerMiddleware>();
             return app;
         }
+        
+        /// <summary>
+        /// 使用跨域请求
+        /// </summary>
+        /// <param name="app"></param>
+        /// <returns></returns>
+        public static WebApplication UseCorsAccessor(this WebApplication app)
+        {
+            app.UseCors("findx.cors");
+            return app;
+        }
     }
 }

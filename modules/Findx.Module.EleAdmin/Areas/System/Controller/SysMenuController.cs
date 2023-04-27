@@ -2,51 +2,49 @@
 using Findx.Data;
 using Findx.Linq;
 using Findx.Extensions;
-using Findx.Module.EleAdmin.DTO;
 using Findx.Module.EleAdmin.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using System.ComponentModel;
+using Findx.Module.EleAdmin.Dtos;
 using Microsoft.AspNetCore.Http;
 
-namespace Findx.Module.EleAdmin.Areas.System.Controller
+namespace Findx.Module.EleAdmin.Areas.System.Controller;
+
+/// <summary>
+/// 菜单服务
+/// </summary>
+[Area("system")]
+[Route("api/[area]/menu")]
+[Authorize]
+[Description("系统-菜单")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-菜单")]
+public class SysMenuController : CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, Guid, Guid>
 {
     /// <summary>
-    /// 菜单服务
+    /// 构建查询条件
     /// </summary>
-    [Area("system")]
-    [Route("api/[area]/menu")]
-    [Authorize]
-    [Description("系统-菜单")]
-    [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-菜单")]
-    public class SysMenuController : CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, Guid, Guid>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    protected override Expressionable<SysMenuInfo> CreatePageWhereExpression(QueryMenuRequest request)
     {
-        /// <summary>
-        /// 构建查询条件
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        protected override Expressionable<SysMenuInfo> CreatePageWhereExpression(QueryMenuRequest request)
-        {
-            var whereExp = ExpressionBuilder.Create<SysMenuInfo>()
-                .AndIF(!request.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(request.Title))
-                .AndIF(!request.Path.IsNullOrWhiteSpace(), x => x.Path.Contains(request.Path))
-                .AndIF(request.ParentId.HasValue, x => x.ParentId == request.ParentId)
-                .AndIF(!request.Authority.IsNullOrWhiteSpace(), x => x.Authority.Contains(request.Authority))
-                .AndIF(!request.ApplicationCode.IsNullOrWhiteSpace(),
-                    x => x.ApplicationCode == request.ApplicationCode);
-            return whereExp;
-        }
+        var whereExp = ExpressionBuilder.Create<SysMenuInfo>()
+                                        .AndIF(!request.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(request.Title))
+                                        .AndIF(!request.Path.IsNullOrWhiteSpace(), x => x.Path.Contains(request.Path))
+                                        .AndIF(request.ParentId.HasValue, x => x.ParentId == request.ParentId)
+                                        .AndIF(!request.Authority.IsNullOrWhiteSpace(), x => x.Authority.Contains(request.Authority))
+                                        .AndIF(!request.ApplicationCode.IsNullOrWhiteSpace(), x => x.ApplicationCode == request.ApplicationCode);
+        return whereExp;
+    }
 
-        /// <summary>
-        /// 列表查询
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        public override Task<CommonResult<List<SysMenuInfo>>> ListAsync(QueryMenuRequest request)
-        {
-            request.PageSize = 9999;
-            return base.ListAsync(request);
-        }
+    /// <summary>
+    /// 列表查询
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public override Task<CommonResult<List<SysMenuInfo>>> ListAsync(QueryMenuRequest request)
+    {
+        request.PageSize = 9999;
+        return base.ListAsync(request);
     }
 }

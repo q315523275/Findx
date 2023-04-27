@@ -4,7 +4,7 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdmin.Models;
 
 /// <summary>
-/// 字典值
+/// 应用信息实体
 /// </summary>
 [Table(Name = "sys_app")]
 [EntityExtension(DataSource = "system")]
@@ -37,6 +37,11 @@ public class SysAppInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, 
     public int Sort { get; set; }
 
     /// <summary>
+    /// 租户
+    /// </summary>
+    public Guid? TenantId { get; set; }
+    
+    /// <summary>
     /// 是否删除
     /// </summary>
     public bool IsDeleted { get; set; }
@@ -45,9 +50,4 @@ public class SysAppInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, 
     /// 删除时间
     /// </summary>
     public DateTime? DeletionTime { get; set; }
-
-    /// <summary>
-    /// 租户
-    /// </summary>
-    public Guid? TenantId { get; set; }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Findx.Extensions;
 using Findx.Serialization;
-using Findx.Setting;
 using Findx.Utils.Files;
 
 namespace Findx.Storage
@@ -35,7 +34,7 @@ namespace Findx.Storage
         /// <param name="app"></param>
         /// <param name="logger"></param>
         /// <param name="settingProvider"></param>
-        public FolderFileStorage(ISerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, ISettingProvider settingProvider)
+        public FolderFileStorage(ISerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, IConfiguration settingProvider)
         {
             Serializer = serializer;
             _logger = logger;

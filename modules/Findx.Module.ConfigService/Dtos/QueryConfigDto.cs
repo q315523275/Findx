@@ -21,5 +21,4 @@ public class QueryConfigDto: PageBase
     /// 环境
     /// </summary>
     public string Environment { get; set; }
-
 }
