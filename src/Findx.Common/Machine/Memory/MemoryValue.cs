@@ -1,12 +1,12 @@
 namespace Findx.Machine.Memory;
 
 /// <summary>
-/// 内存值表示
+///     内存值表示
 /// </summary>
 public struct MemoryValue
 {
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="totalPhysicalMemory">物理内存字节数</param>
     /// <param name="availablePhysicalMemory">可用的物理内存字节数</param>
@@ -28,37 +28,37 @@ public struct MemoryValue
     }
 
     /// <summary>
-    /// 物理内存字节数
+    ///     物理内存字节数
     /// </summary>
-    public ulong TotalPhysicalMemory { get; private set; }
+    public ulong TotalPhysicalMemory { get; }
 
     /// <summary>
-    /// 可用的物理内存字节数
+    ///     可用的物理内存字节数
     /// </summary>
-    public ulong AvailablePhysicalMemory { get; private set; }
+    public ulong AvailablePhysicalMemory { get; }
 
     /// <summary>
-    /// 已用物理内存字节数
+    ///     已用物理内存字节数
     /// </summary>
     public ulong UsedPhysicalMemory => TotalPhysicalMemory - AvailablePhysicalMemory;
 
     /// <summary>
-    /// 已用物理内存百分比，0~100，100表示内存已用尽
+    ///     已用物理内存百分比，0~100，100表示内存已用尽
     /// </summary>
     public double UsedPercentage { get; private set; }
 
     /// <summary>
-    /// 虚拟内存字节数
+    ///     虚拟内存字节数
     /// </summary>
-    public ulong TotalVirtualMemory { get; private set; }
+    public ulong TotalVirtualMemory { get; }
 
     /// <summary>
-    /// 可用虚拟内存字节数
+    ///     可用虚拟内存字节数
     /// </summary>
-    public ulong AvailableVirtualMemory { get; private set; }
+    public ulong AvailableVirtualMemory { get; }
 
     /// <summary>
-    /// 已用虚拟内存字节数
+    ///     已用虚拟内存字节数
     /// </summary>
     public ulong UsedVirtualMemory => TotalVirtualMemory - AvailableVirtualMemory;
 }

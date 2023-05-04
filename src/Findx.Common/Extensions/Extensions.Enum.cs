@@ -1,25 +1,21 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Reflection;
+﻿using System.ComponentModel;
 
-namespace Findx.Extensions
+namespace Findx.Extensions;
+
+/// <summary>
+///     系统扩展 - 枚举
+/// </summary>
+public partial class Extensions
 {
     /// <summary>
-    /// 系统扩展 - 枚举
+    ///     获取枚举项上的<see cref="DescriptionAttribute" />特性的文字描述
     /// </summary>
-    public partial class Extensions
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static string ToDescription(this Enum value)
     {
-        /// <summary>
-        /// 获取枚举项上的<see cref="DescriptionAttribute"/>特性的文字描述
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
-        public static string ToDescription(this Enum value)
-        {
-            Type type = value.GetType();
-            MemberInfo member = type.GetMember(value.ToString()).FirstOrDefault();
-            return member != null ? member.GetDescription() : value.ToString();
-        }
+        var type = value.GetType();
+        var member = type.GetMember(value.ToString()).FirstOrDefault();
+        return member != null ? member.GetDescription() : value.ToString();
     }
 }

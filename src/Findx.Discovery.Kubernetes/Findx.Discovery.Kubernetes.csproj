@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="KubernetesClient" Version="7.0.15" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="KubernetesClient" Version="7.0.15"/>
+    </ItemGroup>
 
 </Project>

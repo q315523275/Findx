@@ -3,27 +3,27 @@
 namespace Findx.Module.EleAdmin.Dtos;
 
 /// <summary>
-/// 查询角色入参
+///     查询角色入参
 /// </summary>
 public class QueryRoleRequest : PageBase
 {
     /// <summary>
-    /// 名称
+    ///     名称
     /// </summary>
     public string Name { set; get; }
 
     /// <summary>
-    /// 编号
+    ///     编号
     /// </summary>
     public string Code { set; get; }
 
     /// <summary>
-    /// 备注
+    ///     备注
     /// </summary>
     public string Comments { set; get; }
 
     /// <summary>
-    /// 应用名称
+    ///     应用名称
     /// </summary>
     public string ApplicationCode { get; set; }
 }

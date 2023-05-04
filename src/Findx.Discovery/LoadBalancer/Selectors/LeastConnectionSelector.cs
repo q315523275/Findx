@@ -7,12 +7,10 @@ namespace Findx.Discovery.LoadBalancer.Selectors
 {
     public class LeastConnectionSelector : ILoadBalancer
     {
-        private readonly Func<Task<IList<IServiceInstance>>> _services;
+        private static readonly object _syncLock = new object();
         private readonly List<Lease> _leases;
         private readonly string _serviceName;
-        private static readonly object _syncLock = new object();
-
-        public LoadBalancerType Name => LoadBalancerType.LeastConnection;
+        private readonly Func<Task<IList<IServiceInstance>>> _services;
 
         public LeastConnectionSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
         {
@@ -20,6 +18,8 @@ namespace Findx.Discovery.LoadBalancer.Selectors
             _serviceName = serviceName;
             _leases = new List<Lease>();
         }
+
+        public LoadBalancerType Name => LoadBalancerType.LeastConnection;
 
         public async Task<IServiceInstance> ResolveServiceInstanceAsync()
         {
@@ -52,7 +52,7 @@ namespace Findx.Discovery.LoadBalancer.Selectors
             lock (_syncLock)
             {
                 var matchingLease = _leases.FirstOrDefault(l => l.ServiceInstance.Host == serviceInstance.Host
-                    && l.ServiceInstance.Port == serviceInstance.Port);
+                                                                && l.ServiceInstance.Port == serviceInstance.Port);
 
                 if (matchingLease != null)
                 {
@@ -63,6 +63,7 @@ namespace Findx.Discovery.LoadBalancer.Selectors
                     _leases.Add(replacementLease);
                 }
             }
+
             return Task.CompletedTask;
         }
 
@@ -77,7 +78,6 @@ namespace Findx.Discovery.LoadBalancer.Selectors
             Lease leaseWithLeastConnections = null;
 
             for (var i = 0; i < _leases.Count; i++)
-            {
                 if (i == 0)
                 {
                     leaseWithLeastConnections = _leases[i];
@@ -85,11 +85,8 @@ namespace Findx.Discovery.LoadBalancer.Selectors
                 else
                 {
                     if (_leases[i].Connections < leaseWithLeastConnections.Connections)
-                    {
                         leaseWithLeastConnections = _leases[i];
-                    }
                 }
-            }
 
             return leaseWithLeastConnections;
         }
@@ -103,35 +100,24 @@ namespace Findx.Discovery.LoadBalancer.Selectors
                 foreach (var lease in _leases)
                 {
                     var match = services.FirstOrDefault(s => s.Host == lease.ServiceInstance.Host
-                        && s.Port == lease.ServiceInstance.Port);
+                                                             && s.Port == lease.ServiceInstance.Port);
 
-                    if (match == null)
-                    {
-                        leasesToRemove.Add(lease);
-                    }
+                    if (match == null) leasesToRemove.Add(lease);
                 }
 
-                foreach (var lease in leasesToRemove)
-                {
-                    _leases.Remove(lease);
-                }
+                foreach (var lease in leasesToRemove) _leases.Remove(lease);
 
                 foreach (var service in services)
                 {
-                    var exists = _leases.FirstOrDefault(l => l.ServiceInstance.Host == service.Host && l.ServiceInstance.Port == service.Port);
+                    var exists = _leases.FirstOrDefault(l =>
+                        l.ServiceInstance.Host == service.Host && l.ServiceInstance.Port == service.Port);
 
-                    if (exists == null)
-                    {
-                        _leases.Add(new Lease(service, 0));
-                    }
+                    if (exists == null) _leases.Add(new Lease(service, 0));
                 }
             }
             else
             {
-                foreach (var service in services)
-                {
-                    _leases.Add(new Lease(service, 0));
-                }
+                foreach (var service in services) _leases.Add(new Lease(service, 0));
             }
 
             return true;

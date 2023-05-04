@@ -3,35 +3,35 @@
 namespace Findx.Module.EleAdmin.Dtos;
 
 /// <summary>
-/// 登录参数
+///     登录参数
 /// </summary>
 public class LoginRequest
 {
     /// <summary>
-    /// 账号
+    ///     账号
     /// </summary>
     [Required]
     public string UserName { set; get; }
 
     /// <summary>
-    /// 密码
+    ///     密码
     /// </summary>
     [Required]
     public string Password { set; get; }
 
     /// <summary>
-    /// 验证码
+    ///     验证码
     /// </summary>
     [Required]
     public string Code { set; get; }
 
     /// <summary>
-    /// 租户
+    ///     租户
     /// </summary>
     public Guid TenantId { set; get; }
 
     /// <summary>
-    /// uuid
+    ///     uuid
     /// </summary>
     [Required]
     public string Uuid { set; get; }

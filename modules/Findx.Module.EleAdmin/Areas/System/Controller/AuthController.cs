@@ -1,45 +1,47 @@
-﻿using Findx.AspNetCore.Extensions;
+﻿using System.ComponentModel;
+using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
+using Findx.Mapping;
+using Findx.Module.EleAdmin.Dtos;
+using Findx.Module.EleAdmin.Enum;
+using Findx.Module.EleAdmin.Models;
 using Findx.Security;
 using Findx.Security.Authentication.Jwt;
 using Findx.Setting;
-using Findx.Mapping;
-using Findx.Module.EleAdmin.Enum;
-using Findx.Module.EleAdmin.Models;
-using System.ComponentModel;
-using Findx.Module.EleAdmin.Dtos;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
+using Findx.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
 /// <summary>
-/// 系统-账户
+///     系统-账户
 /// </summary>
 [Area("system")]
 [Route("api/[area]/auth")]
 [Description("系统-账户")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-账户")]
+[ApiExplorerSettings(GroupName = "eleAdmin")]
+[Tags("系统-账户")]
 public class AuthController : AreaApiControllerBase
 {
-    private readonly IOptions<JwtOptions> _options;
-
-    private readonly IJwtTokenBuilder _tokenBuilder;
-    private readonly ICurrentUser _currentUser;
     private readonly ICacheProvider _cacheProvider;
-
-    private readonly IRepository<SysUserInfo> _repo;
-    private readonly IRepository<SysLoginRecordInfo> _recordRepo;
+    private readonly ICurrentUser _currentUser;
 
     private readonly bool _enabledCaptcha;
+    private readonly IOptions<JwtOptions> _options;
+    private readonly IRepository<SysLoginRecordInfo> _recordRepo;
+
+    private readonly IRepository<SysUserInfo> _repo;
+
+    private readonly IJwtTokenBuilder _tokenBuilder;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="tokenBuilder"></param>
     /// <param name="options"></param>
@@ -62,7 +64,7 @@ public class AuthController : AreaApiControllerBase
     }
 
     /// <summary>
-    /// 账号密码登录
+    ///     账号密码登录
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
@@ -71,12 +73,12 @@ public class AuthController : AreaApiControllerBase
     public async Task<CommonResult> Login([FromBody] LoginRequest req)
     {
         var cache = _cacheProvider.Get();
-            
+
         // 是否开启验证码
         var cacheKey = $"verifyCode:{req.Uuid}";
         if (_enabledCaptcha && cache.Get<string>(cacheKey) != req.Code.ToLower())
             return CommonResult.Fail("50500", "验证码错误");
-            
+
         // 密码错误次数
         var errorCacheKey = $"error:{req.UserName}";
         var errorCount = cache.Get<int>(errorCacheKey);
@@ -96,7 +98,7 @@ public class AuthController : AreaApiControllerBase
             Comments = "账户密码错误",
             CreatedTime = DateTime.Now,
             Device = userAgent.OS.Name,
-            Id = Utils.SequentialGuid.Instance.Create(_repo.GetDbType()),
+            Id = SequentialGuid.Instance.Create(_repo.GetDbType()),
             Ip = HttpContext.GetClientIp(),
             LoginType = 1,
             Os = userAgent.Platform.Name,
@@ -108,7 +110,7 @@ public class AuthController : AreaApiControllerBase
         CommonResult fail = null;
 
         // 验证帐号密码是否正确
-        if (accountInfo.Password != Utils.Encrypt.Md5By32(req.Password))
+        if (accountInfo.Password != Encrypt.Md5By32(req.Password))
         {
             // 增加错误次数
             errorCount++;
@@ -159,7 +161,7 @@ public class AuthController : AreaApiControllerBase
     }
 
     /// <summary>
-    /// 查看账户信息
+    ///     查看账户信息
     /// </summary>
     /// <returns></returns>
     [HttpGet("/api/auth/user")]
@@ -176,14 +178,17 @@ public class AuthController : AreaApiControllerBase
         var menuRepo = GetRepository<SysRoleMenuInfo>();
         var appRepo = GetRepository<SysAppInfo>();
 
-        var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, selectExpression: x => new RoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }).DistinctBy(x => x.Id);
+        var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id,
+                x => new RoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name })
+            .DistinctBy(x => x.Id);
         // ReSharper disable once PossibleMultipleEnumeration
         var roleIds = roles.Select(x => x.Id);
         // ReSharper disable once PossibleMultipleEnumeration
         var menus = roleIds.Any()
             ?
             // ReSharper disable once PossibleMultipleEnumeration
-            menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, selectExpression: x => new MenuDto { MenuId = x.MenuId })
+            menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id,
+                x => new MenuDto { MenuId = x.MenuId })
             : new List<MenuDto>();
 
         var appCodes = menus.Select(x => x.ApplicationCode).Distinct();
@@ -199,7 +204,7 @@ public class AuthController : AreaApiControllerBase
     }
 
     /// <summary>
-    /// 修改密码
+    ///     修改密码
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
@@ -214,10 +219,10 @@ public class AuthController : AreaApiControllerBase
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
-        if (userInfo.Password != Utils.Encrypt.Md5By32(req.OldPassword))
+        if (userInfo.Password != Encrypt.Md5By32(req.OldPassword))
             return CommonResult.Fail("D1000", "旧密码错误");
 
-        var pwd = Utils.Encrypt.Md5By32(req.Password);
+        var pwd = Encrypt.Md5By32(req.Password);
         _repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == userInfo.Id);
 
         return CommonResult.Success();

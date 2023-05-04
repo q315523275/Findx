@@ -4,14 +4,14 @@ using Findx.Module.ConfigService.Dtos;
 namespace Findx.Module.ConfigService.Services;
 
 /// <summary>
-/// 转储服务
+///     转储服务
 /// </summary>
-public class DumpService: IDumpService
+public class DumpService : IDumpService
 {
     private readonly IClientCallBack _clientCallBack;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="clientCallBack"></param>
     public DumpService(IClientCallBack clientCallBack)
@@ -20,7 +20,7 @@ public class DumpService: IDumpService
     }
 
     /// <summary>
-    /// 转储
+    ///     转储
     /// </summary>
     /// <param name="changeDto"></param>
     /// <param name="cancellationToken"></param>

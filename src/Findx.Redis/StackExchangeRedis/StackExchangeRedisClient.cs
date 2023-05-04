@@ -1,18 +1,16 @@
-﻿using StackExchange.Redis;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using StackExchange.Redis;
 
 namespace Findx.Redis.StackExchangeRedis
 {
     public class StackExchangeRedisClient : IRedisClient
     {
+        private readonly IDatabase _cache;
         private readonly ConnectionMultiplexer _connection;
         private readonly IRedisSerializer _serializer;
-        private readonly IDatabase _cache;
-
-        public string Name { get; }
 
         public StackExchangeRedisClient(IRedisSerializer serializer, ConnectionMultiplexer connection, string name)
         {
@@ -22,36 +20,33 @@ namespace Findx.Redis.StackExchangeRedis
             Name = name;
         }
 
+        public string Name { get; }
+
         #region Public
 
         /// <summary>
-        /// 清除key
+        ///     清除key
         /// </summary>
         public void FlushDb()
         {
             var endPoints = _cache.Multiplexer.GetEndPoints();
 
-            foreach (var endPoint in endPoints)
-            {
-                _cache.Multiplexer.GetServer(endPoint).FlushDatabase(_cache.Database);
-            }
+            foreach (var endPoint in endPoints) _cache.Multiplexer.GetServer(endPoint).FlushDatabase(_cache.Database);
         }
 
         /// <summary>
-        /// 清除key
+        ///     清除key
         /// </summary>
         public async Task FlushDbAsync()
         {
             var endPoints = _cache.Multiplexer.GetEndPoints();
 
             foreach (var endpoint in endPoints)
-            {
                 await _cache.Multiplexer.GetServer(endpoint).FlushDatabaseAsync(_cache.Database);
-            }
         }
 
         /// <summary>
-        /// 清除当前db的所有数据
+        ///     清除当前db的所有数据
         /// </summary>
         public void Clear()
         {
@@ -59,7 +54,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 清除当前db的所有数据
+        ///     清除当前db的所有数据
         /// </summary>
         public Task ClearAsync()
         {
@@ -67,7 +62,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 执行redis命令
+        ///     执行redis命令
         /// </summary>
         /// <param name="script"></param>
         /// <param name="cacheKey"></param>
@@ -83,16 +78,10 @@ namespace Findx.Redis.StackExchangeRedis
             var redisValues = new List<RedisValue>();
 
             foreach (var item in args)
-            {
                 if (item.GetType().Equals(typeof(byte[])))
-                {
                     redisValues.Add((byte[])item);
-                }
                 else
-                {
                     redisValues.Add(item.ToString());
-                }
-            }
 
             var res = _cache.ScriptEvaluate(script, redisKey, redisValues.ToArray());
 
@@ -100,7 +89,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 执行redis命令
+        ///     执行redis命令
         /// </summary>
         /// <param name="script"></param>
         /// <param name="cacheKey"></param>
@@ -112,22 +101,15 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
 
-
             var redisKey = new RedisKey[] { cacheKey };
 
             var redisValues = new List<RedisValue>();
 
             foreach (var item in args)
-            {
                 if (item.GetType().Equals(typeof(byte[])))
-                {
                     redisValues.Add((byte[])item);
-                }
                 else
-                {
                     redisValues.Add(item.ToString());
-                }
-            }
 
             var res = await _cache.ScriptEvaluateAsync(script, redisKey, redisValues.ToArray());
 
@@ -139,7 +121,7 @@ namespace Findx.Redis.StackExchangeRedis
         #region Keys
 
         /// <summary>
-        /// 查找当前命名前缀下共有多少个Key
+        ///     查找当前命名前缀下共有多少个Key
         /// </summary>
         /// <returns></returns>
         public int KeyCount()
@@ -148,7 +130,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 查找键名
+        ///     查找键名
         /// </summary>
         /// <param name="pattern">匹配项</param>
         /// <returns>匹配上的所有键名</returns>
@@ -163,7 +145,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 查看缓存时间
+        ///     查看缓存时间
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -174,7 +156,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 查看缓存时间
+        ///     查看缓存时间
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -185,7 +167,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 判断是否存在当前的Key
+        ///     判断是否存在当前的Key
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -195,7 +177,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 判断是否存在当前的Key
+        ///     判断是否存在当前的Key
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -205,7 +187,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置key的失效时间
+        ///     设置key的失效时间
         /// </summary>
         /// <param name="key"></param>
         /// <param name="expiry"></param>
@@ -216,7 +198,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置key的失效时间
+        ///     设置key的失效时间
         /// </summary>
         /// <param name="key"></param>
         /// <param name="expiry"></param>
@@ -227,7 +209,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置key的失效时间
+        ///     设置key的失效时间
         /// </summary>
         /// <param name="key"></param>
         /// <param name="expiry"></param>
@@ -238,7 +220,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置key的失效时间
+        ///     设置key的失效时间
         /// </summary>
         /// <param name="key"></param>
         /// <param name="expiry"></param>
@@ -249,7 +231,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 移除当前key
+        ///     移除当前key
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -259,7 +241,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 移除当前key
+        ///     移除当前key
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
@@ -269,47 +251,39 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 移除全部key
+        ///     移除全部key
         /// </summary>
         /// <param name="keys"></param>
         public void RemoveAll(IEnumerable<string> keys)
         {
-            foreach (var key in keys)
-            {
-                Remove(key);
-            }
+            foreach (var key in keys) Remove(key);
         }
 
         /// <summary>
-        /// 移除全部key
+        ///     移除全部key
         /// </summary>
         /// <param name="keys"></param>
         /// <returns></returns>
         public async Task RemoveAllAsync(IEnumerable<string> keys)
         {
-            foreach (var key in keys)
-            {
-                await RemoveAsync(key);
-            }
+            foreach (var key in keys) await RemoveAsync(key);
         }
 
         /// <summary>
-        /// 计算当前prefix开头的key总数
+        ///     计算当前prefix开头的key总数
         /// </summary>
         /// <param name="prefix">key前缀</param>
         /// <returns></returns>
         public int CalcuteKeyCount(string prefix)
         {
-            var retVal = _cache.ScriptEvaluate("return table.getn(redis.call('keys', ARGV[1]))", values: new RedisValue[] { prefix });
-            if (retVal.IsNull)
-            {
-                return 0;
-            }
+            var retVal = _cache.ScriptEvaluate("return table.getn(redis.call('keys', ARGV[1]))",
+                values: new RedisValue[] { prefix });
+            if (retVal.IsNull) return 0;
             return (int)retVal;
         }
 
         /// <summary>
-        /// 删除以当前prefix开头的所有key缓存
+        ///     删除以当前prefix开头的所有key缓存
         /// </summary>
         /// <param name="prefix">key前缀</param>
         public void DeleteKeyWithKeyPrefix(string prefix)
@@ -322,7 +296,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 删除以当前prefix开头的所有key缓存
+        ///     删除以当前prefix开头的所有key缓存
         /// </summary>
         /// <param name="prefix">key前缀</param>
         public async Task DeleteKeyWithKeyPrefixAsync(string prefix)
@@ -339,7 +313,7 @@ namespace Findx.Redis.StackExchangeRedis
         #region StringSet(字符操作)
 
         /// <summary>
-        /// 设置string键值
+        ///     设置string键值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -353,7 +327,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置string键值
+        ///     设置string键值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -367,7 +341,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置string键值
+        ///     设置string键值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -381,7 +355,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置string键值
+        ///     设置string键值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -395,7 +369,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置string键值
+        ///     设置string键值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -412,7 +386,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置string键值
+        ///     设置string键值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -427,33 +401,35 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 批量设置string键值
+        ///     批量设置string键值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="items">键值列表</param>
         /// <returns>成功返回true</returns>
         public bool StringSetAll<T>(IList<Tuple<string, T>> items)
         {
-            var values = items.Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
+            var values = items
+                .Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
 
             return _cache.StringSet(values);
         }
 
         /// <summary>
-        /// 批量设置string键值
+        ///     批量设置string键值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="items">键值列表</param>
         /// <returns>成功返回true</returns>
         public async Task<bool> StringSetAllAsync<T>(IList<Tuple<string, T>> items)
         {
-            var values = items.Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
+            var values = items
+                .Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
 
             return await _cache.StringSetAsync(values);
         }
 
         /// <summary>
-        /// string获取值
+        ///     string获取值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -461,30 +437,24 @@ namespace Findx.Redis.StackExchangeRedis
         public T StringGet<T>(string key)
         {
             var valuesBytes = _cache.StringGet(key);
-            if (!valuesBytes.HasValue)
-            {
-                return default;
-            }
+            if (!valuesBytes.HasValue) return default;
             return _serializer.Deserialize<T>(valuesBytes);
         }
 
         /// <summary>
-        /// string获取值
+        ///     string获取值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
         public async Task<T> StringGetAsync<T>(string key)
         {
             var valuesBytes = await _cache.StringGetAsync(key);
-            if (!valuesBytes.HasValue)
-            {
-                return default;
-            }
+            if (!valuesBytes.HasValue) return default;
             return _serializer.Deserialize<T>(valuesBytes);
         }
 
         /// <summary>
-        /// 键值累加
+        ///     键值累加
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">增长数量</param>
@@ -495,7 +465,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 键值累加
+        ///     键值累加
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">增长数量</param>
@@ -506,7 +476,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 键值累加
+        ///     键值累加
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">增长数量</param>
@@ -517,7 +487,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 键值累加
+        ///     键值累加
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">增长数量</param>
@@ -528,7 +498,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 键值递减
+        ///     键值递减
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">减少数量</param>
@@ -539,7 +509,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 键值递减
+        ///     键值递减
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">减少数量</param>
@@ -550,7 +520,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 键值递减
+        ///     键值递减
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">减少数量</param>
@@ -561,7 +531,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 键值递减
+        ///     键值递减
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">减少数量</param>
@@ -576,7 +546,7 @@ namespace Findx.Redis.StackExchangeRedis
         #region Hash(哈希操作)
 
         /// <summary>
-        /// 获取所有的Hash键
+        ///     获取所有的Hash键
         /// </summary>
         /// <param name="key">key</param>
         /// <returns></returns>
@@ -586,7 +556,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 获取hash键的个数
+        ///     获取hash键的个数
         /// </summary>
         /// <param name="key">key</param>
         /// <returns></returns>
@@ -596,7 +566,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置一个hash值
+        ///     设置一个hash值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -609,7 +579,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 设置一个hash值
+        ///     设置一个hash值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -623,7 +593,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 批量设置hash值
+        ///     批量设置hash值
         /// </summary>
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
@@ -636,7 +606,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 批量设置hash值
+        ///     批量设置hash值
         /// </summary>
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
@@ -648,7 +618,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 获取一个hash值
+        ///     获取一个hash值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -662,7 +632,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 获取一个hash值
+        ///     获取一个hash值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -676,7 +646,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 获取hash值
+        ///     获取hash值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -690,11 +660,12 @@ namespace Findx.Redis.StackExchangeRedis
                 var value = HashGet<T>(key, hashField);
                 result.Add(key, value);
             }
+
             return result;
         }
 
         /// <summary>
-        /// 获取hash值
+        ///     获取hash值
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
@@ -708,23 +679,24 @@ namespace Findx.Redis.StackExchangeRedis
                 var value = await HashGetAsync<T>(key, hashField);
                 result.Add(key, value);
             }
+
             return result;
         }
 
         /// <summary>
-        /// 获取全部hash值
+        ///     获取全部hash值
         /// </summary>
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
         /// <returns></returns>
         public Dictionary<string, T> HashGetAll<T>(string key)
         {
-            return (_cache.HashGetAll(key))
-                             .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
+            return _cache.HashGetAll(key)
+                .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
         }
 
         /// <summary>
-        /// 获取全部hash值
+        ///     获取全部hash值
         /// </summary>
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
@@ -732,11 +704,11 @@ namespace Findx.Redis.StackExchangeRedis
         public async Task<Dictionary<string, T>> HashGetAllAsync<T>(string key)
         {
             return (await _cache.HashGetAllAsync(key))
-                                        .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
+                .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
         }
 
         /// <summary>
-        /// 获取全部hash值
+        ///     获取全部hash值
         /// </summary>
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
@@ -747,7 +719,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 获取全部hash值
+        ///     获取全部hash值
         /// </summary>
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
@@ -758,7 +730,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 判断是否存在hash键
+        ///     判断是否存在hash键
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -769,7 +741,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 判断是否存在hash键
+        ///     判断是否存在hash键
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -780,7 +752,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 删除一个hash键
+        ///     删除一个hash键
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -791,7 +763,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 删除一个hash键
+        ///     删除一个hash键
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -802,7 +774,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 删除hash键
+        ///     删除hash键
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashFields">hash键集合</param>
@@ -813,7 +785,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 删除hash键
+        ///     删除hash键
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashFields">hash键集合</param>
@@ -824,7 +796,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// hash递增
+        ///     hash递增
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -836,7 +808,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// hash递增
+        ///     hash递增
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -848,7 +820,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// hash递减
+        ///     hash递减
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -860,7 +832,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// hash递减
+        ///     hash递减
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -872,7 +844,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// hash递增
+        ///     hash递增
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -884,7 +856,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// hash递增
+        ///     hash递增
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -896,7 +868,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// hash递减
+        ///     hash递减
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -908,7 +880,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// hash递减
+        ///     hash递减
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
@@ -924,7 +896,7 @@ namespace Findx.Redis.StackExchangeRedis
         #region Lock(锁操作)
 
         /// <summary>
-        /// 获取一个锁
+        ///     获取一个锁
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">键名</param>
@@ -938,7 +910,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 异步获取一个锁
+        ///     异步获取一个锁
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">键名</param>
@@ -952,7 +924,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 释放一个锁
+        ///     释放一个锁
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">键名</param>
@@ -965,7 +937,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         /// <summary>
-        /// 异步释放一个锁
+        ///     异步释放一个锁
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">键名</param>
@@ -980,6 +952,7 @@ namespace Findx.Redis.StackExchangeRedis
         #endregion lock
 
         #region List(集合操作)
+
         public T ListGetByIndex<T>(string cacheKey, long index)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1008,7 +981,8 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var len = _cache.ListLeftPush(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            var len = _cache.ListLeftPush(cacheKey,
+                cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return len;
         }
 
@@ -1020,10 +994,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var bytes = _cache.ListRange(cacheKey, start, stop);
 
-            foreach (var item in bytes)
-            {
-                list.Add(_serializer.Deserialize<T>(item));
-            }
+            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
 
             return list;
         }
@@ -1092,7 +1063,8 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var len = _cache.ListRightPush(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            var len = _cache.ListRightPush(cacheKey,
+                cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return len;
         }
 
@@ -1140,7 +1112,8 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var len = await _cache.ListLeftPushAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            var len = await _cache.ListLeftPushAsync(cacheKey,
+                cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return len;
         }
 
@@ -1165,7 +1138,8 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var len = await _cache.ListRightPushAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            var len = await _cache.ListRightPushAsync(cacheKey,
+                cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return len;
         }
 
@@ -1177,10 +1151,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var bytes = await _cache.ListRangeAsync(cacheKey, start, stop);
 
-            foreach (var item in bytes)
-            {
-                list.Add(_serializer.Deserialize<T>(item));
-            }
+            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
 
             return list;
         }
@@ -1231,6 +1202,7 @@ namespace Findx.Redis.StackExchangeRedis
         #endregion
 
         #region Set(数组操作)
+
         public long SetAdd<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1238,10 +1210,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var len = _cache.SetAdd(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
 
-            if (expiration.HasValue)
-            {
-                _cache.KeyExpire(cacheKey, expiration.Value);
-            }
+            if (expiration.HasValue) _cache.KeyExpire(cacheKey, expiration.Value);
 
             return len;
         }
@@ -1272,10 +1241,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var bytes = _cache.SetMembers(cacheKey);
 
-            foreach (var item in bytes)
-            {
-                list.Add(_serializer.Deserialize<T>(item));
-            }
+            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
 
             return list;
         }
@@ -1297,10 +1263,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var bytes = _cache.SetRandomMembers(cacheKey, count);
 
-            foreach (var item in bytes)
-            {
-                list.Add(_serializer.Deserialize<T>(item));
-            }
+            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
 
             return list;
         }
@@ -1313,7 +1276,8 @@ namespace Findx.Redis.StackExchangeRedis
 
             if (cacheValues != null && cacheValues.Any())
             {
-                len = _cache.SetRemove(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+                len = _cache.SetRemove(cacheKey,
+                    cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             }
             else
             {
@@ -1329,12 +1293,10 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
 
-            var len = await _cache.SetAddAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            var len = await _cache.SetAddAsync(cacheKey,
+                cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
 
-            if (expiration.HasValue)
-            {
-                await _cache.KeyExpireAsync(cacheKey, expiration.Value);
-            }
+            if (expiration.HasValue) await _cache.KeyExpireAsync(cacheKey, expiration.Value);
 
             return len;
         }
@@ -1365,10 +1327,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var vals = await _cache.SetMembersAsync(cacheKey);
 
-            foreach (var item in vals)
-            {
-                list.Add(_serializer.Deserialize<T>(item));
-            }
+            foreach (var item in vals) list.Add(_serializer.Deserialize<T>(item));
 
             return list;
         }
@@ -1390,10 +1349,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var bytes = await _cache.SetRandomMembersAsync(cacheKey, count);
 
-            foreach (var item in bytes)
-            {
-                list.Add(_serializer.Deserialize<T>(item));
-            }
+            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
 
             return list;
         }
@@ -1405,7 +1361,8 @@ namespace Findx.Redis.StackExchangeRedis
             long len;
             if (cacheValues != null && cacheValues.Any())
             {
-                len = await _cache.SetRemoveAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+                len = await _cache.SetRemoveAsync(cacheKey,
+                    cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             }
             else
             {
@@ -1415,14 +1372,17 @@ namespace Findx.Redis.StackExchangeRedis
 
             return len;
         }
+
         #endregion
 
         #region Sorted Set(有序数组)
+
         public long SortedSetAdd<T>(string cacheKey, Dictionary<T, double> cacheValues)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var len = _cache.SortedSetAdd(cacheKey, cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray());
+            var len = _cache.SortedSetAdd(cacheKey,
+                cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray());
 
             return len;
         }
@@ -1468,10 +1428,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var bytes = _cache.SortedSetRangeByRank(cacheKey, start, stop);
 
-            foreach (var item in bytes)
-            {
-                list.Add(_serializer.Deserialize<T>(item));
-            }
+            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
 
             return list;
         }
@@ -1491,7 +1448,8 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var len = _cache.SortedSetRemove(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            var len = _cache.SortedSetRemove(cacheKey,
+                cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
 
             return len;
         }
@@ -1511,7 +1469,8 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var len = await _cache.SortedSetAddAsync(cacheKey, cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray());
+            var len = await _cache.SortedSetAddAsync(cacheKey,
+                cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray());
 
             return len;
         }
@@ -1557,10 +1516,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var bytes = await _cache.SortedSetRangeByRankAsync(cacheKey, start, stop);
 
-            foreach (var item in bytes)
-            {
-                list.Add(_serializer.Deserialize<T>(item));
-            }
+            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
 
             return list;
         }
@@ -1582,10 +1538,7 @@ namespace Findx.Redis.StackExchangeRedis
 
             var bytes = new List<RedisValue>();
 
-            foreach (var item in cacheValues)
-            {
-                bytes.Add(_serializer.Serialize(item));
-            }
+            foreach (var item in cacheValues) bytes.Add(_serializer.Serialize(item));
 
             var len = await _cache.SortedSetRemoveAsync(cacheKey, bytes.ToArray());
 
@@ -1602,24 +1555,29 @@ namespace Findx.Redis.StackExchangeRedis
 
             return score;
         }
+
         #endregion
 
         #region Geo(经纬度操作)
+
         public long GeoAdd(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            var res = _cache.GeoAdd(cacheKey, values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray());
+            var res = _cache.GeoAdd(cacheKey,
+                values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray());
             return res;
         }
 
-        public async Task<long> GeoAddAsync(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values)
+        public async Task<long> GeoAddAsync(string cacheKey,
+            IEnumerable<(double longitude, double latitude, string member)> values)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            var res = await _cache.GeoAddAsync(cacheKey, values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray());
+            var res = await _cache.GeoAddAsync(cacheKey,
+                values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray());
             return res;
         }
 
@@ -1671,21 +1629,17 @@ namespace Findx.Redis.StackExchangeRedis
             var tuple = new List<(decimal longitude, decimal latitude)?>();
 
             foreach (var item in res)
-            {
                 if (item.HasValue)
-                {
-                    tuple.Add((Convert.ToDecimal(item.Value.Longitude.ToString()), Convert.ToDecimal(item.Value.Latitude.ToString())));
-                }
+                    tuple.Add((Convert.ToDecimal(item.Value.Longitude.ToString()),
+                        Convert.ToDecimal(item.Value.Latitude.ToString())));
                 else
-                {
                     tuple.Add(null);
-                }
-            }
 
             return tuple;
         }
 
-        public async Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members)
+        public async Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey,
+            IEnumerable<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
@@ -1695,51 +1649,43 @@ namespace Findx.Redis.StackExchangeRedis
             var tuple = new List<(decimal longitude, decimal latitude)?>();
 
             foreach (var item in res)
-            {
                 if (item.HasValue)
-                {
-                    tuple.Add((Convert.ToDecimal(item.Value.Longitude.ToString()), Convert.ToDecimal(item.Value.Latitude.ToString())));
-                }
+                    tuple.Add((Convert.ToDecimal(item.Value.Longitude.ToString()),
+                        Convert.ToDecimal(item.Value.Latitude.ToString())));
                 else
-                {
                     tuple.Add(null);
-                }
-
-            }
 
             return tuple;
         }
 
-        public List<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius, string unit = "m", int count = -1, string order = "asc")
+        public List<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius,
+            string unit = "m", int count = -1, string order = "asc")
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(member, nameof(member));
 
-            var res = _cache.GeoRadius(cacheKey, member, radius, GetGeoUnit(unit), count: count, order: GetGeoOrder(order), options: GeoRadiusOptions.WithDistance);
+            var res = _cache.GeoRadius(cacheKey, member, radius, GetGeoUnit(unit), count, GetGeoOrder(order),
+                GeoRadiusOptions.WithDistance);
 
             var tuple = new List<(string member, double? distance)>();
 
-            foreach (var item in res)
-            {
-                tuple.Add((item.Member, item.Distance));
-            }
+            foreach (var item in res) tuple.Add((item.Member, item.Distance));
 
             return tuple;
         }
 
-        public async Task<List<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member, double radius, string unit = "m", int count = -1, string order = "asc")
+        public async Task<List<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member,
+            double radius, string unit = "m", int count = -1, string order = "asc")
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(member, nameof(member));
 
-            var res = await _cache.GeoRadiusAsync(cacheKey, member, radius, GetGeoUnit(unit), count: count, order: GetGeoOrder(order), options: GeoRadiusOptions.WithDistance);
+            var res = await _cache.GeoRadiusAsync(cacheKey, member, radius, GetGeoUnit(unit), count, GetGeoOrder(order),
+                GeoRadiusOptions.WithDistance);
 
             var tuple = new List<(string member, double? distance)>();
 
-            foreach (var item in res)
-            {
-                tuple.Add((item.Member, item.Distance));
-            }
+            foreach (var item in res) tuple.Add((item.Member, item.Distance));
 
             return tuple;
         }
@@ -1762,8 +1708,10 @@ namespace Findx.Redis.StackExchangeRedis
                     geoUnit = GeoUnit.Meters;
                     break;
             }
+
             return geoUnit;
         }
+
         private Order GetGeoOrder(string order)
         {
             Order geoOrder;
@@ -1777,17 +1725,21 @@ namespace Findx.Redis.StackExchangeRedis
                     geoOrder = Order.Descending;
                     break;
             }
+
             return geoOrder;
         }
+
         #endregion
 
         #region HyperLogLog()
+
         public bool HyperLogLogAdd<T>(string cacheKey, IEnumerable<T> values)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            var res = _cache.HyperLogLogAdd(cacheKey, values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            var res = _cache.HyperLogLogAdd(cacheKey,
+                values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return res;
         }
 
@@ -1796,7 +1748,8 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
 
-            var res = await _cache.HyperLogLogAddAsync(cacheKey, values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            var res = await _cache.HyperLogLogAddAsync(cacheKey,
+                values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
             return res;
         }
 
@@ -1833,6 +1786,7 @@ namespace Findx.Redis.StackExchangeRedis
             await _cache.HyperLogLogMergeAsync(destKey, sourceKeys.Select(x => (RedisKey)x).ToArray());
             return true;
         }
+
         #endregion
     }
 }

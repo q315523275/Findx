@@ -1,12 +1,10 @@
 ﻿using Findx.Finders;
-using System;
 
-namespace Findx.Reflection
+namespace Findx.Reflection;
+
+/// <summary>
+///     类型查找器
+/// </summary>
+public interface ITypeFinder : IFinder<Type>
 {
-    /// <summary>
-    /// 类型查找器
-    /// </summary>
-    public interface ITypeFinder : IFinder<Type>
-    {
-    }
 }

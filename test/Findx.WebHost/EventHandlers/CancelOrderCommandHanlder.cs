@@ -1,17 +1,14 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Findx.DependencyInjection;
 using Findx.Messaging;
 
-namespace Findx.WebHost.EventHandlers
+namespace Findx.WebHost.EventHandlers;
+
+public class CancelOrderCommandHanlder : IMessageHandler<CancelOrderCommand, string>, ITransientDependency
 {
-    public class CancelOrderCommandHanlder : IMessageHandler<CancelOrderCommand, string>, ITransientDependency
+    public Task<string> HandleAsync(CancelOrderCommand request, CancellationToken cancellationToken)
     {
-        public Task<string> HandleAsync(CancelOrderCommand request, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(request.OrderId.ToString());
-        }
+        return Task.FromResult(request.OrderId);
     }
 }
-

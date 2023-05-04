@@ -1,38 +1,37 @@
 namespace Findx.Machine;
 
 /// <summary>
-/// 单位
+///     单位
 /// </summary>
-public enum UnitType : int
+public enum UnitType
 {
     /// <summary>
-    /// Byte
+    ///     Byte
     /// </summary>
-    /// 
     B = 0,
-    
+
     /// <summary>
-    /// KB
+    ///     KB
     /// </summary>
     Kb,
 
     /// <summary>
-    /// MB
+    ///     MB
     /// </summary>
     Mb,
 
     /// <summary>
-    /// GB
+    ///     GB
     /// </summary>
     Gb,
 
     /// <summary>
-    /// TB
+    ///     TB
     /// </summary>
     Tb,
 
     /// <summary>
-    /// PB
+    ///     PB
     /// </summary>
     Pb
 }

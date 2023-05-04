@@ -3,22 +3,22 @@
 namespace Findx.Module.EleAdmin.Dtos;
 
 /// <summary>
-/// 查询字典入参
+///     查询字典入参
 /// </summary>
 public class QueryDictDataRequest : PageBase
 {
     /// <summary>
-    /// TypeId
+    ///     TypeId
     /// </summary>
     public Guid TypeId { set; get; } = Guid.Empty;
 
     /// <summary>
-    /// 字典编号
+    ///     字典编号
     /// </summary>
     public string TypeCode { set; get; }
 
     /// <summary>
-    /// 关键字
+    ///     关键字
     /// </summary>
     public string Keywords { set; get; }
 }

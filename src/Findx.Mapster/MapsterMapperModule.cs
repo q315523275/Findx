@@ -1,31 +1,31 @@
-﻿using Findx.Mapping;
+﻿using System;
+using System.ComponentModel;
+using Findx.Mapping;
 using Findx.Modularity;
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System;
-using System.ComponentModel;
 
 namespace Findx.Mapster
 {
     /// <summary>
-    /// Findx-对象映射模块
+    ///     Findx-对象映射模块
     /// </summary>
     [Description("Findx-对象映射模块")]
     public class MapsterMapperModule : FindxModule
     {
         /// <summary>
-        /// 模块等级
+        ///     模块等级
         /// </summary>
         public override ModuleLevel Level => ModuleLevel.Framework;
-        
+
         /// <summary>
-        /// 模块排序
+        ///     模块排序
         /// </summary>
         public override int Order => 50;
-        
+
         /// <summary>
-        /// 配置模块服务
+        ///     配置模块服务
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
@@ -34,9 +34,9 @@ namespace Findx.Mapster
             services.AddSingleton<IMapper, MapsterMapper>();
             return services;
         }
-        
+
         /// <summary>
-        /// 启用模块
+        ///     启用模块
         /// </summary>
         /// <param name="provider"></param>
         public override void UseModule(IServiceProvider provider)

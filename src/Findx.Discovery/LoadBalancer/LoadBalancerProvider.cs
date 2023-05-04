@@ -18,7 +18,8 @@ namespace Findx.Discovery.LoadBalancer
             _loadBalancers = new ConcurrentDictionary<string, ILoadBalancer>();
         }
 
-        public async Task<ILoadBalancer> GetAsync(string serviceName, LoadBalancerType _loadBalancer = LoadBalancerType.Random)
+        public async Task<ILoadBalancer> GetAsync(string serviceName,
+            LoadBalancerType _loadBalancer = LoadBalancerType.Random)
         {
             try
             {
@@ -30,8 +31,10 @@ namespace Findx.Discovery.LoadBalancer
                         loadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, _loadBalancer);
                         AddLoadBalancer(serviceName, loadBalancer);
                     }
+
                     return loadBalancer;
                 }
+
                 {
                     loadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, _loadBalancer);
                     AddLoadBalancer(serviceName, loadBalancer);

@@ -7,22 +7,16 @@ namespace Findx.Configuration.Extensions
     {
         public static IHostBuilder UseFindxConfig(this IHostBuilder builder, IConfigClient client)
         {
-            builder.ConfigureAppConfiguration((_, conf) =>
-            {
-                conf.AddFindxConfig(client);
-            });
+            builder.ConfigureAppConfiguration((_, conf) => { conf.AddFindxConfig(client); });
             return builder;
         }
-        
+
         public static IHostBuilder UseFindxConfig(this IHostBuilder builder, ConfigOptions options)
         {
-            builder.ConfigureAppConfiguration((_, conf) =>
-            {
-                conf.AddFindxConfig(options);
-            });
+            builder.ConfigureAppConfiguration((_, conf) => { conf.AddFindxConfig(options); });
             return builder;
         }
-        
+
         public static IHostBuilder UseFindxConfig(this IHostBuilder builder)
         {
             builder.ConfigureAppConfiguration((_, conf) =>

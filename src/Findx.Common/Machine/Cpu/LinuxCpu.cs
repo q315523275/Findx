@@ -1,16 +1,14 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Findx.Extensions;
 
 namespace Findx.Machine.Cpu;
 
 /// <summary>
-/// 
 /// </summary>
 public class LinuxCpu
 {
     /// <summary>
-    /// 获取 CPU 时间
+    ///     获取 CPU 时间
     /// </summary>
     /// <returns></returns>
     public static CpuTime GetCpuTime()
@@ -20,7 +18,7 @@ public class LinuxCpu
         var file = "/proc/stat";
 
         if (!File.Exists(file)) return new CpuTime(idleTime, systemTime);
-        
+
         try
         {
             var text = File.ReadAllLines(file);
@@ -38,7 +36,7 @@ public class LinuxCpu
             Debug.WriteLine(ex.ToString());
             Debug.Assert(false, ex.Message);
             throw new PlatformNotSupportedException(
-                $"{RuntimeInformation.OSArchitecture.ToString()}    {Environment.OSVersion.Platform.ToString()} {Environment.OSVersion.ToString()}");
+                $"{RuntimeInformation.OSArchitecture.ToString()}    {Environment.OSVersion.Platform.ToString()} {Environment.OSVersion}");
         }
 
         return new CpuTime(idleTime, systemTime);

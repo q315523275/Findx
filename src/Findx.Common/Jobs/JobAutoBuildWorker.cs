@@ -4,15 +4,15 @@ using Findx.Extensions;
 namespace Findx.Jobs;
 
 /// <summary>
-/// 任务自动构建工作器
+///     任务自动构建工作器
 /// </summary>
-public class JobAutoBuildWorker: BackgroundService
+public class JobAutoBuildWorker : BackgroundService
 {
-    private readonly IJobScheduler _scheduler;
     private readonly IJobFinder _jobFinder;
+    private readonly IJobScheduler _scheduler;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="scheduler"></param>
     /// <param name="jobFinder"></param>
@@ -23,7 +23,7 @@ public class JobAutoBuildWorker: BackgroundService
     }
 
     /// <summary>
-    /// 执行
+    ///     执行
     /// </summary>
     /// <param name="stoppingToken"></param>
     /// <returns></returns>
@@ -32,14 +32,10 @@ public class JobAutoBuildWorker: BackgroundService
         var jobTypes = _jobFinder.FindAll(true);
 
         foreach (var jobType in jobTypes)
-        {
             // 需要自动载入执行的任务
             if (jobType.HasAttribute<JobAttribute>())
-            {
                 _scheduler.ScheduleAsync(jobType);
-            }
-        }
-        
+
         return Task.CompletedTask;
     }
 }

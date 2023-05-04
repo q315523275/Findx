@@ -7,6 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj" />
+        <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj"/>
     </ItemGroup>
 </Project>

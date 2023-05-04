@@ -4,7 +4,7 @@ using Findx.RPC.Messages;
 namespace Findx.RPC.Clients
 {
     /// <summary>
-    /// 客户端回调函数
+    ///     客户端回调函数
     /// </summary>
     public interface IClientCallBack
     {

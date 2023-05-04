@@ -1,5 +1,5 @@
-﻿using RabbitMQ.Client;
-using System.Text;
+﻿using System.Text;
+using RabbitMQ.Client;
 
 namespace Findx.RabbitMQ
 {
@@ -22,7 +22,7 @@ namespace Findx.RabbitMQ
             using (var channel = _connectionPool.Get().CreateModel())
             {
                 // 创建并配置交换器
-                channel.ExchangeDeclare(exchange: exchangeName, type: exchangeType);
+                channel.ExchangeDeclare(exchangeName, exchangeType);
                 // 创建队列属性
                 var properties = channel.CreateBasicProperties();
                 // 决定发送数据类型
@@ -30,7 +30,7 @@ namespace Findx.RabbitMQ
                 // 是否持久化  1 no  2 yes
                 properties.DeliveryMode = 2;
                 // 发送数据
-                channel.BasicPublish(exchange: exchangeName, routingKey: routingKey, mandatory: true, basicProperties: properties, body: body);
+                channel.BasicPublish(exchangeName, routingKey, true, properties, body);
             }
         }
     }

@@ -1,29 +1,31 @@
-﻿using Findx.AspNetCore.Mvc;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
-using Microsoft.AspNetCore.Mvc;
 using Findx.Linq;
-using Microsoft.AspNetCore.Authorization;
-using System.ComponentModel.DataAnnotations;
-using Findx.Module.EleAdmin.Models;
-using System.ComponentModel;
 using Findx.Module.EleAdmin.Dtos;
+using Findx.Module.EleAdmin.Models;
+using Findx.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
 /// <summary>
-/// 用户服务
+///     用户服务
 /// </summary>
 [Area("system")]
 [Route("api/[area]/user")]
 [Authorize]
 [Description("系统-用户")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户")]
+[ApiExplorerSettings(GroupName = "eleAdmin")]
+[Tags("系统-用户")]
 public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
 {
     /// <summary>
-    /// 构建查询条件
+    ///     构建查询条件
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
@@ -38,7 +40,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     }
 
     /// <summary>
-    /// 构建排序
+    ///     构建排序
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -72,7 +74,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     }
 
     /// <summary>
-    /// 分页查询
+    ///     分页查询
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -84,19 +86,18 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression);
+        var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression?.ToExpression(),
+            orderParameters: orderByExpression);
         var ids = res.Rows.Select(x => x.Id).Distinct();
         var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId));
         foreach (var item in res.Rows)
-        {
             item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
-        }
 
         return CommonResult.Success(res);
     }
 
     /// <summary>
-    /// 修改状态
+    ///     修改状态
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
@@ -110,7 +111,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     }
 
     /// <summary>
-    /// 修改密码
+    ///     修改密码
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
@@ -119,13 +120,13 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     public CommonResult Password([FromBody] SetUserPropertyRequest req)
     {
         var repo = GetRepository<SysUserInfo>();
-        var pwd = Utils.Encrypt.Md5By32(req.Password);
+        var pwd = Encrypt.Md5By32(req.Password);
         repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == req.Id);
         return CommonResult.Success();
     }
 
     /// <summary>
-    /// 判断是否存在
+    ///     判断是否存在
     /// </summary>
     /// <param name="field"></param>
     /// <param name="value"></param>
@@ -136,15 +137,15 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     public CommonResult Existence([Required] string field, [Required] string value, Guid id)
     {
         var whereExp = ExpressionBuilder.Create<SysUserInfo>()
-                                        .AndIF(field == "userName", x => x.UserName == value)
-                                        .And(x => x.Id != id)
-                                        .ToExpression();
+            .AndIF(field == "userName", x => x.UserName == value)
+            .And(x => x.Id != id)
+            .ToExpression();
         var repo = GetRepository<SysUserInfo>();
         return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
     }
 
     /// <summary>
-    /// 详情查询后
+    ///     详情查询后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="dto"></param>
@@ -158,22 +159,19 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     }
 
     /// <summary>
-    /// 插入前校验
+    ///     插入前校验
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
     protected override async Task AddBeforeAsync(SysUserInfo model, SetUserRequest req)
     {
-        if (!req.Password.IsNullOrWhiteSpace())
-        {
-            model.Password = Utils.Encrypt.Md5By32(req.Password);
-        }
+        if (!req.Password.IsNullOrWhiteSpace()) model.Password = Encrypt.Md5By32(req.Password);
 
         await base.AddBeforeAsync(model, req);
     }
 
     /// <summary>
-    /// 插入后
+    ///     插入后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
@@ -188,7 +186,8 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
             var user = await repo.FirstAsync(x => x.UserName == req.UserName);
             if (user != null)
             {
-                var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
+                var list = req.Roles.Select(x => new SysUserRoleInfo
+                    { RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
                 await roleRepo.InsertAsync(list);
             }
         }
@@ -197,7 +196,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     }
 
     /// <summary>
-    /// 编辑前
+    ///     编辑前
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
@@ -208,7 +207,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     }
 
     /// <summary>
-    /// 编辑后
+    ///     编辑后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
@@ -219,7 +218,8 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
         {
             var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
 
-            var list = req.Roles.Select(x => new SysUserRoleInfo { RoleId = x.Id, UserId = model.Id, TenantId = TenantManager.Current });
+            var list = req.Roles.Select(x => new SysUserRoleInfo
+                { RoleId = x.Id, UserId = model.Id, TenantId = TenantManager.Current });
             await roleRepo.DeleteAsync(x => x.UserId == model.Id);
             await roleRepo.InsertAsync(list);
         }

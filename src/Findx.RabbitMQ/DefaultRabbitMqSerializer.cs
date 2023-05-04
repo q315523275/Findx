@@ -1,5 +1,5 @@
-﻿using Findx.Serialization;
-using System;
+﻿using System;
+using Findx.Serialization;
 
 namespace Findx.RabbitMQ
 {
@@ -21,6 +21,5 @@ namespace Findx.RabbitMQ
         {
             return _jsonSerializer.Serialize(obj);
         }
-
     }
 }

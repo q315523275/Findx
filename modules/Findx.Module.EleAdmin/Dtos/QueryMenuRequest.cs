@@ -3,32 +3,32 @@
 namespace Findx.Module.EleAdmin.Dtos;
 
 /// <summary>
-/// 查询菜单入参
+///     查询菜单入参
 /// </summary>
 public class QueryMenuRequest : PageBase
 {
     /// <summary>
-    /// 名称
+    ///     名称
     /// </summary>
     public string Title { set; get; }
 
     /// <summary>
-    /// 路径
+    ///     路径
     /// </summary>
     public string Path { set; get; }
 
     /// <summary>
-    /// 权限标识
+    ///     权限标识
     /// </summary>
     public string Authority { set; get; }
 
     /// <summary>
-    /// 父级id
+    ///     父级id
     /// </summary>
     public Guid? ParentId { set; get; }
 
     /// <summary>
-    /// 应用名称
+    ///     应用名称
     /// </summary>
     public string ApplicationCode { get; set; }
 }

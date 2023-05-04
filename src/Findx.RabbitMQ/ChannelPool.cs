@@ -10,6 +10,13 @@ namespace Findx.RabbitMQ
 {
     public class ChannelPool : IChannelPool
     {
+        public ChannelPool(IConnectionPool connectionPool, ILogger<ChannelPool> logger)
+        {
+            ConnectionPool = connectionPool;
+            Channels = new ConcurrentDictionary<string, ChannelPoolItem>();
+            Logger = logger;
+        }
+
         protected IConnectionPool ConnectionPool { get; }
 
         protected ConcurrentDictionary<string, ChannelPoolItem> Channels { get; }
@@ -20,20 +27,14 @@ namespace Findx.RabbitMQ
 
         public ILogger<ChannelPool> Logger { get; set; }
 
-        public ChannelPool(IConnectionPool connectionPool, ILogger<ChannelPool> logger)
-        {
-            ConnectionPool = connectionPool;
-            Channels = new ConcurrentDictionary<string, ChannelPoolItem>();
-            Logger = logger;
-        }
-
         public virtual IChannelAccessor Acquire(string channelName = null, string connectionName = null)
         {
             CheckDisposed();
 
             channelName = channelName ?? "";
 
-            var poolItem = Channels.GetOrAdd(channelName, _ => new ChannelPoolItem(CreateChannel(channelName, connectionName)));
+            var poolItem = Channels.GetOrAdd(channelName,
+                _ => new ChannelPoolItem(CreateChannel(channelName, connectionName)));
 
             poolItem.Acquire();
 
@@ -47,24 +48,18 @@ namespace Findx.RabbitMQ
 
         protected void CheckDisposed()
         {
-            if (IsDisposed)
-            {
-                throw new ObjectDisposedException(nameof(ChannelPool));
-            }
+            if (IsDisposed) throw new ObjectDisposedException(nameof(ChannelPool));
         }
 
         public void Dispose()
         {
-            if (IsDisposed)
-            {
-                return;
-            }
+            if (IsDisposed) return;
 
             IsDisposed = true;
 
             if (!Channels.Any())
             {
-                Logger.LogDebug($"Disposed channel pool with no channels in the pool.");
+                Logger.LogDebug("Disposed channel pool with no channels in the pool.");
                 return;
             }
 
@@ -84,7 +79,8 @@ namespace Findx.RabbitMQ
                     poolItem.Dispose();
                 }
                 catch
-                { }
+                {
+                }
 
                 poolItemDisposeStopwatch.Stop();
 
@@ -95,25 +91,18 @@ namespace Findx.RabbitMQ
 
             poolDisposeStopwatch.Stop();
 
-            Logger.LogInformation($"Disposed RabbitMQ Channel Pool ({Channels.Count} channels in {poolDisposeStopwatch.Elapsed.TotalMilliseconds:0.00} ms).");
+            Logger.LogInformation(
+                $"Disposed RabbitMQ Channel Pool ({Channels.Count} channels in {poolDisposeStopwatch.Elapsed.TotalMilliseconds:0.00} ms).");
 
             if (poolDisposeStopwatch.Elapsed.TotalSeconds > 5.0)
-            {
-                Logger.LogWarning($"Disposing RabbitMQ Channel Pool got time greather than expected: {poolDisposeStopwatch.Elapsed.TotalMilliseconds:0.00} ms.");
-            }
+                Logger.LogWarning(
+                    $"Disposing RabbitMQ Channel Pool got time greather than expected: {poolDisposeStopwatch.Elapsed.TotalMilliseconds:0.00} ms.");
 
             Channels.Clear();
         }
 
         protected class ChannelPoolItem : IDisposable
         {
-            public IModel Channel { get; }
-
-            public bool IsInUse
-            {
-                get => _isInUse;
-                private set => _isInUse = value;
-            }
             private volatile bool _isInUse;
 
             public ChannelPoolItem(IModel channel)
@@ -121,14 +110,24 @@ namespace Findx.RabbitMQ
                 Channel = channel;
             }
 
+            public IModel Channel { get; }
+
+            public bool IsInUse
+            {
+                get => _isInUse;
+                private set => _isInUse = value;
+            }
+
+            public void Dispose()
+            {
+                Channel.Dispose();
+            }
+
             public void Acquire()
             {
                 lock (this)
                 {
-                    while (IsInUse)
-                    {
-                        Monitor.Wait(this);
-                    }
+                    while (IsInUse) Monitor.Wait(this);
 
                     IsInUse = true;
                 }
@@ -138,10 +137,7 @@ namespace Findx.RabbitMQ
             {
                 lock (this)
                 {
-                    if (!IsInUse)
-                    {
-                        return;
-                    }
+                    if (!IsInUse) return;
 
                     Monitor.Wait(this, timeout);
                 }
@@ -155,19 +151,10 @@ namespace Findx.RabbitMQ
                     Monitor.PulseAll(this);
                 }
             }
-
-            public void Dispose()
-            {
-                Channel.Dispose();
-            }
         }
 
         protected class ChannelAccessor : IChannelAccessor
         {
-            public IModel Channel { get; }
-
-            public string Name { get; }
-
             private readonly Action _disposeAction;
 
             public ChannelAccessor(IModel channel, string name, Action disposeAction)
@@ -176,6 +163,10 @@ namespace Findx.RabbitMQ
                 Name = name;
                 Channel = channel;
             }
+
+            public IModel Channel { get; }
+
+            public string Name { get; }
 
             public void Dispose()
             {

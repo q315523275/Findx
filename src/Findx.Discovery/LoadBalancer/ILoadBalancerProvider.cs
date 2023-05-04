@@ -3,12 +3,12 @@
 namespace Findx.Discovery
 {
     /// <summary>
-    /// 负载均衡器提供者
+    ///     负载均衡器提供者
     /// </summary>
     public interface ILoadBalancerProvider
     {
         /// <summary>
-        /// 获取负载均衡器
+        ///     获取负载均衡器
         /// </summary>
         /// <param name="serviceName"></param>
         /// <param name="loadBalancer"></param>

@@ -12,17 +12,18 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
 /// <summary>
-/// 机构服务
+///     机构服务
 /// </summary>
 [Area("system")]
 [Route("api/[area]/org")]
 [Authorize]
 [Description("系统-机构")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-机构")]
+[ApiExplorerSettings(GroupName = "eleAdmin")]
+[Tags("系统-机构")]
 public class SysOrgController : CrudControllerBase<SysOrgInfo, SetOrgRequest, QueryOrgRequest, Guid, Guid>
 {
     /// <summary>
-    /// 构建查询条件
+    ///     构建查询条件
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -35,7 +36,7 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, SetOrgRequest, Qu
     }
 
     /// <summary>
-    /// 构建排序
+    ///     构建排序
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>

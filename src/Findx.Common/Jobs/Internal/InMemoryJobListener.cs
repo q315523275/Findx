@@ -1,53 +1,53 @@
 ﻿using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace Findx.Jobs.Internal
+namespace Findx.Jobs.Internal;
+
+/// <summary>
+///     内存工作任务监听
+/// </summary>
+public class InMemoryJobListener : IJobListener
 {
+    private readonly JobTypeDictionary _dict;
+    private readonly ILogger<InMemoryJobListener> _logger;
+
     /// <summary>
-    /// 内存工作任务监听
+    ///     Ctor
     /// </summary>
-    public class InMemoryJobListener : IJobListener
+    /// <param name="logger"></param>
+    /// <param name="dict"></param>
+    public InMemoryJobListener(ILogger<InMemoryJobListener> logger, JobTypeDictionary dict)
     {
-        private readonly ILogger<InMemoryJobListener> _logger;
-        private readonly JobTypeDictionary _dict;
+        _logger = logger;
+        _dict = dict;
+    }
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="dict"></param>
-        public InMemoryJobListener(ILogger<InMemoryJobListener> logger, JobTypeDictionary dict)
+    /// <summary>
+    ///     作业任务执行
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="cancellationToken"></param>
+    public async Task JobToRunAsync([NotNull] IJobExecutionContext context,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_dict.TryGetValue(context.FullName, out var jobType))
+            return;
+
+        // TODO 当前为内存版本,直接执行任务
+
+        // 分布式情况
+        // 任务节点
+        // 作业监听器决定作业是推队列、推线程池、直接执行
+        // 作业执行器包括调用作业执行、异常捕获、重试策略、作业执行情况上报
+
+        var job = context.ServiceProvider.GetRequiredService(jobType) as IJob;
+        try
         {
-            _logger = logger;
-            _dict = dict;
+            if (job != null) await job.RunAsync(context, cancellationToken);
         }
-
-        /// <summary>
-        /// 作业任务执行
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="cancellationToken"></param>
-        public async Task JobToRunAsync([NotNull] IJobExecutionContext context, CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            if (!_dict.TryGetValue(context.FullName, out var jobType))
-                return;
-
-            // TODO 当前为内存版本,直接执行任务
-            
-            // 分布式情况
-            // 任务节点
-            // 作业监听器决定作业是推队列、推线程池、直接执行
-            // 作业执行器包括调用作业执行、异常捕获、重试策略、作业执行情况上报
-
-            var job = context.ServiceProvider.GetRequiredService(jobType) as IJob;
-            try
-            {
-                if (job != null) await job.RunAsync(context, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"作业 {context.JobName} 执行记录 {context.JobId} 执行失败");
-            }
+            _logger.LogError(ex, $"作业 {context.JobName} 执行记录 {context.JobId} 执行失败");
         }
     }
 }

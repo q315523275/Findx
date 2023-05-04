@@ -3,13 +3,13 @@ using System;
 namespace Findx.EventBus.Attribute
 {
     /// <summary>
-    /// 主题属性
+    ///     主题属性
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class TopicAttribute: System.Attribute
+    public class TopicAttribute : System.Attribute
     {
         /// <summary>
-        /// Ctor
+        ///     Ctor
         /// </summary>
         /// <param name="name"></param>
         /// <param name="isPartial"></param>
@@ -20,23 +20,23 @@ namespace Findx.EventBus.Attribute
         }
 
         /// <summary>
-        /// 主题名称
-        /// <remarks>
-        /// 针对RabbitMq->route key
-        /// </remarks>
+        ///     主题名称
+        ///     <remarks>
+        ///         针对RabbitMq->route key
+        ///     </remarks>
         /// </summary>
         public string Name { get; }
-        
+
         /// <summary>
-        /// 是否分区
+        ///     是否分区
         /// </summary>
         public bool IsPartial { get; }
-        
+
         /// <summary>
-        /// 组名
-        /// <remarks>
-        /// 针对RabbitMq->queue.name
-        /// </remarks>
+        ///     组名
+        ///     <remarks>
+        ///         针对RabbitMq->queue.name
+        ///     </remarks>
         /// </summary>
         public string Group { get; set; } = default!;
     }

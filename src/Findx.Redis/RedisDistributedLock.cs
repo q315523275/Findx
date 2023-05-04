@@ -1,6 +1,6 @@
-﻿using Findx.Locks;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Findx.Locks;
 
 namespace Findx.Redis
 {
@@ -8,12 +8,12 @@ namespace Findx.Redis
     {
         private readonly IRedisClient _redisClient;
 
-        public override LockType LockType => LockType.Distributed;
-
         public RedisDistributedLock(IRedisClientProvider redisClientProvider)
         {
             _redisClient = redisClientProvider.CreateClient();
         }
+
+        public override LockType LockType => LockType.Distributed;
 
         public override async Task<bool> TryLockAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null)
         {

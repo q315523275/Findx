@@ -5,9 +5,9 @@ using Microsoft.Extensions.Hosting;
 namespace Findx.RabbitMQ
 {
     /// <summary>
-    /// 消费者构建工作者
+    ///     消费者构建工作者
     /// </summary>
-    public class RabbitConsumerBuildWorker: BackgroundService
+    public class RabbitConsumerBuildWorker : BackgroundService
     {
         private readonly IRabbitConsumerBuilder _builder;
 

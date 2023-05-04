@@ -1,26 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>netstandard2.1</TargetFramework>
-		<Authors>Findx</Authors>
-		<Company>Findx</Company>
-		<Version>1.9.0</Version>
-		<Description>NLog日志组件包</Description>
-		<PackageVersion>1.9.0</PackageVersion>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Authors>Findx</Authors>
+        <Company>Findx</Company>
+        <Version>1.9.0</Version>
+        <Description>NLog日志组件包</Description>
+        <PackageVersion>1.9.0</PackageVersion>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="NLog" Version="5.1.2" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="NLog" Version="5.1.2"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Findx.Common\Findx.csproj"/>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <None Update="nlog.config">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	</ItemGroup>
+    <ItemGroup>
+        <None Update="nlog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 
 </Project>

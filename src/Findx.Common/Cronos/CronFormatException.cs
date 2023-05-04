@@ -20,28 +20,25 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
+namespace Findx.Cronos;
 
-namespace Findx.Cronos
+/// <summary>
+///     Represents an exception that's thrown, when invalid Cron expression is given.
+/// </summary>
+#if !NETSTANDARD1_0
+[Serializable]
+#endif
+public class CronFormatException : FormatException
 {
     /// <summary>
-    /// Represents an exception that's thrown, when invalid Cron expression is given.
+    ///     Initializes a new instance of the <see cref="CronFormatException" /> class with
+    ///     the given message.
     /// </summary>
-#if !NETSTANDARD1_0
-    [Serializable]
-#endif
-    public class CronFormatException : FormatException
+    public CronFormatException(string message) : base(message)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CronFormatException"/> class with
-        /// the given message.
-        /// </summary>
-        public CronFormatException(string message) : base(message)
-        {
-        }
+    }
 
-        internal CronFormatException(CronField field, string message) : this($"{field}: {message}")
-        {
-        }
+    internal CronFormatException(CronField field, string message) : this($"{field}: {message}")
+    {
     }
 }

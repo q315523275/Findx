@@ -3,24 +3,24 @@
 namespace Findx.Module.EleAdmin.Dtos;
 
 /// <summary>
-/// 修改密码
+///     修改密码
 /// </summary>
 public class UpdatePasswordRequest
 {
     /// <summary>
-    /// 旧密码
+    ///     旧密码
     /// </summary>
     [Required]
     public string OldPassword { set; get; }
 
     /// <summary>
-    /// 旧密码
+    ///     旧密码
     /// </summary>
     [Required]
     public string Password { set; get; }
 
     /// <summary>
-    /// 旧密码
+    ///     旧密码
     /// </summary>
     [Required]
     [Compare(nameof(Password))]

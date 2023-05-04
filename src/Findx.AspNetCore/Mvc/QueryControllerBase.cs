@@ -1,16 +1,16 @@
-﻿using Findx.Data;
-using Findx.Linq;
-using Findx.Mapping;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Findx.Data;
+using Findx.Linq;
+using Findx.Mapping;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.AspNetCore.Mvc;
 
 /// <summary>
-/// 通用查询控制器基类
+///     通用查询控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
 /// <typeparam name="TDto">返回Dto</typeparam>
@@ -23,11 +23,10 @@ public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> :
     where TQueryParameter : IPager, new()
     where TKey : IEquatable<TKey>
 {
-
 }
 
 /// <summary>
-/// 通用查询控制器基类
+///     通用查询控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
 /// <typeparam name="TListDto">返回列表Dto</typeparam>
@@ -42,7 +41,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     where TKey : IEquatable<TKey>
 {
     /// <summary>
-    /// 构建分页查询条件
+    ///     构建分页查询条件
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -52,7 +51,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     }
 
     /// <summary>
-    /// 构建分页查询条件
+    ///     构建分页查询条件
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -66,7 +65,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     }
 
     /// <summary>
-    /// 查询数据
+    ///     查询数据
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -83,13 +82,14 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression);
+        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression?.ToExpression(),
+            orderParameters: orderByExpression);
 
         return CommonResult.Success(result);
     }
 
     /// <summary>
-    /// 查询列表数据
+    ///     查询列表数据
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -106,13 +106,14 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression: whereExpression?.ToExpression(), orderParameters: orderByExpression);
+        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression?.ToExpression(),
+            orderParameters: orderByExpression);
 
         return CommonResult.Success(list);
     }
 
     /// <summary>
-    /// 查询单条数据
+    ///     查询单条数据
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
@@ -136,23 +137,32 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     }
 
     /// <summary>
-    /// 转换多条数据查询结果
+    ///     转换多条数据查询结果
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    protected virtual List<TListDto> ToListDto(TModel model) => model.MapTo<List<TListDto>>();
+    protected virtual List<TListDto> ToListDto(TModel model)
+    {
+        return model.MapTo<List<TListDto>>();
+    }
 
     /// <summary>
-    /// 转换单条数据查询结果
+    ///     转换单条数据查询结果
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    protected virtual TDetailDto ToDetailDto(TModel model) => model.MapTo<TDetailDto>();
+    protected virtual TDetailDto ToDetailDto(TModel model)
+    {
+        return model.MapTo<TDetailDto>();
+    }
 
     /// <summary>
-    /// 单条数据查询后操作
+    ///     单条数据查询后操作
     /// </summary>
     /// <param name="model"></param>
     /// <param name="dto"></param>
-    protected virtual Task DetailAfterAsync(TModel model, TDetailDto dto) => Task.CompletedTask;
+    protected virtual Task DetailAfterAsync(TModel model, TDetailDto dto)
+    {
+        return Task.CompletedTask;
+    }
 }

@@ -5,12 +5,12 @@ using Findx.Serialization;
 namespace Findx.Data;
 
 /// <summary>
-/// 实体扩展对象对应扩展方法
+///     实体扩展对象对应扩展方法
 /// </summary>
 public static class ExtraObjectExtensions
 {
     /// <summary>
-    /// 获取属性值
+    ///     获取属性值
     /// </summary>
     /// <param name="extraObject"></param>
     /// <param name="name"></param>
@@ -21,14 +21,14 @@ public static class ExtraObjectExtensions
         extraObject.ThrowIfNull(nameof(extraObject));
         name.ThrowIfNull(nameof(name));
 
-        if (string.IsNullOrWhiteSpace(extraObject.ExtraProperties)) 
+        if (string.IsNullOrWhiteSpace(extraObject.ExtraProperties))
             return default;
 
         var jsonObject = JsonNode.Parse(extraObject.ExtraProperties)!.AsObject();
-        
+
         if (!jsonObject.ContainsKey(name))
             return default;
-        
+
         if (typeof(T).IsPrimitiveExtendedIncludingNullable(true))
             return jsonObject[name]!.GetValue<T>();
 
@@ -36,7 +36,7 @@ public static class ExtraObjectExtensions
     }
 
     /// <summary>
-    /// 设置属性值
+    ///     设置属性值
     /// </summary>
     /// <param name="extraObject"></param>
     /// <param name="name"></param>
@@ -49,18 +49,18 @@ public static class ExtraObjectExtensions
         if (string.IsNullOrWhiteSpace(extraObject.ExtraProperties))
         {
             if (EqualityComparer<T>.Default.Equals(value, default)) return;
-    
+
             extraObject.ExtraProperties = "{}";
         }
-    
+
         var jsonObject = JsonNode.Parse(extraObject.ExtraProperties)?.AsObject();
 
         jsonObject.ThrowIfNull(nameof(jsonObject));
-    
+
         if (value == null || EqualityComparer<T>.Default.Equals(value, default))
         {
             // ReSharper disable once PossibleNullReferenceException
-            if (jsonObject[name] != null) 
+            if (jsonObject[name] != null)
                 jsonObject.Remove(name);
         }
         else if (value.GetType().IsPrimitiveExtendedIncludingNullable(true))
@@ -73,19 +73,16 @@ public static class ExtraObjectExtensions
             // ReSharper disable once PossibleNullReferenceException
             jsonObject[name] = value.ToJson();
         }
-        
+
         // ReSharper disable once PossibleNullReferenceException
         var data = jsonObject.ToJsonString(SystemTextJsonStringSerializer.Options);
-        if (data == "{}")
-        {
-            data = null;
-        }
-    
+        if (data == "{}") data = null;
+
         extraObject.ExtraProperties = data;
     }
 
     /// <summary>
-    /// 移除属性值
+    ///     移除属性值
     /// </summary>
     /// <param name="extraObject"></param>
     /// <param name="name"></param>
@@ -94,31 +91,25 @@ public static class ExtraObjectExtensions
     {
         extraObject.ThrowIfNull(nameof(extraObject));
         name.ThrowIfNull(nameof(name));
-    
-        if (string.IsNullOrWhiteSpace(extraObject.ExtraProperties))
-        {
-            return false;
-        }
-    
+
+        if (string.IsNullOrWhiteSpace(extraObject.ExtraProperties)) return false;
+
         var jsonObject = JsonNode.Parse(extraObject.ExtraProperties)?.AsObject();
-        
+
         jsonObject.ThrowIfNull(nameof(jsonObject));
-    
+
         // ReSharper disable once PossibleNullReferenceException
         var token = jsonObject[name];
         if (token == null)
             return false;
-    
+
         jsonObject.Remove(name);
-    
+
         var data = jsonObject.ToJsonString(SystemTextJsonStringSerializer.Options);
-        if (data == "{}")
-        {
-            data = null;
-        }
-    
+        if (data == "{}") data = null;
+
         extraObject.ExtraProperties = data;
-    
+
         return true;
     }
 }

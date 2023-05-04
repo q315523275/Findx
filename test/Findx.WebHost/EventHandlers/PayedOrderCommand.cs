@@ -1,20 +1,17 @@
-﻿using System;
-using Findx.Messaging;
+﻿using Findx.Messaging;
 
-namespace Findx.WebHost.EventHandlers
+namespace Findx.WebHost.EventHandlers;
+
+public class PayedOrderCommand : IApplicationEvent
 {
-    public class PayedOrderCommand : IApplicationEvent
+    public PayedOrderCommand()
     {
-        public PayedOrderCommand()
-        {
-        }
-
-        public PayedOrderCommand(long orderId)
-        {
-            OrderId = orderId;
-        }
-
-        public long OrderId { get; private set; }
     }
-}
 
+    public PayedOrderCommand(long orderId)
+    {
+        OrderId = orderId;
+    }
+
+    public long OrderId { get; private set; }
+}

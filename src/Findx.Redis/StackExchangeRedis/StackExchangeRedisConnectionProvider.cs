@@ -1,30 +1,50 @@
-﻿using Findx.Extensions;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using StackExchange.Redis;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using Findx.Extensions;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using StackExchange.Redis;
+
 namespace Findx.Redis
 {
     public class StackExchangeRedisConnectionProvider : IStackExchangeRedisConnectionProvider, IDisposable
     {
-        protected FindxRedisOptions Options { get; }
-
-        protected ConcurrentDictionary<string, Lazy<ConnectionMultiplexer>> Connections { get; }
+        private readonly ILogger<StackExchangeRedisConnectionProvider> _logger;
 
         private bool _isDisposed;
 
-        private readonly ILogger<StackExchangeRedisConnectionProvider> _logger;
 
-
-        public StackExchangeRedisConnectionProvider(IOptions<FindxRedisOptions> options, ILogger<StackExchangeRedisConnectionProvider> logger)
+        public StackExchangeRedisConnectionProvider(IOptions<FindxRedisOptions> options,
+            ILogger<StackExchangeRedisConnectionProvider> logger)
         {
             Options = options.Value;
             _logger = logger;
             Connections = new ConcurrentDictionary<string, Lazy<ConnectionMultiplexer>>();
+        }
+
+        protected FindxRedisOptions Options { get; }
+
+        protected ConcurrentDictionary<string, Lazy<ConnectionMultiplexer>> Connections { get; }
+
+        public void Dispose()
+        {
+            if (_isDisposed) return;
+
+            _isDisposed = true;
+
+            foreach (var connection in Connections.Values)
+                try
+                {
+                    connection.Value.Dispose();
+                }
+                catch
+                {
+                }
+
+            Connections.Clear();
         }
 
 
@@ -68,38 +88,12 @@ namespace Findx.Redis
 
             var endpoints = GetMastersServersEndpoints(connectionName);
             foreach (var endPoint in endpoints)
-            {
                 yield return GetConnection(connectionName).GetServer(endPoint, connectionName);
-            }
-        }
-
-        public void Dispose()
-        {
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            _isDisposed = true;
-
-            foreach (var connection in Connections.Values)
-            {
-                try
-                {
-                    connection.Value.Dispose();
-                }
-                catch
-                {
-
-                }
-            }
-
-            Connections.Clear();
         }
 
 
         /// <summary>
-        /// 获取主服务器端点列表
+        ///     获取主服务器端点列表
         /// </summary>
         /// <returns></returns>
         private List<EndPoint> GetMastersServersEndpoints(string connectionName)
@@ -114,11 +108,13 @@ namespace Findx.Redis
                     if (server.ServerType == ServerType.Cluster)
                     {
                         // n.IsSlave => n.IsReplica
-                        masters.AddRange(server.ClusterConfiguration.Nodes.Where(n => !n.IsReplica).Select(n => n.EndPoint));
+                        masters.AddRange(server.ClusterConfiguration.Nodes.Where(n => !n.IsReplica)
+                            .Select(n => n.EndPoint));
                         break;
                     }
+
                     // 单节点，主-从
-                    if (server.ServerType == ServerType.Standalone & !server.IsReplica)
+                    if ((server.ServerType == ServerType.Standalone) & !server.IsReplica)
                     {
                         masters.Add(endPoint);
                         break;

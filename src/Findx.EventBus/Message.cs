@@ -4,12 +4,12 @@ using System.Collections.Generic;
 namespace Findx.EventBus
 {
     /// <summary>
-    /// 原始消息
+    ///     原始消息
     /// </summary>
     public class Message
     {
         /// <summary>
-        /// Ctor
+        ///     Ctor
         /// </summary>
         public Message()
         {
@@ -17,7 +17,7 @@ namespace Findx.EventBus
         }
 
         /// <summary>
-        /// Ctor
+        ///     Ctor
         /// </summary>
         /// <param name="headers"></param>
         /// <param name="value"></param>
@@ -29,12 +29,12 @@ namespace Findx.EventBus
         }
 
         /// <summary>
-        /// Header字典信息
+        ///     Header字典信息
         /// </summary>
         public IDictionary<string, string?> Headers { get; set; }
 
         /// <summary>
-        /// 消息内容体信息
+        ///     消息内容体信息
         /// </summary>
         public object? Value { get; set; }
     }

@@ -14,11 +14,13 @@ namespace Findx.Discovery
             _loadBalancerProvider = loadBalancerManager;
         }
 
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
+            CancellationToken cancellationToken)
         {
             var current = request.RequestUri;
 
-            var _loadBalancer = await _loadBalancerProvider.GetAsync(current.Host, LoadBalancerType.RoundRobin).ConfigureAwait(false);
+            var _loadBalancer = await _loadBalancerProvider.GetAsync(current.Host, LoadBalancerType.RoundRobin)
+                .ConfigureAwait(false);
             var serviceInfo = await _loadBalancer.ResolveServiceInstanceAsync().ConfigureAwait(false);
             request.RequestUri = serviceInfo.ToUri(current.Scheme, current.PathAndQuery);
 
@@ -30,7 +32,7 @@ namespace Findx.Discovery
             finally
             {
                 request.RequestUri = current;
-                await _loadBalancer.UpdateStatsAsync(serviceInfo, (DateTime.Now - nowTime));
+                await _loadBalancer.UpdateStatsAsync(serviceInfo, DateTime.Now - nowTime);
             }
         }
     }

@@ -8,23 +8,23 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Findx.Redis
 {
     /// <summary>
-    /// Findx-Redis缓存模块
+    ///     Findx-Redis缓存模块
     /// </summary>
-	[Description("Findx-Redis缓存模块")]
-	public class FindxRedisModule : FindxModule
-	{
+    [Description("Findx-Redis缓存模块")]
+    public class FindxRedisModule : FindxModule
+    {
         /// <summary>
-        /// 模块等级
+        ///     模块等级
         /// </summary>
         public override ModuleLevel Level => ModuleLevel.Framework;
 
         /// <summary>
-        /// 模块排序
+        ///     模块排序
         /// </summary>
         public override int Order => 40;
 
         /// <summary>
-        /// 配置模块服务
+        ///     配置模块服务
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
@@ -56,4 +56,3 @@ namespace Findx.Redis
         }
     }
 }
-

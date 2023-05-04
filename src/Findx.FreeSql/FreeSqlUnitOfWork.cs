@@ -1,36 +1,36 @@
-﻿using Findx.Data;
-using Findx.Extensions;
-using FreeSql.Internal.ObjectPool;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Threading;
-using Findx.Exceptions;
-using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
+using Findx.Data;
+using Findx.Exceptions;
+using Findx.Extensions;
 using Findx.Messaging;
+using FreeSql.Internal.ObjectPool;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Findx.FreeSql
 {
     /// <summary>
-    /// FreeSql工作单元
+    ///     FreeSql工作单元
     /// </summary>
     public class FreeSqlUnitOfWork : IUnitOfWork
     {
-        private readonly ILogger<FreeSqlUnitOfWork> _logger;
-        private readonly IFreeSql _fsql;
         private readonly IApplicationEventPublisher _applicationEventPublisher;
+        private readonly ConcurrentBag<IApplicationEvent> _commitAfterEvents = new ConcurrentBag<IApplicationEvent>();
+        private readonly ConcurrentBag<IApplicationEvent> _commitBeforeEvents = new ConcurrentBag<IApplicationEvent>();
+        private readonly IFreeSql _fsql;
+        private readonly ILogger<FreeSqlUnitOfWork> _logger;
         private readonly IMessageDispatcher _messageDispatcher;
         private readonly Stack<string> _transactionStack = new Stack<string>();
-        private readonly ConcurrentBag<IApplicationEvent> _commitBeforeEvents = new ConcurrentBag<IApplicationEvent>();
-        private readonly ConcurrentBag<IApplicationEvent> _commitAfterEvents = new ConcurrentBag<IApplicationEvent>();
 
         private Object<DbConnection> _conn;
-        
+
         /// <summary>
-        /// Ctor
+        ///     Ctor
         /// </summary>
         /// <param name="serviceProvider"></param>
         /// <param name="fsql"></param>
@@ -49,9 +49,23 @@ namespace Findx.FreeSql
             Id = Guid.NewGuid();
         }
 
+        #region 应用事件
+
+        /// <summary>
+        ///     添加应用事件
+        /// </summary>
+        /// <param name="applicationEvent"></param>
+        public void AddEvent<T>(T applicationEvent) where T : IApplicationEvent, ICommitAfter
+        {
+            _commitAfterEvents.Add(applicationEvent);
+        }
+
+        #endregion
+
         #region 属性
+
         public bool HasCommitted { get; private set; }
-        
+
         public bool IsEnabledTransaction => _transactionStack.Count > 0;
 
         public DbConnection Connection => _conn.Value;
@@ -59,13 +73,15 @@ namespace Findx.FreeSql
         public DbTransaction Transaction { set; get; }
 
         public Guid Id { get; }
-        
+
         public IServiceProvider ServiceProvider { get; }
+
         #endregion
 
         #region 辅助方法
+
         /// <summary>
-        /// 归还数据库连接
+        ///     归还数据库连接
         /// </summary>
         private void ReturnObject()
         {
@@ -75,14 +91,11 @@ namespace Findx.FreeSql
                 _conn = null;
             }
 
-            if (Transaction != null)
-            {
-                Transaction = null;
-            }
+            if (Transaction != null) Transaction = null;
         }
-        
+
         /// <summary>
-        /// 允许使用事务
+        ///     允许使用事务
         /// </summary>
         public void EnableTransaction()
         {
@@ -90,12 +103,13 @@ namespace Findx.FreeSql
             _transactionStack.Push(token);
             _logger.LogDebug("允许事务提交，标识：{Token}，当前总标识数：{TransactionStackCount}", token, _transactionStack.Count);
         }
+
         #endregion
 
         #region 同步事物
 
         /// <summary>
-        /// 对数据库连接开启事务或应用现有同连接对象的上下文事务
+        ///     对数据库连接开启事务或应用现有同连接对象的上下文事务
         /// </summary>
         public void BeginOrUseTransaction()
         {
@@ -124,14 +138,11 @@ namespace Findx.FreeSql
         }
 
         /// <summary>
-        /// 提交当前上下文的事务更改
+        ///     提交当前上下文的事务更改
         /// </summary>
         public void Commit()
         {
-            if (HasCommitted || Transaction?.Connection == null)
-            {
-                return;
-            }
+            if (HasCommitted || Transaction?.Connection == null) return;
 
             string token;
             if (_transactionStack.Count > 1)
@@ -142,10 +153,8 @@ namespace Findx.FreeSql
             }
 
             if (!IsEnabledTransaction)
-            {
                 throw new FindxException("500",
                     "执行 IUnitOfWork.Commit() 之前，需要在事务开始时调用 IUnitOfWork.EnableTransaction()");
-            }
 
             token = _transactionStack.Pop();
 
@@ -170,7 +179,7 @@ namespace Findx.FreeSql
         }
 
         /// <summary>
-        /// 回滚所有事务
+        ///     回滚所有事务
         /// </summary>
         public void Rollback()
         {
@@ -200,7 +209,7 @@ namespace Findx.FreeSql
         #region 异步事物
 
         /// <summary>
-        /// 开启事物异步
+        ///     开启事物异步
         /// </summary>
         /// <param name="cancellationToken"></param>
         public async Task BeginOrUseTransactionAsync(CancellationToken cancellationToken = default)
@@ -230,16 +239,13 @@ namespace Findx.FreeSql
         }
 
         /// <summary>
-        /// 事物提交异步
+        ///     事物提交异步
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <exception cref="FindxException"></exception>
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
-            if (HasCommitted || Transaction?.Connection == null)
-            {
-                return;
-            }
+            if (HasCommitted || Transaction?.Connection == null) return;
 
             string token;
             if (_transactionStack.Count > 1)
@@ -250,10 +256,8 @@ namespace Findx.FreeSql
             }
 
             if (!IsEnabledTransaction)
-            {
                 throw new FindxException("500",
                     "执行 IUnitOfWork.Commit() 之前，需要在事务开始时调用 IUnitOfWork.EnableTransaction()");
-            }
 
             token = _transactionStack.Pop();
 
@@ -262,16 +266,12 @@ namespace Findx.FreeSql
                 if (Transaction?.Connection != null)
                 {
                     foreach (var applicationEvent in _commitBeforeEvents)
-                    {
                         await _messageDispatcher.PublishAsync(applicationEvent, cancellationToken);
-                    }
-                    
+
                     await Transaction.CommitAsync(cancellationToken);
-                    
+
                     foreach (var applicationEvent in _commitAfterEvents)
-                    {
                         await _applicationEventPublisher.PublishAsync(applicationEvent, cancellationToken);
-                    }
 
                     _logger.LogDebug("提交事务，标识：{Token}，事务标识：{HashCode}", token, Transaction.GetHashCode());
                 }
@@ -289,7 +289,7 @@ namespace Findx.FreeSql
         }
 
         /// <summary>
-        /// 事物回滚异步
+        ///     事物回滚异步
         /// </summary>
         /// <param name="cancellationToken"></param>
         public async Task RollbackAsync(CancellationToken cancellationToken = default)
@@ -317,26 +317,15 @@ namespace Findx.FreeSql
 
         #endregion
 
-        #region 应用事件
-        /// <summary>
-        /// 添加应用事件
-        /// </summary>
-        /// <param name="applicationEvent"></param>
-        public void AddEvent<T>(T applicationEvent) where T: IApplicationEvent, ICommitAfter
-        {
-            _commitAfterEvents.Add(applicationEvent);
-        }
-        #endregion
-        
         #region Dispose
 
         /// <summary>
-        /// 释放次数
+        ///     释放次数
         /// </summary>
         private int _disposeCounter;
 
         /// <summary>
-        /// 释放
+        ///     释放
         /// </summary>
         public void Dispose()
         {
@@ -345,7 +334,7 @@ namespace Findx.FreeSql
             try
             {
                 Rollback();
-                
+
                 _transactionStack.Clear();
                 _commitBeforeEvents.Clear();
                 _commitAfterEvents.Clear();

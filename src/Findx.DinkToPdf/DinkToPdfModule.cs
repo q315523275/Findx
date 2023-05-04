@@ -1,9 +1,9 @@
-﻿using DinkToPdf;
+﻿using System.ComponentModel;
+using DinkToPdf;
 using DinkToPdf.Contracts;
 using Findx.Modularity;
 using Findx.Pdf;
 using Microsoft.Extensions.DependencyInjection;
-using System.ComponentModel;
 
 namespace Findx.DinkToPdf
 {
@@ -21,6 +21,5 @@ namespace Findx.DinkToPdf
 
             return services;
         }
-
     }
 }

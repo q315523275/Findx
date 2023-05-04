@@ -4,19 +4,19 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 
 /// <summary>
-/// 进程异步迭代器
+///     进程异步迭代器
 /// </summary>
 internal class ProcessAsyncEnumerator : IAsyncEnumerator<string>
 {
-    readonly Process? _process;
-    readonly ChannelReader<string> _channel;
-    readonly CancellationToken _cancellationToken;
-    readonly CancellationTokenRegistration _cancellationTokenRegistration;
-    string? _current;
-    bool _disposed;
+    private readonly CancellationToken _cancellationToken;
+    private readonly CancellationTokenRegistration _cancellationTokenRegistration;
+    private readonly ChannelReader<string> _channel;
+    private readonly Process? _process;
+    private string? _current;
+    private bool _disposed;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="process"></param>
     /// <param name="channel"></param>
@@ -24,19 +24,17 @@ internal class ProcessAsyncEnumerator : IAsyncEnumerator<string>
     public ProcessAsyncEnumerator(Process? process, ChannelReader<string> channel, CancellationToken cancellationToken)
     {
         // process is not null, kill when canceled.
-        this._process = process;
-        this._channel = channel;
-        this._cancellationToken = cancellationToken;
+        _process = process;
+        _channel = channel;
+        _cancellationToken = cancellationToken;
         if (cancellationToken.CanBeCanceled)
-        {
             _cancellationTokenRegistration = cancellationToken.Register(() => { _ = DisposeAsync(); });
-        }
     }
 
-    #pragma warning disable CS8603
+#pragma warning disable CS8603
     // when call after MoveNext, current always not null.
     public string Current => _current;
-    #pragma warning restore CS8603
+#pragma warning restore CS8603
 
     public async ValueTask<bool> MoveNextAsync()
     {
@@ -44,18 +42,12 @@ internal class ProcessAsyncEnumerator : IAsyncEnumerator<string>
         {
             return true;
         }
-        else
-        {
-            if (await _channel.WaitToReadAsync(_cancellationToken).ConfigureAwait(false))
-            {
-                if (_channel.TryRead(out _current))
-                {
-                    return true;
-                }
-            }
 
-            return false;
-        }
+        if (await _channel.WaitToReadAsync(_cancellationToken).ConfigureAwait(false))
+            if (_channel.TryRead(out _current))
+                return true;
+
+        return false;
     }
 
     public ValueTask DisposeAsync()
@@ -69,18 +61,12 @@ internal class ProcessAsyncEnumerator : IAsyncEnumerator<string>
                 if (_process != null)
                 {
                     _process.EnableRaisingEvents = false;
-                    if (!_process.HasExited)
-                    {
-                        _process.Kill();
-                    }
+                    if (!_process.HasExited) _process.Kill();
                 }
             }
             finally
             {
-                if (_process != null)
-                {
-                    _process.Dispose();
-                }
+                if (_process != null) _process.Dispose();
             }
         }
 

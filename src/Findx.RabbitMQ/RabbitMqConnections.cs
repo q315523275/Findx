@@ -8,6 +8,11 @@ namespace Findx.RabbitMQ
     {
         public const string DefaultConnectionName = "Default";
 
+        public RabbitMqConnections()
+        {
+            Default = new ConnectionFactory();
+        }
+
         [NotNull]
         public ConnectionFactory Default
         {
@@ -15,21 +20,11 @@ namespace Findx.RabbitMQ
             set => this[DefaultConnectionName] = Check.NotNull(value, nameof(value));
         }
 
-        public RabbitMqConnections()
-        {
-            Default = new ConnectionFactory();
-        }
-
         public ConnectionFactory GetOrDefault(string connectionName)
         {
-            if (TryGetValue(connectionName, out var connectionFactory))
-            {
-                return connectionFactory;
-            }
+            if (TryGetValue(connectionName, out var connectionFactory)) return connectionFactory;
 
             return Default;
         }
     }
-
 }
-

@@ -1,16 +1,12 @@
-﻿using Microsoft.Extensions.Options;
-using RabbitMQ.Client;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
+
 namespace Findx.RabbitMQ
 {
     public class ConnectionPool : IConnectionPool, IDisposable
     {
-
-        protected FindxRabbitMqOptions Options { get; }
-
-        protected ConcurrentDictionary<string, Lazy<IConnection>> Connections { get; }
-
         private bool _isDisposed;
 
         public ConnectionPool(IOptions<FindxRabbitMqOptions> options)
@@ -19,6 +15,10 @@ namespace Findx.RabbitMQ
             Connections = new ConcurrentDictionary<string, Lazy<IConnection>>();
         }
 
+        protected FindxRabbitMqOptions Options { get; }
+
+        protected ConcurrentDictionary<string, Lazy<IConnection>> Connections { get; }
+
         public virtual IConnection Get(string connectionName = null)
         {
             connectionName ??= RabbitMqConnections.DefaultConnectionName;
@@ -26,13 +26,14 @@ namespace Findx.RabbitMQ
             try
             {
                 var lazyConnection = Connections.GetOrAdd(
-                    connectionName, (key) => new Lazy<IConnection>(() =>
+                    connectionName, key => new Lazy<IConnection>(() =>
                     {
                         var connection = Options.Connections.GetOrDefault(key);
                         var hostnames = connection.HostName.TrimEnd(';').Split(';');
                         // Handle Rabbit MQ Cluster.
-                        return hostnames.Length == 1 ? connection.CreateConnection() : connection.CreateConnection(hostnames);
-
+                        return hostnames.Length == 1
+                            ? connection.CreateConnection()
+                            : connection.CreateConnection(hostnames);
                     })
                 );
 
@@ -47,15 +48,11 @@ namespace Findx.RabbitMQ
 
         public void Dispose()
         {
-            if (_isDisposed)
-            {
-                return;
-            }
+            if (_isDisposed) return;
 
             _isDisposed = true;
 
             foreach (var connection in Connections.Values)
-            {
                 try
                 {
                     connection.Value.Dispose();
@@ -64,7 +61,6 @@ namespace Findx.RabbitMQ
                 {
                     // ignored
                 }
-            }
 
             Connections.Clear();
         }

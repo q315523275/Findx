@@ -1,11 +1,11 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace Findx.Configuration
 {
     /// <summary>
-    /// Findx配置提供器
+    ///     Findx配置提供器
     /// </summary>
     internal class ConfigProvider : ConfigurationProvider
     {
@@ -16,16 +16,13 @@ namespace Findx.Configuration
             _client = (ConfigClient)client;
             _client.OnConfigDataChange(x =>
             {
-                foreach (var kv in ConfigClient.ConvertChangeDataToJsonConfigDictionary(x))
-                {
-                    Data[kv.Key] = kv.Value;
-                }
+                foreach (var kv in ConfigClient.ConvertChangeDataToJsonConfigDictionary(x)) Data[kv.Key] = kv.Value;
                 OnReload();
                 return Task.CompletedTask;
             });
             Data = new Dictionary<string, string>();
         }
-        
+
         public override void Load()
         {
             _client.LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();

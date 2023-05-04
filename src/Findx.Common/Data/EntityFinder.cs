@@ -3,20 +3,20 @@ using Findx.Reflection;
 namespace Findx.Data;
 
 /// <summary>
-/// 实体查找器
+///     实体查找器
 /// </summary>
-public class EntityFinder: BaseTypeFinderBase<IEntity>, IEntityFinder
+public class EntityFinder : BaseTypeFinderBase<IEntity>, IEntityFinder
 {
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="appDomainAssemblyFinder"></param>
     public EntityFinder(IAppDomainAssemblyFinder appDomainAssemblyFinder) : base(appDomainAssemblyFinder)
     {
     }
-    
+
     /// <summary>
-    /// 重写以实现所有项的查找
+    ///     重写以实现所有项的查找
     /// </summary>
     /// <returns></returns>
     protected override IEnumerable<Type> FindAllItems()

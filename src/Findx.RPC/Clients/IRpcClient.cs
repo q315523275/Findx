@@ -1,6 +1,6 @@
-﻿using Findx.RPC.Messages;
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
+using Findx.RPC.Messages;
 
 namespace Findx.RPC.Clients
 {

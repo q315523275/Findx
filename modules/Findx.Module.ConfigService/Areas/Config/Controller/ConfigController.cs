@@ -9,6 +9,7 @@ using Findx.Messaging;
 using Findx.Module.ConfigService.Dtos;
 using Findx.Module.ConfigService.Handling;
 using Findx.Module.ConfigService.Models;
+using Findx.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,30 +17,33 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.ConfigService.Areas.Config.Controller;
 
 /// <summary>
-/// 配置服务-管理
+///     配置服务-管理
 /// </summary>
 [Area("findx")]
 [Route("api/config/manage")]
 [Authorize]
 [Description("配置服务-管理")]
-[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-管理")]
-public class ConfigController: AreaApiControllerBase
+[ApiExplorerSettings(GroupName = "config")]
+[Tags("配置服务-管理")]
+public class ConfigController : AreaApiControllerBase
 {
-    private readonly IUnitOfWorkManager _unitOfWorkManager;
-    private readonly IMessageDispatcher _messageDispatcher;
-    private readonly IRepository<ConfigInfo> _configRepo;
     private readonly IRepository<ConfigHistoryInfo> _configHistoryRepo;
+    private readonly IRepository<ConfigInfo> _configRepo;
+    private readonly IMessageDispatcher _messageDispatcher;
     private readonly IPrincipal _principal;
+    private readonly IUnitOfWorkManager _unitOfWorkManager;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="configRepo"></param>
     /// <param name="principal"></param>
     /// <param name="configHistoryRepo"></param>
     /// <param name="messageDispatcher"></param>
     /// <param name="unitOfWorkManager"></param>
-    public ConfigController(IRepository<ConfigInfo> configRepo, IPrincipal principal, IRepository<ConfigHistoryInfo> configHistoryRepo, IMessageDispatcher messageDispatcher, IUnitOfWorkManager unitOfWorkManager)
+    public ConfigController(IRepository<ConfigInfo> configRepo, IPrincipal principal,
+        IRepository<ConfigHistoryInfo> configHistoryRepo, IMessageDispatcher messageDispatcher,
+        IUnitOfWorkManager unitOfWorkManager)
     {
         _configRepo = configRepo;
         _principal = principal;
@@ -49,7 +53,7 @@ public class ConfigController: AreaApiControllerBase
     }
 
     /// <summary>
-    /// 分页查询
+    ///     分页查询
     /// </summary>
     /// <param name="req">查询条件信息</param>
     /// <returns></returns>
@@ -57,18 +61,18 @@ public class ConfigController: AreaApiControllerBase
     public async Task<CommonResult> PageAsync([FromQuery] QueryConfigDto req)
     {
         var whereExp = ExpressionBuilder.Create<ConfigInfo>()
-                                        .AndIF(!req.DataId.IsNullOrWhiteSpace(), x => x.DataId.Contains(req.DataId))
-                                        .AndIF(!req.AppId.IsNullOrWhiteSpace(), x => x.AppId == req.AppId)
-                                        .AndIF(!req.Environment.IsNullOrWhiteSpace(), x => x.Environment == req.Environment)
-                                        .ToExpression();
+            .AndIF(!req.DataId.IsNullOrWhiteSpace(), x => x.DataId.Contains(req.DataId))
+            .AndIF(!req.AppId.IsNullOrWhiteSpace(), x => x.AppId == req.AppId)
+            .AndIF(!req.Environment.IsNullOrWhiteSpace(), x => x.Environment == req.Environment)
+            .ToExpression();
 
         var rows = await _configRepo.PagedAsync<ConfigSimpleDto>(req.PageNo, req.PageSize, whereExp);
-        
+
         return CommonResult.Success(rows);
     }
 
     /// <summary>
-    /// 获取配置信息
+    ///     获取配置信息
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
@@ -80,7 +84,7 @@ public class ConfigController: AreaApiControllerBase
     }
 
     /// <summary>
-    /// 获取配置信息
+    ///     获取配置信息
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
@@ -92,7 +96,7 @@ public class ConfigController: AreaApiControllerBase
     }
 
     /// <summary>
-    /// 发布配置
+    ///     发布配置
     /// </summary>
     /// <param name="req">配置信息</param>
     /// <returns></returns>
@@ -106,7 +110,7 @@ public class ConfigController: AreaApiControllerBase
             model.SetEmptyKey();
             model.CheckCreationAudited<ConfigInfo, Guid>(_principal);
             model.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
-            model.Md5 = Utils.Encrypt.Md5By32(req.Content);
+            model.Md5 = Encrypt.Md5By32(req.Content);
             // 保存并通知集群
             using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true);
             await _configRepo.WithUnitOfWork(uow).InsertAsync(model);
@@ -115,7 +119,7 @@ public class ConfigController: AreaApiControllerBase
             // 提交事物
             await uow.CommitAsync();
         }
-        else if (dbConfig.Md5 != Utils.Encrypt.Md5By32(req.Content))
+        else if (dbConfig.Md5 != Encrypt.Md5By32(req.Content))
         {
             // 历史记录
             var hisConfig = dbConfig.MapTo<ConfigHistoryInfo>();
@@ -128,10 +132,11 @@ public class ConfigController: AreaApiControllerBase
             dbConfig.DataType = req.DataType;
             dbConfig.Content = req.Content;
             dbConfig.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
-            dbConfig.Md5 = Utils.Encrypt.Md5By32(req.Content);
+            dbConfig.Md5 = Encrypt.Md5By32(req.Content);
             // 保存并通知集群
             using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true);
-            await _configRepo.WithUnitOfWork(uow).UpdateAsync(dbConfig, ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId });
+            await _configRepo.WithUnitOfWork(uow).UpdateAsync(dbConfig,
+                ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId });
             await _configHistoryRepo.WithUnitOfWork(uow).InsertAsync(hisConfig);
             // 发布ConfigDataChangeEvent事件,等待执行
             await _messageDispatcher.PublishAsync(dbConfig.MapTo<ConfigDataChangeEvent>());
@@ -143,10 +148,9 @@ public class ConfigController: AreaApiControllerBase
             dbConfig.CheckUpdateAudited<ConfigInfo, Guid>(_principal);
             dbConfig.Comment = req.Comment;
             dbConfig.DataType = req.DataType;
-            await _configRepo.UpdateAsync(dbConfig, updateColumns: x => new { x.Comment, x.DataType, x.CreatedTime, x.CreatorId });
+            await _configRepo.UpdateAsync(dbConfig, x => new { x.Comment, x.DataType, x.CreatedTime, x.CreatorId });
         }
 
         return CommonResult.Success();
     }
-
 }

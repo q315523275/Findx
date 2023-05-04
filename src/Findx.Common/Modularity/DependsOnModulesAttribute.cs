@@ -1,23 +1,20 @@
-﻿using System;
+﻿namespace Findx.Modularity;
 
-namespace Findx.Modularity
+/// <summary>
+///     定义模块依赖
+/// </summary>
+public class DependsOnModulesAttribute : Attribute
 {
     /// <summary>
-    /// 定义模块依赖
+    ///     初始化一个 OSharp模块依赖<see cref="DependsOnModulesAttribute" />类型的新实例
     /// </summary>
-    public class DependsOnModulesAttribute : Attribute
+    public DependsOnModulesAttribute(params Type[] dependedModuleTypes)
     {
-        /// <summary>
-        /// 初始化一个 OSharp模块依赖<see cref="DependsOnModulesAttribute"/>类型的新实例
-        /// </summary>
-        public DependsOnModulesAttribute(params Type[] dependedModuleTypes)
-        {
-            DependedModuleTypes = dependedModuleTypes;
-        }
-
-        /// <summary>
-        /// 获取 当前模块的依赖模块类型集合
-        /// </summary>
-        public Type[] DependedModuleTypes { get; }
+        DependedModuleTypes = dependedModuleTypes;
     }
+
+    /// <summary>
+    ///     获取 当前模块的依赖模块类型集合
+    /// </summary>
+    public Type[] DependedModuleTypes { get; }
 }

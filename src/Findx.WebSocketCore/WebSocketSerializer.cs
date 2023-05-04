@@ -3,14 +3,13 @@ using Findx.Serialization;
 namespace Findx.WebSocketCore;
 
 /// <summary>
-/// 
 /// </summary>
-public class WebSocketSerializer: IWebSocketSerializer
+public class WebSocketSerializer : IWebSocketSerializer
 {
     private readonly ISerializer _serializer;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="serializer"></param>
     public WebSocketSerializer(ISerializer serializer)
@@ -19,7 +18,7 @@ public class WebSocketSerializer: IWebSocketSerializer
     }
 
     /// <summary>
-    /// 序列化
+    ///     序列化
     /// </summary>
     /// <param name="item"></param>
     /// <typeparam name="T"></typeparam>
@@ -30,7 +29,7 @@ public class WebSocketSerializer: IWebSocketSerializer
     }
 
     /// <summary>
-    /// 反序列化
+    ///     反序列化
     /// </summary>
     /// <param name="serializedObject"></param>
     /// <typeparam name="T"></typeparam>

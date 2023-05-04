@@ -1,54 +1,52 @@
-﻿using Findx.Extensions;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using Findx.Extensions;
 
-namespace Findx.Utils.Files
+namespace Findx.Utils.Files;
+
+/// <summary>
+///     文件大小单位
+/// </summary>
+public enum FileSizeUnit
 {
     /// <summary>
-    /// 文件大小单位
+    ///     字节
     /// </summary>
-    public enum FileSizeUnit
+    [Description("B")] Byte,
+
+    /// <summary>
+    ///     K字节
+    /// </summary>
+    [Description("KB")] K,
+
+    /// <summary>
+    ///     M字节
+    /// </summary>
+    [Description("MB")] M,
+
+    /// <summary>
+    ///     G字节
+    /// </summary>
+    [Description("GB")] G
+}
+
+/// <summary>
+///     文件大小单位枚举扩展
+/// </summary>
+public static class FileSizeUnitExtensions
+{
+    /// <summary>
+    ///     获取描述
+    /// </summary>
+    public static string Description(this FileSizeUnit? unit)
     {
-        /// <summary>
-        /// 字节
-        /// </summary>
-        [Description("B")]
-        Byte,
-        /// <summary>
-        /// K字节
-        /// </summary>
-        [Description("KB")]
-        K,
-        /// <summary>
-        /// M字节
-        /// </summary>
-        [Description("MB")]
-        M,
-        /// <summary>
-        /// G字节
-        /// </summary>
-        [Description("GB")]
-        G
+        return unit == null ? string.Empty : unit.Value.ToDescription();
     }
 
     /// <summary>
-    /// 文件大小单位枚举扩展
+    ///     获取值
     /// </summary>
-    public static class FileSizeUnitExtensions
+    public static int? Value(this FileSizeUnit? unit)
     {
-        /// <summary>
-        /// 获取描述
-        /// </summary>
-        public static string Description(this FileSizeUnit? unit)
-        {
-            return unit == null ? string.Empty : unit.Value.ToDescription();
-        }
-
-        /// <summary>
-        /// 获取值
-        /// </summary>
-        public static int? Value(this FileSizeUnit? unit)
-        {
-            return unit?.To<int>();
-        }
+        return unit?.To<int>();
     }
 }

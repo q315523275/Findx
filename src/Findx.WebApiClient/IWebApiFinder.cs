@@ -1,8 +1,7 @@
 ﻿using Findx.Reflection;
 
-namespace Findx.WebApiClient
+namespace Findx.WebApiClient;
+
+public interface IWebApiFinder : ITypeFinder
 {
-    public interface IWebApiFinder : ITypeFinder
-    {
-    }
 }

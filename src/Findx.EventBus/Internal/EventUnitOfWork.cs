@@ -7,15 +7,15 @@ using Findx.Data;
 namespace Findx.EventBus.Internal
 {
     /// <summary>
-    /// 事件包装工作单元
+    ///     事件包装工作单元
     /// </summary>
-    public class EventUnitOfWork: IEventUnitOfWork, IDisposable
+    public class EventUnitOfWork : IEventUnitOfWork, IDisposable
     {
-        private readonly IEventDispatcher _dispatcher;
         private readonly ConcurrentQueue<Message> _bufferList;
-        
+        private readonly IEventDispatcher _dispatcher;
+
         /// <summary>
-        /// Ctor
+        ///     Ctor
         /// </summary>
         /// <param name="unitOfWork"></param>
         /// <param name="dispatcher"></param>
@@ -28,12 +28,20 @@ namespace Findx.EventBus.Internal
         }
 
         /// <summary>
-        /// 数据库工作单元
+        ///     Dispose
+        /// </summary>
+        public void Dispose()
+        {
+            _bufferList?.Clear();
+        }
+
+        /// <summary>
+        ///     数据库工作单元
         /// </summary>
         public IUnitOfWork UnitOfWork { get; }
-        
+
         /// <summary>
-        /// 添加到缓冲区
+        ///     添加到缓冲区
         /// </summary>
         public void AddToBuffer(Message message)
         {
@@ -41,7 +49,7 @@ namespace Findx.EventBus.Internal
         }
 
         /// <summary>
-        /// 提交事物
+        ///     提交事物
         /// </summary>
         public void Commit()
         {
@@ -51,36 +59,24 @@ namespace Findx.EventBus.Internal
         }
 
         /// <summary>
-        /// 异步提交事物
+        ///     异步提交事物
         /// </summary>
         /// <param name="cancellationToken"></param>
         public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
             await UnitOfWork?.CommitAsync(cancellationToken)!;
-            
+
             Flush();
         }
-        
+
         /// <summary>
-        /// 清空缓冲数据
+        ///     清空缓冲数据
         /// </summary>
         protected virtual void Flush()
         {
             while (!_bufferList.IsEmpty)
-            {
                 if (_bufferList.TryDequeue(out var message))
-                {
                     _dispatcher.EnqueueToPublish(message).ConfigureAwait(false);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Dispose
-        /// </summary>
-        public void Dispose()
-        {
-            _bufferList?.Clear();
         }
     }
 }

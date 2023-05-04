@@ -8,9 +8,10 @@ namespace Findx.Discovery.LoadBalancer.Selectors
 {
     public class RoundRobinSelector : ILoadBalancer
     {
-        private readonly Func<Task<IList<IServiceInstance>>> _services;
         private readonly string _serviceName;
+        private readonly Func<Task<IList<IServiceInstance>>> _services;
         private int _last;
+
         public RoundRobinSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
         {
             _services = services;
@@ -31,10 +32,7 @@ namespace Findx.Discovery.LoadBalancer.Selectors
 
             Interlocked.Increment(ref _last);
 
-            if (_last >= services.Count)
-            {
-                Interlocked.Exchange(ref _last, 0);
-            }
+            if (_last >= services.Count) Interlocked.Exchange(ref _last, 0);
 
             return services[_last];
         }

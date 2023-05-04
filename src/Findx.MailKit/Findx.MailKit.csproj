@@ -1,20 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>netstandard2.1</TargetFramework>
-		<Version>1.9.0</Version>
-		<Description>MailKit邮件发送器组件包</Description>
-		<Authors>Findx</Authors>
-		<Company>Findx</Company>
-		<PackageVersion>1.9.0</PackageVersion>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Version>1.9.0</Version>
+        <Description>MailKit邮件发送器组件包</Description>
+        <Authors>Findx</Authors>
+        <Company>Findx</Company>
+        <PackageVersion>1.9.0</PackageVersion>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="MailKit" Version="3.6.0" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="MailKit" Version="3.6.0"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Findx.Common\Findx.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Findx.Common\Findx.csproj"/>
+    </ItemGroup>
 
 </Project>

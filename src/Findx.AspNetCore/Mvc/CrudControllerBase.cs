@@ -1,36 +1,36 @@
-﻿using Findx.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Security.Principal;
+using System.Threading.Tasks;
+using Findx.Data;
 using Findx.Mapping;
 using Findx.Security;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Security.Principal;
-using System.Threading.Tasks;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel;
 
 namespace Findx.AspNetCore.Mvc;
 
 /// <summary>
-/// 增删改查通用控制器基类
+///     增删改查通用控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
 /// <typeparam name="TRequest">新增/编辑Dto</typeparam>
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
 /// <typeparam name="TUserKey">用户主键</typeparam>
-public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey, TUserKey>: CrudControllerBase<TModel, TModel, TModel, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
+public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<TModel,
+    TModel, TModel, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
     where TModel : EntityBase<TKey>, IResponse, new()
     where TRequest : IRequest, new()
     where TQueryParameter : IPager, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct
 {
-
 }
 
 /// <summary>
-/// 增删改查通用控制器基类
+///     增删改查通用控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
 /// <typeparam name="TDto">返回Dto</typeparam>
@@ -38,7 +38,8 @@ public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
 /// <typeparam name="TUserKey">用户主键</typeparam>
-public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<TModel, TDto, TDto, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
+public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<
+    TModel, TDto, TDto, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
     where TModel : EntityBase<TKey>, new()
     where TDto : IResponse, new()
     where TRequest : IRequest, new()
@@ -46,11 +47,10 @@ public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter
     where TKey : IEquatable<TKey>
     where TUserKey : struct
 {
-
 }
 
 /// <summary>
-/// 增删改查通用控制器基类
+///     增删改查通用控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
 /// <typeparam name="TDto">返回Dto</typeparam>
@@ -59,7 +59,9 @@ public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
 /// <typeparam name="TUserKey">用户主键</typeparam>
-public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<TModel, TDto, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey>
+public abstract class
+    CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey> :
+        CrudControllerBase<TModel, TDto, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey>
     where TModel : EntityBase<TKey>, new()
     where TDto : IResponse, new()
     where TCreateRequest : IRequest, new()
@@ -68,11 +70,10 @@ public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRe
     where TKey : IEquatable<TKey>
     where TUserKey : struct
 {
-
 }
 
 /// <summary>
-/// 增删改查通用控制器基类
+///     增删改查通用控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
 /// <typeparam name="TListDto">返回列表Dto</typeparam>
@@ -82,7 +83,8 @@ public abstract class CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRe
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
 /// <typeparam name="TUserKey">用户字段</typeparam>
-public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey>
+public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRequest, TUpdateRequest, TQueryParameter,
+        TKey, TUserKey>
     : QueryControllerBase<TModel, TListDto, TDetailDto, TQueryParameter, TKey>
     where TModel : EntityBase<TKey>, new()
     where TListDto : IResponse, new()
@@ -94,63 +96,87 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     where TUserKey : struct
 {
     /// <summary>
-    /// 创建参数转换为实体
+    ///     创建参数转换为实体
     /// </summary>
     /// <param name="request">创建参数</param>
-    protected virtual TModel ToModelFromCreateRequest(TCreateRequest request) => request.MapTo<TModel>();
+    protected virtual TModel ToModelFromCreateRequest(TCreateRequest request)
+    {
+        return request.MapTo<TModel>();
+    }
 
     /// <summary>
-    /// 修改参数转换为实体
+    ///     修改参数转换为实体
     /// </summary>
     /// <param name="request">修改参数</param>
-    protected virtual TModel ToModelFromUpdateRequest(TUpdateRequest request) => request.MapTo<TModel>();
+    protected virtual TModel ToModelFromUpdateRequest(TUpdateRequest request)
+    {
+        return request.MapTo<TModel>();
+    }
 
     /// <summary>
-    /// 创建前操作
+    ///     创建前操作
     /// </summary>
     /// <param name="model">实体</param>
     /// <param name="request">入参</param>
     /// <returns></returns>
-    protected virtual Task AddBeforeAsync(TModel model, TCreateRequest request) => Task.CompletedTask;
+    protected virtual Task AddBeforeAsync(TModel model, TCreateRequest request)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
-    /// 创建后操作
+    ///     创建后操作
     /// </summary>
     /// <param name="model">实体</param>
     /// <param name="request">入参</param>
     /// <param name="result">添加结果</param>
-    protected virtual Task AddAfterAsync(TModel model, TCreateRequest request, int result) => Task.CompletedTask;
+    protected virtual Task AddAfterAsync(TModel model, TCreateRequest request, int result)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
-    /// 修改前操作
+    ///     修改前操作
     /// </summary>
     /// <param name="model">修改参数</param>
     /// <param name="request">入参</param>
-    protected virtual Task EditBeforeAsync(TModel model, TUpdateRequest request) => Task.CompletedTask;
+    protected virtual Task EditBeforeAsync(TModel model, TUpdateRequest request)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
-    /// 修改后操作
+    ///     修改后操作
     /// </summary>
     /// <param name="model">修改参数</param>
     /// <param name="request">入参</param>
     /// <param name="result">处理结果</param>
-    protected virtual Task EditAfterAsync(TModel model, TUpdateRequest request, int result) => Task.CompletedTask;
+    protected virtual Task EditAfterAsync(TModel model, TUpdateRequest request, int result)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
-    /// 删除前前操作
+    ///     删除前前操作
     /// </summary>
     /// <param name="req">id集合</param>
-    protected virtual Task DeleteBeforeAsync(List<TKey> req) => Task.CompletedTask;
+    protected virtual Task DeleteBeforeAsync(List<TKey> req)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
-    /// 删除后操作
+    ///     删除后操作
     /// </summary>
     /// <param name="req">id集合</param>
     /// <param name="total">删除成功条数</param>
-    protected virtual Task DeleteAfterAsync(List<TKey> req, int total) => Task.CompletedTask;
+    protected virtual Task DeleteAfterAsync(List<TKey> req, int total)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
-    /// 添加数据
+    ///     添加数据
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -182,7 +208,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     }
 
     /// <summary>
-    /// 修改数据
+    ///     修改数据
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -208,19 +234,19 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
 
         await EditBeforeAsync(model, request);
         var res = await repo.UpdateAsync(model, ignoreNullColumns: true);
-        await EditAfterAsync(model, request ,res);
+        await EditAfterAsync(model, request, res);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.edit.error", "数据更新失败");
     }
 
     /// <summary>
-    /// 删除数据
+    ///     删除数据
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
     [HttpPost("delete")]
     [Description("删除")]
-    public virtual async Task<CommonResult> DeleteAsync([FromBody, MinLength(1)] List<TKey> request)
+    public virtual async Task<CommonResult> DeleteAsync([FromBody] [MinLength(1)] List<TKey> request)
     {
         Check.NotNull(request, nameof(request));
         if (request.Count == 0)

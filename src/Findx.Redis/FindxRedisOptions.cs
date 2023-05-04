@@ -1,14 +1,12 @@
-﻿using System;
-namespace Findx.Redis
+﻿namespace Findx.Redis
 {
-	public class FindxRedisOptions
-	{
-		public RedisConnections Connections { get; }
+    public class FindxRedisOptions
+    {
+        public FindxRedisOptions()
+        {
+            Connections = new RedisConnections();
+        }
 
-		public FindxRedisOptions()
-		{
-			Connections = new RedisConnections();
-		}
-	}
+        public RedisConnections Connections { get; }
+    }
 }
-

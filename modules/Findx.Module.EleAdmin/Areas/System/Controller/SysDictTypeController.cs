@@ -10,17 +10,19 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
 /// <summary>
-/// 字典类型服务
+///     字典类型服务
 /// </summary>
 [Area("system")]
 [Route("api/[area]/dictType")]
 [Authorize]
 [Description("系统-字典")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-字典")]
-public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SetDictTypeRequest, QueryDictTypeRequest, Guid, Guid>
+[ApiExplorerSettings(GroupName = "eleAdmin")]
+[Tags("系统-字典")]
+public class
+    SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SetDictTypeRequest, QueryDictTypeRequest, Guid, Guid>
 {
     /// <summary>
-    /// 删除前校验
+    ///     删除前校验
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
@@ -29,6 +31,6 @@ public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SetDict
         var repo = GetRepository<SysDictDataInfo>();
         var isExist = await repo.ExistAsync(x => req.Contains(x.TypeId));
         if (isExist)
-           throw new FindxException("500", "请先删除字典数据,再删除字典类型");
+            throw new FindxException("500", "请先删除字典数据,再删除字典类型");
     }
 }

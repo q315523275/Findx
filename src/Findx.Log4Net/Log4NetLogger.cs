@@ -1,12 +1,13 @@
-﻿using log4net;
+﻿using System;
+using log4net;
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace Findx.Log4Net
 {
     public class Log4NetLogger : ILogger
     {
         private readonly ILog _log;
+
         public Log4NetLogger(string loggerRepository, string name)
         {
             _log = LogManager.GetLogger(loggerRepository, name);
@@ -41,23 +42,17 @@ namespace Findx.Log4Net
             }
         }
 
-        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception,
+            Func<TState, Exception, string> formatter)
         {
-            if (!IsEnabled(logLevel))
-            {
-                return;
-            }
+            if (!IsEnabled(logLevel)) return;
 
             Check.NotNull(formatter, nameof(formatter));
 
             string message = null;
-            if (formatter != null)
-            {
-                message = formatter(state, exception);
-            }
+            if (formatter != null) message = formatter(state, exception);
 
             if (!string.IsNullOrEmpty(message) || exception != null)
-            {
                 switch (logLevel)
                 {
                     case LogLevel.Trace:
@@ -83,7 +78,6 @@ namespace Findx.Log4Net
                         _log.Info(message, exception);
                         break;
                 }
-            }
         }
     }
 }

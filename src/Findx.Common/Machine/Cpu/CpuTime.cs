@@ -1,12 +1,11 @@
 namespace Findx.Machine.Cpu;
 
 /// <summary>
-/// 
 /// </summary>
 public struct CpuTime
 {
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="idleTime"></param>
     /// <param name="systemTime"></param>
@@ -17,12 +16,12 @@ public struct CpuTime
     }
 
     /// <summary>
-    /// Cpu 空闲时间
+    ///     Cpu 空闲时间
     /// </summary>
     public ulong IdleTime { get; }
 
     /// <summary>
-    /// Cpu 工作时间
+    ///     Cpu 工作时间
     /// </summary>
     public ulong SystemTime { get; }
 }

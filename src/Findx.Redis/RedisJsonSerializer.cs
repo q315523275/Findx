@@ -1,4 +1,5 @@
 ﻿using Findx.Extensions;
+
 namespace Findx.Redis
 {
     public class RedisJsonSerializer : IRedisSerializer

@@ -1,28 +1,30 @@
-﻿using Findx.AspNetCore.Mvc;
+﻿using System.ComponentModel;
+using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Findx.Linq;
-using Findx.Module.EleAdmin.Models;
-using System.ComponentModel;
 using Findx.Module.EleAdmin.Dtos;
+using Findx.Module.EleAdmin.Models;
+using Findx.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
 /// <summary>
-/// 角色服务
+///     角色服务
 /// </summary>
 [Area("system")]
 [Route("api/[area]/role")]
 [Authorize]
 [Description("系统-角色")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-角色")]
+[ApiExplorerSettings(GroupName = "eleAdmin")]
+[Tags("系统-角色")]
 public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest, QueryRoleRequest, Guid, Guid>
 {
     /// <summary>
-    /// 构建查询条件
+    ///     构建查询条件
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -37,7 +39,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
     }
 
     /// <summary>
-    /// 查询角色对应菜单
+    ///     查询角色对应菜单
     /// </summary>
     /// <param name="roleId"></param>
     /// <param name="applicationCode"></param>
@@ -49,16 +51,21 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
         var repo = GetRequiredService<IRepository<SysRoleMenuInfo>>();
         var menuRepo = GetRequiredService<IRepository<SysMenuInfo>>();
 
-        var menuIdArray = repo.Select(whereExpression: x => x.RoleId == roleId, selectExpression: x => x.MenuId).Distinct();
-        var menuList = applicationCode.IsNullOrWhiteSpace() ? menuRepo.Select<RoleMenuDto>() : menuRepo.Select<RoleMenuDto>(x => x.ApplicationCode == applicationCode);
+        var menuIdArray = repo.Select(x => x.RoleId == roleId, x => x.MenuId).Distinct();
+        var menuList = applicationCode.IsNullOrWhiteSpace()
+            ? menuRepo.Select<RoleMenuDto>()
+            : menuRepo.Select<RoleMenuDto>(x => x.ApplicationCode == applicationCode);
 
-        menuList.ForEach(x => { if (menuIdArray.Contains(x.Id)) x.Checked = true; });
+        menuList.ForEach(x =>
+        {
+            if (menuIdArray.Contains(x.Id)) x.Checked = true;
+        });
 
         return CommonResult.Success(menuList);
     }
 
     /// <summary>
-    /// 设置角色对应菜单
+    ///     设置角色对应菜单
     /// </summary>
     /// <param name="roleId"></param>
     /// <param name="req"></param>
@@ -71,7 +78,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
         await repo.DeleteAsync(x => x.RoleId == roleId);
         var list = req.Select(x => new SysRoleMenuInfo
         {
-            Id = Utils.SequentialGuid.Instance.Create(DatabaseType.MySql),
+            Id = SequentialGuid.Instance.Create(DatabaseType.MySql),
             MenuId = x,
             RoleId = roleId,
             TenantId = TenantManager.Current

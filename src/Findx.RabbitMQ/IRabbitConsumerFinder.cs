@@ -4,6 +4,5 @@ namespace Findx.RabbitMQ
 {
     public interface IRabbitConsumerFinder : ITypeFinder
     {
-
     }
 }

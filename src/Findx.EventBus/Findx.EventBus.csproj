@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Findx.Common\Findx.csproj" />
+        <ProjectReference Include="..\Findx.Common\Findx.csproj"/>
     </ItemGroup>
 
 </Project>

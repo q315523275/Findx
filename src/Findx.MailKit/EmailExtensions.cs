@@ -1,19 +1,22 @@
-﻿using MimeKit;
-using MimeKit.IO;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Mail;
+using System.Net.Mime;
 using System.Text;
+using MimeKit;
+using MimeKit.IO;
+using ContentDisposition = MimeKit.ContentDisposition;
+using ContentType = MimeKit.ContentType;
 
 namespace Findx.MailKit
 {
     /// <summary>
-    /// 电子邮件扩展
+    ///     电子邮件扩展
     /// </summary>
     public static class EmailExtensions
     {
         /// <summary>
-        /// 转换成MimeMessage
+        ///     转换成MimeMessage
         /// </summary>
         /// <param name="mail"></param>
         /// <returns></returns>
@@ -41,6 +44,7 @@ namespace Findx.MailKit
                 message.Headers.Replace(HeaderId.From, string.Empty);
                 message.From.Add(mail.From.ToMailboxAddress());
             }
+
             if (mail.ReplyToList.Count > 0)
             {
                 message.Headers.Replace(HeaderId.ReplyTo, string.Empty);
@@ -103,19 +107,13 @@ namespace Findx.MailKit
             {
                 var alternative = new MultipartAlternative();
 
-                if (body != null)
-                {
-                    alternative.Add(body);
-                }
+                if (body != null) alternative.Add(body);
 
                 foreach (var view in mail.AlternateViews)
                 {
                     var part = GetMimePart(view);
 
-                    if (view.BaseUri != null)
-                    {
-                        part.ContentLocation = view.BaseUri;
-                    }
+                    if (view.BaseUri != null) part.ContentLocation = view.BaseUri;
 
                     if (view.LinkedResources.Count > 0)
                     {
@@ -124,10 +122,7 @@ namespace Findx.MailKit
 
                         related.ContentType.Parameters.Add("type", type);
 
-                        if (view.BaseUri != null)
-                        {
-                            related.ContentLocation = view.BaseUri;
-                        }
+                        if (view.BaseUri != null) related.ContentLocation = view.BaseUri;
 
                         related.Add(part);
 
@@ -157,15 +152,9 @@ namespace Findx.MailKit
             {
                 var mixed = new Multipart("mixed");
 
-                if (body != null)
-                {
-                    mixed.Add(body);
-                }
+                if (body != null) mixed.Add(body);
 
-                foreach (var attachment in mail.Attachments)
-                {
-                    mixed.Add(GetMimePart(attachment));
-                }
+                foreach (var attachment in mail.Attachments) mixed.Add(GetMimePart(attachment));
 
                 body = mixed;
             }
@@ -176,7 +165,7 @@ namespace Findx.MailKit
         }
 
         /// <summary>
-        /// 获取MimePart
+        ///     获取MimePart
         /// </summary>
         /// <param name="item">附件基类</param>
         private static MimePart GetMimePart(AttachmentBase item)
@@ -185,38 +174,35 @@ namespace Findx.MailKit
             var contentType = ContentType.Parse(mimeType);
             var attachment = item as Attachment;
 
-            var part = contentType.MediaType.Equals("text", StringComparison.OrdinalIgnoreCase) ? new TextPart() : new MimePart(contentType);
+            var part = contentType.MediaType.Equals("text", StringComparison.OrdinalIgnoreCase)
+                ? new TextPart()
+                : new MimePart(contentType);
 
             if (attachment != null)
-            {
                 //var disposition = attachment.ContentDisposition.ToString();
                 //part.ContentDisposition = ContentDisposition.Parse(disposition);
                 part.ContentDisposition = new ContentDisposition(ContentDisposition.Attachment);
-            }
 
             switch (item.TransferEncoding)
             {
-                case System.Net.Mime.TransferEncoding.QuotedPrintable:
+                case TransferEncoding.QuotedPrintable:
                     part.ContentTransferEncoding = ContentEncoding.QuotedPrintable;
                     break;
 
-                case System.Net.Mime.TransferEncoding.Base64:
+                case TransferEncoding.Base64:
                     part.ContentTransferEncoding = ContentEncoding.Base64;
                     break;
 
-                case System.Net.Mime.TransferEncoding.SevenBit:
+                case TransferEncoding.SevenBit:
                     part.ContentTransferEncoding = ContentEncoding.SevenBit;
                     break;
 
-                case System.Net.Mime.TransferEncoding.EightBit:
+                case TransferEncoding.EightBit:
                     part.ContentTransferEncoding = ContentEncoding.EightBit;
                     break;
             }
 
-            if (item.ContentId != null)
-            {
-                part.ContentId = item.ContentId;
-            }
+            if (item.ContentId != null) part.ContentId = item.ContentId;
 
             var stream = new MemoryBlockStream();
             item.ContentStream.CopyTo(stream);
@@ -234,26 +220,26 @@ namespace Findx.MailKit
                 part.ContentDisposition.Parameters.Add(charset, "filename", fileName);
                 // 解决文件名不能超过41字符
                 foreach (var parameter in part.ContentDisposition.Parameters)
-                {
                     parameter.EncodingMethod = ParameterEncodingMethod.Rfc2047;
-                }
 
                 foreach (var parameter in part.ContentType.Parameters)
-                {
                     parameter.EncodingMethod = ParameterEncodingMethod.Rfc2047;
-                }
             }
+
             return part;
         }
 
         /// <summary>
-        /// 转换成邮箱地址
+        ///     转换成邮箱地址
         /// </summary>
         /// <param name="address">邮箱地址</param>
-        private static MailboxAddress ToMailboxAddress(this MailAddress address) => address == null ? null : new MailboxAddress(Encoding.UTF8, address.DisplayName, address.Address);
+        private static MailboxAddress ToMailboxAddress(this MailAddress address)
+        {
+            return address == null ? null : new MailboxAddress(Encoding.UTF8, address.DisplayName, address.Address);
+        }
 
         /// <summary>
-        /// 转换成Internet地址列表
+        ///     转换成Internet地址列表
         /// </summary>
         /// <param name="addresses">邮箱地址集合</param>
         private static InternetAddressList ToInternetAddressList(this MailAddressCollection addresses)

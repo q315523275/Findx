@@ -7,9 +7,9 @@ using Findx.Extensions;
 namespace Findx.WebHost.Aspect;
 
 /// <summary>
-/// 测试方法代理
+///     测试方法代理
 /// </summary>
-public class TestProxyInterceptor: InterceptorBase
+public class TestProxyInterceptor : InterceptorBase
 {
     private readonly IKeyGenerator<long> _keyGenerator;
 

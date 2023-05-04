@@ -1,72 +1,71 @@
-﻿using Findx.DependencyInjection;
+﻿using System;
+using Findx.DependencyInjection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
-namespace Findx.AspNetCore
+namespace Findx.AspNetCore;
+
+/// <summary>
+///     Http请求服务范围工厂
+/// </summary>
+public class HttpContextServiceScopeFactory : IHybridServiceScopeFactory
 {
     /// <summary>
-    /// Http请求服务范围工厂
+    ///     Ctor
     /// </summary>
-    public class HttpContextServiceScopeFactory : IHybridServiceScopeFactory
+    /// <param name="serviceScopeFactory"></param>
+    /// <param name="httpContextAccessor"></param>
+    public HttpContextServiceScopeFactory(IServiceScopeFactory serviceScopeFactory,
+        IHttpContextAccessor httpContextAccessor)
+    {
+        ServiceScopeFactory = serviceScopeFactory;
+        HttpContextAccessor = httpContextAccessor;
+    }
+
+    /// <summary>
+    ///     服务范围工厂
+    /// </summary>
+    private IServiceScopeFactory ServiceScopeFactory { get; }
+
+    /// <summary>
+    ///     Http上下文访问器
+    /// </summary>
+    private IHttpContextAccessor HttpContextAccessor { get; }
+
+    /// <summary>
+    ///     创建作用域
+    /// </summary>
+    /// <returns></returns>
+    public virtual IServiceScope CreateScope()
+    {
+        var httpContext = HttpContextAccessor?.HttpContext;
+        if (httpContext == null) return ServiceScopeFactory.CreateScope();
+        return new NonDisposedHttpContextServiceScope(httpContext.RequestServices);
+    }
+
+    /// <summary>
+    /// </summary>
+    private class NonDisposedHttpContextServiceScope : IServiceScope
     {
         /// <summary>
-        /// Ctor
+        ///     Ctor
         /// </summary>
-        /// <param name="serviceScopeFactory"></param>
-        /// <param name="httpContextAccessor"></param>
-        public HttpContextServiceScopeFactory(IServiceScopeFactory serviceScopeFactory, IHttpContextAccessor httpContextAccessor)
+        /// <param name="serviceProvider"></param>
+        public NonDisposedHttpContextServiceScope(IServiceProvider serviceProvider)
         {
-            ServiceScopeFactory = serviceScopeFactory;
-            HttpContextAccessor = httpContextAccessor;
+            ServiceProvider = serviceProvider;
         }
-        
+
         /// <summary>
-        /// 服务范围工厂
+        ///     服务提供商
         /// </summary>
-        private IServiceScopeFactory ServiceScopeFactory { get; }
-        
+        public IServiceProvider ServiceProvider { get; }
+
         /// <summary>
-        /// Http上下文访问器
+        ///     Dispose
         /// </summary>
-        private IHttpContextAccessor HttpContextAccessor { get; }
-        
-        /// <summary>
-        /// 创建作用域
-        /// </summary>
-        /// <returns></returns>
-        public virtual IServiceScope CreateScope()
+        public void Dispose()
         {
-            var httpContext = HttpContextAccessor?.HttpContext;
-            if (httpContext == null)
-            {
-                return ServiceScopeFactory.CreateScope();
-            }
-            return new NonDisposedHttpContextServiceScope(httpContext.RequestServices);
-        }
-        
-        /// <summary>
-        /// 
-        /// </summary>
-        private class NonDisposedHttpContextServiceScope : IServiceScope
-        {
-            /// <summary>
-            /// 服务提供商
-            /// </summary>
-            public IServiceProvider ServiceProvider { get; }
-            
-            /// <summary>
-            /// Ctor
-            /// </summary>
-            /// <param name="serviceProvider"></param>
-            public NonDisposedHttpContextServiceScope(IServiceProvider serviceProvider)
-            {
-                ServiceProvider = serviceProvider;
-            }
-            /// <summary>
-            /// Dispose
-            /// </summary>
-            public void Dispose() { }
         }
     }
 }

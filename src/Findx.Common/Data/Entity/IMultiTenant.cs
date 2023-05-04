@@ -1,24 +1,23 @@
-﻿namespace Findx.Data
+﻿namespace Findx.Data;
+
+/// <summary>
+///     多租户
+/// </summary>
+public interface ITenant
 {
     /// <summary>
-    /// 多租户
+    ///     租户ID
     /// </summary>
-    public interface ITenant
-    {
-        /// <summary>
-        /// 租户ID
-        /// </summary>
-        Guid? TenantId { get; set; }
-    }
+    Guid? TenantId { get; set; }
+}
 
+/// <summary>
+///     多租户
+/// </summary>
+public interface ITenant<TKey> where TKey : struct
+{
     /// <summary>
-    /// 多租户
+    ///     租户ID
     /// </summary>
-    public interface ITenant<TKey> where TKey : struct
-    {
-        /// <summary>
-        /// 租户ID
-        /// </summary>
-        TKey? TenantId { get; set; }
-    }
+    TKey? TenantId { get; set; }
 }

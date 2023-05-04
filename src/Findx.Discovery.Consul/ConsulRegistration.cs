@@ -1,14 +1,39 @@
-﻿using Consul;
-using Findx.Utils;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Consul;
+using Findx.Utils;
+using Microsoft.Extensions.Options;
 
 namespace Findx.Discovery.Consul
 {
     public class ConsulRegistration : IConsulRegistration
     {
+        private readonly IApplicationContext _applicationInstanceInfo;
+
+
+        private readonly IOptionsMonitor<DiscoveryOptions> _options;
+
+        public ConsulRegistration(IOptionsMonitor<DiscoveryOptions> options,
+            IApplicationContext applicationInstanceInfo)
+        {
+            _options = options;
+            _applicationInstanceInfo = applicationInstanceInfo;
+
+            Service = CreateRegistration();
+            InstanceId = Service.ID;
+            Metadata = GetMetadata(Service.Tags);
+        }
+
+        private DiscoveryOptions Options
+        {
+            get
+            {
+                if (_options != null) return _options.CurrentValue;
+                return default;
+            }
+        }
+
         public string InstanceId { get; set; }
 
         public AgentServiceRegistration Service { get; set; }
@@ -21,32 +46,6 @@ namespace Findx.Discovery.Consul
 
         public IDictionary<string, string> Metadata { get; set; }
 
-
-        private readonly IOptionsMonitor<DiscoveryOptions> _options;
-
-        private readonly IApplicationContext _applicationInstanceInfo;
-
-        private DiscoveryOptions Options
-        {
-            get
-            {
-                if (_options != null)
-                {
-                    return _options.CurrentValue;
-                }
-                return default;
-            }
-        }
-
-        public ConsulRegistration(IOptionsMonitor<DiscoveryOptions> options, IApplicationContext applicationInstanceInfo)
-        {
-            _options = options;
-            _applicationInstanceInfo = applicationInstanceInfo;
-
-            Service = CreateRegistration();
-            InstanceId = Service.ID;
-            Metadata = GetMetadata(Service.Tags);
-        }
         private string CreateInstanceId()
         {
             Check.NotNull(ServiceName, nameof(ServiceName));
@@ -55,24 +54,20 @@ namespace Findx.Discovery.Consul
 
             return $"{ServiceName}-{Host}:{Port}".Replace(".", "-").Replace(":", "-");
         }
+
         private IEnumerable<string> CreateTags()
         {
-            List<string> tags = new List<string>();
-            if (Options.Tags != null)
-            {
-                tags.AddRange(Options.Tags);
-            }
+            var tags = new List<string>();
+            if (Options.Tags != null) tags.AddRange(Options.Tags);
 
-            if (!string.IsNullOrEmpty(Options.InstanceGroup))
-            {
-                tags.Add("group=" + Options.InstanceGroup);
-            }
+            if (!string.IsNullOrEmpty(Options.InstanceGroup)) tags.Add("group=" + Options.InstanceGroup);
 
             tags.Add("secure=" + (Options.Scheme == "https").ToString().ToLower());
-            tags.Add("version=" + (_applicationInstanceInfo.Version).ToString().ToLower());
+            tags.Add("version=" + _applicationInstanceInfo.Version.ToLower());
 
             return tags;
         }
+
         private AgentServiceRegistration CreateRegistration()
         {
             ServiceName = Options?.ServiceName ?? _applicationInstanceInfo.ApplicationName;
@@ -85,20 +80,18 @@ namespace Findx.Discovery.Consul
                 Name = ServiceName,
                 Address = Host,
                 Port = Port,
-                Tags = CreateTags().ToArray(),
+                Tags = CreateTags().ToArray()
             };
             SetCheck(service);
 
             return service;
         }
+
         private AgentServiceCheck CreateCheck(int port)
         {
-            if (port <= 0)
-            {
-                throw new ArgumentException("CreateCheck port must be greater than 0");
-            }
+            if (port <= 0) throw new ArgumentException("CreateCheck port must be greater than 0");
 
-            AgentServiceCheck check = new AgentServiceCheck();
+            var check = new AgentServiceCheck();
 
             if (!string.IsNullOrEmpty(Options.HealthCheckUrl))
             {
@@ -111,36 +104,29 @@ namespace Findx.Discovery.Consul
             }
 
             if (!string.IsNullOrEmpty(Options.HealthCheckInterval))
-            {
                 check.Interval = Time.ToTimeSpan(Options.HealthCheckInterval);
-            }
 
             if (!string.IsNullOrEmpty(Options.HealthCheckTimeout))
-            {
                 check.Timeout = Time.ToTimeSpan(Options.HealthCheckTimeout);
-            }
 
             if (!string.IsNullOrEmpty(Options.HealthCheckCriticalTimeout))
-            {
                 check.DeregisterCriticalServiceAfter = Time.ToTimeSpan(Options.HealthCheckCriticalTimeout);
-            }
 
             check.TLSSkipVerify = Options.HealthCheckTlsSkipVerify;
 
             return check;
         }
+
         private void SetCheck(AgentServiceRegistration service)
         {
             if (Options.RegisterHealthCheck && service != null && service.Check == null)
-            {
                 service.Check = CreateCheck(service.Port);
-            }
         }
+
         internal static IDictionary<string, string> GetMetadata(IList<string> tags)
         {
             var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             if (tags != null)
-            {
                 foreach (var tag in tags)
                 {
                     var index = tag.IndexOf('=');
@@ -157,7 +143,6 @@ namespace Findx.Discovery.Consul
 
                     metadata[key] = value;
                 }
-            }
 
             return metadata;
         }

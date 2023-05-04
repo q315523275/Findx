@@ -11,9 +11,11 @@ namespace Findx.Discovery
     public abstract class DiscoveryModuleBase : FindxModule
     {
         /// <summary>
-        /// 获取 模块级别，级别越小越先启动
+        ///     获取 模块级别，级别越小越先启动
         /// </summary>
         public override ModuleLevel Level => ModuleLevel.Framework;
+
+        protected IConfiguration Configuration { get; set; }
 
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
@@ -31,7 +33,5 @@ namespace Findx.Discovery
 
             return services;
         }
-
-        protected IConfiguration Configuration { get; set; }
     }
 }

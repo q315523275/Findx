@@ -1,10 +1,16 @@
 ﻿using System.Collections.Generic;
 using JetBrains.Annotations;
+
 namespace Findx.Redis
 {
     public class RedisConnections : Dictionary<string, string>
-	{
+    {
         public const string DefaultConnectionName = "Default";
+
+        public RedisConnections()
+        {
+            Default = string.Empty;
+        }
 
         [NotNull]
         public string Default
@@ -13,20 +19,11 @@ namespace Findx.Redis
             set => this[DefaultConnectionName] = Check.NotNull(value, nameof(value));
         }
 
-        public RedisConnections()
-        {
-            Default = string.Empty;
-        }
-
         public string GetOrDefault(string connectionName)
         {
-            if (TryGetValue(connectionName, out var connectionFactory))
-            {
-                return connectionFactory;
-            }
+            if (TryGetValue(connectionName, out var connectionFactory)) return connectionFactory;
 
             return Default;
         }
     }
 }
-

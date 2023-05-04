@@ -6,17 +6,17 @@ using Microsoft.Extensions.Hosting;
 namespace Findx.AspNetCore.Mvc;
 
 /// <summary>
-/// Mvc 功能工作者
+///     Mvc 功能工作者
 /// </summary>
-public class MvcFunctionWorker: BackgroundService
+public class MvcFunctionWorker : BackgroundService
 {
     /// <summary>
-    /// 功能处理器
+    ///     功能处理器
     /// </summary>
     private readonly IFunctionHandler _functionHandler;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="functionHandler"></param>
     public MvcFunctionWorker(IFunctionHandler functionHandler)
@@ -25,7 +25,7 @@ public class MvcFunctionWorker: BackgroundService
     }
 
     /// <summary>
-    /// 执行
+    ///     执行
     /// </summary>
     /// <param name="stoppingToken"></param>
     /// <returns></returns>

@@ -1,29 +1,27 @@
-using Findx.Metrics;
-
 namespace Findx.Machine;
 
 /// <summary>
-/// 大小信息
+///     大小信息
 /// </summary>
 public struct SizeInfo
 {
     /// <summary>
-    /// Byte 长度
+    ///     Byte 长度
     /// </summary>
     public long ByteLength { get; private set; }
 
     /// <summary>
-    /// 大小
+    ///     大小
     /// </summary>
     public decimal Size { get; set; }
 
     /// <summary>
-    /// 单位
+    ///     单位
     /// </summary>
     public UnitType SizeType { get; set; }
-    
+
     /// <summary>
-    /// 将字节单位转换为合适的单位
+    ///     将字节单位转换为合适的单位
     /// </summary>
     /// <param name="byteLength">字节长度</param>
     /// <returns></returns>
@@ -32,14 +30,12 @@ public struct SizeInfo
         UnitType unit = 0;
         decimal number = byteLength;
         if (byteLength < 1000)
-        {
-            return new SizeInfo()
+            return new SizeInfo
             {
                 ByteLength = byteLength,
                 Size = byteLength,
                 SizeType = UnitType.B
             };
-        }
         // 避免出现 1023B 这种情况；这样 1023B 会显示 0.99KB
         while (Math.Round(number / 1000) >= 1)
         {

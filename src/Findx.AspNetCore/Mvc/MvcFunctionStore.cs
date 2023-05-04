@@ -4,14 +4,14 @@ using Findx.Security;
 namespace Findx.AspNetCore.Mvc;
 
 /// <summary>
-/// Mvc功能存储器
+///     Mvc功能存储器
 /// </summary>
-public class MvcFunctionStore: IFunctionStore<MvcFunction>
+public class MvcFunctionStore : IFunctionStore<MvcFunction>
 {
     private readonly List<MvcFunction> _functions = new();
 
     /// <summary>
-    /// 保存
+    ///     保存
     /// </summary>
     /// <param name="functions"></param>
     public void SyncToDatabase(IEnumerable<MvcFunction> functions)
@@ -21,7 +21,7 @@ public class MvcFunctionStore: IFunctionStore<MvcFunction>
     }
 
     /// <summary>
-    /// 查询
+    ///     查询
     /// </summary>
     /// <returns></returns>
     public IEnumerable<MvcFunction> GetFromDatabase()

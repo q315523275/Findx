@@ -1,14 +1,12 @@
-﻿using System;
-namespace Findx.RabbitMQ
+﻿namespace Findx.RabbitMQ
 {
-	public class FindxRabbitMqOptions
-	{
-        public RabbitMqConnections Connections { get; }
-
+    public class FindxRabbitMqOptions
+    {
         public FindxRabbitMqOptions()
         {
             Connections = new RabbitMqConnections();
         }
+
+        public RabbitMqConnections Connections { get; }
     }
 }
-

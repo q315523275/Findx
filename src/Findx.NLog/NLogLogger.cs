@@ -1,12 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System;
+using Microsoft.Extensions.Logging;
 using NLog;
-using System;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Findx.NLog
 {
-    public class NLogLogger : Microsoft.Extensions.Logging.ILogger
+    public class NLogLogger : ILogger
     {
         private readonly Logger _log;
+
         public NLogLogger(string name)
         {
             _log = LogManager.GetLogger(name);
@@ -17,72 +20,64 @@ namespace Findx.NLog
             return null;
         }
 
-        public bool IsEnabled(Microsoft.Extensions.Logging.LogLevel logLevel)
+        public bool IsEnabled(LogLevel logLevel)
         {
             switch (logLevel)
             {
-                case Microsoft.Extensions.Logging.LogLevel.Critical:
+                case LogLevel.Critical:
                     return _log.IsFatalEnabled;
-                case Microsoft.Extensions.Logging.LogLevel.Debug:
+                case LogLevel.Debug:
                     return _log.IsDebugEnabled;
-                case Microsoft.Extensions.Logging.LogLevel.Trace:
+                case LogLevel.Trace:
                     return _log.IsTraceEnabled;
-                case Microsoft.Extensions.Logging.LogLevel.Error:
+                case LogLevel.Error:
                     return _log.IsErrorEnabled;
-                case Microsoft.Extensions.Logging.LogLevel.Information:
+                case LogLevel.Information:
                     return _log.IsInfoEnabled;
-                case Microsoft.Extensions.Logging.LogLevel.Warning:
+                case LogLevel.Warning:
                     return _log.IsWarnEnabled;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(logLevel));
             }
         }
 
-        public void Log<TState>(Microsoft.Extensions.Logging.LogLevel logLevel, EventId eventId, TState state,
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
             Exception exception, Func<TState, Exception, string> formatter)
         {
-            if (!IsEnabled(logLevel))
-            {
-                return;
-            }
+            if (!IsEnabled(logLevel)) return;
 
             Check.NotNull(formatter, nameof(formatter));
 
             string message = null;
-            if (null != formatter)
-            {
-                message = formatter(state, exception);
-            }
+            if (null != formatter) message = formatter(state, exception);
             if (!string.IsNullOrEmpty(message) || exception != null)
-            {
                 switch (logLevel)
                 {
-                    case Microsoft.Extensions.Logging.LogLevel.Trace:
+                    case LogLevel.Trace:
                         _log.Trace(message);
                         break;
-                    case Microsoft.Extensions.Logging.LogLevel.Debug:
+                    case LogLevel.Debug:
                         _log.Debug(message);
                         break;
-                    case Microsoft.Extensions.Logging.LogLevel.Information:
+                    case LogLevel.Information:
                         _log.Info(message);
                         break;
-                    case Microsoft.Extensions.Logging.LogLevel.Warning:
+                    case LogLevel.Warning:
                         _log.Warn(message);
                         break;
-                    case Microsoft.Extensions.Logging.LogLevel.Error:
+                    case LogLevel.Error:
                         _log.Error(exception, message);
                         break;
-                    case Microsoft.Extensions.Logging.LogLevel.Critical:
+                    case LogLevel.Critical:
                         _log.Fatal(exception, message);
                         break;
-                    case Microsoft.Extensions.Logging.LogLevel.None:
+                    case LogLevel.None:
                         break;
                     default:
                         _log.Warn($"遇到未知的日志级别 {logLevel}, 使用Info级别写入日志。");
                         _log.Info(message, exception);
                         break;
                 }
-            }
         }
     }
 }

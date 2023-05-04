@@ -1,27 +1,29 @@
-﻿using Findx.AspNetCore.Mvc;
-using Findx.Linq;
+﻿using System.ComponentModel;
+using Findx.AspNetCore.Mvc;
 using Findx.Extensions;
-using Findx.Module.EleAdmin.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using System.ComponentModel;
+using Findx.Linq;
 using Findx.Module.EleAdmin.Dtos;
+using Findx.Module.EleAdmin.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
 /// <summary>
-/// 字典值服务
+///     字典值服务
 /// </summary>
 [Area("system")]
 [Route("api/[area]/dictData")]
 [Authorize]
 [Description("系统-字典值")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-字典值")]
-public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest, Guid, Guid>
+[ApiExplorerSettings(GroupName = "eleAdmin")]
+[Tags("系统-字典值")]
+public class
+    SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest, Guid, Guid>
 {
     /// <summary>
-    /// 构建查询条件
+    ///     构建查询条件
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>

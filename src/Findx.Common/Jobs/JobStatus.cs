@@ -1,19 +1,17 @@
-﻿namespace Findx.Jobs
+﻿namespace Findx.Jobs;
+
+/// <summary>
+///     任务状态枚举
+/// </summary>
+public enum JobStatus
 {
 	/// <summary>
-	/// 任务状态枚举
+	///     正常
 	/// </summary>
-	public enum JobStatus
-	{
-		/// <summary>
-		/// 正常
-		/// </summary>
-		Normal = 1,
+	Normal = 1,
 
-		/// <summary>
-        /// 停止
-        /// </summary>
-		Stop = 2
-	}
+	/// <summary>
+	///     停止
+	/// </summary>
+	Stop = 2
 }
-

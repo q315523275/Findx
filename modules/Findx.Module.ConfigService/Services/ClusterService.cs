@@ -4,14 +4,14 @@ using Findx.Module.ConfigService.Dtos;
 namespace Findx.Module.ConfigService.Services;
 
 /// <summary>
-/// 集群服务
+///     集群服务
 /// </summary>
-public class ClusterService: IClusterService
+public class ClusterService : IClusterService
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="httpClientFactory"></param>
     public ClusterService(IHttpClientFactory httpClientFactory)
@@ -20,12 +20,13 @@ public class ClusterService: IClusterService
     }
 
     /// <summary>
-    /// 配置变更集群同步通知
+    ///     配置变更集群同步通知
     /// </summary>
     /// <param name="nodeInfo"></param>
     /// <param name="changeDto"></param>
     /// <param name="cancellationToken"></param>
-    public async Task ConfigChangeClusterSyncNotifyAsync(string nodeInfo, ConfigDataChangeDto changeDto, CancellationToken cancellationToken = default)
+    public async Task ConfigChangeClusterSyncNotifyAsync(string nodeInfo, ConfigDataChangeDto changeDto,
+        CancellationToken cancellationToken = default)
     {
         var client = _httpClientFactory.CreateClient();
         var httpUrl = $"http://{nodeInfo}/api/config/cluster/configChangeNotify";

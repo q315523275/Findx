@@ -1,7 +1,8 @@
-﻿namespace Findx.Validations
+﻿namespace Findx.Validations;
+
+/// <summary>
+///     校验属性
+/// </summary>
+public class ValidAttribute
 {
-    /// <summary>
-    /// 校验属性
-    /// </summary>
-    public class ValidAttribute { }
 }

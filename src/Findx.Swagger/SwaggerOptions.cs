@@ -1,27 +1,26 @@
 ﻿using System.Collections.Generic;
 using Swashbuckle.AspNetCore.SwaggerUI;
 
-namespace Findx.Swagger
+namespace Findx.Swagger;
+
+public class SwaggerOptions
 {
-    public class SwaggerOptions
-    {
-        public ICollection<SwaggerEndpoint> Endpoints { get; set; } = new List<SwaggerEndpoint>();
+    public ICollection<SwaggerEndpoint> Endpoints { get; set; } = new List<SwaggerEndpoint>();
 
-        public bool Enabled { get; set; }
+    public bool Enabled { get; set; }
 
-        public bool AllParametersInCamelCase { get; set; } = false;
+    public bool AllParametersInCamelCase { get; set; } = false;
 
-        public bool HideSchemas { get; set; } = true;
+    public bool HideSchemas { get; set; } = true;
 
-        public DocExpansion DocExpansion { get; set; } = DocExpansion.None;
-    }
+    public DocExpansion DocExpansion { get; set; } = DocExpansion.None;
+}
 
-    public class SwaggerEndpoint
-    {
-        public string Title { get; set; }
+public class SwaggerEndpoint
+{
+    public string Title { get; set; }
 
-        public string Version { get; set; }
+    public string Version { get; set; }
 
-        public string Url { get; set; }
-    }
+    public string Url { get; set; }
 }

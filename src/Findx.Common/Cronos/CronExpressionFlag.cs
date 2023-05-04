@@ -20,17 +20,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-using System;
+namespace Findx.Cronos;
 
-namespace Findx.Cronos
+[Flags]
+internal enum CronExpressionFlag : byte
 {
-    [Flags]
-    internal enum CronExpressionFlag : byte
-    {
-        DayOfMonthLast = 0b00001,
-        DayOfWeekLast = 0b00010,
-        Interval = 0b00100,
-        NearestWeekday = 0b01000,
-        NthDayOfWeek = 0b10000
-    }
+    DayOfMonthLast = 0b00001,
+    DayOfWeekLast = 0b00010,
+    Interval = 0b00100,
+    NearestWeekday = 0b01000,
+    NthDayOfWeek = 0b10000
 }

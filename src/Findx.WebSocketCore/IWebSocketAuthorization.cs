@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Http;
 namespace Findx.WebSocketCore;
 
 /// <summary>
-/// WebSocket鉴权
+///     WebSocket鉴权
 /// </summary>
 public interface IWebSocketAuthorization
 {
    /// <summary>
-   /// 鉴权
+   ///     鉴权
    /// </summary>
    /// <param name="request"></param>
    /// <returns></returns>

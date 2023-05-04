@@ -1,17 +1,19 @@
 ﻿using Findx.Modularity;
 using Microsoft.AspNetCore.Builder;
 
-namespace Findx.AspNetCore
+namespace Findx.AspNetCore;
+
+/// <summary>
+///     AspNetCore模块基类
+/// </summary>
+public abstract class AspNetCoreModuleBase : FindxModule
 {
     /// <summary>
-    /// AspNetCore模块基类
+    ///     应用AspNetCore的服务业务
     /// </summary>
-    public abstract class AspNetCoreModuleBase : FindxModule
+    /// <param name="app">应用程序构建器</param>
+    public virtual void UseModule(IApplicationBuilder app)
     {
-        /// <summary>
-        /// 应用AspNetCore的服务业务
-        /// </summary>
-        /// <param name="app">应用程序构建器</param>
-        public virtual void UseModule(IApplicationBuilder app) => base.UseModule(app.ApplicationServices);
+        base.UseModule(app.ApplicationServices);
     }
 }

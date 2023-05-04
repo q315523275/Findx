@@ -1,15 +1,13 @@
-﻿namespace Findx.Guids
+﻿namespace Findx.Guids;
+
+/// <summary>
+///     Guid生成器
+/// </summary>
+public interface IGuidGenerator
 {
 	/// <summary>
-	/// Guid生成器
+	///     生成
 	/// </summary>
-	public interface IGuidGenerator
-	{
-		/// <summary>
-		/// 生成
-		/// </summary>
-		/// <returns></returns>
-		Guid Create();
-	}
+	/// <returns></returns>
+	Guid Create();
 }
-

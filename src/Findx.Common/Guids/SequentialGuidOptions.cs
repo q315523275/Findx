@@ -1,21 +1,18 @@
 ﻿using Findx.Utils;
 
-namespace Findx.Guids
+namespace Findx.Guids;
+
+/// <summary>
+///     有序Guid生成配置
+/// </summary>
+public class SequentialGuidOptions : IOptions<SequentialGuidOptions>
 {
     /// <summary>
-    /// 有序Guid生成配置
     /// </summary>
-    public class SequentialGuidOptions : IOptions<SequentialGuidOptions>
-    {
-        /// <summary>
-        /// this
-        /// </summary>
-        public SequentialGuidOptions Value => this;
+    public SequentialGuidType? SequentialGuidType { set; get; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public SequentialGuidType? SequentialGuidType { set; get; }
-    }
+    /// <summary>
+    ///     this
+    /// </summary>
+    public SequentialGuidOptions Value => this;
 }
-

@@ -12,17 +12,18 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
 /// <summary>
-/// 系统-应用服务
+///     系统-应用服务
 /// </summary>
 [Area("system")]
 [Route("api/[area]/app")]
 [Authorize]
 [Description("系统-应用")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-应用")]
+[ApiExplorerSettings(GroupName = "eleAdmin")]
+[Tags("系统-应用")]
 public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, QueryAppRequest, Guid, Guid>
 {
     /// <summary>
-    /// 新增前校验
+    ///     新增前校验
     /// </summary>
     /// <param name="model"></param>
     /// <param name="request"></param>
@@ -36,7 +37,7 @@ public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, Qu
     }
 
     /// <summary>
-    /// 编辑前校验
+    ///     编辑前校验
     /// </summary>
     /// <param name="model"></param>
     /// <param name="request"></param>
@@ -51,15 +52,19 @@ public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, Qu
         if (old.Code != request.Code)
         {
             var repoMenu = GetRepository<SysMenuInfo>();
-            await repoMenu.UpdateColumnsAsync(x => new SysMenuInfo { ApplicationCode = request.Code, ApplicationName = request.Name }, x => x.ApplicationCode == old.Code);
+            await repoMenu.UpdateColumnsAsync(
+                x => new SysMenuInfo { ApplicationCode = request.Code, ApplicationName = request.Name },
+                x => x.ApplicationCode == old.Code);
 
             var repoRole = GetRepository<SysRoleInfo>();
-            await repoRole.UpdateColumnsAsync(x => new SysRoleInfo { ApplicationCode = request.Code, ApplicationName = request.Name }, x => x.ApplicationCode == old.Code);
+            await repoRole.UpdateColumnsAsync(
+                x => new SysRoleInfo { ApplicationCode = request.Code, ApplicationName = request.Name },
+                x => x.ApplicationCode == old.Code);
         }
     }
 
     /// <summary>
-    /// 删除记录
+    ///     删除记录
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
@@ -84,7 +89,7 @@ public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, Qu
             if (await repoMenu.ExistAsync(u => u.ApplicationCode == info.Code))
                 return CommonResult.Fail("delete.not.count", "该应用下有菜单禁止删除");
 
-            if (await repo.DeleteAsync(key: item) > 0)
+            if (await repo.DeleteAsync(item) > 0)
                 total++;
         }
 

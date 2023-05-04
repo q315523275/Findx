@@ -1,7 +1,7 @@
-﻿using DinkToPdf;
+﻿using System.Threading.Tasks;
+using DinkToPdf;
 using DinkToPdf.Contracts;
 using Findx.Pdf;
-using System.Threading.Tasks;
 
 namespace Findx.DinkToPdf
 {
@@ -16,15 +16,18 @@ namespace Findx.DinkToPdf
 
         public Task<byte[]> ConvertAsync(string htmlString)
         {
-            var doc = new HtmlToPdfDocument()
+            var doc = new HtmlToPdfDocument
             {
-                GlobalSettings = {
+                GlobalSettings =
+                {
                     ColorMode = ColorMode.Color,
                     Orientation = Orientation.Portrait,
-                    PaperSize = PaperKind.A4,
+                    PaperSize = PaperKind.A4
                 },
-                Objects = {
-                    new ObjectSettings() {
+                Objects =
+                {
+                    new ObjectSettings
+                    {
                         HtmlContent = htmlString,
                         WebSettings = { DefaultEncoding = "utf-8" }
                     }

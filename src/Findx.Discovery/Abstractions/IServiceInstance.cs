@@ -5,38 +5,38 @@ using System.Net;
 namespace Findx.Discovery
 {
     /// <summary>
-    /// 服务实例
+    ///     服务实例
     /// </summary>
     public interface IServiceInstance
     {
         /// <summary>
-        /// 服务名
+        ///     服务名
         /// </summary>
         string ServiceName { get; }
 
         /// <summary>
-        /// Host
+        ///     Host
         /// </summary>
         string Host { get; }
 
         /// <summary>
-        /// 端口
+        ///     端口
         /// </summary>
         int Port { get; }
 
         /// <summary>
-        /// 元数据
+        ///     元数据
         /// </summary>
         IDictionary<string, string> Metadata { get; }
     }
 
     /// <summary>
-    /// 服务实例扩展
+    ///     服务实例扩展
     /// </summary>
     public static class ServiceInstanceExtension
     {
         /// <summary>
-        /// 转换为Http Uri
+        ///     转换为Http Uri
         /// </summary>
         /// <param name="serviceInstance"></param>
         /// <param name="scheme"></param>
@@ -48,7 +48,7 @@ namespace Findx.Discovery
         }
 
         /// <summary>
-        /// 转换为IP终结点
+        ///     转换为IP终结点
         /// </summary>
         /// <param name="serviceInstance"></param>
         /// <returns></returns>

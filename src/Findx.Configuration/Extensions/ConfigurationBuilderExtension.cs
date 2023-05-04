@@ -4,14 +4,16 @@ namespace Findx.Configuration.Extensions
 {
     public static class ConfigurationBuilderExtension
     {
-        public static IConfigurationBuilder AddFindxConfig(this IConfigurationBuilder configurationBuilder, ConfigOptions options)
+        public static IConfigurationBuilder AddFindxConfig(this IConfigurationBuilder configurationBuilder,
+            ConfigOptions options)
         {
             Check.NotNull(options, nameof(options));
             configurationBuilder.Add(new ConfigSource(new ConfigClient(options)));
             return configurationBuilder;
         }
-        
-        public static IConfigurationBuilder AddFindxConfig(this IConfigurationBuilder configurationBuilder, IConfigClient client)
+
+        public static IConfigurationBuilder AddFindxConfig(this IConfigurationBuilder configurationBuilder,
+            IConfigClient client)
         {
             Check.NotNull(client, nameof(client));
             configurationBuilder.Add(new ConfigSource(client));

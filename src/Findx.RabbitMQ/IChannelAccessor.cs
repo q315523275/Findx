@@ -10,4 +10,3 @@ namespace Findx.RabbitMQ
         string Name { get; }
     }
 }
-

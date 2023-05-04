@@ -1,6 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using System.Diagnostics;
 using Findx.Data;
 
 Console.Title = "Findx 控制台测试";
@@ -124,10 +123,11 @@ Console.WriteLine($"GetProperty:{user.GetProperty<decimal>("number")}");
 
 Console.ReadLine();
 
-class User : IExtraObject
+internal class User : IExtraObject
 {
     public string ExtraProperties { get; set; }
 }
+
 public class Test
 {
     public string Title { get; set; }

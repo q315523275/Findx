@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using Microsoft.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc;
 using Findx.Builders;
 using Findx.Data;
@@ -10,22 +9,25 @@ using Findx.Machine.Memory;
 using Findx.Machine.Network;
 using Findx.Machine.System;
 using Findx.Security;
+using Findx.Utils;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 namespace Findx.Module.EleAdmin.Areas.System.Controller;
 
 /// <summary>
-/// Findx框架
+///     Findx框架
 /// </summary>
 [Area("system")]
 [Route("api/[area]/findx")]
 [Description("Findx框架")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("Findx框架")]
+[ApiExplorerSettings(GroupName = "eleAdmin")]
+[Tags("Findx框架")]
 public class FindxController : AreaApiControllerBase
 {
     /// <summary>
-    /// 模块列表
+    ///     模块列表
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="keyGenerator"></param>
@@ -49,7 +51,7 @@ public class FindxController : AreaApiControllerBase
     }
 
     /// <summary>
-    /// 系统指标
+    ///     系统指标
     /// </summary>
     /// <returns></returns>
     [HttpGet("metrics")]
@@ -75,7 +77,7 @@ public class FindxController : AreaApiControllerBase
                     SystemPlatformInfo.ProcessorCount,
                     SystemPlatformInfo.ProcessArchitecture,
                     SystemPlatformInfo.GetLogicalDrives,
-                    SystemPlatformInfo.IsUserInteractive,
+                    SystemPlatformInfo.IsUserInteractive
                 }
             }
         };
@@ -118,18 +120,18 @@ public class FindxController : AreaApiControllerBase
         dict.Add("RuntimeInfo", new
         {
             ip = app.InstanceIp,
-            Cpu = (await Utils.RuntimeUtil.GetCpuUsage()).ToString("0.000"),
-            Memory = (Utils.RuntimeUtil.GetMemoryUsage() / 1024).ToString("0.000") + "/" +
+            Cpu = (await RuntimeUtil.GetCpuUsage()).ToString("0.000"),
+            Memory = (RuntimeUtil.GetMemoryUsage() / 1024).ToString("0.000") + "/" +
                      (GC.GetTotalMemory(false) / 1024.0 / 1024.0).ToString("0.000"),
-            ThreadCount = Utils.RuntimeUtil.GetThreadCount(),
-            HandleCount = Utils.RuntimeUtil.GetHandleCount()
+            ThreadCount = RuntimeUtil.GetThreadCount(),
+            HandleCount = RuntimeUtil.GetHandleCount()
         });
 
         return CommonResult.Success(dict);
     }
 
     /// <summary>
-    /// 方法集合
+    ///     方法集合
     /// </summary>
     /// <returns></returns>
     [HttpGet("functions")]
@@ -140,7 +142,7 @@ public class FindxController : AreaApiControllerBase
     }
 
     /// <summary>
-    /// test
+    ///     test
     /// </summary>
     /// <param name="logger"></param>
     /// <returns></returns>
@@ -157,6 +159,7 @@ public class FindxController : AreaApiControllerBase
         {
             logger.LogError(e, "findx");
         }
+
         return CommonResult.Success();
     }
 }

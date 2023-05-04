@@ -7,7 +7,6 @@ using Findx.Castle;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.WebHost.Aspect;
-using Findx.WebHost.RabbitMQ;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,16 +15,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddFindx().AddModules();
 builder.Services.AddHttpClient("policy")
-                .AddFallbackPolicy(CommonResult.Fail(), 200)
-                .AddCircuitBreakerPolicy(5, "5s")
-                .AddRetryPolicy(1)
-                .AddTimeoutPolicy(1);
+    .AddFallbackPolicy(CommonResult.Fail(), 200)
+    .AddCircuitBreakerPolicy(5, "5s")
+    .AddRetryPolicy(1)
+    .AddTimeoutPolicy(1);
 builder.Services.AddControllers()
-                .AddMvcFilter<FindxGlobalAttribute>()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
-                });
+    .AddMvcFilter<FindxGlobalAttribute>()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+    });
 // builder.Services.AddHostedService<EventBusWorker>();
 
 var rpcProxyInterceptorType = typeof(TestProxyInterceptor);
@@ -37,7 +36,8 @@ builder.Services.AddTransient(
     serviceProvider =>
     {
         var proxyGeneratorInstance = serviceProvider.GetRequiredService<ProxyGenerator>();
-        return proxyGeneratorInstance.CreateInterfaceProxyWithoutTarget(typeof(IMachine), (IInterceptor)serviceProvider.GetRequiredService(rpcInterceptorAdapterType));
+        return proxyGeneratorInstance.CreateInterfaceProxyWithoutTarget(typeof(IMachine),
+            (IInterceptor)serviceProvider.GetRequiredService(rpcInterceptorAdapterType));
     });
 
 var app = builder.Build();

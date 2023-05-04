@@ -1,20 +1,20 @@
 ﻿using System.Threading.Tasks;
-namespace Findx.ExceptionHandling
+
+namespace Findx.ExceptionHandling;
+
+/// <summary>
+///     Ctor
+/// </summary>
+public class NullExceptionSubscriber : ExceptionSubscriber
 {
     /// <summary>
-    /// Ctor
+    ///     订阅处理
     /// </summary>
-    public class NullExceptionSubscriber : ExceptionSubscriber
+    /// <param name="context"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public override Task HandleAsync(ExceptionNotificationContext context, CancellationToken token = default)
     {
-        /// <summary>
-        /// 订阅处理
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public override Task HandleAsync(ExceptionNotificationContext context, CancellationToken token = default)
-        {
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

@@ -1,8 +1,8 @@
-﻿using Findx.Modularity;
+﻿using System;
+using System.ComponentModel;
+using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.ComponentModel;
 
 namespace Findx.Log4Net
 {

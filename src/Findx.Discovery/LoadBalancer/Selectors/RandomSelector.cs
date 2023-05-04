@@ -1,16 +1,17 @@
-﻿using Findx.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Findx.Utils;
 
 namespace Findx.Discovery.LoadBalancer.Selectors
 {
     public class RandomSelector : ILoadBalancer
     {
-        private readonly Func<Task<IList<IServiceInstance>>> _services;
-        private readonly string _serviceName;
         private readonly Func<int, int, int> _generate;
+        private readonly string _serviceName;
+        private readonly Func<Task<IList<IServiceInstance>>> _services;
+
         public RandomSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
         {
             _services = services;

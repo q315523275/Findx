@@ -3,7 +3,6 @@ using Findx.Caching;
 using Findx.Caching.InMemory;
 using Findx.Data;
 using Findx.DependencyInjection;
-using Findx.Domain;
 using Findx.Email;
 using Findx.ExceptionHandling;
 using Findx.Extensions;
@@ -20,112 +19,112 @@ using Findx.Sms;
 using Findx.Storage;
 using Findx.Threading;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using SequentialGuidGenerator = Findx.Guids.SequentialGuidGenerator;
 
-namespace Findx
+namespace Findx;
+
+/// <summary>
+///     Findx-基础模块
+/// </summary>
+[Description("Findx-基础模块")]
+public class FindxCoreModule : FindxModule
 {
     /// <summary>
-    /// Findx-基础模块
+    ///     等级
     /// </summary>
-    [Description("Findx-基础模块")]
-    public class FindxCoreModule : FindxModule
+    public override ModuleLevel Level => ModuleLevel.Framework;
+
+    /// <summary>
+    ///     排序
+    ///     模块启动顺序，模块启动的顺序先按级别启动，同一级别内部再按此顺序启动，
+    /// </summary>
+    public override int Order => 0;
+
+    /// <summary>
+    ///     注册服务
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
-        /// <summary>
-        /// 等级
-        /// </summary>
-        public override ModuleLevel Level => ModuleLevel.Framework;
-        
-        /// <summary>
-        /// 排序
-        /// 模块启动顺序，模块启动的顺序先按级别启动，同一级别内部再按此顺序启动，
-        /// </summary>
-        public override int Order => 0;
-        
-        /// <summary>
-        /// 注册服务
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public override IServiceCollection ConfigureServices(IServiceCollection services)
-        {
-            var configuration = services.GetConfiguration();
-            
-            // 应用基础
-            services.Configure<ApplicationOptions>(configuration.GetSection("Findx:Application"));
+        var configuration = services.GetConfiguration();
 
-            // 配置
-            services.AddSingleton<ISettingProvider, DefaultSettingProvider>();
-            services.AddSingleton<ISettingValueProvider, ConfigurationSettingValueProvider>();
+        // 应用基础
+        services.Configure<ApplicationOptions>(configuration.GetSection("Findx:Application"));
 
-            // 缓存
-            services.TryAddSingleton<ICacheProvider, CacheProvider>();
-            services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();
-            services.AddSingleton<ICache, InMemoryCache>();
+        // 配置
+        services.AddSingleton<ISettingProvider, DefaultSettingProvider>();
+        services.AddSingleton<ISettingValueProvider, ConfigurationSettingValueProvider>();
 
-            // 注入模块
-            services.TryAddSingleton<IHybridServiceScopeFactory, DefaultServiceScopeFactory>();
-            services.AddScoped<ScopedDictionary>();
+        // 缓存
+        services.TryAddSingleton<ICacheProvider, CacheProvider>();
+        services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();
+        services.AddSingleton<ICache, InMemoryCache>();
 
-            // 工作单元
-            services.AddScoped<IUnitOfWorkManager, NullUnitOfWorkManager>();
-            
-            // Entity、Domain
-            // services.TryAddSingleton<IEntityFinder, EntityFinder>();
-            // services.TryAddSingleton<IDomainEventsDispatcher, DomainEventsDispatcher>();
+        // 注入模块
+        services.TryAddSingleton<IHybridServiceScopeFactory, DefaultServiceScopeFactory>();
+        services.AddScoped<ScopedDictionary>();
 
-            // 邮件
-            services.AddSingleton<IEmailSender, DefaultEmailSender>();
-            services.Configure<EmailSenderOptions>(configuration.GetSection("Findx:Email"));
+        // 工作单元
+        services.AddScoped<IUnitOfWorkManager, NullUnitOfWorkManager>();
 
-            // 映射配置
-            services.Configure<MappingOptions>(configuration.GetSection("Findx:Mapping"));
+        // Entity、Domain
+        // services.TryAddSingleton<IEntityFinder, EntityFinder>();
+        // services.TryAddSingleton<IDomainEventsDispatcher, DomainEventsDispatcher>();
 
-            // 异常通知
-            services.AddSingleton<IExceptionNotifier, ExceptionNotifier>();
-            services.AddSingleton<IExceptionSubscriber, NullExceptionSubscriber>();
+        // 邮件
+        services.AddSingleton<IEmailSender, DefaultEmailSender>();
+        services.Configure<EmailSenderOptions>(configuration.GetSection("Findx:Email"));
 
-            // 锁
-            services.AddSingleton<ILock, LocalCacheLock>();
-            services.AddSingleton<ILockProvider, LockProvider>();
+        // 映射配置
+        services.Configure<MappingOptions>(configuration.GetSection("Findx:Mapping"));
 
-            // 反射查询器
-            services.AddSingleton<IMethodInfoFinder, PublicInstanceMethodInfoFinder>();
+        // 异常通知
+        services.AddSingleton<IExceptionNotifier, ExceptionNotifier>();
+        services.AddSingleton<IExceptionSubscriber, NullExceptionSubscriber>();
 
-            // 进程消息
-            services.AddScoped<IMessageDispatcher, MessageDispatcher>();
-            services.AddSingleton<IApplicationEventPublisher, ApplicationEventPublisher>();
+        // 锁
+        services.AddSingleton<ILock, LocalCacheLock>();
+        services.AddSingleton<ILockProvider, LockProvider>();
 
-            // 序列化
-            services.AddSingleton<IJsonSerializer, SystemTextJsonStringSerializer>();
-            services.AddSingleton<ISerializer, SystemTextUtf8ByteSerializer>();
+        // 反射查询器
+        services.AddSingleton<IMethodInfoFinder, PublicInstanceMethodInfoFinder>();
 
-            // 短信
-            services.AddSingleton<ISmsSender, NullSmsSender>();
+        // 进程消息
+        services.AddScoped<IMessageDispatcher, MessageDispatcher>();
+        services.AddSingleton<IApplicationEventPublisher, ApplicationEventPublisher>();
 
-            // 存储
-            services.AddSingleton<IFileStorage, FolderFileStorage>();
-            services.AddSingleton<IStorageProvider, StorageProvider>();
+        // 序列化
+        services.AddSingleton<IJsonSerializer, SystemTextJsonStringSerializer>();
+        services.AddSingleton<ISerializer, SystemTextUtf8ByteSerializer>();
 
-            // 线程取消通知
-            services.AddSingleton<ICancellationTokenProvider, NullCancellationTokenProvider>();
+        // 短信
+        services.AddSingleton<ISmsSender, NullSmsSender>();
 
-            // 应用上下文
-            services.AddSingleton<IApplicationContext, ApplicationContext>();
+        // 存储
+        services.AddSingleton<IFileStorage, FolderFileStorage>();
+        services.AddSingleton<IStorageProvider, StorageProvider>();
 
-            // 有序Guid
-            services.Configure<SequentialGuidOptions>(configuration.GetSection("Findx:SequentialGuid"));
-            services.AddSingleton<IGuidGenerator, Guids.SequentialGuidGenerator>();
+        // 线程取消通知
+        services.AddSingleton<ICancellationTokenProvider, NullCancellationTokenProvider>();
 
-            // 主键生成器
-            services.AddSingleton<IKeyGenerator<long>, SnowflakeIdGenerator>();
-            services.AddSingleton<IKeyGenerator<Guid>, Data.SequentialGuidGenerator>();
-            
-            // 功能权限
-            services.AddScoped<IFunctionAuthorization, FunctionAuthorization>();
-            
-            // 审计配置
-            services.Configure<AuditingOptions>(configuration.GetSection("Findx:Auditing"));
+        // 应用上下文
+        services.AddSingleton<IApplicationContext, ApplicationContext>();
 
-            return services;
-        }
+        // 有序Guid
+        services.Configure<SequentialGuidOptions>(configuration.GetSection("Findx:SequentialGuid"));
+        services.AddSingleton<IGuidGenerator, SequentialGuidGenerator>();
+
+        // 主键生成器
+        services.AddSingleton<IKeyGenerator<long>, SnowflakeIdGenerator>();
+        services.AddSingleton<IKeyGenerator<Guid>, Data.SequentialGuidGenerator>();
+
+        // 功能权限
+        services.AddScoped<IFunctionAuthorization, FunctionAuthorization>();
+
+        // 审计配置
+        services.Configure<AuditingOptions>(configuration.GetSection("Findx:Auditing"));
+
+        return services;
     }
 }

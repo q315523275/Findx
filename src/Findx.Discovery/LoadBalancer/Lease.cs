@@ -7,6 +7,7 @@
             ServiceInstance = serviceInstance;
             Connections = connections;
         }
+
         public IServiceInstance ServiceInstance { get; private set; }
         public int Connections { get; private set; }
     }

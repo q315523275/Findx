@@ -1,30 +1,28 @@
-﻿using Findx.Extensions;
+﻿using System.ComponentModel;
+using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.ComponentModel;
-using System.Threading.Tasks;
 
 namespace Findx.RabbitMQ
 {
     /// <summary>
-    /// Findx-RabbitMQ模块
+    ///     Findx-RabbitMQ模块
     /// </summary>
     [Description("Findx-RabbitMQ模块")]
     public class FindxRabbitMqModule : FindxModule
     {
         /// <summary>
-        /// 等级
+        ///     等级
         /// </summary>
         public override ModuleLevel Level => ModuleLevel.Framework;
 
         /// <summary>
-        /// 排序
+        ///     排序
         /// </summary>
         public override int Order => 110;
 
         /// <summary>
-        /// 配置服务
+        ///     配置服务
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
@@ -48,11 +46,12 @@ namespace Findx.RabbitMQ
 
             // 注解消费者
             services.AddSingleton<IRabbitConsumerBuilder, RabbitConsumerBuilder>();
-            services.GetOrAddTypeFinder<IRabbitConsumerFinder>(assemblyFinder => new RabbitConsumerFinder(assemblyFinder));
+            services.GetOrAddTypeFinder<IRabbitConsumerFinder>(assemblyFinder =>
+                new RabbitConsumerFinder(assemblyFinder));
 
             // 消费者自动构建
             services.AddHostedService<RabbitConsumerBuildWorker>();
-            
+
             return services;
         }
     }

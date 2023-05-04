@@ -7,13 +7,20 @@ using Findx.Aspect;
 
 namespace Findx.Castle
 {
-	public abstract class CastleMethodInvocationAdapterBase: IMethodInvocation
-	{
+    public abstract class CastleMethodInvocationAdapterBase : IMethodInvocation
+    {
+        private readonly Lazy<IReadOnlyDictionary<string, object>> _lazyArgumentsDictionary;
+
+        protected CastleMethodInvocationAdapterBase(IInvocation invocation)
+        {
+            Invocation = invocation;
+            _lazyArgumentsDictionary = new Lazy<IReadOnlyDictionary<string, object>>(GetArgumentsDictionary);
+        }
+
+        protected IInvocation Invocation { get; }
         public object[] Arguments => Invocation.Arguments;
 
         public IReadOnlyDictionary<string, object> ArgumentsDictionary => _lazyArgumentsDictionary.Value;
-
-        private readonly Lazy<IReadOnlyDictionary<string, object>> _lazyArgumentsDictionary;
 
         public Type[] GenericArguments => Invocation.GenericArguments;
 
@@ -23,14 +30,6 @@ namespace Findx.Castle
 
         public object ReturnValue { get; set; }
 
-        protected IInvocation Invocation { get; }
-
-        protected CastleMethodInvocationAdapterBase(IInvocation invocation)
-        {
-            Invocation = invocation;
-            _lazyArgumentsDictionary = new Lazy<IReadOnlyDictionary<string, object>>(GetArgumentsDictionary);
-        }
-
         public abstract Task ProceedAsync();
 
         private IReadOnlyDictionary<string, object> GetArgumentsDictionary()
@@ -38,13 +37,9 @@ namespace Findx.Castle
             var dict = new Dictionary<string, object>();
 
             var methodParameters = Method.GetParameters();
-            for (int i = 0; i < methodParameters.Length; i++)
-            {
-                dict[methodParameters[i].Name] = Invocation.Arguments[i];
-            }
+            for (var i = 0; i < methodParameters.Length; i++) dict[methodParameters[i].Name] = Invocation.Arguments[i];
 
             return dict;
         }
     }
 }
-

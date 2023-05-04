@@ -3,19 +3,17 @@
 namespace Findx.Module.EleAdmin.Enum;
 
 /// <summary>
-/// 通用状态 枚举
+///     通用状态 枚举
 /// </summary>
 public enum CommonStatus
 {
     /// <summary>
-    /// 正常
+    ///     正常
     /// </summary>
-    [Description("正常")] 
-    Enable = 0,
+    [Description("正常")] Enable = 0,
 
     /// <summary>
-    /// 停用
+    ///     停用
     /// </summary>
-    [Description("停用")] 
-    Disable = 1,
+    [Description("停用")] Disable = 1
 }

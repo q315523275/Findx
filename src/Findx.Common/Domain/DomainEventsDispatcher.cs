@@ -4,26 +4,27 @@ using Findx.Messaging;
 namespace Findx.Domain;
 
 /// <summary>
-/// 领域事件调度器
+///     领域事件调度器
 /// </summary>
-public class DomainEventsDispatcher: IDomainEventsDispatcher
+public class DomainEventsDispatcher : IDomainEventsDispatcher
 {
     /// <summary>
-    /// 领域事件访问者
-    /// </summary>
-    private readonly IDomainEventsAccessor _domainEventsProvider;
-
-    /// <summary>
-    /// 应用事件推送者
+    ///     应用事件推送者
     /// </summary>
     private readonly IApplicationEventPublisher _applicationEventPublisher;
 
     /// <summary>
-    /// Ctor
+    ///     领域事件访问者
+    /// </summary>
+    private readonly IDomainEventsAccessor _domainEventsProvider;
+
+    /// <summary>
+    ///     Ctor
     /// </summary>
     /// <param name="domainEventsProvider"></param>
     /// <param name="applicationEventPublisher"></param>
-    public DomainEventsDispatcher(IDomainEventsAccessor domainEventsProvider, IApplicationEventPublisher applicationEventPublisher)
+    public DomainEventsDispatcher(IDomainEventsAccessor domainEventsProvider,
+        IApplicationEventPublisher applicationEventPublisher)
     {
         _domainEventsProvider = domainEventsProvider;
         _applicationEventPublisher = applicationEventPublisher;
@@ -31,18 +32,15 @@ public class DomainEventsDispatcher: IDomainEventsDispatcher
 
 
     /// <summary>
-    /// 调度领域事件
+    ///     调度领域事件
     /// </summary>
     /// <returns></returns>
     public async Task DispatchEventsAsync()
     {
         var domainEvents = _domainEventsProvider.GetAllDomainEvents();
-        
+
         _domainEventsProvider.ClearAllDomainEvents();
-        
-        foreach (var domainEvent in domainEvents)
-        {
-            await _applicationEventPublisher.PublishAsync(domainEvent);
-        }
+
+        foreach (var domainEvent in domainEvents) await _applicationEventPublisher.PublishAsync(domainEvent);
     }
 }

@@ -1,29 +1,27 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Findx.AspNetCore.Extensions
+namespace Findx.AspNetCore.Extensions;
+
+/// <summary>
+///     WebHost扩展
+/// </summary>
+public static partial class Extensions
 {
     /// <summary>
-    /// WebHost扩展
+    ///     使用Findx框架启动
     /// </summary>
-    public static partial class Extensions
+    /// <typeparam name="TStartup"></typeparam>
+    /// <param name="webHostBuilder"></param>
+    /// <returns></returns>
+    public static IWebHostBuilder UseFindxStartup<TStartup>(this IWebHostBuilder webHostBuilder) where TStartup : class
     {
-        /// <summary>
-        /// 使用Findx框架启动
-        /// </summary>
-        /// <typeparam name="TStartup"></typeparam>
-        /// <param name="webHostBuilder"></param>
-        /// <returns></returns>
-        public static IWebHostBuilder UseFindxStartup<TStartup>(this IWebHostBuilder webHostBuilder) where TStartup : class
+        webHostBuilder.UseStartup<TStartup>();
+        webHostBuilder.UseKestrel(options =>
         {
-            webHostBuilder.UseStartup<TStartup>();
-            webHostBuilder.UseKestrel(options =>
-            {
-                var applicationInstanceInfo = options.ApplicationServices.GetRequiredService<IApplicationContext>();
-                options.ListenAnyIP(applicationInstanceInfo.Port);
-            });
-            return webHostBuilder;
-        }
+            var applicationInstanceInfo = options.ApplicationServices.GetRequiredService<IApplicationContext>();
+            options.ListenAnyIP(applicationInstanceInfo.Port);
+        });
+        return webHostBuilder;
     }
 }

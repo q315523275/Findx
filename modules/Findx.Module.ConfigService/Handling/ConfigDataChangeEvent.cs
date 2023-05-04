@@ -4,12 +4,12 @@ using Findx.Messaging;
 namespace Findx.Module.ConfigService.Handling;
 
 /// <summary>
-/// 配置数据改变事件
+///     配置数据改变事件
 /// </summary>
-public class ConfigDataChangeEvent: IApplicationEvent
+public class ConfigDataChangeEvent : IApplicationEvent
 {
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="dataId"></param>
@@ -18,7 +18,8 @@ public class ConfigDataChangeEvent: IApplicationEvent
     /// <param name="environment"></param>
     /// <param name="version"></param>
     [JsonConstructor]
-    public ConfigDataChangeEvent(string appId, string dataId, string dataType, string content, string environment, long version)
+    public ConfigDataChangeEvent(string appId, string dataId, string dataType, string content, string environment,
+        long version)
     {
         AppId = appId;
         DataId = dataId;
@@ -29,37 +30,37 @@ public class ConfigDataChangeEvent: IApplicationEvent
     }
 
     /// <summary>
-    /// 应用编号
+    ///     应用编号
     /// </summary>
     [JsonInclude]
     public string AppId { get; set; }
-    
+
     /// <summary>
-    /// 数据编号
+    ///     数据编号
     /// </summary>
     [JsonInclude]
     public string DataId { get; set; }
 
     /// <summary>
-    /// 数据类型
+    ///     数据类型
     /// </summary>
     [JsonInclude]
     public string DataType { get; set; }
-    
+
     /// <summary>
-    /// 内容
+    ///     内容
     /// </summary>
     [JsonInclude]
     public string Content { get; set; }
-    
+
     /// <summary>
-    /// 环境
+    ///     环境
     /// </summary>
     [JsonInclude]
     public string Environment { get; set; }
-    
+
     /// <summary>
-    /// 版本号
+    ///     版本号
     /// </summary>
     [JsonInclude]
     public long Version { get; set; }

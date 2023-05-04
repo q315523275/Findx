@@ -5,14 +5,14 @@ using System.Threading.Tasks;
 namespace Findx.Discovery
 {
     /// <summary>
-    /// 服务注册
+    ///     服务注册
     /// </summary>
     /// <typeparam name="T"></typeparam>
     public interface IServiceRegistry<in T> : IDisposable
         where T : IServiceInstance
     {
         /// <summary>
-        /// 注册服务
+        ///     注册服务
         /// </summary>
         /// <param name="registration"></param>
         /// <param name="cancellationToken"></param>
@@ -20,7 +20,7 @@ namespace Findx.Discovery
         Task<bool> RegisterAsync(T registration, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 注销服务
+        ///     注销服务
         /// </summary>
         /// <param name="registration"></param>
         /// <param name="cancellationToken"></param>
@@ -28,7 +28,7 @@ namespace Findx.Discovery
         Task<bool> DeregisterAsync(T registration, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 获取服务状态
+        ///     获取服务状态
         /// </summary>
         /// <param name="registration"></param>
         /// <param name="status"></param>
@@ -37,7 +37,7 @@ namespace Findx.Discovery
         Task SetStatusAsync(T registration, string status, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// 设置服务状态
+        ///     设置服务状态
         /// </summary>
         /// <param name="registration"></param>
         /// <param name="cancellationToken"></param>

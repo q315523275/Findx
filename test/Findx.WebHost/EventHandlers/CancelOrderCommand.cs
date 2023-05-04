@@ -1,16 +1,13 @@
-﻿using System;
-using Findx.Messaging;
+﻿using Findx.Messaging;
 
-namespace Findx.WebHost.EventHandlers
+namespace Findx.WebHost.EventHandlers;
+
+public class CancelOrderCommand : IMessageRequest<string>
 {
-	public class CancelOrderCommand: IMessageRequest<string>
-	{
-        public CancelOrderCommand(string orderId)
-        {
-            OrderId = orderId;
-        }
+    public CancelOrderCommand(string orderId)
+    {
+        OrderId = orderId;
+    }
 
-        public string OrderId { set; get; }
-	}
+    public string OrderId { set; get; }
 }
-
