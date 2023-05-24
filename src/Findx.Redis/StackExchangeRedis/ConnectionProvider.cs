@@ -8,26 +8,26 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
-namespace Findx.Redis
+namespace Findx.Redis.StackExchangeRedis
 {
-    public class StackExchangeRedisConnectionProvider : IStackExchangeRedisConnectionProvider, IDisposable
+    public class ConnectionProvider : IConnectionProvider, IDisposable
     {
-        private readonly ILogger<StackExchangeRedisConnectionProvider> _logger;
+        private readonly ILogger<ConnectionProvider> _logger;
 
         private bool _isDisposed;
 
 
-        public StackExchangeRedisConnectionProvider(IOptions<FindxRedisOptions> options,
-            ILogger<StackExchangeRedisConnectionProvider> logger)
+        public ConnectionProvider(IOptions<FindxRedisOptions> options,
+            ILogger<ConnectionProvider> logger)
         {
             Options = options.Value;
             _logger = logger;
             Connections = new ConcurrentDictionary<string, Lazy<ConnectionMultiplexer>>();
         }
 
-        protected FindxRedisOptions Options { get; }
+        private FindxRedisOptions Options { get; }
 
-        protected ConcurrentDictionary<string, Lazy<ConnectionMultiplexer>> Connections { get; }
+        private ConcurrentDictionary<string, Lazy<ConnectionMultiplexer>> Connections { get; }
 
         public void Dispose()
         {
@@ -38,10 +38,11 @@ namespace Findx.Redis
             foreach (var connection in Connections.Values)
                 try
                 {
-                    connection.Value.Dispose();
+                    connection?.Value?.Dispose();
                 }
                 catch
                 {
+                    // ignored
                 }
 
             Connections.Clear();
@@ -108,8 +109,9 @@ namespace Findx.Redis
                     if (server.ServerType == ServerType.Cluster)
                     {
                         // n.IsSlave => n.IsReplica
-                        masters.AddRange(server.ClusterConfiguration.Nodes.Where(n => !n.IsReplica)
-                            .Select(n => n.EndPoint));
+                        if (server.ClusterConfiguration != null)
+                            masters.AddRange(server.ClusterConfiguration.Nodes.Where(n => !n.IsReplica)
+                                .Select(n => n.EndPoint));
                         break;
                     }
 
@@ -128,16 +130,19 @@ namespace Findx.Redis
 
         private void Conn_ErrorMessage(object sender, RedisErrorEventArgs e)
         {
+            // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
             _logger.LogError($"redis内部发生错误,{e.EndPoint}:{e.Message}");
         }
 
         private void Conn_ConnectionRestored(object sender, ConnectionFailedEventArgs e)
         {
+            // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
             _logger.LogError($"redis重新连接时发生错误,{e.EndPoint}{e.Exception.FormatMessage()}");
         }
 
         private void Conn_ConnectionFailed(object sender, ConnectionFailedEventArgs e)
         {
+            // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
             _logger.LogError($"redis连接时发生错误,{e.EndPoint}{e.Exception.FormatMessage()}");
         }
     }

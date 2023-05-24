@@ -76,7 +76,7 @@ public class AuthController : AreaApiControllerBase
 
         // 是否开启验证码
         var cacheKey = $"verifyCode:{req.Uuid}";
-        if (_enabledCaptcha && cache.Get<string>(cacheKey) != req.Code.ToLower())
+        if (_enabledCaptcha && !string.Equals(cache.Get<string>(cacheKey), req.Code.ToLower(), StringComparison.OrdinalIgnoreCase))
             return CommonResult.Fail("50500", "验证码错误");
 
         // 密码错误次数

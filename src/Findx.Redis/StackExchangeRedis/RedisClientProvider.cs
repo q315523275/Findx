@@ -1,13 +1,11 @@
-﻿using Findx.Redis.StackExchangeRedis;
-
-namespace Findx.Redis
+﻿namespace Findx.Redis.StackExchangeRedis
 {
-    public class StackExchangeRedisClientProvider : IRedisClientProvider
+    public class RedisClientProvider : IRedisClientProvider
     {
-        private readonly IStackExchangeRedisConnectionProvider _connectionProvider;
+        private readonly IConnectionProvider _connectionProvider;
         private readonly IRedisSerializer _serializer;
 
-        public StackExchangeRedisClientProvider(IStackExchangeRedisConnectionProvider connectionProvider,
+        public RedisClientProvider(IConnectionProvider connectionProvider,
             IRedisSerializer serializer)
         {
             _connectionProvider = connectionProvider;
@@ -16,13 +14,13 @@ namespace Findx.Redis
 
         public IRedisClient CreateClient(string connectionName = null)
         {
-            return new StackExchangeRedisClient(_serializer, _connectionProvider.GetConnection(connectionName),
+            return new RedisClient(_serializer, _connectionProvider.GetConnection(connectionName),
                 connectionName ?? RedisConnections.DefaultConnectionName);
         }
 
         public IRedisClient CreateClient(IRedisSerializer redisSerializer, string connectionName = null)
         {
-            return new StackExchangeRedisClient(redisSerializer, _connectionProvider.GetConnection(connectionName),
+            return new RedisClient(redisSerializer, _connectionProvider.GetConnection(connectionName),
                 connectionName ?? RedisConnections.DefaultConnectionName);
         }
     }

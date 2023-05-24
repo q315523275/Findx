@@ -1,6 +1,4 @@
-﻿using Findx.Setting;
-
-namespace Findx;
+﻿namespace Findx;
 
 /// <summary>
 ///     应用实例信息
@@ -50,7 +48,7 @@ public interface IApplicationContext
     /// <summary>
     ///     设置提供器
     /// </summary>
-    ISettingProvider Setting { get; }
+    IConfiguration AppSetting { get; }
 
     /// <summary>
     ///     将虚拟路径转换为物理路径，相对路径转换为绝对路径

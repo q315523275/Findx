@@ -13,16 +13,18 @@ public static class Time
     public static TimeSpan ToTimeSpan(string time)
     {
         if (string.IsNullOrWhiteSpace(time)) throw new ArgumentNullException(nameof(time));
+        
+        if (time.EndsWith("ms", StringComparison.OrdinalIgnoreCase)) 
+            return ToTimeSpan(int.Parse(time.Substring(0, time.Length - 2)), "ms");
 
-        time = time.ToLower();
+        if (time.EndsWith("s", StringComparison.OrdinalIgnoreCase)) 
+            return ToTimeSpan(int.Parse(time.Substring(0, time.Length - 1)), "s");
 
-        if (time.EndsWith("ms")) return ToTimeSpan(int.Parse(time.Substring(0, time.Length - 2)), "ms");
+        if (time.EndsWith("m", StringComparison.OrdinalIgnoreCase)) 
+            return ToTimeSpan(int.Parse(time.Substring(0, time.Length - 1)), "m");
 
-        if (time.EndsWith("s")) return ToTimeSpan(int.Parse(time.Substring(0, time.Length - 1)), "s");
-
-        if (time.EndsWith("m")) return ToTimeSpan(int.Parse(time.Substring(0, time.Length - 1)), "m");
-
-        if (time.EndsWith("h")) return ToTimeSpan(int.Parse(time.Substring(0, time.Length - 1)), "h");
+        if (time.EndsWith("h", StringComparison.OrdinalIgnoreCase)) 
+            return ToTimeSpan(int.Parse(time.Substring(0, time.Length - 1)), "h");
 
         throw new InvalidOperationException("Incorrect format:" + time);
     }
@@ -35,7 +37,8 @@ public static class Time
     /// <returns></returns>
     public static TimeSpan ToTimeSpan(int value, string unit)
     {
-        if (string.IsNullOrWhiteSpace(unit)) throw new ArgumentNullException(nameof(unit));
+        if (string.IsNullOrWhiteSpace(unit)) 
+            throw new ArgumentNullException(nameof(unit));
 
         switch (unit)
         {

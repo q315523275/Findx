@@ -3,6 +3,7 @@ using Findx.Caching;
 using Findx.Extensions;
 using Findx.Locks;
 using Findx.Modularity;
+using Findx.Redis.StackExchangeRedis;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.Redis
@@ -35,10 +36,10 @@ namespace Findx.Redis
             services.Configure<FindxRedisOptions>(configuration.GetSection("Findx:Redis"));
 
             // redis 连接池
-            services.AddSingleton<IStackExchangeRedisConnectionProvider, StackExchangeRedisConnectionProvider>();
+            services.AddSingleton<IConnectionProvider, ConnectionProvider>();
 
             // redisClient 提供器
-            services.AddSingleton<IRedisClientProvider, StackExchangeRedisClientProvider>();
+            services.AddSingleton<IRedisClientProvider, RedisClientProvider>();
 
             // redisClient 默认服务
             services.AddSingleton(sp => sp.GetRequiredService<IRedisClientProvider>().CreateClient());

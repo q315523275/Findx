@@ -210,6 +210,6 @@ public class SwaggerModule : AspNetCoreModuleBase
             options.DescribeAllParametersInCamelCase();
 
         // 自定义架构编号
-        options.CustomSchemaIds(x => x.FullName);
+        options.CustomSchemaIds(x => x.ToString());
     }
 }

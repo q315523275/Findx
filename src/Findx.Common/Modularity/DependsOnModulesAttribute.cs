@@ -6,7 +6,7 @@
 public class DependsOnModulesAttribute : Attribute
 {
     /// <summary>
-    ///     初始化一个 OSharp模块依赖<see cref="DependsOnModulesAttribute" />类型的新实例
+    ///     初始化模块依赖<see cref="DependsOnModulesAttribute" />类型的新实例
     /// </summary>
     public DependsOnModulesAttribute(params Type[] dependedModuleTypes)
     {

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using StackExchange.Redis;
 
-namespace Findx.Redis
+namespace Findx.Redis.StackExchangeRedis
 {
-    public interface IStackExchangeRedisConnectionProvider
+    public interface IConnectionProvider
     {
         /// <summary>
         ///     获取 Redis多连接复用器

@@ -1,5 +1,4 @@
 ﻿using Findx.Extensions;
-using Findx.Setting;
 using Findx.Utils;
 
 namespace Findx;
@@ -20,9 +19,9 @@ public class ApplicationContext : IApplicationContext
     /// <param name="options"></param>
     /// <param name="environment"></param>
     /// <param name="hostApplicationLifetime"></param>
-    /// <param name="settingProvider"></param>
+    /// <param name="configuration"></param>
     public ApplicationContext(IOptions<ApplicationOptions> options, IHostEnvironment environment,
-        IHostApplicationLifetime hostApplicationLifetime, ISettingProvider settingProvider)
+        IHostApplicationLifetime hostApplicationLifetime, IConfiguration configuration)
     {
         _hostApplicationLifetime = hostApplicationLifetime;
 
@@ -41,7 +40,7 @@ public class ApplicationContext : IApplicationContext
 
         RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;
 
-        Setting = settingProvider;
+        AppSetting = configuration;
     }
 
     /// <summary>
@@ -83,6 +82,11 @@ public class ApplicationContext : IApplicationContext
     ///     根目录
     /// </summary>
     public string RootPath { get; }
+    
+    /// <summary>
+    ///     配置提供器
+    /// </summary>
+    public IConfiguration AppSetting { get; }
 
     /// <summary>
     ///     获取绝对路径
@@ -101,9 +105,4 @@ public class ApplicationContext : IApplicationContext
     {
         _hostApplicationLifetime.StopApplication();
     }
-
-    /// <summary>
-    ///     设置值提供器
-    /// </summary>
-    public ISettingProvider Setting { get; }
 }

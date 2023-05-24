@@ -6,13 +6,13 @@ using StackExchange.Redis;
 
 namespace Findx.Redis.StackExchangeRedis
 {
-    public class StackExchangeRedisClient : IRedisClient
+    public class RedisClient : IRedisClient
     {
         private readonly IDatabase _cache;
         private readonly ConnectionMultiplexer _connection;
         private readonly IRedisSerializer _serializer;
 
-        public StackExchangeRedisClient(IRedisSerializer serializer, ConnectionMultiplexer connection, string name)
+        public RedisClient(IRedisSerializer serializer, ConnectionMultiplexer connection, string name)
         {
             _serializer = serializer;
             _connection = connection;
