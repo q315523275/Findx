@@ -8,21 +8,22 @@
         <UserSecretsId>d8300641-e05e-4c99-a4a7-81271fcd8d0f</UserSecretsId>
     </PropertyGroup>
     <ItemGroup>
-        <None Remove="Areas\"/>
-        <None Remove="Const\"/>
-        <None Remove="DTO\"/>
-        <None Remove="Enum\"/>
-        <None Remove="Models\"/>
+        <None Remove="Areas\" />
+        <None Remove="Const\" />
+        <None Remove="DTO\" />
+        <None Remove="Enum\" />
+        <None Remove="Models\" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Areas\"/>
-        <Folder Include="Dtos\"/>
-        <Folder Include="Enum\"/>
-        <Folder Include="Models\"/>
+        <Folder Include="Areas\" />
+        <Folder Include="Dtos\" />
+        <Folder Include="Enum\" />
+        <Folder Include="Models\" />
     </ItemGroup>
+
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj"/>
+      <PackageReference Include="Findx.AspNetCore" Version="1.9.1.3" />
+      <PackageReference Include="Findx.FreeSql" Version="1.9.1.4" />
+      <PackageReference Include="Findx.Security" Version="1.9.1" />
     </ItemGroup>
 </Project>

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Version>1.9.0</Version>
+        <Description>服务发现、本地发现、Http请求、负载算法(最少请求、轮询、随机、Hash)</Description>
+        <Authors>Findx</Authors>
+        <Company>Findx</Company>
+        <PackageVersion>1.9.0</PackageVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Findx\Findx.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="LocalDiscovery\"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0"/>
+    </ItemGroup>
+
+</Project>

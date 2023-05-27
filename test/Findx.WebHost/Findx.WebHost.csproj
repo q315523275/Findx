@@ -7,25 +7,25 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Findx.AspNetCore\Findx.AspNetCore.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Castle\Findx.Castle.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.DinkToPdf\Findx.DinkToPdf.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Discovery.Consul\Findx.Discovery.Consul.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.EventBus.RabbitMQ\Findx.EventBus.RabbitMQ.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.ImageSharp\Findx.ImageSharp.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.MailKit\Findx.MailKit.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Mapster\Findx.Mapster.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.NLog\Findx.NLog.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.RabbitMQ\Findx.RabbitMQ.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Redis\Findx.Redis.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Security\Findx.Security.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Swagger\Findx.Swagger.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.WebApiClient\Findx.WebApiClient.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.WebSocketCore\Findx.WebSocketCore.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Configuration\Findx.Configuration.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.RabbitMQ\Findx.RabbitMQ.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.EventBus\Findx.EventBus.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.Castle\Findx.Castle.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.DinkToPdf\Findx.DinkToPdf.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.Discovery.Consul\Findx.Discovery.Consul.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.EventBus.RabbitMQ\Findx.EventBus.RabbitMQ.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.FreeSql\Findx.FreeSql.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.ImageSharp\Findx.ImageSharp.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.MailKit\Findx.MailKit.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.NLog\Findx.NLog.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.RabbitMQ\Findx.RabbitMQ.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.Redis\Findx.Redis.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.Security\Findx.Security.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.Swagger\Findx.Swagger.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.WebApiClient\Findx.WebApiClient.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.WebSocketCore\Findx.WebSocketCore.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.Configuration\Findx.Configuration.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.RabbitMQ\Findx.RabbitMQ.csproj"/>
+        <ProjectReference Include="..\..\framework\Findx.EventBus\Findx.EventBus.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

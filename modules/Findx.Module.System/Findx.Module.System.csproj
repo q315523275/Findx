@@ -7,6 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Findx.FreeSql\Findx.FreeSql.csproj"/>
+      <PackageReference Include="Findx.AspNetCore" Version="1.9.1.3" />
+      <PackageReference Include="Findx.FreeSql" Version="1.9.1.4" />
     </ItemGroup>
+    
 </Project>

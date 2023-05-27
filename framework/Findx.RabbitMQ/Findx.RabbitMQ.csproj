@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <Authors>Findx</Authors>
+        <Company>Findx</Company>
+        <Version>1.9.0</Version>
+        <Description>RabbitMQ功能增强,属性标注消费、连接池管理、自定义消费等</Description>
+        <PackageVersion>1.9.0</PackageVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="RabbitMQ.Client" Version="6.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Findx\Findx.csproj"/>
+    </ItemGroup>
+
+</Project>

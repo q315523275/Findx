@@ -24,13 +24,14 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new LongStringJsonConverter());
     });
 builder.Services.AddWebSockets(x => { x.KeepAliveInterval = TimeSpan.FromMinutes(2); });
-builder.Services.AddCorsAccessor();
+// builder.Services.AddCorsAccessor();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseJsonExceptionHandler();
-app.UseCorsAccessor().UseRouting();
+// app.UseCorsAccessor().UseRouting();
+app.UseRouting();
 app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/storage",

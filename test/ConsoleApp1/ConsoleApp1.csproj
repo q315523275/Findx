@@ -8,9 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Findx.Common\Findx.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.Configuration\Findx.Configuration.csproj"/>
-        <ProjectReference Include="..\..\src\Findx.WebSocketCore\Findx.WebSocketCore.csproj"/>
+      <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
     </ItemGroup>
 
 </Project>

@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <Description>Orm-FreeSql,逻辑删除、租户隔离、Sql打印、慢Sql事件、仓储、工作单元及单元事件、分表、实体扩展等扩展功能</Description>
+        <Authors>Findx</Authors>
+        <Company>Findx</Company>
+        <Version>1.9.1.4</Version>
+        <PackageVersion>1.9.1.4</PackageVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0"/>
+        <PackageReference Include="FreeSql" Version="3.2.693"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Findx\Findx.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="FreeSql.Provider.SqlServerForSystem"/>
+        <None Remove="FreeSql.Provider.Sqlite"/>
+        <None Remove="FreeSql"/>
+    </ItemGroup>
+</Project>
