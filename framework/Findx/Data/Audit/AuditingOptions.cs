@@ -13,12 +13,12 @@ public class AuditingOptions : IOptions<AuditingOptions>
     /// <summary>
     ///     是否记录请求参数
     /// </summary>
-    public bool RecordParameters { set; get; }
+    public bool RecordRequestBody { set; get; }
 
     /// <summary>
     ///     是否记录返回结果
     /// </summary>
-    public bool RecordReturnValue { set; get; }
+    public bool RecordResponseBody { set; get; }
 
     /// <summary>
     ///     值

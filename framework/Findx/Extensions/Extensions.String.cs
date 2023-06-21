@@ -41,8 +41,7 @@ public static partial class Extensions
     {
         if (string.IsNullOrWhiteSpace(content)) return false;
         var bytes = Encoding.UTF8.GetBytes(content);
-        var result = bytes.Length == content.Length;
-        return result;
+        return bytes.Length == content.Length;
     }
 
     /// <summary>
@@ -134,18 +133,18 @@ public static partial class Extensions
         if (!regex.Match(value).Success) return false;
         array = regex.Split(value);
         if (!DateTime.TryParse($"{array[2]}-{array[3]}-{array[4]}", out _)) return false;
-        //校验最后一位
+        // 校验最后一位
         var chars = value.ToCharArray().Select(m => m.ToString()).ToArray();
         int[] weights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
         var sum = 0;
         for (var i = 0; i < 17; i++)
         {
             var num = int.Parse(chars[i]);
-            sum = sum + num * weights[i];
+            sum += num * weights[i];
         }
 
         var mod = sum % 11;
-        var vCode = "10X98765432"; //检验码字符串
+        var vCode = "10X98765432"; // 检验码字符串
         var last = vCode.ToCharArray().ElementAt(mod).ToString();
         return chars.Last().ToUpper() == last;
     }
@@ -172,10 +171,10 @@ public static partial class Extensions
         var code = BitConverter.ToUInt16(fileData, 0);
         switch (code)
         {
-            case 0x4D42: //bmp
-            case 0xD8FF: //jpg
-            case 0x4947: //gif
-            case 0x5089: //png
+            case 0x4D42: // bmp
+            case 0xD8FF: // jpg
+            case 0x4947: // gif
+            case 0x5089: // png
                 return true;
             default:
                 return false;
@@ -437,20 +436,9 @@ public static partial class Extensions
     /// </summary>
     /// <param name="str"></param>
     /// <param name="maxLength"></param>
-    /// <returns></returns>
-    public static string TruncateWithPostfix(this string str, int maxLength)
-    {
-        return TruncateWithPostfix(str, maxLength, "...");
-    }
-
-    /// <summary>
-    ///     字符串超过最大长度，截取后使用指定后缀进行拼接
-    /// </summary>
-    /// <param name="str"></param>
-    /// <param name="maxLength"></param>
     /// <param name="postfix"></param>
     /// <returns></returns>
-    public static string TruncateWithPostfix(this string str, int maxLength, string postfix)
+    public static string TruncateWithPostfix(this string str, int maxLength, string postfix = "...")
     {
         if (str == null) return null;
 
@@ -566,6 +554,7 @@ public static partial class Extensions
 
     /// <summary>
     ///     字符串转换为小驼峰字符串
+    ///     <para>例如: "ThisIsSampleSentence" 转换为 "thisIsSampleSentence".</para>
     /// </summary>
     /// <param name="str"></param>
     /// <param name="useCurrentCulture"></param>
@@ -803,7 +792,7 @@ public static partial class Extensions
     /// <returns>十六进制字符串</returns>
     public static string ToHexString(this byte[] bytes)
     {
-        return bytes.Aggregate(string.Empty, (current, t) => current + t.ToString("X2"));
+        return Encrypt.ToHexString(bytes);
     }
 
     /// <summary>
@@ -813,11 +802,7 @@ public static partial class Extensions
     /// <returns>byte[]数组</returns>
     public static byte[] ToHexBytes(this string hexString)
     {
-        hexString = hexString ?? "";
-        hexString = hexString.Replace(" ", "");
-        var bytes = new byte[hexString.Length / 2];
-        for (var i = 0; i < bytes.Length; i++) bytes[i] = Convert.ToByte(hexString.Substring(i * 2, 2), 16);
-        return bytes;
+        return Encrypt.FromHexString(hexString);
     }
 
     /// <summary>
@@ -827,7 +812,7 @@ public static partial class Extensions
     public static string ToUnicodeString(this string source)
     {
         var regex = new Regex(@"[^\u0000-\u00ff]");
-        return regex.Replace(source, m => string.Format(@"\u{0:x4}", (short)m.Value[0]));
+        return regex.Replace(source, m => $@"\u{(short)m.Value[0]:x4}");
     }
 
     /// <summary>

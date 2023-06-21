@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using Findx.Drawing;
 using Findx.Extensions;
+using Findx.Imaging;
 using Findx.Utils;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
@@ -34,6 +34,13 @@ public class VerifyCoder : IVerifyCoder
         InitFonts(50);
     }
 
+    /// <summary>
+    /// 创建
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="imageWidth"></param>
+    /// <param name="imageHeight"></param>
+    /// <returns></returns>
     public async Task<byte[]> CreateImageAsync(string text, int imageWidth = 120, int imageHeight = 50)
     {
         // 图片太小容易导致
@@ -41,19 +48,21 @@ public class VerifyCoder : IVerifyCoder
 
         var lightColorHex = LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)];
 
-        imgText.Mutate(ctx =>
-            ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
+        imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
         imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(lightColorHex)));
         imgText.Mutate(ctx => ctx.DrawingEnText(imageWidth, imageHeight, text, ColorHexArr, _fontArr));
         imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
-
-        using var ms = new MemoryStream();
+        using var ms = Pool.MemoryStream.Rent();
         await imgText.SaveAsJpegAsync(ms);
-        var result = ms.ToArray();
-
-        return result;
+        return ms.ToArray();
     }
 
+    /// <summary>
+    /// 获取验证码字符串
+    /// </summary>
+    /// <param name="length"></param>
+    /// <param name="codeType"></param>
+    /// <returns></returns>
     public string GetCode(int length, VerifyCodeType codeType)
     {
         switch (codeType)
@@ -95,6 +104,11 @@ public class VerifyCoder : IVerifyCoder
         }
     }
 
+    /// <summary>
+    /// 获取数字随机码
+    /// </summary>
+    /// <param name="length"></param>
+    /// <returns></returns>
     private static string GetRandomNums(int length)
     {
         var ints = new int[length];
@@ -102,6 +116,11 @@ public class VerifyCoder : IVerifyCoder
         return ints.ExpandAndToString("");
     }
 
+    /// <summary>
+    /// 获取字母+数字随机码
+    /// </summary>
+    /// <param name="length"></param>
+    /// <returns></returns>
     private static string GetRandomNumsAndLetters(int length)
     {
         const string allChar = "2,3,4,5,6,7,8,9," +

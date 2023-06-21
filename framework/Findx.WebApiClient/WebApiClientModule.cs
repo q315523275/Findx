@@ -11,7 +11,7 @@ namespace Findx.WebApiClient;
 ///     Findx-WebApiClient模块
 /// </summary>
 [Description("Findx-WebApiClient模块")]
-public class WebApiClientModule : FindxModule
+public class WebApiClientModule : StartupModule
 {
     /// <summary>
     ///     模块等级
@@ -21,7 +21,7 @@ public class WebApiClientModule : FindxModule
     /// <summary>
     ///     模块排序
     /// </summary>
-    public override int Order => 30;
+    public override int Order => 50;
 
     /// <summary>
     ///     模块配置服务

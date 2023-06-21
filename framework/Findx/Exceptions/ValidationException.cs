@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
+using Findx.Extensions;
 
 namespace Findx.Exceptions;
 
@@ -12,6 +14,7 @@ public class ValidationException : Exception
     /// </summary>
     /// <param name="target"></param>
     /// <param name="validationResults"></param>
+    [JsonConstructor]
     public ValidationException(Type target, IList<ValidationResult> validationResults)
     {
         TargetType = target;
@@ -35,8 +38,7 @@ public class ValidationException : Exception
     {
         get
         {
-            return string.Concat(TargetType.ToString(), ": ",
-                string.Join(';', ValidationResults.Select(x => $"{x.ErrorMessage}")));
+            return ValidationResults.Select(x => x.ErrorMessage).ExpandAndToString(";");
         }
     }
 }

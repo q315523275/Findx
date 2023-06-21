@@ -17,7 +17,7 @@ namespace Findx.AspNetCore;
 ///     Findx-AspNetCore模块
 /// </summary>
 [Description("Findx-AspNetCore模块")]
-public class AspNetCoreModule : FindxModule
+public class AspNetCoreModule : StartupModule
 {
     /// <summary>
     ///     等级
@@ -27,7 +27,7 @@ public class AspNetCoreModule : FindxModule
     /// <summary>
     ///     排序
     /// </summary>
-    public override int Order => 60;
+    public override int Order => 10;
 
     /// <summary>
     ///     配置服务

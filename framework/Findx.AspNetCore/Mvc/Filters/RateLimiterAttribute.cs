@@ -51,8 +51,7 @@ public class RateLimiterAttribute : ActionFilterAttribute
         // 本地缓存相当于是字典，存储使用均为同一个对象
         // 如果使用分布式缓存，需做好计数器
 
-        var cache = context.HttpContext.RequestServices.GetRequiredService<ICacheProvider>()
-            .Get(CacheType.DefaultMemory);
+        var cache = context.HttpContext.RequestServices.GetRequiredService<ICacheFactory>().Create(CacheType.DefaultMemory);
         var rateLimitKey = GetRateLimitKey(context);
         var atomic = await cache.GetAsync<AtomicInteger>(rateLimitKey);
         if (atomic == default)

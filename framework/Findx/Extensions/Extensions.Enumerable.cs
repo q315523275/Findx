@@ -49,23 +49,27 @@ public static partial class Extensions
     /// <param name="separator">分隔符，默认为逗号</param>
     /// <typeparam name="T">泛型类型</typeparam>
     /// <returns></returns>
-    public static string ExpandAndToString<T>(this IEnumerable<T> collection, Func<T, string> itemFormatFunc,
-        string separator = ",")
+    public static string ExpandAndToString<T>(this IEnumerable<T> collection, Func<T, string> itemFormatFunc, string separator = ",")
     {
         // collection = collection as IList<T> ?? collection.ToList();
 
         Check.NotNull(itemFormatFunc, nameof(itemFormatFunc));
 
-        if (!collection.Any()) return string.Empty;
+        // ReSharper disable once PossibleMultipleEnumeration
+        if (!collection.Any()) 
+            return string.Empty;
+        
         var sb = new StringBuilder();
         var i = 0;
+        // ReSharper disable once PossibleMultipleEnumeration
         var count = collection.Count();
+        // ReSharper disable once PossibleMultipleEnumeration
         foreach (var t in collection)
         {
             if (i == count - 1)
                 sb.Append(itemFormatFunc(t));
             else
-                sb.Append(itemFormatFunc(t) + separator);
+                sb.Append(itemFormatFunc(t)).Append(separator);
             i++;
         }
 
@@ -180,7 +184,7 @@ public static partial class Extensions
 
                 tasksWithThrottler.Add(Task.Run(async () =>
                 {
-                    await func(item).ContinueWith(res =>
+                    await func(item).ContinueWith(_ =>
                     {
                         // action is completed, so decrement the number of currently running tasks
                         // ReSharper disable once AccessToDisposedClosure

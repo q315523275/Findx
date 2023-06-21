@@ -3,6 +3,7 @@ using System.Linq;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
+using Findx.Guids;
 using Findx.Logging;
 using Findx.Security;
 using Findx.Utils;
@@ -19,7 +20,8 @@ namespace Findx.AspNetCore.Mvc;
 public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
-    private readonly ICacheProvider _cacheProvider;
+    private readonly ICacheFactory _cacheFactory;
+    private readonly IGuidGenerator _guidGenerator;
 
     /// <summary>
     ///     Ctor
@@ -27,13 +29,13 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
     /// <param name="logger"></param>
     /// <param name="store"></param>
     /// <param name="actionDescriptorCollectionProvider"></param>
-    /// <param name="cacheProvider"></param>
-    public MvcFunctionHandler(StartupLogger logger, IFunctionStore<MvcFunction> store,
-        IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, ICacheProvider cacheProvider) : base(
-        store, logger)
+    /// <param name="cacheFactory"></param>
+    /// <param name="guidGenerator"></param>
+    public MvcFunctionHandler(StartupLogger logger, IFunctionStore<MvcFunction> store, IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, ICacheFactory cacheFactory, IGuidGenerator guidGenerator) : base(store, logger)
     {
         _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
-        _cacheProvider = cacheProvider;
+        _cacheFactory = cacheFactory;
+        _guidGenerator = guidGenerator;
     }
 
     /// <summary>
@@ -44,7 +46,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
     {
         if (fromCache)
         {
-            var cache = _cacheProvider.Get(CacheType.DefaultMemory);
+            var cache = _cacheFactory.Create(CacheType.DefaultMemory);
             var functions = cache.Get<List<MvcFunction>>("function");
             if (functions is { Count: > 0 }) return functions;
         }
@@ -57,7 +59,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
         foreach (var item in controllerActionList)
         {
             var routeValues = item.RouteValues;
-            var area = routeValues.ContainsKey("area") ? routeValues["area"] : null;
+            var area = routeValues.TryGetValue("area", out var value) ? value : null;
             var controller =
                 result.FirstOrDefault(x => x.IsController && x.Area == area && x.Controller == item.ControllerName);
             if (controller == null)
@@ -80,7 +82,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
                     Roles = authorize?.Roles,
                     Authority = authority,
                     AuditOperationEnabled = !typeInfo.HasAttribute<DisableAuditingAttribute>(),
-                    Id = SequentialGuid.Instance.Create()
+                    Id = _guidGenerator.Create()
                 };
                 result.Add(controller);
             }
@@ -126,7 +128,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
                     Roles = actionRoles,
                     Authority = actionAuthority,
                     AuditOperationEnabled = auditOperationEnabled,
-                    Id = SequentialGuid.Instance.Create()
+                    Id = _guidGenerator.Create()
                 };
 
                 result.Add(function);
@@ -135,7 +137,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
 
         if (fromCache)
         {
-            var cache = _cacheProvider.Get(CacheType.DefaultMemory);
+            var cache = _cacheFactory.Create(CacheType.DefaultMemory);
             cache.Add("function", result);
         }
 

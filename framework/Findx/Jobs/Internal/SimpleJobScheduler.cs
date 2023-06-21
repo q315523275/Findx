@@ -30,10 +30,10 @@ public class SimpleJobScheduler : IJobScheduler
     /// </summary>
     /// <param name="delay"></param>
     /// <param name="parameter"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="TJob"></typeparam>
     /// <returns></returns>
-    public async Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, IDictionary<string, string> parameter = null)
-        where TJob : IJob
+    public async Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, IDictionary<string, string> parameter = null, CancellationToken cancellationToken = default) where TJob : IJob
     {
         var jobType = typeof(TJob);
         var jobDetail = CreateJobDetail(jobType, parameter);
@@ -42,7 +42,7 @@ public class SimpleJobScheduler : IJobScheduler
         jobDetail.IsSingle = true;
         jobDetail.NextRunTime = delay.HasValue ? nextRunTime.Add(delay.Value) : nextRunTime;
 
-        await _storage.InsertAsync(jobDetail);
+        await _storage.InsertAsync(jobDetail, cancellationToken);
         return jobDetail.Id;
     }
 
@@ -51,17 +51,17 @@ public class SimpleJobScheduler : IJobScheduler
     /// </summary>
     /// <param name="dateTime"></param>
     /// <param name="parameter"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="TJob"></typeparam>
     /// <returns></returns>
-    public async Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, IDictionary<string, string> parameter = null)
-        where TJob : IJob
+    public async Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, IDictionary<string, string> parameter = null, CancellationToken cancellationToken = default) where TJob : IJob
     {
         var jobType = typeof(TJob);
         var jobDetail = CreateJobDetail(jobType, parameter);
         jobDetail.IsSingle = true;
         jobDetail.NextRunTime = dateTime ?? DateTimeOffset.UtcNow.LocalDateTime;
 
-        await _storage.InsertAsync(jobDetail);
+        await _storage.InsertAsync(jobDetail, cancellationToken);
         return jobDetail.Id;
     }
 
@@ -70,10 +70,10 @@ public class SimpleJobScheduler : IJobScheduler
     /// </summary>
     /// <param name="delay"></param>
     /// <param name="parameter"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="TJob"></typeparam>
     /// <returns></returns>
-    public async Task<long> ScheduleAsync<TJob>(TimeSpan delay, IDictionary<string, string> parameter = null)
-        where TJob : IJob
+    public async Task<long> ScheduleAsync<TJob>(TimeSpan delay, IDictionary<string, string> parameter = null, CancellationToken cancellationToken = default) where TJob : IJob
     {
         var jobType = typeof(TJob);
         var jobDetail = CreateJobDetail(jobType, parameter);
@@ -81,7 +81,7 @@ public class SimpleJobScheduler : IJobScheduler
         jobDetail.FixedDelay = delay.TotalSeconds;
         jobDetail.NextRunTime = DateTimeOffset.UtcNow.Add(delay).LocalDateTime;
 
-        await _storage.InsertAsync(jobDetail);
+        await _storage.InsertAsync(jobDetail, cancellationToken);
         return jobDetail.Id;
     }
 
@@ -90,10 +90,10 @@ public class SimpleJobScheduler : IJobScheduler
     /// </summary>
     /// <param name="cronExpression"></param>
     /// <param name="parameter"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="TJob"></typeparam>
     /// <returns></returns>
-    public async Task<long> ScheduleAsync<TJob>(string cronExpression, IDictionary<string, string> parameter = null)
-        where TJob : IJob
+    public async Task<long> ScheduleAsync<TJob>(string cronExpression, IDictionary<string, string> parameter = null, CancellationToken cancellationToken = default) where TJob : IJob
     {
         var jobType = typeof(TJob);
         var jobDetail = CreateJobDetail(jobType, parameter);
@@ -101,7 +101,7 @@ public class SimpleJobScheduler : IJobScheduler
         jobDetail.CronExpress = cronExpression;
         jobDetail.NextRunTime = Cron.GetNextOccurrence(cronExpression);
 
-        await _storage.InsertAsync(jobDetail);
+        await _storage.InsertAsync(jobDetail, cancellationToken);
         return jobDetail.Id;
     }
 
@@ -109,8 +109,9 @@ public class SimpleJobScheduler : IJobScheduler
     ///     添加循环任务,Type必须带属性注解
     /// </summary>
     /// <param name="jobType"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<long> ScheduleAsync(Type jobType)
+    public async Task<long> ScheduleAsync(Type jobType, CancellationToken cancellationToken = default)
     {
         var attribute =
             SingletonDictionary<Type, JobAttribute>.Instance.GetOrAdd(jobType,
@@ -135,7 +136,7 @@ public class SimpleJobScheduler : IJobScheduler
             jobDetail.NextRunTime = Cron.GetNextOccurrence(attribute.Cron);
         }
 
-        await _storage.InsertAsync(jobDetail);
+        await _storage.InsertAsync(jobDetail, cancellationToken);
         return jobDetail.Id;
     }
 
@@ -143,14 +144,15 @@ public class SimpleJobScheduler : IJobScheduler
     ///     暂停任务
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task PauseJob(long id)
+    public async Task PauseJob(long id, CancellationToken cancellationToken = default)
     {
-        var jobInfo = await _storage.FindAsync(id);
+        var jobInfo = await _storage.FindAsync(id, cancellationToken);
         if (jobInfo is { IsEnable: true })
         {
             jobInfo.IsEnable = false;
-            await _storage.UpdateAsync(jobInfo);
+            await _storage.UpdateAsync(jobInfo, cancellationToken);
         }
     }
 
@@ -158,14 +160,15 @@ public class SimpleJobScheduler : IJobScheduler
     ///     恢复暂停任务
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task ResumeJob(long id)
+    public async Task ResumeJob(long id, CancellationToken cancellationToken = default)
     {
-        var jobInfo = await _storage.FindAsync(id);
+        var jobInfo = await _storage.FindAsync(id, cancellationToken);
         if (jobInfo is { IsEnable: false })
         {
             jobInfo.IsEnable = true;
-            await _storage.UpdateAsync(jobInfo);
+            await _storage.UpdateAsync(jobInfo, cancellationToken);
         }
     }
 
@@ -173,10 +176,11 @@ public class SimpleJobScheduler : IJobScheduler
     ///     删除任务
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task RemoveJob(long id)
+    public async Task RemoveJob(long id, CancellationToken cancellationToken = default)
     {
-        await _storage.DeleteAsync(id);
+        await _storage.DeleteAsync(id, cancellationToken);
     }
 
     /// <summary>
@@ -199,9 +203,7 @@ public class SimpleJobScheduler : IJobScheduler
             TryCount = 0
         };
 
-        var attribute =
-            SingletonDictionary<Type, JobAttribute>.Instance.GetOrAdd(jobType,
-                () => jobType.GetAttribute<JobAttribute>());
+        var attribute = SingletonDictionary<Type, JobAttribute>.Instance.GetOrAdd(jobType, () => jobType.GetAttribute<JobAttribute>());
         if (attribute != null)
         {
             detail.Name = attribute.Name;

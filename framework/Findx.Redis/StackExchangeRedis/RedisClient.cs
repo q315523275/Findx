@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using StackExchange.Redis;
 
@@ -78,7 +79,7 @@ namespace Findx.Redis.StackExchangeRedis
             var redisValues = new List<RedisValue>();
 
             foreach (var item in args)
-                if (item.GetType().Equals(typeof(byte[])))
+                if (item.GetType() == typeof(byte[]))
                     redisValues.Add((byte[])item);
                 else
                     redisValues.Add(item.ToString());
@@ -106,7 +107,7 @@ namespace Findx.Redis.StackExchangeRedis
             var redisValues = new List<RedisValue>();
 
             foreach (var item in args)
-                if (item.GetType().Equals(typeof(byte[])))
+                if (item.GetType() == typeof(byte[]))
                     redisValues.Add((byte[])item);
                 else
                     redisValues.Add(item.ToString());
@@ -318,12 +319,14 @@ namespace Findx.Redis.StackExchangeRedis
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
         /// <param name="value">值</param>
+        /// <param name="whenNotExists">key不存在时设置</param>
         /// <returns>成功返回true</returns>
-        public bool StringSet<T>(string key, T value)
+        public bool StringSet<T>(string key, T value, bool whenNotExists = false)
         {
             var objBytes = _serializer.Serialize(value);
-
-            return _cache.StringSet(key, objBytes, when: When.Always);
+            if (whenNotExists)
+                _cache.StringSet(key, objBytes, when: When.NotExists);
+            return _cache.StringSet(key, objBytes);
         }
 
         /// <summary>
@@ -332,11 +335,14 @@ namespace Findx.Redis.StackExchangeRedis
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
         /// <param name="value">值</param>
+        /// <param name="whenNotExists">key不存在时设置</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>成功返回true</returns>
-        public async Task<bool> StringSetAsync<T>(string key, T value)
+        public async Task<bool> StringSetAsync<T>(string key, T value, bool whenNotExists = false, CancellationToken cancellationToken = default)
         {
             var objBytes = _serializer.Serialize(value);
-
+            if (whenNotExists)
+                await _cache.StringSetAsync(key, objBytes, when: When.NotExists);
             return await _cache.StringSetAsync(key, objBytes);
         }
 
@@ -347,10 +353,13 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="value">值</param>
         /// <param name="expiresIn">过期间隔</param>
+        /// <param name="whenNotExists">key不存在时设置</param>
         /// <returns>成功返回true</returns>
-        public bool StringSet<T>(string key, T value, TimeSpan expiresIn)
+        public bool StringSet<T>(string key, T value, TimeSpan expiresIn, bool whenNotExists = false)
         {
             var objBytes = _serializer.Serialize(value);
+            if (whenNotExists)
+                _cache.StringSet(key, objBytes, expiresIn, when: When.NotExists);
             return _cache.StringSet(key, objBytes, expiresIn);
         }
 
@@ -361,10 +370,14 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="value">值</param>
         /// <param name="expiresIn">过期间隔</param>
+        /// <param name="whenNotExists">key不存在时设置</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>成功返回true</returns>
-        public async Task<bool> StringSetAsync<T>(string key, T value, TimeSpan expiresIn)
+        public async Task<bool> StringSetAsync<T>(string key, T value, TimeSpan expiresIn, bool whenNotExists = false, CancellationToken cancellationToken = default)
         {
             var objBytes = _serializer.Serialize(value);
+            if (whenNotExists)
+                await _cache.StringSetAsync(key, objBytes, expiresIn, when: When.NotExists);
             return await _cache.StringSetAsync(key, objBytes, expiresIn);
         }
 
@@ -375,13 +388,14 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="value">值</param>
         /// <param name="expiresAt">过期时间</param>
+        /// <param name="whenNotExists">key不存在时设置</param>
         /// <returns>成功返回true</returns>
-        public bool StringSet<T>(string key, T value, DateTimeOffset expiresAt)
+        public bool StringSet<T>(string key, T value, DateTimeOffset expiresAt, bool whenNotExists = false)
         {
             var objBytes = _serializer.Serialize(value);
-
             var expiration = expiresAt.Subtract(DateTimeOffset.Now);
-
+            if (whenNotExists)
+                _cache.StringSet(key, objBytes, expiration, when: When.NotExists);
             return _cache.StringSet(key, objBytes, expiration);
         }
 
@@ -392,11 +406,15 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="value">值</param>
         /// <param name="expiresAt">过期时间</param>
+        /// <param name="whenNotExists">key不存在时设置</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>成功返回true</returns>
-        public async Task<bool> StringSetAsync<T>(string key, T value, DateTimeOffset expiresAt)
+        public async Task<bool> StringSetAsync<T>(string key, T value, DateTimeOffset expiresAt, bool whenNotExists = false, CancellationToken cancellationToken = default)
         {
             var objBytes = _serializer.Serialize(value);
             var expiration = expiresAt.Subtract(DateTimeOffset.Now);
+            if (whenNotExists)
+                await _cache.StringSetAsync(key, objBytes, expiration, when: When.NotExists);
             return await _cache.StringSetAsync(key, objBytes, expiration);
         }
 
@@ -419,8 +437,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="items">键值列表</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>成功返回true</returns>
-        public async Task<bool> StringSetAllAsync<T>(IList<Tuple<string, T>> items)
+        public async Task<bool> StringSetAllAsync<T>(IList<Tuple<string, T>> items, CancellationToken cancellationToken = default)
         {
             var values = items
                 .Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
@@ -446,7 +465,8 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
-        public async Task<T> StringGetAsync<T>(string key)
+        /// <param name="cancellationToken"></param>
+        public async Task<T> StringGetAsync<T>(string key, CancellationToken cancellationToken = default)
         {
             var valuesBytes = await _cache.StringGetAsync(key);
             if (!valuesBytes.HasValue) return default;
@@ -469,8 +489,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">增长数量</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>累加后的值</returns>
-        public async Task<long> StringIncrementAsync(string key, long value = 1)
+        public async Task<long> StringIncrementAsync(string key, long value = 1, CancellationToken cancellationToken = default)
         {
             return await _cache.StringIncrementAsync(key, value);
         }
@@ -491,8 +512,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">增长数量</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>累加后的值</returns>
-        public async Task<double> StringIncrementDoubleAsync(string key, double value)
+        public async Task<double> StringIncrementDoubleAsync(string key, double value, CancellationToken cancellationToken = default)
         {
             return await _cache.StringIncrementAsync(key, value);
         }
@@ -513,8 +535,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">减少数量</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>递减后的值</returns>
-        public async Task<long> StringDecrementAsync(string key, long value = 1)
+        public async Task<long> StringDecrementAsync(string key, long value = 1, CancellationToken cancellationToken = default)
         {
             return await _cache.StringDecrementAsync(key, value);
         }
@@ -535,8 +558,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key">键名</param>
         /// <param name="value">减少数量</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>递减后的值</returns>
-        public async Task<double> StringDecrementDoubleAsync(string key, double value)
+        public async Task<double> StringDecrementDoubleAsync(string key, double value, CancellationToken cancellationToken = default)
         {
             return await _cache.StringDecrementAsync(key, value);
         }
@@ -585,8 +609,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="hashField">hash的键值</param>
         /// <param name="value">值</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<bool> HashSetAsync<T>(string key, string hashField, T value)
+        public async Task<bool> HashSetAsync<T>(string key, string hashField, T value, CancellationToken cancellationToken = default)
         {
             var objBytes = _serializer.Serialize(value);
             return await _cache.HashSetAsync(key, hashField, objBytes);
@@ -611,7 +636,8 @@ namespace Findx.Redis.StackExchangeRedis
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
         /// <param name="values">键值对</param>
-        public async Task HashSetAsync<T>(string key, Dictionary<string, T> values)
+        /// <param name="cancellationToken"></param>
+        public async Task HashSetAsync<T>(string key, Dictionary<string, T> values, CancellationToken cancellationToken = default)
         {
             var entries = values.Select(kv => new HashEntry(kv.Key, _serializer.Serialize(kv.Value)));
             await _cache.HashSetAsync(key, entries.ToArray());
@@ -637,8 +663,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<T> HashGetAsync<T>(string key, string hashField)
+        public async Task<T> HashGetAsync<T>(string key, string hashField, CancellationToken cancellationToken = default)
         {
             var redisValue = await _cache.HashGetAsync(key, hashField);
 
@@ -670,13 +697,14 @@ namespace Findx.Redis.StackExchangeRedis
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">key</param>
         /// <param name="hashFields">hash键组合</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Dictionary<string, T>> HashGetAsync<T>(string key, IEnumerable<string> hashFields)
+        public async Task<Dictionary<string, T>> HashGetAsync<T>(string key, IEnumerable<string> hashFields, CancellationToken cancellationToken = default)
         {
             var result = new Dictionary<string, T>();
             foreach (var hashField in hashFields)
             {
-                var value = await HashGetAsync<T>(key, hashField);
+                var value = await HashGetAsync<T>(key, hashField, cancellationToken);
                 result.Add(key, value);
             }
 
@@ -700,8 +728,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<Dictionary<string, T>> HashGetAllAsync<T>(string key)
+        public async Task<Dictionary<string, T>> HashGetAllAsync<T>(string key, CancellationToken cancellationToken = default)
         {
             return (await _cache.HashGetAllAsync(key))
                 .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
@@ -723,8 +752,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <typeparam name="T">值类型</typeparam>
         /// <param name="key">key</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<T>> HashValuesAsync<T>(string key)
+        public async Task<IEnumerable<T>> HashValuesAsync<T>(string key, CancellationToken cancellationToken = default)
         {
             return (await _cache.HashValuesAsync(key)).Select(m => _serializer.Deserialize<T>(m));
         }
@@ -745,8 +775,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<bool> HashExistsAsync(string key, string hashField)
+        public async Task<bool> HashExistsAsync(string key, string hashField, CancellationToken cancellationToken = default)
         {
             return await _cache.HashExistsAsync(key, hashField);
         }
@@ -767,8 +798,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<bool> HashDeleteAsync(string key, string hashField)
+        public async Task<bool> HashDeleteAsync(string key, string hashField, CancellationToken cancellationToken = default)
         {
             return await _cache.HashDeleteAsync(key, hashField);
         }
@@ -789,8 +821,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// </summary>
         /// <param name="key">key</param>
         /// <param name="hashFields">hash键集合</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<long> HashDeleteAsync(string key, IEnumerable<string> hashFields)
+        public async Task<long> HashDeleteAsync(string key, IEnumerable<string> hashFields, CancellationToken cancellationToken = default)
         {
             return await _cache.HashDeleteAsync(key, hashFields.Select(x => (RedisValue)x).ToArray());
         }
@@ -813,8 +846,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
         /// <param name="value">递增值</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<long> HashIncrementAsync(string key, string hashField, long value = 1)
+        public async Task<long> HashIncrementAsync(string key, string hashField, long value = 1, CancellationToken cancellationToken = default)
         {
             return await _cache.HashIncrementAsync(key, hashField, value);
         }
@@ -837,8 +871,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
         /// <param name="value">递减值</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<long> HashDecrementAsync(string key, string hashField, long value = 1)
+        public async Task<long> HashDecrementAsync(string key, string hashField, long value = 1, CancellationToken cancellationToken = default)
         {
             return await _cache.HashDecrementAsync(key, hashField, value);
         }
@@ -861,8 +896,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
         /// <param name="value">递增值</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<double> HashIncrementDoubleAsync(string key, string hashField, double value)
+        public async Task<double> HashIncrementDoubleAsync(string key, string hashField, double value, CancellationToken cancellationToken = default)
         {
             return await _cache.HashIncrementAsync(key, hashField, value);
         }
@@ -885,8 +921,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">key</param>
         /// <param name="hashField">hash键</param>
         /// <param name="value">递减值</param>
+        /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<double> HashDecrementDoubleAsync(string key, string hashField, double value)
+        public async Task<double> HashDecrementDoubleAsync(string key, string hashField, double value, CancellationToken cancellationToken = default)
         {
             return await _cache.HashDecrementAsync(key, hashField, value);
         }
@@ -916,8 +953,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <param name="key">键名</param>
         /// <param name="value">值</param>
         /// <param name="expiry">过期时间</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>成功返回true</returns>
-        public async Task<bool> LockTakeAsync<T>(string key, T value, TimeSpan expiry)
+        public async Task<bool> LockTakeAsync<T>(string key, T value, TimeSpan expiry, CancellationToken cancellationToken = default)
         {
             var objBytes = _serializer.Serialize(value);
             return await _cache.LockTakeAsync(key, objBytes, expiry);
@@ -942,8 +980,9 @@ namespace Findx.Redis.StackExchangeRedis
         /// <typeparam name="T">值的类型</typeparam>
         /// <param name="key">键名</param>
         /// <param name="value">值</param>
+        /// <param name="cancellationToken"></param>
         /// <returns>成功返回true</returns>
-        public async Task<bool> LockReleaseAsync<T>(string key, T value)
+        public async Task<bool> LockReleaseAsync<T>(string key, T value, CancellationToken cancellationToken = default)
         {
             var objBytes = _serializer.Serialize(value);
             return await _cache.LockReleaseAsync(key, objBytes);
@@ -1076,7 +1115,7 @@ namespace Findx.Redis.StackExchangeRedis
             return _serializer.Deserialize<T>(bytes);
         }
 
-        public async Task<T> ListGetByIndexAsync<T>(string cacheKey, long index)
+        public async Task<T> ListGetByIndexAsync<T>(string cacheKey, long index, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1084,14 +1123,14 @@ namespace Findx.Redis.StackExchangeRedis
             return _serializer.Deserialize<T>(bytes);
         }
 
-        public async Task<long> ListLengthAsync(string cacheKey)
+        public async Task<long> ListLengthAsync(string cacheKey, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
             return await _cache.ListLengthAsync(cacheKey);
         }
 
-        public async Task<T> ListLeftPopAsync<T>(string cacheKey)
+        public async Task<T> ListLeftPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1099,7 +1138,7 @@ namespace Findx.Redis.StackExchangeRedis
             return _serializer.Deserialize<T>(bytes);
         }
 
-        public async Task<long> ListLeftPushAsync<T>(string cacheKey, T cacheValue)
+        public async Task<long> ListLeftPushAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1107,7 +1146,7 @@ namespace Findx.Redis.StackExchangeRedis
             return await _cache.ListLeftPushAsync(cacheKey, bytes);
         }
 
-        public async Task<long> ListLeftPushAsync<T>(string cacheKey, IList<T> cacheValues)
+        public async Task<long> ListLeftPushAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
@@ -1117,7 +1156,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<T> ListRightPopAsync<T>(string cacheKey)
+        public async Task<T> ListRightPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1125,7 +1164,7 @@ namespace Findx.Redis.StackExchangeRedis
             return _serializer.Deserialize<T>(bytes);
         }
 
-        public async Task<long> ListRightPushAsync<T>(string cacheKey, T cacheValue)
+        public async Task<long> ListRightPushAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1133,7 +1172,7 @@ namespace Findx.Redis.StackExchangeRedis
             return await _cache.ListRightPushAsync(cacheKey, bytes);
         }
 
-        public async Task<long> ListRightPushAsync<T>(string cacheKey, IList<T> cacheValues)
+        public async Task<long> ListRightPushAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
@@ -1143,7 +1182,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<List<T>> ListRangeAsync<T>(string cacheKey, long start, long stop)
+        public async Task<List<T>> ListRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1156,7 +1195,7 @@ namespace Findx.Redis.StackExchangeRedis
             return list;
         }
 
-        public async Task<long> ListRemoveAsync<T>(string cacheKey, long count, T cacheValue)
+        public async Task<long> ListRemoveAsync<T>(string cacheKey, long count, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1164,7 +1203,7 @@ namespace Findx.Redis.StackExchangeRedis
             return await _cache.ListRemoveAsync(cacheKey, bytes, count);
         }
 
-        public async Task<bool> ListSetByIndexAsync<T>(string cacheKey, long index, T cacheValue)
+        public async Task<bool> ListSetByIndexAsync<T>(string cacheKey, long index, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1173,7 +1212,7 @@ namespace Findx.Redis.StackExchangeRedis
             return true;
         }
 
-        public async Task<bool> ListTrimAsync(string cacheKey, long start, long stop)
+        public async Task<bool> ListTrimAsync(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1181,7 +1220,7 @@ namespace Findx.Redis.StackExchangeRedis
             return true;
         }
 
-        public async Task<long> ListInsertBeforeAsync<T>(string cacheKey, T pivot, T cacheValue)
+        public async Task<long> ListInsertBeforeAsync<T>(string cacheKey, T pivot, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1190,7 +1229,7 @@ namespace Findx.Redis.StackExchangeRedis
             return await _cache.ListInsertBeforeAsync(cacheKey, pivotBytes, cacheValueBytes);
         }
 
-        public async Task<long> ListInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue)
+        public async Task<long> ListInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1272,7 +1311,7 @@ namespace Findx.Redis.StackExchangeRedis
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var len = 0L;
+            long len;
 
             if (cacheValues != null && cacheValues.Any())
             {
@@ -1288,7 +1327,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<long> SetAddAsync<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null)
+        public async Task<long> SetAddAsync<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(cacheValues, nameof(cacheValues));
@@ -1301,7 +1340,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<long> SetLengthAsync(string cacheKey)
+        public async Task<long> SetLengthAsync(string cacheKey, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1309,7 +1348,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<bool> SetContainsAsync<T>(string cacheKey, T cacheValue)
+        public async Task<bool> SetContainsAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1319,7 +1358,7 @@ namespace Findx.Redis.StackExchangeRedis
             return flag;
         }
 
-        public async Task<List<T>> SetMembersAsync<T>(string cacheKey)
+        public async Task<List<T>> SetMembersAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1332,7 +1371,7 @@ namespace Findx.Redis.StackExchangeRedis
             return list;
         }
 
-        public async Task<T> SetPopAsync<T>(string cacheKey)
+        public async Task<T> SetPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1341,7 +1380,7 @@ namespace Findx.Redis.StackExchangeRedis
             return _serializer.Deserialize<T>(bytes);
         }
 
-        public async Task<List<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1)
+        public async Task<List<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1354,7 +1393,7 @@ namespace Findx.Redis.StackExchangeRedis
             return list;
         }
 
-        public async Task<long> SetRemoveAsync<T>(string cacheKey, IList<T> cacheValues = null)
+        public async Task<long> SetRemoveAsync<T>(string cacheKey, IList<T> cacheValues = null, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1465,7 +1504,7 @@ namespace Findx.Redis.StackExchangeRedis
             return score;
         }
 
-        public async Task<long> SortedSetAddAsync<T>(string cacheKey, Dictionary<T, double> cacheValues)
+        public async Task<long> SortedSetAddAsync<T>(string cacheKey, Dictionary<T, double> cacheValues, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1475,7 +1514,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<long> SortedSetLengthAsync(string cacheKey)
+        public async Task<long> SortedSetLengthAsync(string cacheKey, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1483,7 +1522,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<long> SortedSetLengthByValueAsync(string cacheKey, double min, double max)
+        public async Task<long> SortedSetLengthByValueAsync(string cacheKey, double min, double max, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1491,7 +1530,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<double> SortedSetIncrementAsync(string cacheKey, string field, double val = 1)
+        public async Task<double> SortedSetIncrementAsync(string cacheKey, string field, double val = 1, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNullOrWhiteSpace(field, nameof(field));
@@ -1500,7 +1539,7 @@ namespace Findx.Redis.StackExchangeRedis
             return value;
         }
 
-        public async Task<long> SortedSetLengthByValueAsync(string cacheKey, string min, string max)
+        public async Task<long> SortedSetLengthByValueAsync(string cacheKey, string min, string max, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1508,7 +1547,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<List<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop)
+        public async Task<List<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1521,7 +1560,7 @@ namespace Findx.Redis.StackExchangeRedis
             return list;
         }
 
-        public async Task<long?> SortedSetRankAsync<T>(string cacheKey, T cacheValue)
+        public async Task<long?> SortedSetRankAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1532,7 +1571,7 @@ namespace Findx.Redis.StackExchangeRedis
             return index;
         }
 
-        public async Task<long> SortedSetRemoveAsync<T>(string cacheKey, IList<T> cacheValues)
+        public async Task<long> SortedSetRemoveAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1545,7 +1584,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<double?> SortedSetScoreAsync<T>(string cacheKey, T cacheValue)
+        public async Task<double?> SortedSetScoreAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1571,7 +1610,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         public async Task<long> GeoAddAsync(string cacheKey,
-            IEnumerable<(double longitude, double latitude, string member)> values)
+            IEnumerable<(double longitude, double latitude, string member)> values, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
@@ -1592,7 +1631,7 @@ namespace Findx.Redis.StackExchangeRedis
             return res;
         }
 
-        public async Task<double?> GeoDistanceAsync(string cacheKey, string member1, string member2, string unit = "m")
+        public async Task<double?> GeoDistanceAsync(string cacheKey, string member1, string member2, string unit = "m", CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNullOrWhiteSpace(member1, nameof(member1));
@@ -1611,7 +1650,7 @@ namespace Findx.Redis.StackExchangeRedis
             return _cache.GeoHash(cacheKey, members.Select(x => (RedisValue)x).ToArray());
         }
 
-        public async Task<string[]> GeoHashAsync(string cacheKey, IEnumerable<string> members)
+        public async Task<string[]> GeoHashAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
@@ -1630,8 +1669,8 @@ namespace Findx.Redis.StackExchangeRedis
 
             foreach (var item in res)
                 if (item.HasValue)
-                    tuple.Add((Convert.ToDecimal(item.Value.Longitude.ToString()),
-                        Convert.ToDecimal(item.Value.Latitude.ToString())));
+                    tuple.Add((Convert.ToDecimal(item.Value.Longitude),
+                        Convert.ToDecimal(item.Value.Latitude)));
                 else
                     tuple.Add(null);
 
@@ -1639,7 +1678,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         public async Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey,
-            IEnumerable<string> members)
+            IEnumerable<string> members, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
@@ -1650,8 +1689,8 @@ namespace Findx.Redis.StackExchangeRedis
 
             foreach (var item in res)
                 if (item.HasValue)
-                    tuple.Add((Convert.ToDecimal(item.Value.Longitude.ToString()),
-                        Convert.ToDecimal(item.Value.Latitude.ToString())));
+                    tuple.Add((Convert.ToDecimal(item.Value.Longitude),
+                        Convert.ToDecimal(item.Value.Latitude)));
                 else
                     tuple.Add(null);
 
@@ -1675,7 +1714,7 @@ namespace Findx.Redis.StackExchangeRedis
         }
 
         public async Task<List<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member,
-            double radius, string unit = "m", int count = -1, string order = "asc")
+            double radius, string unit = "m", int count = -1, string order = "asc", CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(member, nameof(member));
@@ -1717,12 +1756,11 @@ namespace Findx.Redis.StackExchangeRedis
             Order geoOrder;
             switch (order)
             {
-                default:
-                case "asc":
-                    geoOrder = Order.Ascending;
-                    break;
                 case "desc":
                     geoOrder = Order.Descending;
+                    break;
+                default:
+                    geoOrder = Order.Ascending;
                     break;
             }
 
@@ -1743,7 +1781,7 @@ namespace Findx.Redis.StackExchangeRedis
             return res;
         }
 
-        public async Task<bool> HyperLogLogAddAsync<T>(string cacheKey, IEnumerable<T> values)
+        public async Task<bool> HyperLogLogAddAsync<T>(string cacheKey, IEnumerable<T> values, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(values, nameof(values));
@@ -1761,7 +1799,7 @@ namespace Findx.Redis.StackExchangeRedis
             return res;
         }
 
-        public async Task<long> HyperLogLogLengthAsync(IEnumerable<string> cacheKeys)
+        public async Task<long> HyperLogLogLengthAsync(IEnumerable<string> cacheKeys, CancellationToken cancellationToken = default)
         {
             Check.NotNull(cacheKeys, nameof(cacheKeys));
 
@@ -1778,7 +1816,7 @@ namespace Findx.Redis.StackExchangeRedis
             return true;
         }
 
-        public async Task<bool> HyperLogLogMergeAsync(string destKey, IEnumerable<string> sourceKeys)
+        public async Task<bool> HyperLogLogMergeAsync(string destKey, IEnumerable<string> sourceKeys, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(destKey, nameof(destKey));
             Check.NotNull(sourceKeys, nameof(sourceKeys));

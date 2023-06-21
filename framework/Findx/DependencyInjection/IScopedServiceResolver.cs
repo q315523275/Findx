@@ -16,6 +16,14 @@ public interface IScopedServiceResolver
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     T GetService<T>();
+    
+    /// <summary>
+    ///     获取单个泛型服务
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="name">服务别名</param>
+    /// <returns></returns>
+    T GetService<T>(string name);
 
     /// <summary>
     ///     获取单个服务对象
@@ -23,6 +31,14 @@ public interface IScopedServiceResolver
     /// <param name="serviceType"></param>
     /// <returns></returns>
     object GetService(Type serviceType);
+
+    /// <summary>
+    ///     获取单个服务对象
+    /// </summary>
+    /// <param name="name">服务别名</param>
+    /// <param name="serviceType"></param>
+    /// <returns></returns>
+    object GetService(string name, Type serviceType);
 
     /// <summary>
     ///     获取泛型服务集合

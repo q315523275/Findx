@@ -6,15 +6,16 @@
         <Description>服务发现-Consul实现</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>1.9.0</PackageVersion>
+        <PackageVersion>1.9.5.1-preview1</PackageVersion>
+        <LangVersion>10</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Consul" Version="1.6.10.8"/>
+        <PackageReference Include="Consul" Version="1.6.10.9" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Findx.Discovery\Findx.Discovery.csproj"/>
+        <ProjectReference Include="..\Findx.Discovery\Findx.Discovery.csproj" />
     </ItemGroup>
 
 </Project>

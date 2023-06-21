@@ -8,9 +8,10 @@ namespace Findx.WebHost.EventHandlers;
 
 public class PayedOrderCommandHandler : IApplicationEventHandler<PayedOrderCommand>, ITransientDependency
 {
-    public async Task HandleAsync(PayedOrderCommand message, CancellationToken cancellationToken)
+    public Task HandleAsync(PayedOrderCommand message, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"IMessageNotifyHandler<PayedOrderCommand>:{DateTime.Now}");
-        await Task.CompletedTask;
+        Console.WriteLine($"IMessageNotifyHandler<PayedOrderCommand>:{DateTime.Now}--{message.OrderId}");
+        message.OrderId = Findx.Utils.SnowflakeId.Default().NextId();
+        return Task.CompletedTask;
     }
 }

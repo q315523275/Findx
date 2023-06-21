@@ -16,4 +16,4 @@ app.UseJsonExceptionHandler();
 app.UseFindx();
 app.MapControllersWithAreaRoute();
 
-app.Run();
+app.UseFindxHosting();

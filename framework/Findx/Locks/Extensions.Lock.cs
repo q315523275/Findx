@@ -29,15 +29,15 @@ public static class Extensions
         if (executeAction == null)
             return;
 
-        var rlock = await @lock.AcquireAsync(key, span);
-        if (rlock.IsLocked())
+        var rLock = await @lock.AcquireAsync(key, span);
+        if (rLock.IsLocked())
             try
             {
                 executeAction();
             }
             finally
             {
-                await rlock.ReleaseAsync();
+                await rLock.ReleaseAsync();
             }
     }
 
@@ -57,15 +57,16 @@ public static class Extensions
         if (executeAction == null)
             return defaultValue;
 
-        var rlock = await @lock.AcquireAsync(key, span);
-        if (!rlock.IsLocked()) return defaultValue;
+        var rLock = await @lock.AcquireAsync(key, span);
+        if (!rLock.IsLocked()) 
+            return defaultValue;
         try
         {
             return await executeAction();
         }
         finally
         {
-            await rlock.ReleaseAsync();
+            await rLock.ReleaseAsync();
         }
     }
 }

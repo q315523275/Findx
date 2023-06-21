@@ -138,7 +138,7 @@ namespace Findx.Discovery
         /// <summary>
         ///     服务缓存时间,单位秒
         /// </summary>
-        public int CacheTTL { get; set; } = 15;
+        public int CacheTtl { get; set; } = 15;
 
         /// <summary>
         ///     OPTIONS

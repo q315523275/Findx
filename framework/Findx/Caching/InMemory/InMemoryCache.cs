@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Findx.DependencyInjection;
 using Findx.Threading;
 
 namespace Findx.Caching.InMemory;
@@ -6,7 +7,7 @@ namespace Findx.Caching.InMemory;
 /// <summary>
 ///     内存缓存
 /// </summary>
-public class InMemoryCache : ICache, IDisposable
+public class InMemoryCache : ICache, IServiceNameAware, IDisposable
 {
     /// <summary>
     ///     存储字典
@@ -37,7 +38,7 @@ public class InMemoryCache : ICache, IDisposable
         _cache = new ConcurrentDictionary<string, CacheItem>();
 
         Timer = timer;
-        Timer.Period = 1000 * 120; // 60 sec.
+        Timer.Period = 1000 * 120; // 120 sec.
         Timer.Elapsed = Timer_Elapsed;
         Timer.RunOnStart = false;
         Timer.Start();
@@ -93,43 +94,16 @@ public class InMemoryCache : ICache, IDisposable
     {
         Check.NotNull(key, nameof(key));
 
-        if (!_cache.TryGetValue(key, out var item)) return Task.FromResult(false);
-
-        // 存在且过期,删除缓存
-        if (item.Expired)
-        {
-            _cache.Remove(key, out _);
+        if (!_cache.TryGetValue(key, out var item)) 
             return Task.FromResult(false);
-        }
 
-        return Task.FromResult(true);
-    }
-
-    /// <summary>
-    ///     获取缓存值
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>
-    /// <param name="func"></param>
-    /// <param name="expire"></param>
-    /// <param name="token"></param>
-    /// <returns></returns>
-    public async Task<T> GetAsync<T>(string key, Func<Task<T>> func, TimeSpan? expire = null,
-        CancellationToken token = default)
-    {
-        Check.NotNull(key, nameof(key));
-
-        if (_cache.TryGetValue(key, out var item) && !item.Expired)
-        {
-            Interlocked.Increment(ref _hits);
-            return (T)item.Visit();
-        }
-
-        Interlocked.Increment(ref _misses);
-
-        var value = await func.Invoke();
-        Add(key, value, expire);
-        return value;
+        // 未过期
+        if (!item.Expired) 
+            return Task.FromResult(true);
+        
+        // 过期,删除缓存
+        _cache.Remove(key, out _);
+        return Task.FromResult(false);
     }
 
     /// <summary>
@@ -161,30 +135,33 @@ public class InMemoryCache : ICache, IDisposable
 
         return Task.FromResult((T)item.Visit());
     }
-
+    
     /// <summary>
-    ///     添加缓存,已存在则添加失败
+    ///     获取缓存值
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="key"></param>
-    /// <param name="value"></param>
+    /// <param name="func"></param>
     /// <param name="expire"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    public Task<bool> TryAddAsync<T>(string key, T value, TimeSpan? expire = null, CancellationToken token = default)
+    public async Task<T> GetAsync<T>(string key, Func<Task<T>> func, TimeSpan? expire = null, CancellationToken token = default)
     {
         Check.NotNull(key, nameof(key));
 
-        // 存在且未过期
         if (_cache.TryGetValue(key, out var item) && !item.Expired)
-            return Task.FromResult(false);
+        {
+            Interlocked.Increment(ref _hits);
+            return (T)item.Visit();
+        }
 
-        Interlocked.Increment(ref _writes);
+        Interlocked.Increment(ref _misses);
 
-        Add(key, value, expire);
-        return Task.FromResult(true);
+        var value = await func.Invoke();
+        await AddAsync(key, value, expire, token);
+        return value;
     }
-
+    
     /// <summary>
     ///     添加缓存
     /// </summary>
@@ -207,6 +184,30 @@ public class InMemoryCache : ICache, IDisposable
         });
 
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     添加缓存,已存在则添加失败
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="key"></param>—
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public Task<bool> TryAddAsync<T>(string key, T value, TimeSpan? expire = null, CancellationToken token = default)
+    {
+        Check.NotNull(key, nameof(key));
+
+        // 存在且未过期
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return Task.FromResult(false);
+
+        Interlocked.Increment(ref _writes);
+
+        var res = _cache.TryAdd(key, new CacheItem(value, expire));
+        
+        return Task.FromResult(res);
     }
 
     /// <summary>
@@ -260,41 +261,16 @@ public class InMemoryCache : ICache, IDisposable
 
         if (!_cache.TryGetValue(key, out var item)) return false;
 
+        // 存在未过期
+        if (!item.Expired) return true;
+        
         // 存在且过期,删除缓存
-        if (item.Expired)
-        {
-            _cache.Remove(key, out var _);
-            return false;
-        }
+        _cache.Remove(key, out _);
+        
+        return false;
 
-        return true;
     }
-
-    /// <summary>
-    ///     获取缓存值
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>
-    /// <param name="func"></param>
-    /// <param name="expire"></param>
-    /// <returns></returns>
-    public T Get<T>(string key, Func<T> func, TimeSpan? expire = null)
-    {
-        Check.NotNull(key, nameof(key));
-
-        if (_cache.TryGetValue(key, out var item) && !item.Expired)
-        {
-            Interlocked.Increment(ref _hits);
-            return (T)item.Visit();
-        }
-
-        Interlocked.Increment(ref _misses);
-
-        var value = func.Invoke();
-        Add(key, value, expire);
-        return value;
-    }
-
+    
     /// <summary>
     ///     获取缓存
     /// </summary>
@@ -325,23 +301,30 @@ public class InMemoryCache : ICache, IDisposable
     }
 
     /// <summary>
-    ///     添加缓存,已存在则添加失败
+    ///     获取缓存值
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="key"></param>
-    /// <param name="value"></param>
+    /// <param name="func"></param>
     /// <param name="expire"></param>
     /// <returns></returns>
-    public bool TryAdd<T>(string key, T value, TimeSpan? expire = null)
+    public T Get<T>(string key, Func<T> func, TimeSpan? expire = null)
     {
         Check.NotNull(key, nameof(key));
 
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+        {
+            Interlocked.Increment(ref _hits);
+            return (T)item.Visit();
+        }
 
-        Interlocked.Increment(ref _writes);
+        Interlocked.Increment(ref _misses);
 
+        var value = func.Invoke();
+        
         Add(key, value, expire);
-        return true;
+        
+        return value;
     }
 
     /// <summary>
@@ -362,6 +345,25 @@ public class InMemoryCache : ICache, IDisposable
             oldItem.Set(value, expire);
             return oldItem;
         });
+    }
+    
+    /// <summary>
+    ///     添加缓存,已存在则添加失败
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
+    /// <returns></returns>
+    public bool TryAdd<T>(string key, T value, TimeSpan? expire = null)
+    {
+        Check.NotNull(key, nameof(key));
+
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
+
+        Interlocked.Increment(ref _writes);
+        
+        return _cache.TryAdd(key, new CacheItem(value, expire));
     }
 
     /// <summary>
@@ -452,6 +454,11 @@ internal class CacheItem
     private object Value { get; set; }
 
     /// <summary>
+    /// 过期时间
+    /// </summary>
+    private TimeSpan? ExpiredTimeSpan { get; set; }
+
+    /// <summary>
     ///     过期时间
     /// </summary>
     public DateTime ExpiredTime { get; private set; }
@@ -469,9 +476,21 @@ internal class CacheItem
     public void Set(object value, TimeSpan? expire = null)
     {
         Value = value;
-
+        ExpiredTimeSpan = expire;
+        
         var now = DateTime.Now;
         ExpiredTime = expire == null ? DateTime.MaxValue : now.AddSeconds(expire.Value.TotalSeconds);
+    }
+
+    /// <summary>
+    ///     刷新滑动过期时间
+    /// </summary>
+    public void RefreshSlidingTtl()
+    {
+        if (ExpiredTimeSpan.HasValue)
+        {
+            ExpiredTime = DateTime.Now.AddSeconds(ExpiredTimeSpan.Value.TotalSeconds);
+        }
     }
 
     /// <summary>

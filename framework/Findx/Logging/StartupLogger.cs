@@ -69,21 +69,27 @@ public class StartupLogger
             switch (info.LogLevel)
             {
                 case LogLevel.Trace:
+                    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                     logger.LogTrace(info.Message);
                     break;
                 case LogLevel.Debug:
+                    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                     logger.LogDebug(info.Message);
                     break;
                 case LogLevel.Information:
+                    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                     logger.LogInformation(info.Message);
                     break;
                 case LogLevel.Warning:
+                    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                     logger.LogWarning(info.Message);
                     break;
                 case LogLevel.Error:
+                    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                     logger.LogError(info.Exception, info.Message);
                     break;
                 case LogLevel.Critical:
+                    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                     logger.LogCritical(info.Exception, info.Message);
                     break;
             }

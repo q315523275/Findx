@@ -10,7 +10,7 @@ namespace Findx.WebSocketCore;
 ///     WebSocket模块
 /// </summary>
 [Description("Findx-WebSocket模块")]
-public class WebSocketCoreModule : FindxModule
+public class WebSocketCoreModule : StartupModule
 {
     /// <summary>
     ///     等级
@@ -20,7 +20,7 @@ public class WebSocketCoreModule : FindxModule
     /// <summary>
     ///     排序
     /// </summary>
-    public override int Order => 20;
+    public override int Order => 60;
 
     /// <summary>
     ///     配置服务

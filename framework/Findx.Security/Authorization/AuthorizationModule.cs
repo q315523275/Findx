@@ -25,7 +25,7 @@ public class AuthorizationModule : AspNetCoreModuleBase
     /// <summary>
     ///     排序
     /// </summary>
-    public override int Order => 15;
+    public override int Order => 30;
 
     /// <summary>
     ///     配置服务

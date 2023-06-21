@@ -29,15 +29,14 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller;
 [Tags("系统-账户")]
 public class AuthController : AreaApiControllerBase
 {
-    private readonly ICacheProvider _cacheProvider;
+    private readonly ICacheFactory _cacheFactory;
     private readonly ICurrentUser _currentUser;
+    private readonly IKeyGenerator<Guid> _keyGenerator;
 
     private readonly bool _enabledCaptcha;
     private readonly IOptions<JwtOptions> _options;
     private readonly IRepository<SysLoginRecordInfo> _recordRepo;
-
     private readonly IRepository<SysUserInfo> _repo;
-
     private readonly IJwtTokenBuilder _tokenBuilder;
 
     /// <summary>
@@ -46,20 +45,22 @@ public class AuthController : AreaApiControllerBase
     /// <param name="tokenBuilder"></param>
     /// <param name="options"></param>
     /// <param name="currentUser"></param>
-    /// <param name="cacheProvider"></param>
+    /// <param name="cacheFactory"></param>
     /// <param name="repo"></param>
     /// <param name="recordRepo"></param>
     /// <param name="settingProvider"></param>
+    /// <param name="keyGenerator"></param>
     public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser,
-        ICacheProvider cacheProvider, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo,
-        ISettingProvider settingProvider)
+        ICacheFactory cacheFactory, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo,
+        ISettingProvider settingProvider, IKeyGenerator<Guid> keyGenerator)
     {
         _tokenBuilder = tokenBuilder;
         _options = options;
         _currentUser = currentUser;
-        _cacheProvider = cacheProvider;
+        _cacheFactory = cacheFactory;
         _repo = repo;
         _recordRepo = recordRepo;
+        _keyGenerator = keyGenerator;
         _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdmin:EnabledCaptcha");
     }
 
@@ -72,7 +73,7 @@ public class AuthController : AreaApiControllerBase
     [HttpPost("/api/login")]
     public async Task<CommonResult> Login([FromBody] LoginRequest req)
     {
-        var cache = _cacheProvider.Get();
+        var cache = _cacheFactory.Create(CacheType.DefaultMemory);
 
         // 是否开启验证码
         var cacheKey = $"verifyCode:{req.Uuid}";
@@ -98,7 +99,7 @@ public class AuthController : AreaApiControllerBase
             Comments = "账户密码错误",
             CreatedTime = DateTime.Now,
             Device = userAgent.OS.Name,
-            Id = SequentialGuid.Instance.Create(_repo.GetDbType()),
+            Id = _keyGenerator.Create(),
             Ip = HttpContext.GetClientIp(),
             LoginType = 1,
             Os = userAgent.Platform.Name,

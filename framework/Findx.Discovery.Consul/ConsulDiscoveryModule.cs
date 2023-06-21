@@ -21,7 +21,7 @@ namespace Findx.Discovery.Consul
         /// <summary>
         ///     模块排序
         /// </summary>
-        public override int Order => 30;
+        public override int Order => 40;
 
         /// <summary>
         ///     模块配置服务

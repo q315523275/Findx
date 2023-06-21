@@ -19,21 +19,23 @@ namespace Findx.AspNetCore.Mvc;
 /// </summary>
 public class RazorViewRender : IRazorViewRender
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ITempDataProvider _tempDataProvider;
     private readonly IRazorViewEngine _viewEngine;
+    private readonly ITempDataProvider _tempDataProvider;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
-    ///     Ctor
+    /// Ctor
     /// </summary>
     /// <param name="viewEngine"></param>
     /// <param name="tempDataProvider"></param>
+    /// <param name="httpContextAccessor"></param>
     /// <param name="serviceProvider"></param>
-    public RazorViewRender(IRazorViewEngine viewEngine, ITempDataProvider tempDataProvider,
-        IServiceProvider serviceProvider)
+    public RazorViewRender(IRazorViewEngine viewEngine, ITempDataProvider tempDataProvider, IHttpContextAccessor httpContextAccessor, IServiceProvider serviceProvider)
     {
         _viewEngine = viewEngine;
         _tempDataProvider = tempDataProvider;
+        _httpContextAccessor = httpContextAccessor;
         _serviceProvider = serviceProvider;
     }
 
@@ -48,47 +50,49 @@ public class RazorViewRender : IRazorViewRender
     {
         var actionContext = GetActionContext();
         var view = FindView(actionContext, viewName);
-
-        using (var output = new StringWriter())
+        var viewData = new ViewDataDictionary<TModel>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
         {
-            var viewContext = new ViewContext(
-                actionContext,
-                view,
-                new ViewDataDictionary<TModel>(new EmptyModelMetadataProvider(), new ModelStateDictionary())
-                    { Model = model },
-                new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
-                output,
-                new HtmlHelperOptions());
+            Model = model
+        };
 
-            await view.RenderAsync(viewContext);
-
-            return output.ToString();
-        }
+        await using var output = new StringWriter();
+        var viewContext = new ViewContext(
+            actionContext,
+            view,
+            viewData,
+            new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
+            output,
+            new HtmlHelperOptions()
+        );
+        await view.RenderAsync(viewContext);
+        return output.ToString();
     }
 
     private IView FindView(ActionContext actionContext, string viewName)
     {
-        var getViewResult = _viewEngine.GetView(null, viewName, true);
-        if (getViewResult.Success) return getViewResult.View;
+        var getViewResult = _viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
+        if (getViewResult.Success)
+        {
+            return getViewResult.View;
+        }
 
-        var findViewResult = _viewEngine.FindView(actionContext, viewName, true);
-        if (findViewResult.Success) return findViewResult.View;
+        var findViewResult = _viewEngine.FindView(actionContext, viewName, isMainPage: true);
+        if (findViewResult.Success)
+        {
+            return findViewResult.View;
+        }
 
         var searchedLocations = getViewResult.SearchedLocations.Concat(findViewResult.SearchedLocations);
         var errorMessage = string.Join(
             Environment.NewLine,
-            new[] { $"Unable to find view '{viewName}'. The following locations were searched:" }.Concat(
-                searchedLocations));
+            new[] { $"Unable to find view '{viewName}'. The following locations were searched:" }.Concat(searchedLocations)); ;
 
         throw new InvalidOperationException(errorMessage);
     }
 
     private ActionContext GetActionContext()
     {
-        var httpContext = new DefaultHttpContext
-        {
-            RequestServices = _serviceProvider
-        };
-        return new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+        return _httpContextAccessor.HttpContext != null ? new ActionContext(_httpContextAccessor.HttpContext, _httpContextAccessor.HttpContext.GetRouteData(), new ActionDescriptor()) 
+            : new ActionContext(new DefaultHttpContext { RequestServices = _serviceProvider }, new RouteData(), new ActionDescriptor());
     }
 }

@@ -35,7 +35,7 @@ public class SwaggerModule : AspNetCoreModuleBase
     /// <summary>
     ///     排序
     /// </summary>
-    public override int Order => 20;
+    public override int Order => 40;
 
     /// <summary>
     ///     配置服务

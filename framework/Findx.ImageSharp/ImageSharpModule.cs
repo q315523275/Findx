@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using Findx.Drawing;
+using Findx.Imaging;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -9,7 +9,7 @@ namespace Findx.ImageSharp;
 ///     Findx-图像处理组件模块
 /// </summary>
 [Description("Findx-图像处理组件模块")]
-public class ImageSharpModule : FindxModule
+public class ImageSharpModule : StartupModule
 {
     /// <summary>
     ///     模块等级
@@ -19,7 +19,7 @@ public class ImageSharpModule : FindxModule
     /// <summary>
     ///     模块排序
     /// </summary>
-    public override int Order => 70;
+    public override int Order => 60;
 
     /// <summary>
     ///     配置模块服务

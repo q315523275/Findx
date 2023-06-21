@@ -1,6 +1,10 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using Findx.Data;
+using System.Diagnostics;
+using ConsoleApp1;
+using Findx.Utils;
+using MassTransit;
+using SequentialGuidType = ConsoleApp1.SequentialGuidType;
 
 Console.Title = "Findx 控制台测试";
 Console.WriteLine("Hello, World!");
@@ -110,25 +114,125 @@ Console.WriteLine("Hello, World!");
 // Console.WriteLine("开始配置监听");
 // Console.ReadLine();
 
-var user = new User();
+// var user = new User();
+//
+// user.SetProperty("name", "测试");
+// user.SetProperty("obj", new Test { Title = "这是遥远的信息" });
+// user.SetProperty("number", 9.88);
+// Console.WriteLine($"ExtraProperties:{user.ExtraProperties}");
+// Console.WriteLine($"GetProperty:{user.GetProperty<string>("name")}");
+// Console.WriteLine($"GetProperty:{user.GetProperty<Test>("obj")?.Title}");
+// Console.WriteLine($"GetProperty:{user.GetProperty<decimal>("number")}");
+//
+//
+// Console.ReadLine();
+//
+// internal class User : IExtraObject
+// {
+//     public string ExtraProperties { get; set; }
+// }
+//
+// public class Test
+// {
+//     public string Title { get; set; }
+// }
 
-user.SetProperty("name", "测试");
-user.SetProperty("obj", new Test { Title = "这是遥远的信息" });
-user.SetProperty("number", 9.88);
-Console.WriteLine($"ExtraProperties:{user.ExtraProperties}");
-Console.WriteLine($"GetProperty:{user.GetProperty<string>("name")}");
-Console.WriteLine($"GetProperty:{user.GetProperty<Test>("obj")?.Title}");
-Console.WriteLine($"GetProperty:{user.GetProperty<decimal>("number")}");
+// var privateKeyStr = XC.RSAUtil.RsaKeyConvert.PrivateKeyPkcs8ToXml("MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAI0NF4GBZ07BejfYZAmhTk0rofIoQqgRf63erVeHRAKfnEPHtTZ/MMfRupgc1uo6/e7DZ0BqOp58SLeXfcYEzWzzos0ThR797eiSA0AY8tB5L8WOy5tOxfhCiAfM87CpNvqyEyYtFwihVYrIHJdPO/Ll0ugoPVhP/MwIEwVHMFA5AgMBAAECgYAUXDNsajVzVNJDhWTLTxFyaj3yKoWUpRH9EwuKeugCSO/RiN5Lg4iTD18T3fXX0bQd5u7ciXj0r5P/jEqHbuIIBB69+xykWSdD/9O8/s2wX43u5+C7UqkhS0N+SEOYAn6j24l/Wd0RRNTMXMrWudHdZ+FI1Yn2gB8Zf/rZTJ6CUQJBAOf6nlHpGJ9m01BbISUzCKmDZMHrvbQgVoLUzi8zPNpld3n+4vyuN5vy3w/aiWp6uYmGOgfnuVaaBEh5WvkUncMCQQCbqCAzhU7YUGNTaoHRy7WzW+KlRDsJQunUWofGniGX3cnz2RUYCv3IfuP22GuCBOX26MAgeapkSfK/KGf3FY5TAkEAyooimNmvydz5OvuV4OjB817pJfcx1oc1gV1T+BoAU56rxjQo8v0ZSGuxHiJsQC+Otuge2rATPe2TN8PdDgRWCQJAAtQoWadXinjThUWPPGfOUocd9FDsHbv4keJfS02+YIsoS2Uri/dPK2Ca9fZy5bb/EuCh9TUg0pfBcJXkZcoffwJALjLX9RAK4UEYz+YDEaGO7dhSLd1QJbBT8H2ekhxEItTwCSp70JmDx8xltjGfgdzhGQjAWY8iEkp2wrOg8WFu6g==");
+// var publicKeyStr = XC.RSAUtil.RsaKeyConvert.PublicKeyPemToXml("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/q3kMS8MWnPhFugPSYa/9UiBBQ1KP+cpSO6NtvBPRiBpic9iRNPAcM2sl8wAUIplX2uWHUq3ENQkWkAQaEs5MJ8hZA168OS7Qn+exkLsxR5EjREHGbeIzH1iG5ekHn0ymdc9/bwXba2bzOIaHTNfZT1SuyUdBixYMWshZlVqzuwIDAQAB");
+//
+// Console.WriteLine($"privateKeyStr:{privateKeyStr}");
+// Console.WriteLine($"publicKeyStr:{publicKeyStr}");
+//
+//
+// var ci = "EoXxXstYtcpCUTr8BxKBqZlQD+hHg7q8diBCElz/iCRe4u8jZD8vN9T0lapknNHPEG7WUXZpgavN2qU4RgKxb1xfjWxe3cdRXzGH4O9cJmIQxOy6PZX5F6Tv0qgr9dKZ7UncCIwh127S+6UgFpGcbt71KOwE5Scc1wbo8VFjlBI=";
+// var sa = "hK0b1fIiuFX8jxE3FNitAANZ0K0lxDUjnhQucsVpi6cyF13SdpvdhNvTHrS05WS/YFTh5JP4cAwAUnKyz5MEVAvizhb51UGe44x0ieJHfBJ6z+NWLLdDR8gvoUuED7/gLn5ejDdjFqZUuW07EUcZGmj5hvcQGMxliWAoMY3DmF8=";
+// var sign = "";
+// var data = "RUWevIIJ+HC4uLq5HfDb7yRMuaXw2RIvVfyYgy92hyxxJAReVEQynlBT0CDF4AfIz3F6F5LbwP0Uke5LNdoUvTmRhjcv4Rcd3YL6D0wxzmmTu7VLXka9hu6n9notC7Sgk2yARle5ZvIxR78lMU+o6u7cV/YqeW1dkts9/f51gw0=";
+//
+// var aesKey = Findx.Utils.Encrypt.RsaDecrypt(ci, privateKeyStr);
+// Console.WriteLine(aesKey);
+//
+// var aesIv = Findx.Utils.Encrypt.RsaDecrypt(sa, privateKeyStr);
+// Console.WriteLine(aesIv);
+//
+// var toEncryptArray = Convert.FromBase64String(data);
+//
+// var des = Aes.Create();
+// des.Key = Encoding.UTF8.GetBytes(aesKey);
+// des.Mode = CipherMode.CBC;
+// des.IV = Encoding.UTF8.GetBytes(aesIv);
+// // des.Padding = PaddingMode.;
+//
+// var cTransform = des.CreateDecryptor();
+// var resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
+// Console.WriteLine(Encoding.Default.GetString(resultArray));
 
+SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
+GuidHelper.Next(SequentialGuidType.AsString);
+Guid.NewGuid();
+SnowflakeId.Default().NextId();
+SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
+Console.WriteLine("Guid生成预热结束");
 
-Console.ReadLine();
-
-internal class User : IExtraObject
+var watch = new Stopwatch();  
+watch.Start();
+for (int i = 0; i < 1000000; i++)
 {
-    public string ExtraProperties { get; set; }
+    Guid.NewGuid();
 }
+watch.Stop();
+Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
 
-public class Test
+watch.Restart();
+for (int i = 0; i < 1000000; i++)
 {
-    public string Title { get; set; }
+    GuidHelper.Next(SequentialGuidType.AsString);
 }
+watch.Stop();
+Console.WriteLine($"纳秒级别有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+watch.Restart();
+for (int i = 0; i < 1000000; i++)
+{
+    NewId.NextSequentialGuid();
+}
+watch.Stop();
+Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+watch.Restart();
+for (int i = 0; i < 1000000; i++)
+{
+    SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
+}
+watch.Stop();
+Console.WriteLine($"Abp有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+watch.Restart();
+for (int i = 0; i < 1000000; i++)
+{
+    SnowflakeId.Default().NextId();
+}
+watch.Stop();
+Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+// var sequentialGuidList = new HashSet<string>();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     sequentialGuidList.Add(NewId.NextSequentialGuid().ToString());
+// }
+// Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 1000000}");
+
+// var sequentialGuidList = new List<Guid>();
+// for (int i = 0; i < 100; i++)
+// {
+//     sequentialGuidList.Add(NewId.NextSequentialGuid());
+// }
+//
+// var newGuids = sequentialGuidList.OrderBy(x => x).ToList();
+// for (int i = 0; i < 100; i++)
+// {
+//     Console.WriteLine($"比对:{sequentialGuidList[i] == newGuids[i]},源:{sequentialGuidList[i]},new:{newGuids[i]}");
+// }
+
+
+

@@ -4,6 +4,7 @@ using Findx.Caching.InMemory;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Email;
+using Findx.Events;
 using Findx.ExceptionHandling;
 using Findx.Extensions;
 using Findx.Guids;
@@ -27,7 +28,7 @@ namespace Findx;
 ///     Findx-基础模块
 /// </summary>
 [Description("Findx-基础模块")]
-public class FindxCoreModule : FindxModule
+public class FindxCoreModule : StartupModule
 {
     /// <summary>
     ///     等级
@@ -38,7 +39,7 @@ public class FindxCoreModule : FindxModule
     ///     排序
     ///     模块启动顺序，模块启动的顺序先按级别启动，同一级别内部再按此顺序启动，
     /// </summary>
-    public override int Order => 0;
+    public override int Order => 10;
 
     /// <summary>
     ///     注册服务
@@ -57,14 +58,17 @@ public class FindxCoreModule : FindxModule
         services.AddSingleton<ISettingValueProvider, ConfigurationSettingValueProvider>();
 
         // 缓存
-        services.TryAddSingleton<ICacheProvider, CacheProvider>();
-        services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();
         services.AddSingleton<ICache, InMemoryCache>();
+        services.TryAddSingleton<ICacheFactory, CacheFactory>();
+        services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();
 
         // 注入模块
         services.TryAddSingleton<IHybridServiceScopeFactory, DefaultServiceScopeFactory>();
         services.AddScoped<ScopedDictionary>();
 
+        // 事件总线
+        services.AddScoped<IEventBus, EventBus>();
+        
         // 工作单元
         services.AddScoped<IUnitOfWorkManager, NullUnitOfWorkManager>();
 
@@ -85,7 +89,7 @@ public class FindxCoreModule : FindxModule
 
         // 锁
         services.AddSingleton<ILock, LocalCacheLock>();
-        services.AddSingleton<ILockProvider, LockProvider>();
+        services.AddSingleton<ILockFactory, LockFactory>();
 
         // 反射查询器
         services.AddSingleton<IMethodInfoFinder, PublicInstanceMethodInfoFinder>();
@@ -103,7 +107,7 @@ public class FindxCoreModule : FindxModule
 
         // 存储
         services.AddSingleton<IFileStorage, FolderFileStorage>();
-        services.AddSingleton<IStorageProvider, StorageProvider>();
+        services.AddSingleton<IStorageFactory, StorageFactory>();
 
         // 线程取消通知
         services.AddSingleton<ICancellationTokenProvider, NullCancellationTokenProvider>();

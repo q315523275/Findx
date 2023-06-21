@@ -25,11 +25,7 @@ public class DefaultSettingProvider : ISettingProvider
     public T GetObject<T>(string key) where T : new()
     {
         foreach (var item in _settingValueProviders.OrderByDescending(x => x.Order))
-        {
-            var value = item.GetObject<T>(key);
-            if (value != null) return value;
-        }
-
+            if (item.ContainsKey(key)) return item.GetObject<T>(key);
         return default;
     }
 
@@ -42,12 +38,7 @@ public class DefaultSettingProvider : ISettingProvider
     public T GetValue<T>(string key)
     {
         foreach (var item in _settingValueProviders.OrderByDescending(x => x.Order))
-        {
-            var value = item.GetValue<T>(key);
-            // 可能多个提供器中存在相同的key,使用EqualityComparer进行判定
-            if (value != null && !EqualityComparer<T>.Default.Equals(value, default)) return value;
-        }
-
+            if (item.ContainsKey(key)) return item.GetValue<T>(key);
         return default;
     }
 }

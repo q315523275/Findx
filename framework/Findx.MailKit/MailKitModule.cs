@@ -10,7 +10,7 @@ namespace Findx.MailKit
     ///     Findx-MailKit邮件模块
     /// </summary>
     [Description("Findx-MailKit邮件模块")]
-    public class MailKitModule : FindxModule
+    public class MailKitModule : StartupModule
     {
         /// <summary>
         ///     模块等级
@@ -20,7 +20,7 @@ namespace Findx.MailKit
         /// <summary>
         ///     模块编号
         /// </summary>
-        public override int Order => 60;
+        public override int Order => 70;
 
         /// <summary>
         ///     配置模块服务

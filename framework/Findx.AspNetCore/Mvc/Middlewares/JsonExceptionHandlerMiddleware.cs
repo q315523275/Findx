@@ -7,6 +7,7 @@ using Findx.ExceptionHandling;
 using Findx.Exceptions;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
@@ -43,7 +44,6 @@ public class JsonExceptionHandlerMiddleware
     /// <returns></returns>
     public async Task InvokeAsync(HttpContext context)
     {
-        var js = DateTime.Now;
         try
         {
             await _next(context);
@@ -51,63 +51,54 @@ public class JsonExceptionHandlerMiddleware
         catch (FindxException ex)
         {
             await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-
-            context.Response.Clear();
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = "application/json;charset=utf-8";
-            await context.Response.WriteAsync(CommonResult.Fail(ex.ErrorCode ?? "500", ex.Message ?? "未知异常,请稍后再试")
-                .ToJson());
+            await WriteOkFailAsync(context, ex.ErrorCode ?? "500", ex.Message ?? "未知异常,请稍后再试");
         }
         catch (ValidationException ex)
         {
-            context.Response.Clear();
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = "application/json;charset=utf-8";
-            await context.Response.WriteAsync(CommonResult.Fail("4001", ex.Message ?? "参数校验不通过").ToJson());
+            await WriteOkFailAsync(context, "4001", ex.Message ?? "参数校验不通过");
         }
         catch (BrokenCircuitException ex)
         {
             await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-
-            context.Response.Clear();
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = "application/json;charset=utf-8";
-            await context.Response.WriteAsync(CommonResult.Fail("500", "当前服务不可用,请稍后再试").ToJson());
+            await WriteOkFailAsync(context, "500", "当前服务不可用,请稍后再试");
         }
         catch (TimeoutRejectedException ex)
         {
             await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-
-            context.Response.Clear();
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = "application/json;charset=utf-8";
-            await context.Response.WriteAsync(CommonResult.Fail("500", "内部服务超时,请稍后再试").ToJson());
+            await WriteOkFailAsync(context, "500", "内部服务超时,请稍后再试");
         }
         catch (HttpRequestException ex)
         {
             await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-
-            context.Response.Clear();
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
-            context.Response.ContentType = "application/json;charset=utf-8";
-            await context.Response.WriteAsync(
-                CommonResult.Fail(ex.StatusCode?.ToString() ?? "500", "上游系统调用异常").ToJson());
+            await WriteOkFailAsync(context, ex.StatusCode?.ToString() ?? "500", "上游系统调用异常");
         }
         catch (Exception ex)
         {
-            // _logger.LogError(new EventId(), ex, $"全局异常捕获,Url:{context?.Request?.GetDisplayUrl()}{Findx.Utils.Common.Line}{ex.FormatMessage()}");
-            _logger.LogError(new EventId(), ex, ex.Message);
+            _logger.LogError(ex, "全局异常捕获,Url:{DisplayUrl}", context?.Request?.GetDisplayUrl());
 
             await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
 
-            if (context == null || context.Response.HasStarted) return;
+            if (context == null || context.Response.HasStarted) 
+                return;
             // 开启异常,方便外层组件熔断等功能使用
             context.Response.Clear();
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "text/plain;charset=utf-8";
             await context.Response.WriteAsync("error occurred");
         }
+    }
 
-        _logger.LogDebug($"全局异常拦截器中间件接口耗时:{(DateTime.Now - js).TotalMilliseconds:0.000}毫秒");
+    /// <summary>
+    /// write body
+    /// </summary>
+    /// <param name="context"></param>
+    /// <param name="code"></param>
+    /// <param name="message"></param>
+    private static async Task WriteOkFailAsync(HttpContext context, string code, string message)
+    {
+        context.Response.Clear();
+        context.Response.StatusCode = (int)HttpStatusCode.OK;
+        context.Response.ContentType = "application/json;charset=utf-8"; ;
+        await context.Response.WriteAsync("{\"code\":\"" + code + "\",\"msg\":\"" + message + "\"}");
     }
 }

@@ -24,8 +24,7 @@ public interface IFileUploadService
     /// </summary>
     /// <param name="param">参数</param>
     /// <param name="cancellationToken">取消令牌</param>
-    Task<IEnumerable<FileSpec>> UploadAsync(MultipleFileUploadParam param,
-        CancellationToken cancellationToken = default);
+    Task<IEnumerable<FileSpec>> UploadAsync(MultipleFileUploadParam param, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     保存文件

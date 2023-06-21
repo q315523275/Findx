@@ -22,6 +22,7 @@ public static partial class Extensions
             var applicationInstanceInfo = options.ApplicationServices.GetRequiredService<IApplicationContext>();
             options.ListenAnyIP(applicationInstanceInfo.Port);
         });
+        
         return webHostBuilder;
     }
 }

@@ -183,6 +183,7 @@ public static class EntityExtensions
         where TEntity : IEntity
         where TTenantKey : struct
     {
+        // ReSharper disable once SuspiciousTypeConversion.Global
         if (entity is ITenant<TTenantKey> entity1)
         {
             entity1.TenantId = user?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<TTenantKey>() ??
@@ -202,6 +203,7 @@ public static class EntityExtensions
     public static IEntity<TKey> SetEmptyKey<TKey>(this IEntity<TKey> entity)
     {
         var keyType = typeof(TKey);
+        
         // 雪花长整形
         if (typeof(long) == keyType && entity.Id.Equals(default(long)))
             entity.Id = ServiceLocator.GetService<IKeyGenerator<long>>().Create().CastTo<TKey>();

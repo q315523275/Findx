@@ -25,4 +25,9 @@ public class ClientCallBackInfo<T>
     ///     取消令牌
     /// </summary>
     public CancellationTokenSource CancellationTokenSource { set; get; }
+    
+    /// <summary>
+    ///     注册的回调
+    /// </summary>
+    public CancellationTokenRegistration CancellationTokenRegistration { set; get; }
 }

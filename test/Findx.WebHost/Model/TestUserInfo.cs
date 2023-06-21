@@ -4,7 +4,7 @@ using FreeSql.DataAnnotations;
 
 namespace Findx.WebHost.Model;
 
-public class TestUserInfo : ISoftDeletable, IEntity
+public class TestUserInfo : ISoftDeletable, IEntity<int>
 {
     [Column(IsIdentity = true, IsPrimary = true)]
     public int Id { get; set; }

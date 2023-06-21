@@ -1,4 +1,6 @@
-﻿namespace Findx.Extensions;
+﻿using System.Globalization;
+
+namespace Findx.Extensions;
 
 /// <summary>
 ///     系统扩展 - 时间
@@ -19,12 +21,12 @@ public static partial class Extensions
     ///     将时间转换为时间戳
     /// </summary>
     /// <param name="dateTime"></param>
-    /// <param name="milsec">是否分钟级别</param>
+    /// <param name="milliseconds">是否分钟级别</param>
     /// <returns></returns>
-    public static string ToJsGetTime(this DateTime dateTime, bool milsec = true)
+    public static string ToJsGetTime(this DateTime dateTime, bool milliseconds = true)
     {
         var timeSpan = dateTime.ToUniversalTime().Subtract(new DateTime(1970, 1, 1));
-        return Math.Round(milsec ? timeSpan.TotalMilliseconds : timeSpan.TotalSeconds).ToString();
+        return Math.Round(milliseconds ? timeSpan.TotalMilliseconds : timeSpan.TotalSeconds).ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>

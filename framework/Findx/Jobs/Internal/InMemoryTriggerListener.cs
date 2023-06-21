@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Findx.Extensions;
-using JetBrains.Annotations;
 
 namespace Findx.Jobs.Internal;
 
@@ -26,7 +25,7 @@ public class InMemoryTriggerListener : ITriggerListener
     /// <param name="jobInfo"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task TriggerFiredAsync([NotNull] JobInfo jobInfo, CancellationToken cancellationToken = default)
+    public Task TriggerFiredAsync(JobInfo jobInfo, CancellationToken cancellationToken = default)
     {
         // 分布式版本
         // 记录作业执行记录

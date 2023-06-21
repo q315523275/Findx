@@ -8,11 +8,6 @@ namespace Findx.Locks;
 public interface ILock
 {
     /// <summary>
-    ///     锁类型
-    /// </summary>
-    LockType LockType { get; }
-
-    /// <summary>
     ///     获取锁
     /// </summary>
     /// <param name="resource"></param>
@@ -39,5 +34,5 @@ public interface ILock
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
     /// <returns></returns>
-    Task RenewAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null);
+    Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires);
 }

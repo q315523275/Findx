@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using JetBrains.Annotations;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 
 namespace Findx.Jobs;
 
@@ -14,9 +14,9 @@ public interface IJobScheduler
 	/// <typeparam name="TJob"></typeparam>
 	/// <param name="parameter"></param>
 	/// <param name="delay"></param>
+	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, IDictionary<string, string> parameter = null)
-        where TJob : IJob;
+	Task<long> EnqueueAsync<TJob>(TimeSpan? delay = null, IDictionary<string, string> parameter = null, CancellationToken cancellationToken = default) where TJob : IJob;
 
 	/// <summary>
 	///     调度一个延时执行任务
@@ -24,55 +24,59 @@ public interface IJobScheduler
 	/// <typeparam name="TJob"></typeparam>
 	/// <param name="parameter"></param>
 	/// <param name="dateTime"></param>
+	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, IDictionary<string, string> parameter = null)
-        where TJob : IJob;
+	Task<long> EnqueueAsync<TJob>(DateTime? dateTime = null, IDictionary<string, string> parameter = null, CancellationToken cancellationToken = default) where TJob : IJob;
 
 	/// <summary>
 	///     调度一个循环执行任务
 	/// </summary>
 	/// <param name="delay"></param>
 	/// <param name="parameter"></param>
+	/// <param name="cancellationToken"></param>
 	/// <typeparam name="TJob"></typeparam>
 	/// <returns></returns>
-	Task<long> ScheduleAsync<TJob>([NotNull] TimeSpan delay, IDictionary<string, string> parameter = null)
-        where TJob : IJob;
+	Task<long> ScheduleAsync<TJob>(TimeSpan delay, IDictionary<string, string> parameter = null, CancellationToken cancellationToken = default) where TJob : IJob;
 
 	/// <summary>
 	///     调度一个循环执行任务
 	/// </summary>
 	/// <param name="cronExpression"></param>
 	/// <param name="parameter"></param>
+	/// <param name="cancellationToken"></param>
 	/// <typeparam name="TJob"></typeparam>
 	/// <returns></returns>
-	Task<long> ScheduleAsync<TJob>([NotNull] string cronExpression, IDictionary<string, string> parameter = null)
-        where TJob : IJob;
+	Task<long> ScheduleAsync<TJob>([Required] string cronExpression, IDictionary<string, string> parameter = null, CancellationToken cancellationToken = default) where TJob : IJob;
 
 	/// <summary>
 	///     调度一个循环执行任务
 	/// </summary>
 	/// <param name="jobType"></param>
+	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task<long> ScheduleAsync([NotNull] Type jobType);
+	Task<long> ScheduleAsync(Type jobType, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	///     暂停任务
 	/// </summary>
 	/// <param name="id"></param>
+	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task PauseJob(long id);
+	Task PauseJob(long id, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	///     恢复暂停的任务
 	/// </summary>
 	/// <param name="id"></param>
+	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task ResumeJob(long id);
+	Task ResumeJob(long id, CancellationToken cancellationToken = default);
 
 	/// <summary>
 	///     删除任务
 	/// </summary>
 	/// <param name="id"></param>
+	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task RemoveJob(long id);
+	Task RemoveJob(long id, CancellationToken cancellationToken = default);
 }

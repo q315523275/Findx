@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace Findx.Jobs.Internal;
 
@@ -27,8 +26,7 @@ public class InMemoryJobListener : IJobListener
     /// </summary>
     /// <param name="context"></param>
     /// <param name="cancellationToken"></param>
-    public async Task JobToRunAsync([NotNull] IJobExecutionContext context,
-        CancellationToken cancellationToken = default)
+    public async Task JobToRunAsync(IJobExecutionContext context, CancellationToken cancellationToken = default)
     {
         if (!_dict.TryGetValue(context.FullName, out var jobType))
             return;
@@ -47,7 +45,7 @@ public class InMemoryJobListener : IJobListener
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"作业 {context.JobName} 执行记录 {context.JobId} 执行失败");
+            _logger.LogError(ex, "作业 {ContextJobName} 执行记录 {ContextJobId} 执行失败", context.JobName, context.JobId);
         }
     }
 }

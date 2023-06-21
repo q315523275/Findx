@@ -12,10 +12,9 @@ namespace Findx.WebHost.Controllers;
 public class RepoController : Controller
 {
     [HttpGet("/repo/test")]
-    public async Task<string> RepoTest([FromServices] IRepository<TestNewsInfo> repo1,
-        [FromServices] IRepository<TestUserInfo> repo2, [FromServices] IUnitOfWorkManager uowManager)
+    public async Task<string> RepoTest([FromServices] IRepository<TestNewsInfo, int> repo1, [FromServices] IRepository<TestUserInfo, int> repo2, [FromServices] IUnitOfWorkManager uowManager)
     {
-        var uow = uowManager.GetConnUnitOfWork(true, true);
+        var uow = await uowManager.GetConnUnitOfWorkAsync(true, true);
 
         try
         {
@@ -34,11 +33,11 @@ public class RepoController : Controller
 
             throw new Exception("123");
 
-            uow.Commit();
+            uow.CommitAsync();
         }
         catch
         {
-            uow.Rollback();
+            uow.RollbackAsync();
         }
 
         return DateTime.Now.ToString();

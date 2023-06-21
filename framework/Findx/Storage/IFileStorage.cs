@@ -7,17 +7,12 @@ namespace Findx.Storage;
 /// <summary>
 ///     文件存储
 /// </summary>
-public interface IFileStorage : IDisposable
+public interface IFileStorage
 {
     /// <summary>
     ///     序列化器
     /// </summary>
     ISerializer Serializer { get; }
-
-    /// <summary>
-    ///     存储提供器名称
-    /// </summary>
-    string Name { get; }
 
     /// <summary>
     ///     获取文件数据流
@@ -31,15 +26,17 @@ public interface IFileStorage : IDisposable
     ///     获取文件详情信息
     /// </summary>
     /// <param name="path"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<FileSpec> GetFileInfoAsync(string path);
+    Task<FileSpec> GetFileInfoAsync(string path, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     判断文件是否存在
     /// </summary>
     /// <param name="path"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> ExistsAsync(string path);
+    Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     保存文件
@@ -76,8 +73,7 @@ public interface IFileStorage : IDisposable
     /// <param name="overwrite">目标存在时是否覆盖</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> CopyFileAsync(string path, string targetPath, bool overwrite = false,
-        CancellationToken cancellationToken = default);
+    Task<bool> CopyFileAsync(string path, string targetPath, bool overwrite = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     删除文件

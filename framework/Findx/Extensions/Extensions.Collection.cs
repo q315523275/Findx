@@ -13,7 +13,7 @@ public static partial class Extensions
     /// <returns></returns>
     public static bool IsNullOrEmpty<T>(this ICollection<T> source)
     {
-        return source == null || source.Count <= 0;
+        return source is not { Count: > 0 };
     }
 
     /// <summary>

@@ -7,35 +7,35 @@ namespace Findx.Utils;
 ///     雪花算法生成ID
 ///     https://github.com/dotnetcore/cap/blob/master/src/DotNetCore.CAP/Internal/SnowflakeId.cs
 /// </summary>
-public sealed class SnowflakeId
+public class SnowflakeId
 {
     /// <summary>
-    ///     Start time 2010-11-04 09:42:54
+    /// Start time 2010-11-04 09:42:54
     /// </summary>
-    public const long Twepoch = 1288834974657L;
+    private const long Twepoch = 1288834974657L;
 
     /// <summary>
-    ///     The number of bits occupied by workerId
+    /// The number of bits occupied by workerId
     /// </summary>
     private const int WorkerIdBits = 10;
 
     /// <summary>
-    ///     The number of bits occupied by timestamp
+    /// The number of bits occupied by timestamp
     /// </summary>
     private const int TimestampBits = 41;
 
     /// <summary>
-    ///     The number of bits occupied by sequence
+    /// The number of bits occupied by sequence
     /// </summary>
     private const int SequenceBits = 12;
 
     /// <summary>
-    ///     Maximum supported machine id, the result is 1023
+    /// Maximum supported machine id, the result is 1023
     /// </summary>
     private const int MaxWorkerId = ~(-1 << WorkerIdBits);
 
     /// <summary>
-    ///     mask that help to extract timestamp and sequence from a long
+    /// mask that help to extract timestamp and sequence from a long
     /// </summary>
     private const long TimestampAndSequenceMask = ~(-1L << (TimestampBits + SequenceBits));
 
@@ -46,17 +46,17 @@ public sealed class SnowflakeId
     private readonly object _lock = new();
 
     /// <summary>
-    ///     timestamp and sequence mix in one Long
-    ///     highest 11 bit: not used
-    ///     middle  41 bit: timestamp
-    ///     lowest  12 bit: sequence
+    /// timestamp and sequence mix in one Long
+    /// highest 11 bit: not used
+    /// middle  41 bit: timestamp
+    /// lowest  12 bit: sequence
     /// </summary>
     private long _timestampAndSequence;
 
     /// <summary>
-    ///     Ctor
+    /// 
     /// </summary>
-    /// <param name="workerId"></param>
+    /// <param name="workerId">工作id</param>
     /// <exception cref="ArgumentException"></exception>
     public SnowflakeId(long workerId)
     {
@@ -69,39 +69,41 @@ public sealed class SnowflakeId
     }
 
     /// <summary>
-    ///     business meaning: machine ID (0 ~ 1023)
-    ///     actual layout in memory:
-    ///     highest 1 bit: 0
-    ///     middle 10 bit: workerId
-    ///     lowest 53 bit: all 0
+    /// business meaning: machine ID (0 ~ 1023)
+    /// actual layout in memory:
+    /// highest 1 bit: 0
+    /// middle 10 bit: workerId
+    /// lowest 53 bit: all 0
     /// </summary>
     private long WorkerId { get; }
 
     /// <summary>
-    ///     单例
+    /// 默认雪花算法服务
     /// </summary>
     /// <returns></returns>
     public static SnowflakeId Default()
     {
-        if (_snowflakeId != null) return _snowflakeId;
+        if (_snowflakeId != null) 
+            return _snowflakeId;
 
         lock (SLock)
         {
-            if (_snowflakeId != null) return _snowflakeId;
+            if (_snowflakeId != null) 
+                return _snowflakeId;
 
             if (!long.TryParse(Environment.GetEnvironmentVariable("WORKERID"), out var workerId))
                 workerId = Util.GenerateWorkerId(MaxWorkerId);
-
+            
             // ReSharper disable once PossibleMultipleWriteAccessInDoubleCheckLocking
             return _snowflakeId = new SnowflakeId(workerId);
         }
     }
 
     /// <summary>
-    ///     ID
+    /// 雪花Id
     /// </summary>
     /// <returns></returns>
-    public long NextId()
+    public virtual long NextId()
     {
         lock (_lock)
         {
@@ -112,7 +114,7 @@ public sealed class SnowflakeId
     }
 
     /// <summary>
-    ///     init first timestamp and sequence immediately
+    /// init first timestamp and sequence immediately
     /// </summary>
     private void InitTimestampAndSequence()
     {
@@ -122,8 +124,8 @@ public sealed class SnowflakeId
     }
 
     /// <summary>
-    ///     block current thread if the QPS of acquiring UUID is too high
-    ///     that current sequence space is exhausted
+    /// block current thread if the QPS of acquiring UUID is too high
+    /// that current sequence space is exhausted
     /// </summary>
     private void WaitIfNecessary()
     {
@@ -135,7 +137,7 @@ public sealed class SnowflakeId
     }
 
     /// <summary>
-    ///     get newest timestamp relative to twepoch
+    /// get newest timestamp relative to twepoch
     /// </summary>
     /// <returns></returns>
     private long GetNewestTimestamp()
@@ -147,7 +149,7 @@ public sealed class SnowflakeId
 internal static class Util
 {
     /// <summary>
-    ///     auto generate workerId, try using mac first, if failed, then randomly generate one
+    /// auto generate workerId, try using mac first, if failed, then randomly generate one
     /// </summary>
     /// <returns>workerId</returns>
     public static long GenerateWorkerId(int maxWorkerId)
@@ -163,7 +165,7 @@ internal static class Util
     }
 
     /// <summary>
-    ///     use lowest 10 bit of available MAC as workerId
+    /// use lowest 10 bit of available MAC as workerId
     /// </summary>
     /// <returns>workerId</returns>
     private static long GenerateWorkerIdBaseOnMac()
@@ -181,7 +183,7 @@ internal static class Util
     }
 
     /// <summary>
-    ///     randomly generate one as workerId
+    /// randomly generate one as workerId
     /// </summary>
     /// <returns></returns>
     private static long GenerateRandomWorkerId(int maxWorkerId)

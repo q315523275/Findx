@@ -27,6 +27,20 @@ public partial class Extensions
 
         return app;
     }
+    
+    /// <summary>
+    ///     使用Findx框架启动
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    public static void UseFindxHosting(this WebApplication app)
+    {
+        var appInfo = app.Services.GetRequiredService<IApplicationContext>();
+        foreach (var uri in appInfo.Uris.Split(";"))
+            app.Urls.Add(uri);
+
+        app.Run();
+    }
 
     /// <summary>
     ///     注册请求日志中间件
@@ -91,7 +105,7 @@ public partial class Extensions
         });
 
         watch.Stop();
-        logger.LogInformation(0, $"框架初始化完成，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Environment.ProcessId}\r\n");
+        logger.LogInformation(0, "框架初始化完成，耗时:{ElapsedTotalMilliseconds}毫秒，进程编号:{ProcessId}\\r\\n", watch.Elapsed.TotalMilliseconds, Environment.ProcessId);
 
         return app;
     }

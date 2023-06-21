@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Security.Principal;
+using Findx.Extensions;
 
 namespace Findx.DependencyInjection;
 
@@ -20,11 +21,26 @@ public static class ServiceLocator
     /// <returns></returns>
     public static T GetService<T>()
     {
-        Check.NotNull(Instance, nameof(Instance));
+        Instance.ThrowIfNull();
 
         var scopedResolver = Instance.GetService<IScopedServiceResolver>();
         if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService<T>() ?? default;
         return Instance.GetService<T>() ?? default;
+    }
+    
+    /// <summary>
+    ///     获取单个泛型实例
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T GetService<T>(string name)
+    {
+        Instance.ThrowIfNull();
+        name.ThrowIfNull();
+
+        var scopedResolver = Instance.GetService<IScopedServiceResolver>(name);
+        if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService<T>(name) ?? default;
+        return Instance.GetService<T>(name) ?? default;
     }
 
     /// <summary>
@@ -34,12 +50,27 @@ public static class ServiceLocator
     /// <returns></returns>
     public static object GetService(Type serviceType)
     {
-        Check.NotNull(Instance, nameof(Instance));
-        Check.NotNull(serviceType, nameof(serviceType));
+        Instance.ThrowIfNull();
 
         var scopedResolver = Instance.GetService<IScopedServiceResolver>();
-        if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService(serviceType) ?? default;
-        return Instance.GetService(serviceType) ?? default;
+        if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService(serviceType);
+        return Instance.GetService(serviceType);
+    }
+
+    /// <summary>
+    ///     获取单个实例对象
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="serviceType"></param>
+    /// <returns></returns>
+    public static object GetService(string name, Type serviceType)
+    {
+        Instance.ThrowIfNull();
+        name.ThrowIfNull();
+
+        var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+        if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService(name, serviceType);
+        return Instance.GetService(name, serviceType);
     }
 
     /// <summary>
@@ -52,8 +83,8 @@ public static class ServiceLocator
         Check.NotNull(Instance, nameof(Instance));
 
         var scopedResolver = Instance.GetService<IScopedServiceResolver>();
-        if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetServices<T>() ?? default;
-        return Instance.GetServices<T>() ?? default;
+        if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetServices<T>();
+        return Instance.GetServices<T>();
     }
 
     /// <summary>
@@ -67,8 +98,8 @@ public static class ServiceLocator
         Check.NotNull(serviceType, nameof(serviceType));
 
         var scopedResolver = Instance.GetService<IScopedServiceResolver>();
-        if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetServices(serviceType) ?? default;
-        return Instance.GetServices(serviceType) ?? default;
+        if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetServices(serviceType);
+        return Instance.GetServices(serviceType);
     }
 
     /// <summary>

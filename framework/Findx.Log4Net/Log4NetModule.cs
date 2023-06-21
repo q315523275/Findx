@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Findx.Log4Net
 {
     [Description("Findx-Log4Net组件模块")]
-    public class Log4NetModule : FindxModule
+    public class Log4NetModule : StartupModule
     {
         public override ModuleLevel Level => ModuleLevel.Framework;
         public override int Order => 50;

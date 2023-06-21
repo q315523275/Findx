@@ -67,7 +67,7 @@ public sealed class AsyncLock : IDisposable
     /// <summary>
     ///     锁释放器
     /// </summary>
-    private struct AsyncLockReleaser : IDisposable
+    private readonly struct AsyncLockReleaser : IDisposable
     {
         private readonly SemaphoreSlim _semaphoreSlim;
 

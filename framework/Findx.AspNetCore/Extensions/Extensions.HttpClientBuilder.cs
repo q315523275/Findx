@@ -53,12 +53,12 @@ public static partial class Extensions
         httpClientBuilder.AddTransientHttpErrorPolicy(builder =>
         {
             return builder.Or<TaskCanceledException>()
-                .Or<OperationCanceledException>()
-                .Or<HttpRequestException>()
-                .Or<TimeoutException>()
-                .Or<TimeoutRejectedException>()
-                .OrResult(res => res.StatusCode == HttpStatusCode.TooManyRequests)
-                .RetryAsync(retryCount);
+                          .Or<OperationCanceledException>()
+                          .Or<HttpRequestException>()
+                          .Or<TimeoutException>()
+                          .Or<TimeoutRejectedException>()
+                          .OrResult(res => res.StatusCode == HttpStatusCode.TooManyRequests)
+                          .RetryAsync(retryCount);
         });
 
         return httpClientBuilder;
@@ -71,8 +71,7 @@ public static partial class Extensions
     /// <param name="exceptionsAllowedBeforeBreaking">熔断前连续错误次数</param>
     /// <param name="durationOfBreak">熔断时长,如:30s</param>
     /// <returns></returns>
-    public static IHttpClientBuilder AddCircuitBreakerPolicy(this IHttpClientBuilder httpClientBuilder,
-        int exceptionsAllowedBeforeBreaking, string durationOfBreak)
+    public static IHttpClientBuilder AddCircuitBreakerPolicy(this IHttpClientBuilder httpClientBuilder, int exceptionsAllowedBeforeBreaking, string durationOfBreak)
     {
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak.IsNullOrWhiteSpace()) return httpClientBuilder;
@@ -82,33 +81,25 @@ public static partial class Extensions
         httpClientBuilder.AddTransientHttpErrorPolicy(build =>
         {
             return build.Or<HttpRequestException>()
-                .Or<TimeoutException>()
-                .Or<TimeoutRejectedException>()
-                .OrResult(rsp =>
-                    rsp.StatusCode == HttpStatusCode.InternalServerError ||
-                    rsp.StatusCode == HttpStatusCode.RequestTimeout)
-                .CircuitBreakerAsync(
-                    exceptionsAllowedBeforeBreaking,
-                    breakTimeSpan,
-                    (res, ts) =>
-                    {
-                        var logger = ServiceLocator.GetService<ILoggerFactory>()
-                            ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation(
-                            $"{DateTime.Now}-断路器即将熔断{ts.TotalSeconds}秒,原因:{res?.Exception?.Message}");
-                    },
-                    () =>
-                    {
-                        var logger = ServiceLocator.GetService<ILoggerFactory>()
-                            ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation($"{DateTime.Now}-断路器熔断重置");
-                    },
-                    () =>
-                    {
-                        var logger = ServiceLocator.GetService<ILoggerFactory>()
-                            ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation($"{DateTime.Now}-断路器半开启");
-                    });
+                        .Or<TimeoutException>()
+                        .Or<TimeoutRejectedException>()
+                        .OrResult(rsp => rsp.StatusCode is HttpStatusCode.InternalServerError or HttpStatusCode.RequestTimeout)
+                        .CircuitBreakerAsync(
+                            exceptionsAllowedBeforeBreaking,
+                            breakTimeSpan,
+                            (res, ts) => {
+                                var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                logger?.LogInformation("{Now}-断路器即将熔断{Arg2TotalSeconds}秒,原因:{ExceptionMessage}", DateTime.Now, ts.TotalSeconds, res?.Exception?.Message);
+                            },
+                            () => {
+                                var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                logger?.LogInformation("{Now}-断路器熔断重置", DateTime.Now);
+                            },
+                            () => {
+                                var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                logger?.LogInformation("{Now}-断路器半开启", DateTime.Now);
+                            }
+                        );
         });
 
         return httpClientBuilder;
@@ -121,8 +112,7 @@ public static partial class Extensions
     /// <param name="fallbackRspObj"></param>
     /// <param name="fallbackRspStatus"></param>
     /// <returns></returns>
-    public static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder, object fallbackRspObj,
-        int fallbackRspStatus)
+    public static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder, object fallbackRspObj, int fallbackRspStatus)
     {
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         Check.NotNull(fallbackRspObj, nameof(fallbackRspObj));
@@ -133,25 +123,20 @@ public static partial class Extensions
         httpClientBuilder.AddTransientHttpErrorPolicy(build =>
         {
             return build.Or<HttpRequestException>()
-                .Or<TimeoutException>()
-                .Or<TimeoutRejectedException>()
-                .Or<BrokenCircuitException>()
-                .OrResult(rsp =>
-                    rsp.StatusCode == HttpStatusCode.InternalServerError ||
-                    rsp.StatusCode == HttpStatusCode.RequestTimeout)
-                .FallbackAsync(
-                    _ => Task.FromResult(new HttpResponseMessage
-                    {
-                        Content = new StringContent(fallbackRspResult), StatusCode = (HttpStatusCode)fallbackRspStatus
-                    }),
-                    res =>
-                    {
-                        var logger = ServiceLocator.GetService<ILoggerFactory>()
-                            ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
-                        logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{fallbackRspResult}");
-                        return Task.CompletedTask;
-                    });
+                        .Or<TimeoutException>()
+                        .Or<TimeoutRejectedException>()
+                        .Or<BrokenCircuitException>()
+                        .OrResult(rsp => rsp.StatusCode is HttpStatusCode.InternalServerError or HttpStatusCode.RequestTimeout)
+                        .FallbackAsync(
+                            _ => Task.FromResult(new HttpResponseMessage { Content = new StringContent(fallbackRspResult), StatusCode = (HttpStatusCode)fallbackRspStatus }),
+                            res =>
+                            {
+                                var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                logger?.LogInformation("{Now}-服务开始降级,异常消息：{ExceptionMessage}", DateTime.Now, res?.Exception?.Message);
+                                logger?.LogInformation("{Now}-服务降级内容响应：{FallbackRspResult}", DateTime.Now, fallbackRspResult);
+                                return Task.CompletedTask;
+                            }
+                        );
         });
 
         return httpClientBuilder;
@@ -163,8 +148,7 @@ public static partial class Extensions
     /// <param name="httpClientBuilder"></param>
     /// <param name="fallbackAction"></param>
     /// <returns></returns>
-    public static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder,
-        Func<CancellationToken, Task<HttpResponseMessage>> fallbackAction)
+    public static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder, Func<CancellationToken, Task<HttpResponseMessage>> fallbackAction)
     {
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         Check.NotNull(fallbackAction, nameof(fallbackAction));
@@ -172,22 +156,19 @@ public static partial class Extensions
         httpClientBuilder.AddTransientHttpErrorPolicy(build =>
         {
             return build.Or<HttpRequestException>()
-                .Or<TimeoutException>()
-                .Or<TimeoutRejectedException>()
-                .Or<BrokenCircuitException>()
-                .OrResult(rsp =>
-                    rsp.StatusCode == HttpStatusCode.InternalServerError ||
-                    rsp.StatusCode == HttpStatusCode.RequestTimeout)
-                .FallbackAsync(
-                    async cancellationToken => await fallbackAction.Invoke(cancellationToken),
-                    async res =>
-                    {
-                        var logger = ServiceLocator.GetService<ILoggerFactory>()
-                            ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
-                        logger?.LogInformation(
-                            $"{DateTime.Now}-服务降级内容响应：{await res?.Result?.Content.ReadAsStringAsync()!}");
-                    });
+                        .Or<TimeoutException>()
+                        .Or<TimeoutRejectedException>()
+                        .Or<BrokenCircuitException>()
+                        .OrResult(rsp => rsp.StatusCode is HttpStatusCode.InternalServerError or HttpStatusCode.RequestTimeout)
+                        .FallbackAsync(
+                            async cancellationToken => await fallbackAction.Invoke(cancellationToken),
+                            async res =>
+                            {
+                                var logger = ServiceLocator.GetService<ILoggerFactory>()?.CreateLogger("Findx.AspNetCore.Extensions");
+                                logger?.LogInformation("{Now}-服务开始降级,异常消息：{ExceptionMessage}", DateTime.Now, res?.Exception?.Message);
+                                logger?.LogInformation("{Now}-服务降级内容响应：{ReadAsStringAsync}", DateTime.Now, await res?.Result?.Content.ReadAsStringAsync()!);
+                            }
+                        );
         });
 
         return httpClientBuilder;

@@ -61,7 +61,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
             if (menuIdArray.Contains(x.Id)) x.Checked = true;
         });
 
-        return CommonResult.Success(menuList);
+        return CommonResult.Success(menuList.OrderBy(x => x.Sort));
     }
 
     /// <summary>
@@ -74,11 +74,12 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
     [Description("系统-设置角色菜单")]
     public async Task<CommonResult> MenuAsync(Guid roleId, [FromBody] List<Guid> req)
     {
+        var keyGenerator = GetRequiredService<IKeyGenerator<Guid>>();
         var repo = GetRequiredService<IRepository<SysRoleMenuInfo>>();
         await repo.DeleteAsync(x => x.RoleId == roleId);
         var list = req.Select(x => new SysRoleMenuInfo
         {
-            Id = SequentialGuid.Instance.Create(DatabaseType.MySql),
+            Id = keyGenerator.Create(),
             MenuId = x,
             RoleId = roleId,
             TenantId = TenantManager.Current

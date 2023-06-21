@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Findx.DependencyInjection;
+using Findx.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -38,6 +39,18 @@ public class HttpContextServiceScopeResolver : IScopedServiceResolver
             ? _httpContextAccessor.HttpContext.RequestServices.GetService<T>()
             : default;
     }
+    
+    /// <summary>
+    ///     解析服务
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T GetService<T>(string name)
+    {
+        return _httpContextAccessor.HttpContext != null
+            ? _httpContextAccessor.HttpContext.RequestServices.GetService<T>(name)
+            : default;
+    }
 
     /// <summary>
     ///     解析服务
@@ -47,6 +60,17 @@ public class HttpContextServiceScopeResolver : IScopedServiceResolver
     public object GetService(Type serviceType)
     {
         return _httpContextAccessor.HttpContext?.RequestServices.GetService(serviceType);
+    }
+
+    /// <summary>
+    ///     解析服务
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="serviceType"></param>
+    /// <returns></returns>
+    public object GetService(string name, Type serviceType)
+    {
+        return _httpContextAccessor.HttpContext?.RequestServices.GetService(name, serviceType);
     }
 
     /// <summary>

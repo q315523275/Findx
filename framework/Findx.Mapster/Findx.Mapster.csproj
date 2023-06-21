@@ -2,18 +2,19 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>1.9.0</Version>
-        <Description>Mapster实体映射器组件</Description>
+        <Version>1.9.5.1-preview1</Version>
+        <Description>Mapster高性能实体映射器,性能比AutoMapper高很多</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
+        <LangVersion>10</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Mapster" Version="7.3.0"/>
+        <PackageReference Include="Mapster" Version="7.3.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Findx\Findx.csproj"/>
+        <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
 </Project>

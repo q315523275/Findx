@@ -35,9 +35,9 @@ public class RedisController : Controller
     }
 
     [HttpGet("/redis/renewLock")]
-    public async Task<string> AutoLiveLock([FromServices] ILockProvider provider, [Required] LockType lockType)
+    public async Task<string> AutoLiveLock([FromServices] ILockFactory provider, [Required] string lockType)
     {
-        var @lock = provider.Get(lockType);
+        var @lock = provider.Create(lockType);
 
         var getlock = await @lock.AcquireAsync("test_renew_lock", renew: true);
 

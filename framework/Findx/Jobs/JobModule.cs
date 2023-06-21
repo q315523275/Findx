@@ -10,7 +10,7 @@ namespace Findx.Jobs;
 ///     Findx-Job内存版本模块
 /// </summary>
 [Description("Findx-Job内存版本模块")]
-public class JobModule : FindxModule
+public class JobModule : StartupModule
 {
     /// <summary>
     ///     Job配置
@@ -25,7 +25,7 @@ public class JobModule : FindxModule
     /// <summary>
     ///     排序
     /// </summary>
-    public override int Order => 20;
+    public override int Order => 30;
 
     /// <summary>
     ///     配置服务

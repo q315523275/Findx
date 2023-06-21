@@ -8,7 +8,7 @@ public static class CacheType
     /// <summary>
     ///     内存
     /// </summary>
-    public const string DefaultMemory = "memory";
+    public const string DefaultMemory = "memoryCache";
 
     /// <summary>
     ///     Redis

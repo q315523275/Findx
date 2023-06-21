@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using JetBrains.Annotations;
 
 namespace Findx.Redis
 {
@@ -11,8 +10,7 @@ namespace Findx.Redis
         {
             Default = string.Empty;
         }
-
-        [NotNull]
+        
         public string Default
         {
             get => this[DefaultConnectionName];

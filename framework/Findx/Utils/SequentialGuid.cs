@@ -4,70 +4,41 @@ using Findx.Data;
 namespace Findx.Utils;
 
 /// <summary>
-///     ABP有序Guid
-///     Implements <see cref="Guids.IGuidGenerator" /> by creating sequential Guids.
-///     This code is taken from
-///     https://github.com/jhtodd/SequentialGuid/blob/master/SequentialGuid/Classes/SequentialGuid.cs
+///     有序Guid
+///     <para>Abp对应有序Guid,非连续递增,如需连续递增请使用Findx.Guid.NewId组件包</para>
 /// </summary>
-public class SequentialGuid
+public static class SequentialGuid
 {
     private static readonly RandomNumberGenerator RandomNumberGenerator = RandomNumberGenerator.Create();
 
     /// <summary>
-    ///     Prevents a default instance of the <see cref="SequentialGuidGenerator" /> class from being created.
-    ///     Use <see cref="Instance" />.
+    ///     生成连续 Guid
     /// </summary>
-    private SequentialGuid()
-    {
-        DatabaseType = DatabaseType.MySql;
-    }
-
-    /// <summary>
-    ///     Gets the singleton <see cref="SequentialGuidGenerator" /> instance.
-    /// </summary>
-    public static SequentialGuid Instance { get; } = new();
-
-    /// <summary>
-    ///     数据库类型
-    /// </summary>
-    public DatabaseType DatabaseType { get; set; }
-
-    /// <summary>
-    ///     创建
-    /// </summary>
-    /// <returns></returns>
-    public Guid Create()
-    {
-        return Create(DatabaseType);
-    }
-
-    /// <summary>
-    ///     创建
-    /// </summary>
+    /// <param name="sequentialGuidType"></param>
     /// <param name="databaseType"></param>
     /// <returns></returns>
-    public Guid Create(DatabaseType databaseType)
+    public static Guid Next(SequentialGuidType sequentialGuidType, DatabaseType databaseType = DatabaseType.MySql)
     {
         switch (databaseType)
         {
             case DatabaseType.SqlServer:
-                return Create(SequentialGuidType.SequentialAtEnd);
+                return Next(SequentialGuidType.AtEnd);
             case DatabaseType.Oracle:
-                return Create(SequentialGuidType.SequentialAsBinary);
+                return Next(SequentialGuidType.AsBinary);
             case DatabaseType.Sqlite:
             case DatabaseType.MySql:
             case DatabaseType.PostgreSql:
             default:
-                return Create(SequentialGuidType.SequentialAsString);
+                return Next(SequentialGuidType.AsString);
         }
     }
 
     /// <summary>
-    ///     创建
+    ///     生成连续 Guid
     /// </summary>
     /// <param name="guidType"></param>
     /// <returns></returns>
-    public Guid Create(SequentialGuidType guidType)
+    public static Guid Next(SequentialGuidType guidType)
     {
         // We start with 16 bytes of cryptographically strong random data.
         var randomBytes = new byte[10];
@@ -92,21 +63,24 @@ public class SequentialGuid
         // Using millisecond resolution for our 48-bit timestamp gives us
         // about 5900 years before the timestamp overflows and cycles.
         // Hopefully this should be sufficient for most purposes. :)
-        var timestamp = DateTime.UtcNow.Ticks / 10000L;
+        long timestamp = DateTime.UtcNow.Ticks / 10000L;
 
         // Then get the bytes
-        var timestampBytes = BitConverter.GetBytes(timestamp);
+        byte[] timestampBytes = BitConverter.GetBytes(timestamp);
 
         // Since we're converting from an Int64, we have to reverse on
         // little-endian systems.
-        if (BitConverter.IsLittleEndian) Array.Reverse(timestampBytes);
+        if (BitConverter.IsLittleEndian)
+        {
+            Array.Reverse(timestampBytes);
+        }
 
-        var guidBytes = new byte[16];
+        byte[] guidBytes = new byte[16];
 
         switch (guidType)
         {
-            case SequentialGuidType.SequentialAsString:
-            case SequentialGuidType.SequentialAsBinary:
+            case SequentialGuidType.AsString:
+            case SequentialGuidType.AsBinary:
 
                 // For string and byte-array version, we copy the timestamp first, followed
                 // by the random data.
@@ -117,7 +91,7 @@ public class SequentialGuid
                 // that .NET regards the Data1 and Data2 block as an Int32 and an Int16,
                 // respectively.  That means that it switches the order on little-endian
                 // systems.  So again, we have to reverse.
-                if (guidType == SequentialGuidType.SequentialAsString && BitConverter.IsLittleEndian)
+                if (guidType == SequentialGuidType.AsString && BitConverter.IsLittleEndian)
                 {
                     Array.Reverse(guidBytes, 0, 4);
                     Array.Reverse(guidBytes, 4, 2);
@@ -125,7 +99,7 @@ public class SequentialGuid
 
                 break;
 
-            case SequentialGuidType.SequentialAtEnd:
+            case SequentialGuidType.AtEnd:
 
                 // For sequential-at-the-end versions, we copy the random data first,
                 // followed by the timestamp.
@@ -138,26 +112,35 @@ public class SequentialGuid
     }
 }
 
+
+
+
 /// <summary>
 ///     Describes the type of a sequential GUID value.
 /// </summary>
 public enum SequentialGuidType
 {
     /// <summary>
-    ///     The GUID should be sequential when formatted using the
-    ///     <see cref="Guid.ToString()" /> method.
+    /// <para>dddddddd-dddd-Mddd-Ndrr-rrrrrrrrrrrr</para>
+    /// <para>用于MySql和PostgreSql</para>
+    /// <para>当使用<see cref="Guid.ToString()"/>方法进行格式化时连续</para>
+    /// <para>顺序体现在第8个字节</para>
     /// </summary>
-    SequentialAsString,
+    AsString,
 
     /// <summary>
-    ///     The GUID should be sequential when formatted using the
-    ///     <see cref="Guid.ToByteArray" /> method.
+    /// <para>dddddddd-dddd-Mddd-Ndrr-rrrrrrrrrrrr</para>
+    /// <para>用于Oracle</para>
+    /// <para>当使用<see cref="Guid.ToByteArray()"/>方法进行格式化时连续</para>
+    /// <para>顺序体现在第8个字节，连续递增</para>
     /// </summary>
-    SequentialAsBinary,
+    AsBinary,
 
     /// <summary>
-    ///     The sequential portion of the GUID should be located at the end
-    ///     of the Data4 block.
+    /// <para>rrrrrrrr-rrrr-Mxdr-Nddd-dddddddddddd</para>
+    /// <para>用于SqlServer</para>
+    /// <para>连续性体现于GUID的第4块（Data4）</para>
+    /// <para>顺序比较Block5 > Block4 > Block3 > Block2 > Block1</para>
     /// </summary>
-    SequentialAtEnd
+    AtEnd
 }

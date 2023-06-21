@@ -32,8 +32,7 @@ public static partial class Extensions
     /// <param name="services"></param>
     /// <param name="configure"></param>
     /// <returns></returns>
-    public static IServiceCollection AddMvcFilter<TFilter>(this IServiceCollection services,
-        Action<MvcOptions> configure = default) where TFilter : IFilterMetadata
+    public static IServiceCollection AddMvcFilter<TFilter>(this IServiceCollection services, Action<MvcOptions> configure = default) where TFilter : IFilterMetadata
     {
         services.Configure<MvcOptions>(options =>
         {

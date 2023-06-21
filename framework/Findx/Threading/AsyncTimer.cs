@@ -9,32 +9,10 @@ namespace Findx.Threading;
 /// </summary>
 public class AsyncTimer : ITransientDependency
 {
-    private readonly Timer _taskTimer;
-    private volatile bool _isRunning;
-    private volatile bool _performingTasks;
-
     /// <summary>
     ///     执行方法
     /// </summary>
     public Func<AsyncTimer, Task> Elapsed = _ => Task.CompletedTask;
-
-    /// <summary>
-    ///     Ctor
-    /// </summary>
-    /// <param name="exceptionNotifier"></param>
-    /// <param name="logger"></param>
-    public AsyncTimer(IExceptionNotifier exceptionNotifier, ILogger<AsyncTimer> logger)
-    {
-        ExceptionNotifier = exceptionNotifier;
-        Logger = logger;
-
-        _taskTimer = new Timer(
-            TimerCallBack,
-            null,
-            Timeout.Infinite,
-            Timeout.Infinite
-        );
-    }
 
     /// <summary>
     ///     循环间隔时间
@@ -55,6 +33,23 @@ public class AsyncTimer : ITransientDependency
     ///     异常通知器
     /// </summary>
     public IExceptionNotifier ExceptionNotifier { get; set; }
+    
+    private readonly Timer _taskTimer;
+    private volatile bool _performingTasks;
+    private volatile bool _isRunning;
+
+    /// <summary>
+    ///     Ctor
+    /// </summary>
+    public AsyncTimer()
+    {
+        _taskTimer = new Timer(
+            TimerCallBack,
+            null,
+            Timeout.Infinite,
+            Timeout.Infinite
+        );
+    }
 
     /// <summary>
     ///     开始定时执行
@@ -63,7 +58,8 @@ public class AsyncTimer : ITransientDependency
     /// <exception cref="Exception"></exception>
     public void Start(CancellationToken cancellationToken = default)
     {
-        if (Period <= 0) throw new Exception("Period should be set before starting the timer!");
+        if (Period <= 0) 
+            throw new Exception("Period should be set before starting the timer!");
 
         lock (_taskTimer)
         {
@@ -81,7 +77,10 @@ public class AsyncTimer : ITransientDependency
         lock (_taskTimer)
         {
             _taskTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            while (_performingTasks) Monitor.Wait(_taskTimer);
+            while (_performingTasks)
+            {
+                Monitor.Wait(_taskTimer);
+            }
 
             _isRunning = false;
         }
@@ -95,7 +94,10 @@ public class AsyncTimer : ITransientDependency
     {
         lock (_taskTimer)
         {
-            if (!_isRunning || _performingTasks) return;
+            if (!_isRunning || _performingTasks)
+            {
+                return;
+            }
 
             _taskTimer.Change(Timeout.Infinite, Timeout.Infinite);
             _performingTasks = true;
@@ -120,7 +122,11 @@ public class AsyncTimer : ITransientDependency
             lock (_taskTimer)
             {
                 _performingTasks = false;
-                if (_isRunning) _taskTimer.Change(Period, Timeout.Infinite);
+
+                if (_isRunning)
+                {
+                    _taskTimer.Change(Period, Timeout.Infinite);
+                }
 
                 Monitor.Pulse(_taskTimer);
             }

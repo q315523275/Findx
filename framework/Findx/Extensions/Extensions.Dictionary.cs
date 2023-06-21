@@ -98,6 +98,6 @@ public static partial class Extensions
     public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
         Func<TValue> factory)
     {
-        return dictionary.GetOrAdd(key, k => factory());
+        return dictionary.GetOrAdd(key, _ => factory());
     }
 }

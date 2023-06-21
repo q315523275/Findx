@@ -3,10 +3,10 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Findx.Builders;
+using Findx.DependencyInjection;
 using Findx.Logging;
 using Findx.Modularity;
 using Findx.Reflection;
-using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Findx.Extensions;
@@ -140,8 +140,7 @@ public static partial class Extensions
     /// <typeparam name="TContainerBuilder"></typeparam>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static IServiceProvider BuildServiceProviderFromFactory<TContainerBuilder>(
-        [NotNull] this IServiceCollection services, Action<TContainerBuilder> builderAction = null)
+    public static IServiceProvider BuildServiceProviderFromFactory<TContainerBuilder>(this IServiceCollection services, Action<TContainerBuilder> builderAction = null)
     {
         Check.NotNull(services, nameof(services));
 
@@ -162,9 +161,9 @@ public static partial class Extensions
     /// <summary>
     ///     获取所有模块信息
     /// </summary>
-    public static IEnumerable<FindxModule> GetAllModules(this IServiceProvider provider)
+    public static IEnumerable<StartupModule> GetAllModules(this IServiceProvider provider)
     {
-        return provider.GetServices<FindxModule>().OrderBy(m => m.Level).ThenBy(m => m.Order)
+        return provider.GetServices<StartupModule>().OrderBy(m => m.Level).ThenBy(m => m.Order)
             .ThenBy(m => m.GetType().FullName);
     }
 
@@ -193,17 +192,19 @@ public static partial class Extensions
         logger.LogInformation("框架初始化开始");
         var watch = Stopwatch.StartNew();
 
-        var modules = provider.GetServices<FindxModule>();
+        var modules = provider.GetServices<StartupModule>();
         foreach (var module in modules)
         {
             var jsTime = DateTime.Now;
             var moduleType = module.GetType();
             module.UseModule(provider);
             logger.LogInformation(
+                // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
                 $"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now - jsTime).TotalMilliseconds}ms");
         }
 
         watch.Stop();
+        // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
         logger.LogInformation($"框架初始化完毕，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Process.GetCurrentProcess().Id}");
 
         return provider;
@@ -290,6 +291,42 @@ public static partial class Extensions
     {
         using var scope = provider.CreateScope();
         return await func(scope.ServiceProvider);
+    }
+    
+    /// <summary>
+    /// 根据服务别名获取指定服务
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <param name="name">服务别名</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T GetService<T>(this IServiceProvider provider, string name)
+    {
+        return provider.GetServices<T>().FirstOrDefault(x => x is IServiceNameAware serviceNameAware && serviceNameAware.Name == name);
+    }
+
+    /// <summary>
+    /// 根据服务别名获取指定服务
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <param name="name">服务别名</param>
+    /// <param name="serviceType">服务类型</param>
+    /// <returns></returns>
+    public static object GetService(this IServiceProvider provider, string name, Type serviceType)
+    {
+        return provider.GetServices(serviceType).FirstOrDefault(x => x is IServiceNameAware serviceNameAware && serviceNameAware.Name == name);
+    }
+    
+    /// <summary>
+    /// 根据服务别名获取指定服务
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <param name="name">服务别名</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static T GetRequiredService<T>(this IServiceProvider provider, string name)
+    {
+        return provider.GetRequiredService<IEnumerable<T>>().SingleOrDefault(x => x is IServiceNameAware serviceNameAware && serviceNameAware.Name == name);
     }
 
     #endregion

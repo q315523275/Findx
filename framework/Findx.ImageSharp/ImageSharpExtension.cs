@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using Findx.Extensions;
 using Findx.Utils;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats;
-using SixLabors.ImageSharp.Formats.Bmp;
-using SixLabors.ImageSharp.Formats.Gif;
-using SixLabors.ImageSharp.Formats.Jpeg;
-using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
@@ -60,7 +58,6 @@ public static class ImageSharpExtension
     /// <summary>
     ///     画杂线
     /// </summary>
-    /// <typeparam name="TPixel"></typeparam>
     /// <param name="processingContext"></param>
     /// <param name="containerWidth"></param>
     /// <param name="containerHeight"></param>
@@ -121,28 +118,7 @@ public static class ImageSharpExtension
         if (retryTimes <= 0) list.Add(newPoint);
         return newPoint;
     }
-
-    /// <summary>
-    ///     保存指定格式图片
-    /// </summary>
-    /// <param name="image"></param>
-    /// <param name="stream"></param>
-    /// <param name="format"></param>
-    public static void SaveImage(this Image image, Stream stream, IImageFormat format)
-    {
-        if (format is JpegFormat)
-            image.SaveAsJpeg(stream);
-
-        if (format is PngFormat)
-            image.SaveAsPng(stream);
-
-        if (format is BmpFormat)
-            image.SaveAsBmp(stream);
-
-        if (format is GifFormat)
-            image.SaveAsGif(stream);
-    }
-
+    
 
     /// <summary>
     ///     图像灰度处理
@@ -169,24 +145,52 @@ public static class ImageSharpExtension
     ///     黑白二值化
     /// </summary>
     /// <param name="image"></param>
+    /// <param name="threshold">阈值</param>
     /// <returns></returns>
-    public static Image<Rgba32> Binaryzation(this Image<Rgba32> image)
+    public static Image<Rgba32> ToBinary(this Image<Rgba32> image, int threshold = 180)
     {
-        image = image.ToGray(); //先灰度处理
-        var threshold = 180; //定义阈值
+        image = image.ToGray(); // 先灰度处理
         for (var i = 0; i < image.Width; i++)
         for (var j = 0; j < image.Height; j++)
         {
-            //获取该像素点的RGB的颜色
+            // 获取该像素点的RGB的颜色
             var color = image[i, j];
-            //计算颜色,大于平均值为黑,小于平均值为白
-            var newColor = color.B < threshold
-                ? System.Drawing.Color.FromArgb(0, 0, 0)
-                : System.Drawing.Color.FromArgb(255, 255, 255);
-            //修改该像素点的RGB的颜色
+            // 计算颜色,大于平均值为黑,小于平均值为白
+            var newColor = color.B < threshold ? System.Drawing.Color.FromArgb(0, 0, 0) : System.Drawing.Color.FromArgb(255, 255, 255);
+            // 修改该像素点的RGB的颜色
             image[i, j] = new Rgba32(newColor.R, newColor.G, newColor.B, newColor.A);
         }
 
         return image;
+    }
+
+
+    /// <summary>
+    /// 获取图片处理后字节数组
+    /// </summary>
+    /// <param name="originalImage"></param>
+    /// <param name="imageFormat"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<byte[]> SaveAndGetAllBytesAsync(this Image originalImage, IImageFormat imageFormat, CancellationToken cancellationToken = default)
+    {
+        using var memoryStream = Pool.MemoryStream.Rent();
+        await originalImage.SaveAsync(memoryStream, imageFormat, cancellationToken: cancellationToken);
+        return memoryStream.ToArray();
+    }
+
+    /// <summary>
+    /// 获取图片处理后数据流
+    /// </summary>
+    /// <param name="originalImage"></param>
+    /// <param name="imageFormat"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<Stream> SaveAndGetAllStreamAsync(this Image originalImage, IImageFormat imageFormat, CancellationToken cancellationToken = default)
+    {
+        using var memoryStream = Pool.MemoryStream.Rent();
+        await originalImage.SaveAsync(memoryStream, imageFormat, cancellationToken: cancellationToken);
+        memoryStream.Position = 0;
+        return memoryStream;
     }
 }

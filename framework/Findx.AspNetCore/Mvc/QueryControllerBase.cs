@@ -20,7 +20,7 @@ public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> :
     TQueryParameter, TKey>
     where TModel : EntityBase<TKey>, new()
     where TDto : IResponse, new()
-    where TQueryParameter : IPager, new()
+    where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
 {
 }
@@ -37,7 +37,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     where TModel : EntityBase<TKey>, new()
     where TListDto : IResponse, new()
     where TDetailDto : IResponse, new()
-    where TQueryParameter : IPager, new()
+    where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
 {
     /// <summary>
@@ -75,7 +75,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     {
         Check.NotNull(request, nameof(request));
 
-        var repo = GetRepository<TModel>();
+        var repo = GetRepository<TModel, TKey>();
 
         Check.NotNull(repo, nameof(repo));
 
@@ -98,16 +98,16 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     public virtual async Task<CommonResult<List<TListDto>>> ListAsync([FromQuery] TQueryParameter request)
     {
         Check.NotNull(request, nameof(request));
-
-        var repo = GetRepository<TModel>();
-
+        // 默认条数提升到99条
+        if (request.PageSize == 20) 
+            request.PageSize = 99;
+        var repo = GetRepository<TModel, TKey>();
         Check.NotNull(repo, nameof(repo));
 
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression?.ToExpression(),
-            orderParameters: orderByExpression);
+        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression?.ToExpression(), orderParameters: orderByExpression);
 
         return CommonResult.Success(list);
     }
@@ -122,15 +122,11 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     public virtual async Task<CommonResult<TDetailDto>> Detail(TKey id)
     {
         Check.NotNull(id, nameof(id));
-
-        var repo = GetRepository<TModel>();
-
+        var repo = GetRepository<TModel, TKey>();
         Check.NotNull(repo, nameof(repo));
 
-        var model = repo.Get(id);
-
+        var model = await repo.GetAsync(id);
         var result = ToDetailDto(model);
-
         await DetailAfterAsync(model, result);
 
         return CommonResult.Success(result);

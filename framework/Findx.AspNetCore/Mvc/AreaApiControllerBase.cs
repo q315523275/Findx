@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Findx.Data;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -54,8 +55,19 @@ public abstract class AreaApiControllerBase : ControllerBase
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
     /// <returns></returns>
-    protected IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, IEntity, new()
+    protected IRepository<TEntity> GetRepository<TEntity>() where TEntity : class, IEntity<Guid>
     {
         return Request.HttpContext.RequestServices.GetRequiredService<IRepository<TEntity>>();
+    }
+    
+    /// <summary>
+    ///     获取仓储方法
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TKey"></typeparam>
+    /// <returns></returns>
+    protected IRepository<TEntity, TKey> GetRepository<TEntity, TKey>() where TEntity : class, IEntity<TKey>
+    {
+        return Request.HttpContext.RequestServices.GetRequiredService<IRepository<TEntity, TKey>>();
     }
 }

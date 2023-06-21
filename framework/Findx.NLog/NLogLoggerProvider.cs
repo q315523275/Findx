@@ -5,6 +5,7 @@ using System.IO;
 using Findx.Extensions;
 using Microsoft.Extensions.Logging;
 using NLog;
+using NLog.Config;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Findx.NLog
@@ -18,7 +19,7 @@ namespace Findx.NLog
         {
             var file = nlogConfigFile ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName);
             if (!File.Exists(file)) throw new FileNotFoundException("未发现“nlog.config”位置文件");
-            LogManager.LoadConfiguration(file);
+            LogManager.Setup().LoadConfigurationFromFile(file);
         }
 
         public NLogLoggerProvider() : this(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName))

@@ -9,17 +9,17 @@ namespace Findx.NLog
     ///     Findx-NLog组件模块
     /// </summary>
     [Description("Findx-NLog组件模块")]
-    public class NLogModule : FindxModule
+    public class NLogModule : StartupModule
     {
         /// <summary>
         ///     模块等级
         /// </summary>
-        public override ModuleLevel Level => ModuleLevel.Application;
+        public override ModuleLevel Level => ModuleLevel.Framework;
 
         /// <summary>
         ///     模块排序
         /// </summary>
-        public override int Order => 50;
+        public override int Order => 90;
 
         /// <summary>
         ///     配置模块服务

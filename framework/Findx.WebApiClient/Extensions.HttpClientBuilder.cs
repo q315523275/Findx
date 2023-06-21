@@ -73,7 +73,7 @@ internal static class Extensions
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak.IsNullOrWhiteSpace()) return httpClientBuilder;
 
-        var BreakTimeSpan = Time.ToTimeSpan(durationOfBreak);
+        var breakTimeSpan = Time.ToTimeSpan(durationOfBreak);
 
         httpClientBuilder.AddTransientHttpErrorPolicy(build =>
         {
@@ -85,7 +85,7 @@ internal static class Extensions
                     rsp.StatusCode == HttpStatusCode.RequestTimeout)
                 .CircuitBreakerAsync(
                     exceptionsAllowedBeforeBreaking,
-                    BreakTimeSpan,
+                    breakTimeSpan,
                     (res, ts) =>
                     {
                         var logger = ServiceLocator.GetService<ILoggerFactory>()

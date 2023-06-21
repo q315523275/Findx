@@ -9,7 +9,7 @@ namespace Findx.DependencyInjection;
 ///     Findx-自动注入模块
 /// </summary>
 [Description("Findx-自动注入模块")]
-public class DependencyModule : FindxModule
+public class DependencyModule : StartupModule
 {
     /// <summary>
     ///     等级
@@ -19,7 +19,7 @@ public class DependencyModule : FindxModule
     /// <summary>
     ///     排序
     /// </summary>
-    public override int Order => 10;
+    public override int Order => 20;
 
     /// <summary>
     ///     配置模块服务

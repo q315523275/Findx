@@ -24,8 +24,7 @@ public class SequentialGuidGenerator : IGuidGenerator
     /// <returns></returns>
     public Guid Create()
     {
-        var sequentialGuidType = _options.Value.SequentialGuidType ?? SequentialGuidType.SequentialAsString;
-
-        return SequentialGuid.Instance.Create(sequentialGuidType);
+        var sequentialGuidType = _options.Value.SequentialGuidType ?? SequentialGuidType.AsString;
+        return SequentialGuid.Next(sequentialGuidType);
     }
 }

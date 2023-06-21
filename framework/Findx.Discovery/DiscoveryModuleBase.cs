@@ -1,4 +1,5 @@
 ﻿using Findx.Discovery.Consul;
+using Findx.Discovery.HttpMessageHandlers;
 using Findx.Discovery.LoadBalancer;
 using Findx.Extensions;
 using Findx.Modularity;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Findx.Discovery
 {
-    public abstract class DiscoveryModuleBase : FindxModule
+    public abstract class DiscoveryModuleBase : StartupModule
     {
         /// <summary>
         ///     获取 模块级别，级别越小越先启动

@@ -14,7 +14,7 @@ public class RLock : IAsyncDisposable
 
     private readonly ILogger<RLock> _logger;
     private readonly int _period;
-    private readonly TimeSpan? _timeUntilExpires;
+    private readonly TimeSpan _timeUntilExpires;
     private bool _isReleased;
 
     private AsyncTimer _timer;
@@ -28,7 +28,7 @@ public class RLock : IAsyncDisposable
     /// <param name="timeUntilExpires"></param>
     /// <param name="autoRenew"></param>
     /// <param name="period"></param>
-    public RLock(string resource, string lockId, ILock @lock, TimeSpan? timeUntilExpires, bool autoRenew = false,
+    public RLock(string resource, string lockId, ILock @lock, TimeSpan timeUntilExpires, bool autoRenew = false,
         int period = 10000)
     {
         _lock = @lock;
@@ -77,17 +77,13 @@ public class RLock : IAsyncDisposable
     ///     续期操作
     /// </summary>
     /// <param name="lockExtension"></param>
-    public async Task RenewAsync(TimeSpan? lockExtension = null)
+    public async Task RenewAsync(TimeSpan lockExtension)
     {
         await _lock.RenewAsync(Resource, LockId, lockExtension);
 
         RenewalCount++;
-
-        Console.WriteLine(
-            $"the resource ({Resource}) lock ({_lock.LockType}) is renewed {RenewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-
-        _logger.LogDebug(
-            $"the resource ({Resource}) lock ({_lock.LockType}) is renewed {RenewalCount} times, and the current execution time is {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+        
+        _logger.LogDebug("the resource ({Resource}) lock is renewed {RenewalCount} times, and the current execution time is {Now}", Resource, RenewalCount, DateTime.Now);
     }
 
     /// <summary>
@@ -113,8 +109,7 @@ public class RLock : IAsyncDisposable
     {
         _timer?.Stop();
         _timer = null;
-        _timer = new AsyncTimer(ServiceLocator.GetService<IExceptionNotifier>(),
-            ServiceLocator.GetService<ILogger<AsyncTimer>>())
+        _timer = new AsyncTimer
         {
             Period = _period,
             Elapsed = Timer_Elapsed,

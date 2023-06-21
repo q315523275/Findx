@@ -28,6 +28,16 @@ public class ConfigurationSettingValueProvider : ISettingValueProvider
     }
 
     /// <summary>
+    /// 判断是否存在
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    public bool ContainsKey(string key)
+    {
+        return _configuration.GetSection(key).Exists();
+    }
+
+    /// <summary>
     ///     获取值
     /// </summary>
     /// <param name="key"></param>

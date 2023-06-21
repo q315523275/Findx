@@ -69,8 +69,6 @@ public class AuditOperationEntry : IApplicationEvent
     /// <summary>
     ///     获取 扩展数据字典
     /// </summary>
-    public IDictionary<string, string> ExtendData { get; } = new Dictionary<string, string>();
-
-
+    public IDictionary<string, string> ExtraObject { get; } = new Dictionary<string, string>();
 #pragma warning restore CS8618
 }

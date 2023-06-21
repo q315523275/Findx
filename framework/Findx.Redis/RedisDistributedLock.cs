@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Findx.DependencyInjection;
 using Findx.Locks;
 
 namespace Findx.Redis
 {
-    public class RedisDistributedLock : LockBase
+    public class RedisDistributedLock : LockBase, IServiceNameAware
     {
         private readonly IRedisClient _redisClient;
 
@@ -13,11 +14,9 @@ namespace Findx.Redis
             _redisClient = redisClientProvider.CreateClient();
         }
 
-        public override LockType LockType => LockType.Distributed;
-
-        public override async Task<bool> TryLockAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null)
+        protected override async Task<bool> TryLockAsync(string resource, string lockId, TimeSpan timeUntilExpires)
         {
-            return await _redisClient.LockTakeAsync(GenerateNewLockKey(resource), lockId, timeUntilExpires.Value);
+            return await _redisClient.LockTakeAsync(GenerateNewLockKey(resource), lockId, timeUntilExpires);
         }
 
         public override async Task ReleaseAsync(string resource, string lockId)
@@ -25,10 +24,12 @@ namespace Findx.Redis
             await _redisClient.LockReleaseAsync(GenerateNewLockKey(resource), lockId);
         }
 
-        public override async Task RenewAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null)
+        public override async Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires)
         {
             if (await _redisClient.StringGetAsync<string>(GenerateNewLockKey(resource)) == lockId)
-                await _redisClient.ExpireAsync(GenerateNewLockKey(resource), DateTime.Now.Add(timeUntilExpires.Value));
+                await _redisClient.ExpireAsync(GenerateNewLockKey(resource), DateTime.Now.Add(timeUntilExpires));
         }
+
+        public string Name => "DistributedLock.Redis";
     }
 }

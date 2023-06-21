@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Findx.Caching;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 
 namespace Findx.Locks;
@@ -7,23 +8,23 @@ namespace Findx.Locks;
 /// <summary>
 ///     本地缓存锁
 /// </summary>
-public class LocalCacheLock : LockBase
+public class LocalCacheLock : LockBase, IServiceNameAware
 {
     private readonly ICache _cache;
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    /// <param name="provider">缓存服务提供器</param>
-    public LocalCacheLock(ICacheProvider provider)
+    /// <param name="cacheFactory">缓存服务提供器</param>
+    public LocalCacheLock(ICacheFactory cacheFactory)
     {
-        _cache = provider.Get(CacheType.DefaultMemory);
+        _cache = cacheFactory.Create(CacheType.DefaultMemory);
     }
 
     /// <summary>
-    ///     锁类型
+    /// 服务名称
     /// </summary>
-    public override LockType LockType => LockType.Local;
+    public string Name => "LocalCacheLock";
 
     /// <summary>
     ///     释放
@@ -45,7 +46,7 @@ public class LocalCacheLock : LockBase
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
-    public override async Task RenewAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null)
+    public override async Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires)
     {
         var v = await _cache.GetAsync<string>(GenerateNewLockKey(resource));
         if (!v.IsNullOrWhiteSpace() && v == lockId)
@@ -59,7 +60,7 @@ public class LocalCacheLock : LockBase
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
     /// <returns></returns>
-    public override async Task<bool> TryLockAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null)
+    protected override async Task<bool> TryLockAsync(string resource, string lockId, TimeSpan timeUntilExpires)
     {
         return await _cache.TryAddAsync(GenerateNewLockKey(resource), lockId, timeUntilExpires);
     }

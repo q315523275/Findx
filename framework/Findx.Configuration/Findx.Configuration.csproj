@@ -2,16 +2,18 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Description>配置中心客户端</Description>
-        <PackageVersion>1.9.0</PackageVersion>
+        <Description>远端配置中心客户端</Description>
+        <PackageVersion>1.9.5.1-preview1</PackageVersion>
+        <LangVersion>10</LangVersion>
+        <Authors>Findx</Authors>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Findx\Findx.csproj"/>
+        <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
 </Project>

@@ -19,7 +19,7 @@ public static class ScopedDictionaryExtensions
     /// <summary>
     ///     获取所有连接串的UnitOfWork
     /// </summary>
-    public static IEnumerable<IUnitOfWork> GetConnUnitOfWorks(this ScopedDictionary dict)
+    public static IEnumerable<IUnitOfWork> GetAllConnUnitOfWork(this ScopedDictionary dict)
     {
         return dict.Where(m => m.Key.StartsWith("UnitOfWork_ConnPrimary_")).Select(m => m.Value as IUnitOfWork);
     }
@@ -44,10 +44,9 @@ public static class ScopedDictionaryExtensions
     /// <summary>
     ///     获取所有实体类的UnitOfWork
     /// </summary>
-    public static IUnitOfWork[] GetEntityUnitOfWorks(this ScopedDictionary dict)
+    public static IEnumerable<IUnitOfWork> GetAllEntityUnitOfWork(this ScopedDictionary dict)
     {
-        return dict.Where(m => m.Key.StartsWith("UnitOfWork_EntityType_")).Select(m => m.Value as IUnitOfWork)
-            .ToArray();
+        return dict.Where(m => m.Key.StartsWith("UnitOfWork_EntityType_")).Select(m => m.Value as IUnitOfWork);
     }
 
     /// <summary>

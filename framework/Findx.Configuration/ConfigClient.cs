@@ -297,12 +297,16 @@ namespace Findx.Configuration
         /// <param name="rows"></param>
         private async Task AddOrUpdateConfigAsync(IEnumerable<ConfigItemDto> rows)
         {
+            // ReSharper disable once PossibleMultipleEnumeration
             Check.NotNull(rows, nameof(rows));
             // 本地配置更新
+            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var item in rows) _data[item.DataId] = item;
             // 有配置更新
+            // ReSharper disable once PossibleMultipleEnumeration
             foreach (var callback in _configDataChangeCallbacks) await callback(rows);
             // 刷新配置版本号
+            // ReSharper disable once PossibleMultipleEnumeration
             CurrentDataVersion = rows.Max(x => x.Version);
         }
 
@@ -335,9 +339,9 @@ namespace Findx.Configuration
                 var content = await File.ReadAllBytesAsync(file, cancellationToken);
                 return JsonSerializer.Deserialize<T>(content, SystemTextUtf8ByteSerializer.Options);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new Exception($"Error trying to get file: {path}");
+                throw new Exception($"error trying to get file: {path}");
             }
         }
 

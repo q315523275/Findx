@@ -12,7 +12,7 @@ namespace Findx.Redis
     ///     Findx-Redis缓存模块
     /// </summary>
     [Description("Findx-Redis缓存模块")]
-    public class RedisModule : FindxModule
+    public class RedisModule : StartupModule
     {
         /// <summary>
         ///     模块等级
@@ -22,7 +22,7 @@ namespace Findx.Redis
         /// <summary>
         ///     模块排序
         /// </summary>
-        public override int Order => 40;
+        public override int Order => 110;
 
         /// <summary>
         ///     配置模块服务

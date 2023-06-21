@@ -23,7 +23,7 @@ public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey
     TModel, TModel, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
     where TModel : EntityBase<TKey>, IResponse, new()
     where TRequest : IRequest, new()
-    where TQueryParameter : IPager, new()
+    where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct
 {
@@ -43,7 +43,7 @@ public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter
     where TModel : EntityBase<TKey>, new()
     where TDto : IResponse, new()
     where TRequest : IRequest, new()
-    where TQueryParameter : IPager, new()
+    where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct
 {
@@ -66,7 +66,7 @@ public abstract class
     where TDto : IResponse, new()
     where TCreateRequest : IRequest, new()
     where TUpdateRequest : IRequest, new()
-    where TQueryParameter : IPager, new()
+    where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct
 {
@@ -91,7 +91,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     where TDetailDto : IResponse, new()
     where TCreateRequest : IRequest, new()
     where TUpdateRequest : IRequest, new()
-    where TQueryParameter : IPager, new()
+    where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct
 {
@@ -186,7 +186,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     {
         Check.NotNull(request, nameof(request));
 
-        var repo = GetRepository<TModel>();
+        var repo = GetRepository<TModel, TKey>();
         var principal = GetService<IPrincipal>();
 
         Check.NotNull(repo, nameof(repo));
@@ -218,7 +218,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     {
         Check.NotNull(request, nameof(request));
 
-        var repo = GetRepository<TModel>();
+        var repo = GetRepository<TModel, TKey>();
         var principal = GetService<IPrincipal>();
         var currentUser = GetService<ICurrentUser>();
 
@@ -252,7 +252,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         if (request.Count == 0)
             return CommonResult.Fail("delete.not.count", "不存在删除数据");
 
-        var repo = GetRepository<TModel>();
+        var repo = GetRepository<TModel, TKey>();
         var currentUser = GetService<ICurrentUser>();
 
         Check.NotNull(repo, nameof(repo));

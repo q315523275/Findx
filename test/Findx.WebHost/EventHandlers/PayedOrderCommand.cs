@@ -13,5 +13,5 @@ public class PayedOrderCommand : IApplicationEvent
         OrderId = orderId;
     }
 
-    public long OrderId { get; private set; }
+    public long OrderId { get; set; }
 }

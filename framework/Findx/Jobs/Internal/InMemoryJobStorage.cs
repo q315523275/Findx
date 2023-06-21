@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Findx.Extensions;
+using Findx.Locks;
 
 namespace Findx.Jobs.Internal;
 
@@ -9,12 +10,14 @@ namespace Findx.Jobs.Internal;
 public class InMemoryJobStorage : IJobStorage
 {
     private readonly List<JobInfo> _jobs;
+    private readonly AsyncLock _lock;
 
     /// <summary>
     ///     Ctor
     /// </summary>
     public InMemoryJobStorage()
     {
+        _lock = new AsyncLock();
         // 字典存储也可以
         _jobs = new List<JobInfo>();
     }
@@ -23,19 +26,21 @@ public class InMemoryJobStorage : IJobStorage
     ///     删除工作
     /// </summary>
     /// <param name="jobId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task DeleteAsync(long jobId)
+    public async Task DeleteAsync(long jobId, CancellationToken cancellationToken = default)
     {
+        using var asyncLock = await _lock.LockAsync(cancellationToken);
         _jobs.RemoveAll(x => x.Id == jobId);
-        return Task.CompletedTask;
     }
 
     /// <summary>
     ///     查询单个工作信息
     /// </summary>
     /// <param name="jobId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<JobInfo> FindAsync(long jobId)
+    public Task<JobInfo> FindAsync(long jobId, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_jobs.FirstOrDefault(x => x.Id == jobId));
     }
@@ -44,7 +49,7 @@ public class InMemoryJobStorage : IJobStorage
     ///     获取全部工作
     /// </summary>
     /// <returns></returns>
-    public Task<IEnumerable<JobInfo>> GetJobsAsync()
+    public Task<IEnumerable<JobInfo>> GetJobsAsync(CancellationToken cancellationToken = default)
     {
         return Task.FromResult(_jobs.AsEnumerable());
     }
@@ -53,23 +58,26 @@ public class InMemoryJobStorage : IJobStorage
     ///     获取指定数量的待执行工作
     /// </summary>
     /// <param name="maxResultCount"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<IEnumerable<JobInfo>> GetShouldRunJobsAsync(int maxResultCount)
+    public async Task<IEnumerable<JobInfo>> GetShouldRunJobsAsync(int maxResultCount, CancellationToken cancellationToken = default)
     {
+        using var asyncLock = await _lock.LockAsync(cancellationToken);
         var referenceTime = DateTimeOffset.UtcNow.LocalDateTime;
         var tasksThatShouldRun = _jobs.Where(t => t != null && t.ShouldRun(referenceTime))
-            .OrderBy(t => t.TryCount)
-            .ThenBy(t => t.NextRunTime)
-            .Take(maxResultCount);
-        return Task.FromResult(tasksThatShouldRun);
+                                      .OrderBy(t => t.TryCount)
+                                      .ThenBy(t => t.NextRunTime)
+                                      .Take(maxResultCount);
+        return tasksThatShouldRun;
     }
 
     /// <summary>
     ///     插入
     /// </summary>
     /// <param name="detail"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task InsertAsync(JobInfo detail)
+    public Task InsertAsync(JobInfo detail, CancellationToken cancellationToken = default)
     {
         _jobs.TryAdd(detail);
         return Task.CompletedTask;
@@ -79,8 +87,9 @@ public class InMemoryJobStorage : IJobStorage
     ///     更新
     /// </summary>
     /// <param name="detail"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task UpdateAsync(JobInfo detail)
+    public Task UpdateAsync(JobInfo detail, CancellationToken cancellationToken = default)
     {
         _jobs.ReplaceOne(x => x.Id == detail.Id, detail);
         return Task.CompletedTask;

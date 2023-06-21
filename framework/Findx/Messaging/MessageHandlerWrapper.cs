@@ -18,6 +18,7 @@ internal class MessageHandlerWrapperImpl<TRequest, TResponse> : MessageHandlerWr
         Check.NotNull(handler, nameof(handler));
 
         var messagePipelines = serviceProvider.GetServices<IMessagePipeline<TRequest, TResponse>>();
+        // ReSharper disable once PossibleMultipleEnumeration
         if (!messagePipelines.Any())
             return handler.HandleAsync((TRequest)request, cancellationToken);
 
@@ -26,9 +27,8 @@ internal class MessageHandlerWrapperImpl<TRequest, TResponse> : MessageHandlerWr
             return handler.HandleAsync((TRequest)request, cancellationToken);
         }
 
-        return messagePipelines.Reverse()
-            .Aggregate((MessageHandlerDelegate<TResponse>)Handler,
-                (next, pipeline) => () => pipeline.HandleAsync((TRequest)request, next, cancellationToken))();
+        // ReSharper disable once PossibleMultipleEnumeration
+        return messagePipelines.Reverse().Aggregate((MessageHandlerDelegate<TResponse>)Handler, (next, pipeline) => () => pipeline.HandleAsync((TRequest)request, next, cancellationToken))();
     }
 }
 

@@ -12,7 +12,7 @@ public abstract class PageBase : IPager
     ///     当前分页数
     ///     默认：1
     /// </summary>
-    [Range(1, 9999)]
+    [Range(1, 99999999)]
     public virtual int PageNo { get; set; } = 1;
 
     /// <summary>

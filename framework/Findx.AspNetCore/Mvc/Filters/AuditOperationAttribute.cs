@@ -77,31 +77,29 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
         operation.Exception = actionContext.Exception;
 
         // Mvc参数
-        dict.AuditOperation.ExtendData.Add("http.url", context.HttpContext.Request.GetDisplayUrl());
-        dict.AuditOperation.ExtendData.Add("http.path", context.HttpContext.Request.Path);
-        dict.AuditOperation.ExtendData.Add("http.method", context.HttpContext.Request.Method);
-        dict.AuditOperation.ExtendData.Add("http.status_code",
+        dict.AuditOperation.ExtraObject.Add("http.url", context.HttpContext.Request.GetDisplayUrl());
+        dict.AuditOperation.ExtraObject.Add("http.path", context.HttpContext.Request.Path);
+        dict.AuditOperation.ExtraObject.Add("http.method", context.HttpContext.Request.Method);
+        dict.AuditOperation.ExtraObject.Add("http.status_code",
             actionContext.HttpContext.Response.StatusCode.ToString());
 
         // 参数报文
-        if (options.Value.RecordParameters)
-            dict.AuditOperation.ExtendData.Add("http.request",
+        if (options.Value.RecordRequestBody)
+            dict.AuditOperation.ExtraObject.Add("http.request",
                 SerializeConvertArguments(context.ActionArguments, serializer));
 
         // 返回结果
-        if (options.Value.RecordReturnValue)
+        if (options.Value.RecordResponseBody)
         {
             if (actionContext.Exception is FindxException findxException)
-                dict.AuditOperation.ExtendData.Add("http.response",
-                    serializer.Serialize(CommonResult.Fail(findxException.ErrorCode, findxException.ErrorMessage)));
+                dict.AuditOperation.ExtraObject.Add("http.response", serializer.Serialize(CommonResult.Fail(findxException.ErrorCode, findxException.ErrorMessage)));
             else
-                dict.AuditOperation.ExtendData.Add("http.response",
-                    SerializeConvertResponse(actionContext.Result, serializer));
+                dict.AuditOperation.ExtraObject.Add("http.response", SerializeConvertResponse(actionContext.Result, serializer));
         }
 
         // 存储
         var store = provider.GetService<IAuditStore>();
-        if (store != null) await store.SaveAsync(dict.AuditOperation);
+        if (store != null) await store.SaveAsync(dict.AuditOperation, context.HttpContext.RequestAborted);
     }
 
     /// <summary>

@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Findx.Utils;
 using Microsoft.AspNetCore.Http;
-using Microsoft.IO;
 
 namespace Findx.WebSocketCore;
 
@@ -15,8 +14,6 @@ namespace Findx.WebSocketCore;
 /// </summary>
 public class WebSocketMiddleware
 {
-    private static readonly RecyclableMemoryStreamManager MemoryStreamManager = new();
-
     private readonly RequestDelegate _next;
 
     private readonly IWebSocketAuthorization _webSocketAuthorization;
@@ -94,7 +91,7 @@ public class WebSocketMiddleware
             {
                 string message;
                 WebSocketReceiveResult result;
-                using (var ms = MemoryStreamManager.GetStream())
+                using (var ms = Pool.MemoryStream.Rent())
                 {
                     do
                     {
@@ -102,6 +99,9 @@ public class WebSocketMiddleware
                         if (buffer.Array != null)
                             ms.Write(buffer.Array, buffer.Offset, result.Count);
                     } while (!result.EndOfMessage);
+                    
+                    // 可以直接使用buffer读取内容
+                    // 这里使用固定byte+MemoryStream方式读取内容
 
                     client.LastHeartbeatTime = DateTime.Now;
 

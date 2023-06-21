@@ -13,7 +13,7 @@ namespace Findx.Module.ConfigService;
 ///     配置服务模块
 /// </summary>
 [Description("Findx配置中心-服务端模块")]
-public class ConfigServiceModule : FindxModule
+public class ConfigServiceModule : StartupModule
 {
     /// <summary>
     ///     等级

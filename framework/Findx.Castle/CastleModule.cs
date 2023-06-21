@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Findx.Castle
 {
     [Description("Findx-Castle代理模块")]
-    public class CastleModule : FindxModule
+    public class CastleModule : StartupModule
     {
         /// <summary>
         ///     等级
@@ -16,7 +16,7 @@ namespace Findx.Castle
         /// <summary>
         ///     排序
         /// </summary>
-        public override int Order => 50;
+        public override int Order => 120;
 
         /// <summary>
         ///     配置服务

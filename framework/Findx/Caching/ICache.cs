@@ -6,11 +6,6 @@
 public partial interface ICache
 {
     /// <summary>
-    ///     缓存组件名
-    /// </summary>
-    string Name { get; }
-
-    /// <summary>
     ///     是否存在指定键的缓存
     /// </summary>
     /// <param name="key">缓存键</param>

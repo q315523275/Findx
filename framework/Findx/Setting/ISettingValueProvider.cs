@@ -16,6 +16,11 @@ public interface ISettingValueProvider
     int Order { get; }
 
     /// <summary>
+    /// 判断缓存Key是否存在
+    /// </summary>
+    bool ContainsKey(string key);
+    
+    /// <summary>
     ///     获取值
     /// </summary>
     /// <typeparam name="T"></typeparam>

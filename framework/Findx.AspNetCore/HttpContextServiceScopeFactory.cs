@@ -15,8 +15,7 @@ public class HttpContextServiceScopeFactory : IHybridServiceScopeFactory
     /// </summary>
     /// <param name="serviceScopeFactory"></param>
     /// <param name="httpContextAccessor"></param>
-    public HttpContextServiceScopeFactory(IServiceScopeFactory serviceScopeFactory,
-        IHttpContextAccessor httpContextAccessor)
+    public HttpContextServiceScopeFactory(IServiceScopeFactory serviceScopeFactory, IHttpContextAccessor httpContextAccessor)
     {
         ServiceScopeFactory = serviceScopeFactory;
         HttpContextAccessor = httpContextAccessor;
@@ -39,7 +38,8 @@ public class HttpContextServiceScopeFactory : IHybridServiceScopeFactory
     public virtual IServiceScope CreateScope()
     {
         var httpContext = HttpContextAccessor?.HttpContext;
-        if (httpContext == null) return ServiceScopeFactory.CreateScope();
+        if (httpContext == null) 
+            return ServiceScopeFactory.CreateScope();
         return new NonDisposedHttpContextServiceScope(httpContext.RequestServices);
     }
 

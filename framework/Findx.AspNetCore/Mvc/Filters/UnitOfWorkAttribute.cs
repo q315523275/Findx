@@ -1,4 +1,5 @@
-﻿using Findx.Data;
+﻿using System.Threading.Tasks;
+using Findx.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,39 +15,53 @@ public class UnitOfWorkAttribute : ActionFilterAttribute
 	///     数据连接标识,不传默认使用主连接
 	/// </summary>
 	public string DbKey { get; set; } = null;
-
+	
 	/// <summary>
-	///     Called before the action executes, after model binding is complete.
+	/// 
 	/// </summary>
 	/// <param name="context"></param>
-	public override void OnActionExecuting(ActionExecutingContext context)
-    {
-        // 初始化工作单元
-        context.HttpContext.RequestServices.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWork(true, true, DbKey);
-    }
+	/// <param name="next"></param>
+	public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+	{
+		var provider = context.HttpContext.RequestServices;
+		var cancellationToken = context.HttpContext.RequestAborted;
+		
+		// 初始化工作单元
+		// ReSharper disable once PossibleNullReferenceException
+		var uow = await	provider.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWorkAsync(true, true, DbKey, cancellationToken);
 
-	/// <summary>
-	///     Called after the action executes, before the action result.
-	/// </summary>
-	/// <param name="context"></param>
-	public override void OnActionExecuted(ActionExecutedContext context)
-    {
-        var unitOfWork = context.HttpContext.RequestServices.GetService<IUnitOfWorkManager>()
-            ?.GetConnUnitOfWork(false, false, DbKey);
+		// 执行业务
+		var actionContext = await next();
 
-        if (context.Exception != null) return;
+		if (uow == null) return;
+		
+		if (actionContext.Exception != null)
+		{
+			await uow.RollbackAsync(cancellationToken).ConfigureAwait(false);
+		}
+		else switch (actionContext.Result)
+		{
+			case JsonResult result1:
+			{
+				if (result1.Value is CommonResult ajax && ajax.IsSuccess()) 
+					await uow.CommitAsync(cancellationToken);
+				break;
+			}
+			case ObjectResult result2:
+			{
+				if (result2.Value is CommonResult ajax && ajax.IsSuccess()) 
+					await uow.CommitAsync(cancellationToken);
+				break;
+			}
+			default:
+			{
+				if (actionContext.HttpContext.Response.StatusCode < 400)
+				{
+					await uow.CommitAsync(cancellationToken);
+				}
 
-        if (context.Result is JsonResult result1)
-        {
-            if (result1.Value is CommonResult ajax && ajax.IsSuccess()) unitOfWork?.Commit();
-        }
-        else if (context.Result is ObjectResult result2)
-        {
-            if (result2.Value is CommonResult ajax && ajax.IsSuccess()) unitOfWork?.Commit();
-        }
-        else if (context.HttpContext.Response.StatusCode < 400)
-        {
-            unitOfWork?.Commit();
-        }
-    }
+				break;
+			}
+		}
+	}
 }

@@ -18,8 +18,7 @@ public abstract class LockBase : ILock
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public async Task<RLock> AcquireAsync(string resource, TimeSpan? timeUntilExpires = null, bool isWait = false,
-        bool renew = false, CancellationToken cancellationToken = default)
+    public async Task<RLock> AcquireAsync(string resource, TimeSpan? timeUntilExpires = null, bool isWait = false, bool renew = false, CancellationToken cancellationToken = default)
     {
         timeUntilExpires ??= TimeSpan.FromSeconds(30);
 
@@ -30,7 +29,7 @@ public abstract class LockBase : ILock
         {
             try
             {
-                gotLock = await TryLockAsync(resource, lockId, timeUntilExpires);
+                gotLock = await TryLockAsync(resource, lockId, timeUntilExpires.Value);
             }
             catch
             {
@@ -65,14 +64,9 @@ public abstract class LockBase : ILock
 
         return !gotLock
             ? null
-            : new RLock(resource, lockId, this, timeUntilExpires, renew,
+            : new RLock(resource, lockId, this, timeUntilExpires.Value, renew,
                 timeUntilExpires.Value.TotalMilliseconds.To<int>() / 3);
     }
-
-    /// <summary>
-    ///     锁类型
-    /// </summary>
-    public abstract LockType LockType { get; }
 
     /// <summary>
     ///     释放锁
@@ -89,7 +83,7 @@ public abstract class LockBase : ILock
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
     /// <returns></returns>
-    public abstract Task RenewAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null);
+    public abstract Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires);
 
     /// <summary>
     ///     创建锁标识
@@ -117,5 +111,5 @@ public abstract class LockBase : ILock
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
     /// <returns></returns>
-    public abstract Task<bool> TryLockAsync(string resource, string lockId, TimeSpan? timeUntilExpires = null);
+    protected abstract Task<bool> TryLockAsync(string resource, string lockId, TimeSpan timeUntilExpires);
 }

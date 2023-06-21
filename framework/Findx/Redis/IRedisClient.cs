@@ -186,8 +186,9 @@ public interface IRedisClient
     /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
     /// <param name="value">值</param>
+    /// <param name="whenNotExists">key不存在时设置</param>
     /// <returns>成功返回true</returns>
-    bool StringSet<T>(string key, T value);
+    bool StringSet<T>(string key, T value, bool whenNotExists = false);
 
     /// <summary>
     ///     设置string键值
@@ -195,8 +196,10 @@ public interface IRedisClient
     /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
     /// <param name="value">值</param>
+    /// <param name="whenNotExists">key不存在时设置</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    Task<bool> StringSetAsync<T>(string key, T value);
+    Task<bool> StringSetAsync<T>(string key, T value, bool whenNotExists = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     设置string键值
@@ -205,8 +208,9 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="value">值</param>
     /// <param name="expiresIn">过期间隔</param>
+    /// <param name="whenNotExists">key不存在时设置</param>
     /// <returns>成功返回true</returns>
-    bool StringSet<T>(string key, T value, TimeSpan expiresIn);
+    bool StringSet<T>(string key, T value, TimeSpan expiresIn, bool whenNotExists = false);
 
     /// <summary>
     ///     设置string键值
@@ -215,8 +219,10 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="value">值</param>
     /// <param name="expiresIn">过期间隔</param>
+    /// <param name="whenNotExists">key不存在时设置</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    Task<bool> StringSetAsync<T>(string key, T value, TimeSpan expiresIn);
+    Task<bool> StringSetAsync<T>(string key, T value, TimeSpan expiresIn, bool whenNotExists = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     设置string键值
@@ -225,8 +231,9 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="value">值</param>
     /// <param name="expiresAt">过期时间</param>
+    /// <param name="whenNotExists">key不存在时设置</param>
     /// <returns>成功返回true</returns>
-    bool StringSet<T>(string key, T value, DateTimeOffset expiresAt);
+    bool StringSet<T>(string key, T value, DateTimeOffset expiresAt, bool whenNotExists = false);
 
     /// <summary>
     ///     设置string键值
@@ -235,8 +242,10 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="value">值</param>
     /// <param name="expiresAt">过期时间</param>
+    /// <param name="whenNotExists">key不存在时设置</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    Task<bool> StringSetAsync<T>(string key, T value, DateTimeOffset expiresAt);
+    Task<bool> StringSetAsync<T>(string key, T value, DateTimeOffset expiresAt, bool whenNotExists = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     批量设置string键值
@@ -251,8 +260,9 @@ public interface IRedisClient
     /// </summary>
     /// <typeparam name="T">值的类型</typeparam>
     /// <param name="items">键值列表</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    Task<bool> StringSetAllAsync<T>(IList<Tuple<string, T>> items);
+    Task<bool> StringSetAllAsync<T>(IList<Tuple<string, T>> items, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     string获取值
@@ -267,7 +277,8 @@ public interface IRedisClient
     /// </summary>
     /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
-    Task<T> StringGetAsync<T>(string key);
+    /// <param name="cancellationToken"></param>
+    Task<T> StringGetAsync<T>(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     键值累加
@@ -282,8 +293,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="key">键名</param>
     /// <param name="value">增长数量</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>累加后的值</returns>
-    Task<long> StringIncrementAsync(string key, long value = 1);
+    Task<long> StringIncrementAsync(string key, long value = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     键值累加
@@ -298,8 +310,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="key">键名</param>
     /// <param name="value">增长数量</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>累加后的值</returns>
-    Task<double> StringIncrementDoubleAsync(string key, double value);
+    Task<double> StringIncrementDoubleAsync(string key, double value, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     键值递减
@@ -314,8 +327,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="key">键名</param>
     /// <param name="value">减少数量</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>递减后的值</returns>
-    Task<long> StringDecrementAsync(string key, long value = 1);
+    Task<long> StringDecrementAsync(string key, long value = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     键值递减
@@ -330,8 +344,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="key">键名</param>
     /// <param name="value">减少数量</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>递减后的值</returns>
-    Task<double> StringDecrementDoubleAsync(string key, double value);
+    Task<double> StringDecrementDoubleAsync(string key, double value, CancellationToken cancellationToken = default);
 
     #endregion StringSet
 
@@ -368,8 +383,9 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="hashField">hash的键值</param>
     /// <param name="value">值</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> HashSetAsync<T>(string key, string hashField, T value);
+    Task<bool> HashSetAsync<T>(string key, string hashField, T value, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     批量设置hash值
@@ -385,7 +401,8 @@ public interface IRedisClient
     /// <typeparam name="T">值类型</typeparam>
     /// <param name="key">key</param>
     /// <param name="values">键值对</param>
-    Task HashSetAsync<T>(string key, Dictionary<string, T> values);
+    /// <param name="cancellationToken"></param>
+    Task HashSetAsync<T>(string key, Dictionary<string, T> values, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取一个hash值
@@ -402,8 +419,9 @@ public interface IRedisClient
     /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<T> HashGetAsync<T>(string key, string hashField);
+    Task<T> HashGetAsync<T>(string key, string hashField, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取hash值
@@ -420,8 +438,9 @@ public interface IRedisClient
     /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
     /// <param name="hashFields">hash键组合</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Dictionary<string, T>> HashGetAsync<T>(string key, IEnumerable<string> hashFields);
+    Task<Dictionary<string, T>> HashGetAsync<T>(string key, IEnumerable<string> hashFields, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取全部hash值
@@ -436,8 +455,9 @@ public interface IRedisClient
     /// </summary>
     /// <typeparam name="T">值类型</typeparam>
     /// <param name="key">key</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<Dictionary<string, T>> HashGetAllAsync<T>(string key);
+    Task<Dictionary<string, T>> HashGetAllAsync<T>(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取全部hash值
@@ -452,8 +472,9 @@ public interface IRedisClient
     /// </summary>
     /// <typeparam name="T">值类型</typeparam>
     /// <param name="key">key</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IEnumerable<T>> HashValuesAsync<T>(string key);
+    Task<IEnumerable<T>> HashValuesAsync<T>(string key, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     判断是否存在hash键
@@ -468,8 +489,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> HashExistsAsync(string key, string hashField);
+    Task<bool> HashExistsAsync(string key, string hashField, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     删除一个hash键
@@ -484,8 +506,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> HashDeleteAsync(string key, string hashField);
+    Task<bool> HashDeleteAsync(string key, string hashField, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     删除hash键
@@ -500,8 +523,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="key">key</param>
     /// <param name="hashFields">hash键集合</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> HashDeleteAsync(string key, IEnumerable<string> hashFields);
+    Task<long> HashDeleteAsync(string key, IEnumerable<string> hashFields, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     hash递增
@@ -518,8 +542,9 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
     /// <param name="value">递增值</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> HashIncrementAsync(string key, string hashField, long value = 1);
+    Task<long> HashIncrementAsync(string key, string hashField, long value = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     hash递减
@@ -536,8 +561,9 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
     /// <param name="value">递减值</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> HashDecrementAsync(string key, string hashField, long value = 1);
+    Task<long> HashDecrementAsync(string key, string hashField, long value = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     hash递增
@@ -554,8 +580,9 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
     /// <param name="value">递增值</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<double> HashIncrementDoubleAsync(string key, string hashField, double value);
+    Task<double> HashIncrementDoubleAsync(string key, string hashField, double value, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     hash递减
@@ -572,8 +599,9 @@ public interface IRedisClient
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
     /// <param name="value">递减值</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<double> HashDecrementDoubleAsync(string key, string hashField, double value);
+    Task<double> HashDecrementDoubleAsync(string key, string hashField, double value, CancellationToken cancellationToken = default);
 
     #endregion hash
 
@@ -596,8 +624,9 @@ public interface IRedisClient
     /// <param name="key">键名</param>
     /// <param name="value">值</param>
     /// <param name="expiry">过期时间</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    Task<bool> LockTakeAsync<T>(string key, T value, TimeSpan expiry);
+    Task<bool> LockTakeAsync<T>(string key, T value, TimeSpan expiry, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     释放一个锁
@@ -614,8 +643,9 @@ public interface IRedisClient
     /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">键名</param>
     /// <param name="value">值</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    Task<bool> LockReleaseAsync<T>(string key, T value);
+    Task<bool> LockReleaseAsync<T>(string key, T value, CancellationToken cancellationToken = default);
 
     #endregion lock
 
@@ -753,68 +783,76 @@ public interface IRedisClient
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="index"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<T> ListGetByIndexAsync<T>(string cacheKey, long index);
+    Task<T> ListGetByIndexAsync<T>(string cacheKey, long index, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     列表中的元素个数
     /// </summary>
     /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> ListLengthAsync(string cacheKey);
+    Task<long> ListLengthAsync(string cacheKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从列表的左侧取出一个值
     /// </summary>
     /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<T> ListLeftPopAsync<T>(string cacheKey);
+    Task<T> ListLeftPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从列表的左侧插入值
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>列表中的元素个数</returns>
-    Task<long> ListLeftPushAsync<T>(string cacheKey, T cacheValue);
+    Task<long> ListLeftPushAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从列表的左侧插入一堆值 从数组的第一个开始
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>列表中的元素个数</returns>
-    Task<long> ListLeftPushAsync<T>(string cacheKey, IList<T> cacheValues);
+    Task<long> ListLeftPushAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从列表的右侧取出一个值
     /// </summary>
     /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<T> ListRightPopAsync<T>(string cacheKey);
+    Task<T> ListRightPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从列表的右侧插入值
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<long> ListRightPushAsync<T>(string cacheKey, T cacheValue);
+    Task<long> ListRightPushAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从列表的右侧插入一堆值
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>列表中的元素个数</returns>
-    Task<long> ListRightPushAsync<T>(string cacheKey, IList<T> cacheValues);
+    Task<long> ListRightPushAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     取出列表中的值
@@ -822,9 +860,10 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="start"></param>
     /// <param name="stop">-1表示全部取出</param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> ListRangeAsync<T>(string cacheKey, long start, long stop);
+    Task<List<T>> ListRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     删除列表中的一个元素,可设置要删除的数量,返回删除的数量
@@ -832,9 +871,10 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="count">等于0删除所有,大于0从左到右删除最多count个与value相等的项,小于0从右到左删除最多count个与value相等的项</param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>删除的数量</returns>
-    Task<long> ListRemoveAsync<T>(string cacheKey, long count, T cacheValue);
+    Task<long> ListRemoveAsync<T>(string cacheKey, long count, T cacheValue, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     设置列表中某个位置的元素
@@ -842,9 +882,10 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="index"></param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<bool> ListSetByIndexAsync<T>(string cacheKey, long index, T cacheValue);
+    Task<bool> ListSetByIndexAsync<T>(string cacheKey, long index, T cacheValue, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     按指定范围裁剪列表
@@ -852,8 +893,9 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="start"></param>
     /// <param name="stop"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> ListTrimAsync(string cacheKey, long start, long stop);
+    Task<bool> ListTrimAsync(string cacheKey, long start, long stop, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     在 pivot 元素前面插入一个元素 value
@@ -861,9 +903,10 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="pivot"></param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>插入成功返回列表总长度,插入失败返回-1</returns>
-    Task<long> ListInsertBeforeAsync<T>(string cacheKey, T pivot, T cacheValue);
+    Task<long> ListInsertBeforeAsync<T>(string cacheKey, T pivot, T cacheValue, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     在 pivot 元素的后面插入一个元素 value
@@ -871,9 +914,10 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="pivot"></param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>插入成功返回的列表总长度,插入失败返回-1</returns>
-    Task<long> ListInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue);
+    Task<long> ListInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue, CancellationToken cancellationToken = default);
 
     #endregion
 
@@ -945,59 +989,66 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="cacheValues"></param>
     /// <param name="expiration"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>返回是否添加成功</returns>
-    Task<long> SetAddAsync<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null);
+    Task<long> SetAddAsync<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     向集合中添加一堆元素
     /// </summary>
     /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns>返回是否添加成功</returns>
-    Task<long> SetLengthAsync(string cacheKey);
+    Task<long> SetLengthAsync(string cacheKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     判断集合中是否存在元素
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<bool> SetContainsAsync<T>(string cacheKey, T cacheValue);
+    Task<bool> SetContainsAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回集合中的所有元素
     /// </summary>
     /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> SetMembersAsync<T>(string cacheKey);
+    Task<List<T>> SetMembersAsync<T>(string cacheKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从集合中随机取出一个元素(会删除集合中的元素)
     /// </summary>
     /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<T> SetPopAsync<T>(string cacheKey);
+    Task<T> SetPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从集合中随机返回一个元素(不删除集合中的元素)
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="count"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1);
+    Task<List<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从集合中移除一堆元素
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>移除元素的个数</returns>
-    Task<long> SetRemoveAsync<T>(string cacheKey, IList<T> cacheValues = null);
+    Task<long> SetRemoveAsync<T>(string cacheKey, IList<T> cacheValues = null, CancellationToken cancellationToken = default);
 
     #endregion
 
@@ -1088,16 +1139,18 @@ public interface IRedisClient
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>是否添加成功</returns>
-    Task<long> SortedSetAddAsync<T>(string cacheKey, Dictionary<T, double> cacheValues);
+    Task<long> SortedSetAddAsync<T>(string cacheKey, Dictionary<T, double> cacheValues, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回有序集合中分值min 到 max的元素个数
     /// </summary>
     /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> SortedSetLengthAsync(string cacheKey);
+    Task<long> SortedSetLengthAsync(string cacheKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回有序集合中元素值min 到 max 的元素个数
@@ -1105,8 +1158,9 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="min"></param>
     /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> SortedSetLengthByValueAsync(string cacheKey, double min, double max);
+    Task<long> SortedSetLengthByValueAsync(string cacheKey, double min, double max, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     对有序集合中的某个元素增加一个分值
@@ -1114,8 +1168,9 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="field"></param>
     /// <param name="val"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<double> SortedSetIncrementAsync(string cacheKey, string field, double val = 1);
+    Task<double> SortedSetIncrementAsync(string cacheKey, string field, double val = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回有序集合中元素值min 到 max 的元素个数
@@ -1123,8 +1178,9 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="min"></param>
     /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> SortedSetLengthByValueAsync(string cacheKey, string min, string max);
+    Task<long> SortedSetLengthByValueAsync(string cacheKey, string min, string max, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回有序集合按索引升序
@@ -1132,36 +1188,40 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="start"></param>
     /// <param name="stop"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop);
+    Task<List<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回有序集合中的元素的索引
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<long?> SortedSetRankAsync<T>(string cacheKey, T cacheValue);
+    Task<long?> SortedSetRankAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     移除有序集合中的多个元素
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>移除的个数</returns>
-    Task<long> SortedSetRemoveAsync<T>(string cacheKey, IList<T> cacheValues);
+    Task<long> SortedSetRemoveAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回有序集合中的元素的分值
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<double?> SortedSetScoreAsync<T>(string cacheKey, T cacheValue);
+    Task<double?> SortedSetScoreAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default);
 
     #endregion
 
@@ -1180,8 +1240,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="values"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> GeoAddAsync(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values);
+    Task<long> GeoAddAsync(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     计算两个位置之间的距离
@@ -1200,8 +1261,9 @@ public interface IRedisClient
     /// <param name="member1"></param>
     /// <param name="member2"></param>
     /// <param name="unit">默认单位:米</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<double?> GeoDistanceAsync(string cacheKey, string member1, string member2, string unit = "m");
+    Task<double?> GeoDistanceAsync(string cacheKey, string member1, string member2, string unit = "m", CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回一个或多个位置对象的 geohash 值
@@ -1216,8 +1278,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="members"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<string[]> GeoHashAsync(string cacheKey, IEnumerable<string> members);
+    Task<string[]> GeoHashAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取地理位置的坐标
@@ -1232,8 +1295,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="members"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members);
+    Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     根据用户给定的经纬度坐标来获取指定范围内的地理位置集合
@@ -1257,9 +1321,10 @@ public interface IRedisClient
     /// <param name="unit">默认单位:米</param>
     /// <param name="count">取数,-1全部</param>
     /// <param name="order">排序方式</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<List<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member, double radius,
-        string unit = "m", int count = -1, string order = "asc");
+        string unit = "m", int count = -1, string order = "asc", CancellationToken cancellationToken = default);
 
     #endregion
 
@@ -1280,8 +1345,9 @@ public interface IRedisClient
     /// <typeparam name="T"></typeparam>
     /// <param name="cacheKey"></param>
     /// <param name="values"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> HyperLogLogAddAsync<T>(string cacheKey, IEnumerable<T> values);
+    Task<bool> HyperLogLogAddAsync<T>(string cacheKey, IEnumerable<T> values, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回给定 HyperLogLog 的基数估算值
@@ -1294,8 +1360,9 @@ public interface IRedisClient
     ///     返回给定 HyperLogLog 的基数估算值
     /// </summary>
     /// <param name="cacheKeys"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<long> HyperLogLogLengthAsync(IEnumerable<string> cacheKeys);
+    Task<long> HyperLogLogLengthAsync(IEnumerable<string> cacheKeys, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     将多个 HyperLogLog 合并为一个 HyperLogLog
@@ -1310,8 +1377,9 @@ public interface IRedisClient
     /// </summary>
     /// <param name="destKey"></param>
     /// <param name="sourceKeys"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> HyperLogLogMergeAsync(string destKey, IEnumerable<string> sourceKeys);
+    Task<bool> HyperLogLogMergeAsync(string destKey, IEnumerable<string> sourceKeys, CancellationToken cancellationToken = default);
 
     #endregion
 }

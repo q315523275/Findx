@@ -6,21 +6,21 @@
         <Version>1.9.1</Version>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <Description>自定义认证授权、token自动续期、自定义权限控制等</Description>
-        <PackageVersion>1.9.1</PackageVersion>
+        <Description>自定义认证授权、Token自动续期、自定义权限控制、可配置到接口级别权限等</Description>
+        <PackageVersion>1.9.5.1-preview1</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Findx.AspNetCore\Findx.AspNetCore.csproj"/>
-        <ProjectReference Include="..\Findx\Findx.csproj"/>
+        <ProjectReference Include="..\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+        <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.18" />
     </ItemGroup>
 
 </Project>

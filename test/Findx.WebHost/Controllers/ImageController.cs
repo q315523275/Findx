@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Findx.Drawing;
+using Findx.Imaging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.WebHost.Controllers;
@@ -11,157 +12,138 @@ namespace Findx.WebHost.Controllers;
 [Description("图片处理")]
 public class ImageController : Controller
 {
+    private readonly IImageProcessor _processor;
+    private readonly IApplicationContext _app;
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="processor"></param>
+    /// <param name="app"></param>
+    public ImageController(IImageProcessor processor, IApplicationContext app)
+    {
+        _processor = processor;
+        _app = app;
+    }
+
+    private Task<byte[]> ReadAllBytesAsync(string filePath)
+    {
+        return System.IO.File.ReadAllBytesAsync(_app.MapPath(filePath));
+    }
+
     /// <summary>
     ///     缩放
     /// </summary>
-    /// <param name="imageProcessor"></param>
-    /// <param name="applicationInstance"></param>
     /// <param name="filePath"></param>
     /// <param name="width"></param>
     /// <param name="height"></param>
     /// <param name="mode"></param>
     /// <returns></returns>
-    [HttpGet("/image/scale")]
-    public IActionResult Scale([FromServices] IImageProcessor imageProcessor,
-        [FromServices] IApplicationContext applicationInstance, string filePath, int width, int height,
-        ImageResizeMode mode = ImageResizeMode.Crop)
+    [HttpGet("/image/resize")]
+    public async Task<IActionResult> ResizeAsync(string filePath, int width, int height, ImageResizeMode mode = ImageResizeMode.Crop)
     {
-        var img = imageProcessor.Scale(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), width,
-            height, mode);
-
-        return File(img, "image/jpeg");
+        var imageByte = await _processor.ResizeAsync(await ReadAllBytesAsync(filePath), new ImageResizeDto(width, height, mode));
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 
     /// <summary>
     ///     裁剪
     /// </summary>
-    /// <param name="imageProcessor"></param>
-    /// <param name="applicationInstance"></param>
     /// <param name="filePath"></param>
+    /// <param name="y"></param>
     /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <param name="x"></param>
     /// <returns></returns>
     [HttpGet("/image/crop")]
-    public IActionResult Crop([FromServices] IImageProcessor imageProcessor,
-        [FromServices] IApplicationContext applicationInstance, string filePath, int x, int y, int width)
+    public async Task<IActionResult> CropAsync(string filePath, int x, int y, int width, int height)
     {
-        var img = imageProcessor.Crop(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), x, y, width);
-
-        return File(img, "image/jpeg");
+        var imageByte = await _processor.CropAsync(await ReadAllBytesAsync(filePath), new ImageCropDto(x, y, width, height));
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 
     /// <summary>
     ///     压缩
     /// </summary>
-    /// <param name="imageProcessor"></param>
-    /// <param name="applicationInstance"></param>
     /// <param name="filePath"></param>
     /// <param name="quality"></param>
     /// <returns></returns>
     [HttpGet("/image/compress")]
-    public IActionResult Compress([FromServices] IImageProcessor imageProcessor,
-        [FromServices] IApplicationContext applicationInstance, string filePath, float quality = 0.8f)
+    public async Task<IActionResult> CompressAsync(string filePath, int quality = 75)
     {
-        var img = imageProcessor.Compress(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), quality);
-
-        return File(img, "image/jpeg");
+        var imageByte = await _processor.CompressAsync(await ReadAllBytesAsync(filePath), quality);
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 
     /// <summary>
     ///     黑白
     /// </summary>
-    /// <param name="imageProcessor"></param>
-    /// <param name="applicationInstance"></param>
     /// <param name="filePath"></param>
     /// <returns></returns>
     [HttpGet("/image/gray")]
-    public IActionResult Gray([FromServices] IImageProcessor imageProcessor,
-        [FromServices] IApplicationContext applicationInstance, string filePath)
+    public async Task<IActionResult> Gray(string filePath)
     {
-        var img = imageProcessor.Gray(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)));
-
-        return File(img, "image/jpeg");
+        var imageByte = await _processor.GrayAsync(await ReadAllBytesAsync(filePath));
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 
     /// <summary>
     ///     旋转
     /// </summary>
-    /// <param name="imageProcessor"></param>
-    /// <param name="applicationInstance"></param>
     /// <param name="filePath"></param>
-    /// <param name="degre"></param>
+    /// <param name="degrees"></param>
     /// <returns></returns>
     [HttpGet("/image/rotate")]
-    public IActionResult Rotate([FromServices] IImageProcessor imageProcessor,
-        [FromServices] IApplicationContext applicationInstance, string filePath, float degre)
+    public async Task<IActionResult> Rotate(string filePath, float degrees)
     {
-        var img = imageProcessor.Rotate(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), degre);
-
-        return File(img, "image/jpeg");
+        var imageByte = await _processor.RotateAsync(await ReadAllBytesAsync(filePath), degrees);
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 
     /// <summary>
     ///     水平翻转
     /// </summary>
-    /// <param name="imageProcessor"></param>
-    /// <param name="applicationInstance"></param>
     /// <param name="filePath"></param>
+    /// <param name="mode"></param>
     /// <returns></returns>
     [HttpGet("/image/flip")]
-    public IActionResult Flip([FromServices] IImageProcessor imageProcessor,
-        [FromServices] IApplicationContext applicationInstance, string filePath)
+    public async Task<IActionResult> Flip(string filePath, ImageFlipMode mode = ImageFlipMode.Horizontal)
     {
-        var img = imageProcessor.Flip(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)));
-
-        return File(img, "image/jpeg");
+        var imageByte = await _processor.FlipAsync(await ReadAllBytesAsync(filePath), mode);
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 
     /// <summary>
     ///     添加图片
     /// </summary>
-    /// <param name="imageProcessor"></param>
-    /// <param name="applicationInstance"></param>
     /// <param name="filePath"></param>
     /// <param name="filePath2"></param>
     /// <param name="x"></param>
     /// <param name="y"></param>
+    /// <param name="mode"></param>
     /// <param name="opacity"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
     /// <returns></returns>
-    [HttpGet("/image/pressImage")]
-    public IActionResult PressImage([FromServices] IImageProcessor imageProcessor,
-        [FromServices] IApplicationContext applicationInstance, string filePath, string filePath2, int x, int y,
-        float opacity = 0.8f)
+    [HttpGet("/image/mergeImage")]
+    public async Task<IActionResult> MergeImageAsync(string filePath, string filePath2, int x, int y, int width, int height, ImageResizeMode mode, float opacity = 0.75f)
     {
-        var img = imageProcessor.PressImage(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)),
-            applicationInstance.MapPath(filePath2), x, y, opacity: opacity);
-
-        return File(img, "image/jpeg");
+        var imageByte = await _processor.MergeImageAsync(await ReadAllBytesAsync(filePath), await ReadAllBytesAsync(filePath2), new MergeImageDto(x, y, width, height,resizeMode: mode, opacity: opacity));
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 
     /// <summary>
     ///     添加文字
     /// </summary>
-    /// <param name="imageProcessor"></param>
-    /// <param name="applicationInstance"></param>
     /// <param name="filePath"></param>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
     /// <param name="text"></param>
-    /// <param name="fontSize"></param>
-    /// <param name="fontPath"></param>
-    /// <param name="fontColor"></param>
-    /// <param name="fontStyle"></param>
+    /// <param name="dto"></param>
     /// <returns></returns>
-    [HttpGet("/image/pressText")]
-    public IActionResult PressText([FromServices] IImageProcessor imageProcessor,
-        [FromServices] IApplicationContext applicationInstance, string filePath, int x, int y, string text,
-        int fontSize, string fontPath, string fontColor, FontStyle fontStyle)
+    [HttpPost("/image/pressText")]
+    public async Task<IActionResult> PressText([Required] string filePath, [Required] string text, [FromBody] DrawTextDto dto)
     {
-        var img = imageProcessor.PressText(System.IO.File.ReadAllBytes(applicationInstance.MapPath(filePath)), x, y,
-            text,
-            new FontOptions
-                { FontColor = fontColor, FontFamilyFilePath = fontPath, FontSize = fontSize, FontStyle = fontStyle });
-
-        return File(img, "image/jpeg");
+        var imageByte = await _processor.DrawTextAsync(await ReadAllBytesAsync(filePath), text, dto);
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 
     /// <summary>
@@ -177,8 +159,8 @@ public class ImageController : Controller
     {
         var code = verifyCoder.GetCode(4, VerifyCodeType.NumberAndLetter);
 
-        var img = await verifyCoder.CreateImageAsync(code, width, height);
+        var imageByte = await verifyCoder.CreateImageAsync(code, width, height);
 
-        return File(img, "image/jpeg");
+        return new FileContentResult(imageByte, "image/jpeg");
     }
 }

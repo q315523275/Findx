@@ -1,4 +1,4 @@
-﻿namespace Findx.Data.Entity;
+﻿namespace Findx.Data;
 
 /// <summary>
 ///     可过期实体基类
@@ -31,7 +31,8 @@ public abstract class ExpirableBase<TKey> : EntityBase<TKey>, IExpirable
     /// </summary>
     public void ThrowIfTimeInvalid()
     {
-        if (IsTimeValid()) return;
+        if (IsTimeValid()) 
+            return;
         throw new IndexOutOfRangeException("生效时间不能大于过期时间");
     }
 }

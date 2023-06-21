@@ -74,8 +74,8 @@ public class AntiDuplicateRequestAttribute : ActionFilterAttribute
     /// <returns></returns>
     private ILock GetLock(ActionContext context)
     {
-        var provider = context.HttpContext.RequestServices.GetRequiredService<ILockProvider>();
-        return provider.Get(IsDistributed ? Locks.LockType.Distributed : Locks.LockType.Local);
+        var provider = context.HttpContext.RequestServices;
+        return IsDistributed ? provider.GetRequiredService<ILock>("DistributedLock.Redis") : provider.GetRequiredService<ILock>("LocalCacheLock");
     }
 
     /// <summary>

@@ -3,7 +3,7 @@
 /// <summary>
 ///     树形节点
 /// </summary>
-public interface ITreeNode<TKey> where TKey : struct
+public interface ITreeNode<out TKey> where TKey : struct
 {
     /// <summary>
     ///     获取节点id

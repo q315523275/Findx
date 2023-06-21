@@ -23,6 +23,5 @@ public interface IMessagePipeline<in TRequest, TResponse>
     /// <param name="next"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<TResponse> HandleAsync(TRequest request, MessageHandlerDelegate<TResponse> next,
-        CancellationToken cancellationToken);
+    Task<TResponse> HandleAsync(TRequest request, MessageHandlerDelegate<TResponse> next, CancellationToken cancellationToken);
 }

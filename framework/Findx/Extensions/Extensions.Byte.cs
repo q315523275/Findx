@@ -16,7 +16,7 @@ public partial class Extensions
     {
         if (bytes is null) return Array.Empty<byte>();
 
-        using var output = new MemoryStream();
+        using var output = Pool.MemoryStream.Rent();
 
         using var stream = new BrotliStream(output, CompressionMode.Compress);
 
@@ -32,11 +32,12 @@ public partial class Extensions
     /// <returns></returns>
     public static byte[] Decompress(this byte[] bytes)
     {
-        using var input = new MemoryStream(bytes);
+        using var input = Pool.MemoryStream.Rent();
+        input.Write(bytes, 0, bytes.Length);
 
         using var stream = new BrotliStream(input, CompressionMode.Decompress);
 
-        using var output = new MemoryStream();
+        using var output = Pool.MemoryStream.Rent();
 
         stream.CopyTo(output);
 

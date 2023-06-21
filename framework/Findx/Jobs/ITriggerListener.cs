@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace Findx.Jobs;
 
@@ -14,5 +13,5 @@ public interface ITriggerListener
 	/// <param name="jobInfo"></param>
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task TriggerFiredAsync([NotNull] JobInfo jobInfo, CancellationToken cancellationToken = default);
+	Task TriggerFiredAsync(JobInfo jobInfo, CancellationToken cancellationToken = default);
 }

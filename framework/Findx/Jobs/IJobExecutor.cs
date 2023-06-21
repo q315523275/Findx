@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using JetBrains.Annotations;
 
 namespace Findx.Jobs;
 
@@ -14,5 +13,5 @@ public interface IJobExecutor
 	/// <param name="context"></param>
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task RunAsync([NotNull] IJobExecutionContext context, CancellationToken cancellationToken = default);
+	Task RunAsync(IJobExecutionContext context, CancellationToken cancellationToken = default);
 }

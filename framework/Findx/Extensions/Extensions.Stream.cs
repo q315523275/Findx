@@ -14,12 +14,10 @@ public static partial class Extensions
     /// <returns></returns>
     public static byte[] GetAllBytes(this Stream stream)
     {
-        using (var memoryStream = new MemoryStream())
-        {
-            stream.Position = 0;
-            stream.CopyTo(memoryStream);
-            return memoryStream.ToArray();
-        }
+        using var memoryStream = new MemoryStream();
+        stream.Position = 0;
+        stream.CopyTo(memoryStream);
+        return memoryStream.ToArray();
     }
 
     /// <summary>
@@ -30,12 +28,10 @@ public static partial class Extensions
     /// <returns></returns>
     public static async Task<byte[]> GetAllBytesAsync(this Stream stream, CancellationToken cancellationToken = default)
     {
-        using (var memoryStream = new MemoryStream())
-        {
-            stream.Position = 0;
-            await stream.CopyToAsync(memoryStream, cancellationToken);
-            return memoryStream.ToArray();
-        }
+        using var memoryStream = new MemoryStream();
+        stream.Position = 0;
+        await stream.CopyToAsync(memoryStream, cancellationToken);
+        return memoryStream.ToArray();
     }
 
     /// <summary>

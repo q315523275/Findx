@@ -50,13 +50,21 @@ public class MessageDispatcher : IMessageDispatcher
     /// <param name="cancellationToken"></param>
     /// <typeparam name="TEvent"></typeparam>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default)
         where TEvent : IApplicationEvent
     {
+        // ReSharper disable once SuspiciousTypeConversion.Global
+        if (applicationEvent is IAsync)
+        {
+            return _serviceProvider.GetRequiredService<IApplicationEventPublisher>().PublishAsync(applicationEvent, cancellationToken);
+        }
+
         var eventType = applicationEvent.GetType();
         var handler = (ApplicationEventHandlerWrapper)MessageConst.ApplicationEventHandlers.GetOrAdd(eventType,
             _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(eventType)));
+        
+        Check.NotNull(handler, nameof(handler));
+        
         return handler.HandleAsync(applicationEvent, _serviceProvider, cancellationToken);
     }
 }

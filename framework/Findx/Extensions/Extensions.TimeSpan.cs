@@ -43,8 +43,7 @@ public static partial class Extensions
     /// <summary>
     ///     时间片倒计时
     /// </summary>
-    public static async Task CountDownAsync(this TimeSpan ts, Func<TimeSpan, Task> action,
-        int intervalMilliseconds = 1000)
+    public static async Task CountDownAsync(this TimeSpan ts, Func<TimeSpan, Task> action, int intervalMilliseconds = 1000)
     {
         while (ts > TimeSpan.Zero)
         {

@@ -35,7 +35,7 @@ public static partial class Extensions
     /// <returns> 是返回True，不是返回False </returns>
     public static bool IsNullableType(this Type type)
     {
-        return type != null && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>);
+        return type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(Nullable<>);
     }
 
     /// <summary>
@@ -55,13 +55,11 @@ public static partial class Extensions
     /// <returns> </returns>
     public static Type GetUnNullableType(this Type type)
     {
-        if (IsNullableType(type))
-        {
-            var nullableConverter = new NullableConverter(type);
-            return nullableConverter.UnderlyingType;
-        }
+        if (!IsNullableType(type)) return type;
+        
+        var nullableConverter = new NullableConverter(type);
+        return nullableConverter.UnderlyingType;
 
-        return type;
     }
 
     /// <summary>
@@ -93,8 +91,7 @@ public static partial class Extensions
         var displayName = member.GetAttribute<DisplayNameAttribute>(inherit);
         if (displayName != null) return displayName.DisplayName;
         var display = member.GetAttribute<DisplayAttribute>(inherit);
-        if (display != null) return display.Name;
-        return member.Name;
+        return display != null ? display.Name : member.Name;
     }
 
     /// <summary>
@@ -141,8 +138,7 @@ public static partial class Extensions
     /// <returns>是返回True，不是返回False</returns>
     public static bool IsEnumerable(this Type type)
     {
-        if (type == typeof(string)) return false;
-        return typeof(IEnumerable).IsAssignableFrom(type);
+        return type != typeof(string) && typeof(IEnumerable).IsAssignableFrom(type);
     }
 
     /// <summary>
@@ -179,8 +175,7 @@ public static partial class Extensions
     /// </summary>
     public static bool IsAsync(this MethodInfo method)
     {
-        return method.ReturnType == typeof(Task)
-               || (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>));
+        return method.ReturnType == typeof(Task) || (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>));
     }
 
     /// <summary>
@@ -191,8 +186,7 @@ public static partial class Extensions
     /// <returns></returns>
     public static bool IsBaseOn(this Type type, Type baseType)
     {
-        if (baseType.IsGenericTypeDefinition) return baseType.IsGenericAssignableFrom(type);
-        return baseType.IsAssignableFrom(type);
+        return baseType.IsGenericTypeDefinition ? baseType.IsGenericAssignableFrom(type) : baseType.IsAssignableFrom(type);
     }
 
     /// <summary>

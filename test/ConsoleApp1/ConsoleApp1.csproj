@@ -11,4 +11,9 @@
       <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="NewId" Version="4.0.1" />
+      <PackageReference Include="XC.RSAUtil" Version="1.3.6" />
+    </ItemGroup>
+
 </Project>

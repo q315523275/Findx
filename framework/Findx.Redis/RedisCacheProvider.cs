@@ -2,17 +2,18 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Caching;
+using Findx.DependencyInjection;
 
 namespace Findx.Redis
 {
-    public class RedisCacheProvider : ICache
+    public class RedisCacheProvider : ICache, IServiceNameAware
     {
         private readonly IRedisClient _redisClient;
 
         public RedisCacheProvider(IRedisClientProvider redisClientProvider)
         {
             _redisClient = redisClientProvider.CreateClient();
-            Name = $"Redis.{_redisClient.Name}";
+            Name = CacheType.DefaultRedis;
         }
 
         public string Name { get; }
@@ -24,7 +25,7 @@ namespace Findx.Redis
 
         public Task AddAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken token = default)
         {
-            return _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365));
+            return _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365), cancellationToken: token);
         }
 
         public void Clear()
@@ -65,17 +66,18 @@ namespace Findx.Redis
         public async Task<T> GetAsync<T>(string key, Func<Task<T>> func, TimeSpan? expiration = null,
             CancellationToken token = default)
         {
-            if (await _redisClient.ExistsAsync(key)) return await _redisClient.StringGetAsync<T>(key);
+            if (await _redisClient.ExistsAsync(key)) 
+                return await _redisClient.StringGetAsync<T>(key, token);
 
             var value = await func.Invoke();
-            await _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365));
+            await _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365), cancellationToken: token);
 
             return value;
         }
 
         public Task<T> GetAsync<T>(string key, CancellationToken token = default)
         {
-            return _redisClient.StringGetAsync<T>(key);
+            return _redisClient.StringGetAsync<T>(key, token);
         }
 
         public void Remove(string key)
@@ -102,19 +104,13 @@ namespace Findx.Redis
 
         public bool TryAdd<T>(string key, T value, TimeSpan? expiration = null)
         {
-            if (_redisClient.Exists(key))
-                return false;
-
-            return _redisClient.StringSet(key, value, expiration ?? TimeSpan.FromDays(365));
+            return _redisClient.StringSet(key, value, expiration ?? TimeSpan.FromDays(365), whenNotExists: true);
         }
 
         public async Task<bool> TryAddAsync<T>(string key, T value, TimeSpan? expiration = null,
             CancellationToken token = default)
         {
-            if (await _redisClient.ExistsAsync(key))
-                return false;
-
-            return await _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365));
+            return await _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365), true, token);
         }
     }
 }

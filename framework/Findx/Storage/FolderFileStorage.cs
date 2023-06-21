@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Serialization;
 using Findx.Utils;
@@ -9,7 +10,7 @@ namespace Findx.Storage;
 /// <summary>
 ///     本地文件存储器
 /// </summary>
-public class FolderFileStorage : IFileStorage
+public class FolderFileStorage : IFileStorage, IServiceNameAware
 {
     private readonly object _lockObject = new();
 
@@ -24,8 +25,7 @@ public class FolderFileStorage : IFileStorage
     /// <param name="app"></param>
     /// <param name="logger"></param>
     /// <param name="settingProvider"></param>
-    public FolderFileStorage(ISerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger,
-        IConfiguration settingProvider)
+    public FolderFileStorage(ISerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, IConfiguration settingProvider)
     {
         Serializer = serializer;
         _logger = logger;
@@ -44,13 +44,6 @@ public class FolderFileStorage : IFileStorage
     public string Name => FileStorageType.Folder.ToString();
 
     /// <summary>
-    ///     Dispose
-    /// </summary>
-    public void Dispose()
-    {
-    }
-
-    /// <summary>
     ///     文件拷贝
     /// </summary>
     /// <param name="path"></param>
@@ -58,8 +51,7 @@ public class FolderFileStorage : IFileStorage
     /// <param name="overwrite"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<bool> CopyFileAsync(string path, string targetPath, bool overwrite = false,
-        CancellationToken cancellationToken = default)
+    public Task<bool> CopyFileAsync(string path, string targetPath, bool overwrite = false, CancellationToken cancellationToken = default)
     {
         Check.NotNull(path, nameof(path));
         Check.NotNull(targetPath, nameof(targetPath));
@@ -172,8 +164,9 @@ public class FolderFileStorage : IFileStorage
     ///     文件是否存在
     /// </summary>
     /// <param name="path"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<bool> ExistsAsync(string path)
+    public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)
     {
         Check.NotNull(path, nameof(path));
 
@@ -185,8 +178,9 @@ public class FolderFileStorage : IFileStorage
     ///     获取文件信息
     /// </summary>
     /// <param name="path"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<FileSpec> GetFileInfoAsync(string path)
+    public Task<FileSpec> GetFileInfoAsync(string path, CancellationToken cancellationToken = default)
     {
         Check.NotNull(path, nameof(path));
 

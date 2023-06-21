@@ -95,7 +95,8 @@ public static class FileStorageExtensions
         var buffer = new byte[16 * 1024];
         using var ms = new MemoryStream();
         int read;
-        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0) await ms.WriteAsync(buffer, 0, read);
+        while ((read = await stream.ReadAsync(buffer, 0, buffer.Length)) > 0) 
+            await ms.WriteAsync(buffer, 0, read);
 
         return ms.ToArray();
     }

@@ -4,15 +4,15 @@ namespace Findx.Data;
 ///     提供特定类型的单例列表
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class SingletonList<T> : Singleton<IList<T>>
+public class SingletonList<T> : Singleton<ConcurrentBag<T>>
 {
     static SingletonList()
     {
-        Singleton<IList<T>>.Instance = new List<T>();
+        Singleton<ConcurrentBag<T>>.Instance = new ConcurrentBag<T>();
     }
 
     /// <summary>
     ///     获取指定类型的列表集合的单例实例
     /// </summary>
-    public new static IList<T> Instance => Singleton<IList<T>>.Instance;
+    public new static ConcurrentBag<T> Instance => Singleton<ConcurrentBag<T>>.Instance;
 }

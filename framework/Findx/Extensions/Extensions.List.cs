@@ -286,7 +286,7 @@ public static partial class Extensions
     /// <typeparam name="T">The type of the members of values.</typeparam>
     /// <param name="item">Item to resolve</param>
     /// <param name="getDependencies">Function to resolve the dependencies</param>
-    /// <param name="sorted">List with the sortet items</param>
+    /// <param name="sorted">List with the sorted items</param>
     /// <param name="visited">Dictionary with the visited items</param>
     private static void SortByDependenciesVisit<T>(T item, Func<T, IEnumerable<T>> getDependencies, List<T> sorted,
         Dictionary<T, bool> visited)

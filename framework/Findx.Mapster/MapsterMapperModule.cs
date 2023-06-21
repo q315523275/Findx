@@ -12,7 +12,7 @@ namespace Findx.Mapster
     ///     Findx-对象映射模块
     /// </summary>
     [Description("Findx-对象映射模块")]
-    public class MapsterMapperModule : FindxModule
+    public class MapsterMapperModule : StartupModule
     {
         /// <summary>
         ///     模块等级
@@ -22,7 +22,7 @@ namespace Findx.Mapster
         /// <summary>
         ///     模块排序
         /// </summary>
-        public override int Order => 50;
+        public override int Order => 80;
 
         /// <summary>
         ///     配置模块服务

@@ -388,8 +388,6 @@ public static class ProcessX
 
         process.Exited += async (_, _) =>
         {
-            Console.WriteLine("xxxxxxxxxxxxxx");
-
             await waitErrorDataCompleted.Task.ConfigureAwait(false);
 
             if (errorList.Count == 0 && !IsInvalidExitCode(process))

@@ -1,4 +1,5 @@
-﻿using Findx.DependencyInjection;
+﻿using Findx.Data;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Security;
 using Microsoft.AspNetCore.Mvc;

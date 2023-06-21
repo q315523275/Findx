@@ -37,7 +37,7 @@ public class ExceptionNotifier : IExceptionNotifier
     {
         Check.NotNull(context, nameof(context));
 
-        foreach (var exceptionSubscriber in _exceptionSubscribers)
+        foreach (var exceptionSubscriber in _exceptionSubscribers.OrderBy(x => x.Order))
             try
             {
                 await exceptionSubscriber.HandleAsync(context, token);

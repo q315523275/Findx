@@ -25,9 +25,11 @@ namespace Findx.Configuration
             if (timeout.HasValue)
                 request.Timeout = timeout.Value;
 
-            if (headers != null)
-                foreach (var kvp in headers)
-                    request.Headers.Add(kvp.Key, kvp.Value);
+            if (headers == null) 
+                return (HttpWebResponse)request.GetResponse();
+            
+            foreach (var kvp in headers)
+                request.Headers.Add(kvp.Key, kvp.Value);
 
             return (HttpWebResponse)request.GetResponse();
         }
@@ -62,7 +64,7 @@ namespace Findx.Configuration
         /// <returns></returns>
         public static async Task<string> ReadAsStringAsync(this HttpWebResponse response)
         {
-            using var responseStream = response.GetResponseStream();
+            await using var responseStream = response.GetResponseStream();
             using var reader = new StreamReader(responseStream, Encoding.UTF8);
             return await reader.ReadToEndAsync();
         }

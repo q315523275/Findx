@@ -25,13 +25,14 @@ builder.Services.AddControllers()
     });
 builder.Services.AddWebSockets(x => { x.KeepAliveInterval = TimeSpan.FromMinutes(2); });
 // builder.Services.AddCorsAccessor();
+builder.Services.AddCors(options => { options.AddDefaultPolicy(policyBuilder => policyBuilder.AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetIsOriginAllowed(_ => true)); });
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseJsonExceptionHandler();
 // app.UseCorsAccessor().UseRouting();
-app.UseRouting();
+app.UseCors().UseRouting();
 app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/storage",

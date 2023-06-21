@@ -9,9 +9,9 @@ namespace Findx.Domain;
 public class DomainEventsDispatcher : IDomainEventsDispatcher
 {
     /// <summary>
-    ///     应用事件推送者
+    /// 消息调度
     /// </summary>
-    private readonly IApplicationEventPublisher _applicationEventPublisher;
+    private readonly IMessageDispatcher _messageDispatcher;
 
     /// <summary>
     ///     领域事件访问者
@@ -22,12 +22,11 @@ public class DomainEventsDispatcher : IDomainEventsDispatcher
     ///     Ctor
     /// </summary>
     /// <param name="domainEventsProvider"></param>
-    /// <param name="applicationEventPublisher"></param>
-    public DomainEventsDispatcher(IDomainEventsAccessor domainEventsProvider,
-        IApplicationEventPublisher applicationEventPublisher)
+    /// <param name="messageDispatcher"></param>
+    public DomainEventsDispatcher(IDomainEventsAccessor domainEventsProvider, IMessageDispatcher messageDispatcher)
     {
         _domainEventsProvider = domainEventsProvider;
-        _applicationEventPublisher = applicationEventPublisher;
+        _messageDispatcher = messageDispatcher;
     }
 
 
@@ -41,6 +40,6 @@ public class DomainEventsDispatcher : IDomainEventsDispatcher
 
         _domainEventsProvider.ClearAllDomainEvents();
 
-        foreach (var domainEvent in domainEvents) await _applicationEventPublisher.PublishAsync(domainEvent);
+        foreach (var domainEvent in domainEvents) await _messageDispatcher.PublishAsync(domainEvent);
     }
 }

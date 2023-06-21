@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using JetBrains.Annotations;
 using RabbitMQ.Client;
 
 namespace Findx.RabbitMQ
@@ -12,8 +11,7 @@ namespace Findx.RabbitMQ
         {
             Default = new ConnectionFactory();
         }
-
-        [NotNull]
+        
         public ConnectionFactory Default
         {
             get => this[DefaultConnectionName];

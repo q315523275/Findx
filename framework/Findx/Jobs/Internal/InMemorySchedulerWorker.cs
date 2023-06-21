@@ -20,8 +20,7 @@ public class InMemorySchedulerWorker : BackgroundService, IJobSchedulerWorker
     /// <param name="storage"></param>
     /// <param name="trigger"></param>
     /// <param name="logger"></param>
-    public InMemorySchedulerWorker(IOptions<JobOptions> options, IJobStorage storage, ITriggerListener trigger,
-        ILogger<InMemorySchedulerWorker> logger)
+    public InMemorySchedulerWorker(IOptions<JobOptions> options, IJobStorage storage, ITriggerListener trigger, ILogger<InMemorySchedulerWorker> logger)
     {
         _options = options;
         _storage = storage;
@@ -45,7 +44,7 @@ public class InMemorySchedulerWorker : BackgroundService, IJobSchedulerWorker
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, ex.FormatMessage());
+                _logger.LogError(ex, "调度任务对应内存调度器执行失败");
             }
         }
     }
@@ -57,7 +56,7 @@ public class InMemorySchedulerWorker : BackgroundService, IJobSchedulerWorker
     /// <returns></returns>
     private async Task ExecuteOnceAsync(CancellationToken cancellationToken)
     {
-        var shouldRunJobs = await _storage.GetShouldRunJobsAsync(_options.Value.MaxFetchJobCount);
+        var shouldRunJobs = await _storage.GetShouldRunJobsAsync(_options.Value.MaxFetchJobCount, cancellationToken);
 
         foreach (var jobDetail in shouldRunJobs)
         {

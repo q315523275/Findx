@@ -20,13 +20,13 @@ public interface IFindxBuilder
     /// <summary>
     ///     获取 加载的模块集合
     /// </summary>
-    IEnumerable<FindxModule> Modules { get; }
+    IEnumerable<StartupModule> Modules { get; }
 
     /// <summary>
     ///     添加指定模块
     /// </summary>
     /// <typeparam name="TModuleModule">要添加的模块类型</typeparam>
-    IFindxBuilder AddModule<TModuleModule>() where TModuleModule : FindxModule;
+    IFindxBuilder AddModule<TModuleModule>() where TModuleModule : StartupModule;
 
     /// <summary>
     ///     添加加载的所有Module，并可排除指定的Module类型

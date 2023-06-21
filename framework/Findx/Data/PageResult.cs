@@ -1,4 +1,6 @@
-﻿namespace Findx.Data;
+﻿using System.Text.Json.Serialization;
+
+namespace Findx.Data;
 
 /// <summary>
 ///     分页结果
@@ -9,17 +11,11 @@ public class PageResult<TList>
     /// <summary>
     ///     Ctor
     /// </summary>
-    public PageResult()
-    {
-    }
-
-    /// <summary>
-    ///     Ctor
-    /// </summary>
     /// <param name="pageNo"></param>
     /// <param name="pageSize"></param>
     /// <param name="totalRows"></param>
     /// <param name="rows"></param>
+    [JsonConstructor]
     public PageResult(int pageNo, int pageSize, int totalRows, TList rows)
     {
         PageNo = pageNo;

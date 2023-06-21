@@ -1,45 +1,482 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Findx.Drawing;
+using System.Threading;
+using System.Threading.Tasks;
+using Findx.Exceptions;
 using Findx.Extensions;
+using Findx.Imaging;
+using Findx.Utils;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Webp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using FontStyle = SixLabors.Fonts.FontStyle;
 
 namespace Findx.ImageSharp;
 
-public class ImageProcessor : IImageProcessor
+/// <summary>
+/// 图片处理器
+/// </summary>
+public sealed class ImageProcessor : IImageProcessor
 {
-    /// <summary>
-    ///     字体缓存
-    /// </summary>
-    private static readonly IDictionary<string, FontFamily> FontFamilyDict = new Dictionary<string, FontFamily>();
+    #region 尺寸调整
 
     /// <summary>
-    ///     生成缩略图
+    /// 尺寸缩放
     /// </summary>
-    /// <param name="byteData">文件字节数组</param>
-    /// <param name="width">缩略图宽度</param>
-    /// <param name="height">缩略图高度</param>
-    /// <param name="mode">生成缩略图的方式(默认填充)</param>
+    /// <param name="imageByte"></param>
+    /// <param name="imageResizeDto"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public byte[] Scale(byte[] byteData, int width, int height, ImageResizeMode mode = ImageResizeMode.Pad)
+    public Task<byte[]> ResizeAsync(byte[] imageByte, ImageResizeDto imageResizeDto,  CancellationToken cancellationToken = default)
     {
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
+        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        
+        if (!CanResize(imageFormat.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持");
+        
+        if (ResizeModeMap.TryGetValue(imageResizeDto.Mode, out var resizeMode))
         {
-            var option = new ResizeOptions { Size = new Size(width, height), Mode = GetResizeMode(mode) };
+            originalImage.Mutate(x => x.Resize(new ResizeOptions { Size = GetSize(imageResizeDto), Mode = resizeMode }));
+        }
+        else
+        {
+            throw new FindxException("Unsupported", $"图片缩放模式{imageResizeDto.Mode}不支持");
+        }
 
-            originalImage.Mutate(m => { m.Resize(option); });
+        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+    }
 
-            // 返回字节数组
-            using (var ms = new MemoryStream())
+    /// <summary>
+    /// 尺寸调整
+    /// </summary>
+    /// <param name="imageStream"></param>
+    /// <param name="imageResizeDto"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Stream> ResizeAsync(Stream imageStream, ImageResizeDto imageResizeDto, CancellationToken cancellationToken = default)
+    {
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using (originalImage)
+        {
+            if (!CanResize(imageFormat.DefaultMimeType))
+                throw new FindxException("Unsupported", "图片格式不支持");
+
+            if (ResizeModeMap.TryGetValue(imageResizeDto.Mode, out var resizeMode))
             {
-                originalImage.SaveImage(ms, imageFormat);
-                return ms.ToArray();
+                originalImage.Mutate(x => x.Resize(new ResizeOptions
+                    { Size = GetSize(imageResizeDto), Mode = resizeMode }));
+            }
+            else
+            {
+                throw new FindxException("Unsupported", $"图片缩放模式{imageResizeDto.Mode}不支持");
+            }
+
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+        }
+    }
+
+    private static bool CanResize(string mimeType)
+    {
+        return mimeType switch {
+            MimeTypes.Image.Jpeg => true,
+            MimeTypes.Image.Png => true,
+            MimeTypes.Image.Gif => true,
+            MimeTypes.Image.Bmp => true,
+            MimeTypes.Image.Tiff => true,
+            MimeTypes.Image.Webp => true,
+            _ => false
+        };
+    }
+
+    private static readonly Dictionary<ImageResizeMode, ResizeMode> ResizeModeMap = new() {
+        { ImageResizeMode.None, default },
+        { ImageResizeMode.Stretch, ResizeMode.Stretch },
+        { ImageResizeMode.BoxPad, ResizeMode.BoxPad },
+        { ImageResizeMode.Min, ResizeMode.Min },
+        { ImageResizeMode.Max, ResizeMode.Max },
+        { ImageResizeMode.Crop, ResizeMode.Crop },
+        { ImageResizeMode.Pad, ResizeMode.Pad }
+    };
+    
+    private static Size GetSize(ImageResizeDto imageResizeDto)
+    {
+        var size = new Size();
+        
+        if (imageResizeDto.Width > 0)
+        {
+            size.Width = imageResizeDto.Width;
+        }
+
+        if (imageResizeDto.Height > 0)
+        {
+            size.Height = imageResizeDto.Height;
+        }
+
+        return size;
+    }
+    #endregion
+
+    #region 指定区域裁剪
+    
+    /// <summary>
+    /// 指定区域裁剪
+    /// </summary>
+    /// <param name="imageByte"></param>
+    /// <param name="imageCropDto"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<byte[]> CropAsync(byte[] imageByte, ImageCropDto imageCropDto, CancellationToken cancellationToken = default)
+    {
+        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        
+        if (!CanResize(imageFormat.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持裁剪");
+        
+        originalImage.Mutate(m => { m.Crop(new Rectangle(imageCropDto.X, imageCropDto.Y, imageCropDto.Width, imageCropDto.Height)); });
+        
+        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+    }
+
+    /// <summary>
+    /// 指定区域裁剪
+    /// </summary>
+    /// <param name="imageStream"></param>
+    /// <param name="imageCropDto"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Stream> CropAsync(Stream imageStream, ImageCropDto imageCropDto, CancellationToken cancellationToken = default)
+    {
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using (originalImage)
+        {
+            if (!CanResize(imageFormat.DefaultMimeType))
+                throw new FindxException("Unsupported", "图片格式不支持裁剪");
+
+            originalImage.Mutate(m =>
+            {
+                m.Crop(new Rectangle(imageCropDto.X, imageCropDto.Y, imageCropDto.Width, imageCropDto.Height));
+            });
+
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+        }
+    }
+    #endregion
+
+    #region 图片压缩
+
+    /// <summary>
+    ///     图片压缩
+    /// </summary>
+    /// <param name="imageByte"></param>
+    /// <param name="quality">压缩比率：alpha 必须是范围 (0~100] 的数字</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<byte[]> CompressAsync(byte[] imageByte, int quality = 75, CancellationToken cancellationToken = default)
+    {
+        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        
+        if (!CanCompress(imageFormat.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持压缩");
+
+        var encoder = GetCompressEncoder(imageFormat, quality);
+        
+        using var memoryStream = Pool.MemoryStream.Rent();
+        await originalImage.SaveAsync(memoryStream, encoder, cancellationToken: cancellationToken);
+        return memoryStream.ToArray();
+    }
+    
+    /// <summary>
+    ///     图片压缩
+    /// </summary>
+    /// <param name="imageStream"></param>
+    /// <param name="quality">压缩比率：alpha 必须是范围 (0~100] 的数字</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Stream> CompressAsync(Stream imageStream, int quality = 75, CancellationToken cancellationToken = default)
+    {
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using (originalImage)
+        {
+            if (!CanCompress(imageFormat.DefaultMimeType))
+                throw new FindxException("Unsupported", "图片格式不支持压缩");
+
+            var encoder = GetCompressEncoder(imageFormat, quality);
+
+            using var memoryStream = Pool.MemoryStream.Rent();
+            await originalImage.SaveAsync(memoryStream, encoder, cancellationToken: cancellationToken);
+            memoryStream.Position = 0;
+            return memoryStream;
+        }
+    }
+
+    private static bool CanCompress(string mimeType)
+    {
+        return mimeType switch {
+            MimeTypes.Image.Jpeg => true,
+            MimeTypes.Image.Png => true,
+            MimeTypes.Image.Webp => true,
+            _ => false
+        };
+    }
+
+    private static IImageEncoder GetCompressEncoder(IImageFormat format, int quality)
+    {
+        return format.DefaultMimeType switch
+        {
+            MimeTypes.Image.Jpeg => new JpegEncoder { Quality = quality },
+            MimeTypes.Image.Png => new PngEncoder
+            {
+                CompressionLevel = PngCompressionLevel.BestCompression, IgnoreMetadata = true
+            },
+            MimeTypes.Image.Webp => new WebpEncoder { Quality = quality },
+            _ => throw new FindxException($"图片格式{format.Name}不支持压缩")
+        };
+    }
+    #endregion
+
+    #region 图片灰化
+    
+    /// <summary>
+    ///     图片灰色化
+    /// </summary>
+    /// <param name="imageByte">图片字节数组</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<byte[]> GrayAsync(byte[] imageByte, CancellationToken cancellationToken = default)
+    {
+        using var originalImage = Image.Load<Rgba32>(imageByte, out var imageFormat);
+        
+        if (!CanResize(imageFormat.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持灰色化");
+        
+        // 像素点逐个替换
+        originalImage.ToGray();
+
+        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+    }
+
+    /// <summary>
+    ///     图片灰色化
+    /// </summary>
+    /// <param name="imageStream"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Stream> GrayAsync(Stream imageStream, CancellationToken cancellationToken = default)
+    {
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync<Rgba32>(imageStream, cancellationToken);
+        using (originalImage)
+        {
+            if (!CanResize(imageFormat.DefaultMimeType))
+                throw new FindxException("Unsupported", "图片格式不支持灰色化");
+
+            // 像素点逐个替换
+            originalImage.ToGray();
+
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+        }
+    }
+    #endregion
+
+    #region 黑白二值化处理
+
+    /// <summary>
+    ///     图片二值化
+    /// </summary>
+    /// <param name="imageByte">图片字节数组</param>
+    /// <param name="threshold">阀值</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<byte[]> BinaryAsync(byte[] imageByte, int threshold = 180, CancellationToken cancellationToken = default)
+    {
+        using var originalImage = Image.Load<Rgba32>(imageByte, out var imageFormat);
+        
+        if (!CanResize(imageFormat.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持二值化");
+        
+        // 像素点逐个替换
+        originalImage.ToBinary(threshold);
+
+        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+    }
+    
+    /// <summary>
+    ///     图片二值化
+    /// </summary>
+    /// <param name="imageStream">图片字节数组</param>
+    /// <param name="threshold">阀值</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Stream> BinaryAsync(Stream imageStream, int threshold = 180, CancellationToken cancellationToken = default)
+    {
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync<Rgba32>(imageStream, cancellationToken);
+        using (originalImage)
+        {
+            if (!CanResize(imageFormat.DefaultMimeType))
+                throw new FindxException("Unsupported", "图片格式不支持二值化");
+
+            // 像素点逐个替换
+            originalImage.ToBinary(threshold);
+
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+        }
+    }
+
+    #endregion
+
+    #region 旋转
+
+    /// <summary>
+    ///     图片旋转
+    /// </summary>
+    /// <param name="byteData"></param>
+    /// <param name="degrees"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<byte[]> RotateAsync(byte[] byteData, float degrees, CancellationToken cancellationToken = default)
+    {
+        using var originalImage = Image.Load(byteData, out var imageFormat);
+        
+        if (!CanResize(imageFormat.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持旋转");
+        
+        originalImage.Mutate(m => { m.Rotate(degrees); });
+
+        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+    }
+
+    /// <summary>
+    /// 图片旋转
+    /// </summary>
+    /// <param name="imageStream"></param>
+    /// <param name="degrees"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="FindxException"></exception>
+    public async Task<Stream> RotateAsync(Stream imageStream, float degrees, CancellationToken cancellationToken = default)
+    {
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using (originalImage)
+        {
+            if (!CanResize(imageFormat.DefaultMimeType))
+                throw new FindxException("Unsupported", "图片格式不支持旋转");
+
+            originalImage.Mutate(m => { m.Rotate(degrees); });
+
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+        }
+    }
+    
+    #endregion
+
+    #region 翻转
+    
+    /// <summary>
+    /// 图片翻转
+    /// </summary>
+    /// <param name="imageByte"></param>
+    /// <param name="imageFlipMode"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<byte[]> FlipAsync(byte[] imageByte, ImageFlipMode imageFlipMode, CancellationToken cancellationToken = default)
+    {
+        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        
+        if (!CanResize(imageFormat.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持翻转");
+        
+        if (FlipModeMap.TryGetValue(imageFlipMode, out var flipMode))
+        {
+            originalImage.Mutate(m => { m.Flip(flipMode); });
+        }
+        else
+        {
+            throw new FindxException("Unsupported", $"图片翻转模式{imageFlipMode}不支持");
+        }
+
+        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+    }
+
+    /// <summary>
+    /// 图片翻转
+    /// </summary>
+    /// <param name="imageStream"></param>
+    /// <param name="imageFlipMode"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Stream> FlipAsync(Stream imageStream, ImageFlipMode imageFlipMode, CancellationToken cancellationToken = default)
+    {
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using (originalImage)
+        {
+            if (!CanResize(imageFormat.DefaultMimeType))
+                throw new FindxException("Unsupported", "图片格式不支持翻转");
+        
+            if (FlipModeMap.TryGetValue(imageFlipMode, out var flipMode))
+            {
+                originalImage.Mutate(m => { m.Flip(flipMode); });
+            }
+            else
+            {
+                throw new FindxException("Unsupported", $"图片翻转模式{imageFlipMode}不支持");
+            }
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+        }
+    }
+
+    private static readonly Dictionary<ImageFlipMode, FlipMode> FlipModeMap = new() {
+        { ImageFlipMode.Horizontal, FlipMode.Horizontal },
+        { ImageFlipMode.Vertical, FlipMode.Vertical }
+    };
+    
+    #endregion
+
+    #region 合并图片
+    
+    /// <summary>
+    ///     合并图片
+    /// </summary>
+    /// <param name="imageByte">图片字节数组</param>
+    /// <param name="mergeImageByte">合并图片字节数组</param>
+    /// <param name="mergeImageDto">合并图片参数</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<byte[]> MergeImageAsync(byte[] imageByte, byte[] mergeImageByte, MergeImageDto mergeImageDto, CancellationToken cancellationToken = default)
+    {
+        var mergeImage = Image.Load(mergeImageByte, out var mergeImageFormat);
+        using (mergeImage)
+        {
+            // 合并图片需要缩放
+            if (mergeImageDto.Width > 0 || mergeImageDto.Height > 0)
+            {
+                if (!CanResize(mergeImageFormat.DefaultMimeType))
+                    throw new FindxException("Unsupported", "图片格式不支持缩放");
+
+                if (ResizeModeMap.TryGetValue(mergeImageDto.ResizeMode, out var resizeMode))
+                {
+                    mergeImage.Mutate(x => x.Resize(new ResizeOptions
+                        { Size = GetSize(mergeImageDto), Mode = resizeMode }));
+                }
+                else
+                {
+                    throw new FindxException("Unsupported", $"图片缩放模式{mergeImageDto.ResizeMode}不支持");
+                }
+            }
+
+            var originalImage = Image.Load(imageByte, out var imageFormat);
+            using (originalImage)
+            {
+                originalImage.Mutate(o =>
+                {
+                    o.DrawImage(mergeImage, new Point(mergeImageDto.X, mergeImageDto.Y), mergeImageDto.Opacity);
+                });
+
+                return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
             }
         }
     }
@@ -47,78 +484,222 @@ public class ImageProcessor : IImageProcessor
     /// <summary>
     ///     合并图片
     /// </summary>
-    /// <param name="byteData">图片字节数组</param>
-    /// <param name="mergeImagePath">合并图片物理路径</param>
-    /// <param name="x">X轴</param>
-    /// <param name="y">Y轴</param>
-    /// <param name="width">合并图片宽度,0不处理</param>
-    /// <param name="height">合并图片高度,0不处理</param>
-    /// <param name="opacity">图片质量值</param>
+    /// <param name="imageStream">图片数据流</param>
+    /// <param name="mergeImageStream">合并图片数据流</param>
+    /// <param name="mergeImageDto">合并图片参数</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public byte[] PressImage(byte[] byteData, string mergeImagePath, int x, int y, int width = 0, int height = 0,
-        float opacity = 1.0f)
+    public async Task<Stream> MergeImageAsync(Stream imageStream, Stream mergeImageStream, MergeImageDto mergeImageDto, CancellationToken cancellationToken = default)
     {
-        using (var mergeImage = Image.Load(mergeImagePath))
+        var (mergeImage, mergeImageFormat) = await Image.LoadWithFormatAsync(mergeImageStream, cancellationToken);
+        using (mergeImage)
         {
-            if (width > 0 && height > 0) mergeImage.Mutate(m => { m.Resize(new Size(width, height)); });
-
-            using (var originalImage = Image.Load(byteData, out var imageFormat))
+            // 合并图片需要缩放
+            if (mergeImageDto.Width > 0 || mergeImageDto.Height > 0)
             {
-                originalImage.Mutate(o => { o.DrawImage(mergeImage, new Point(x, y), opacity); });
+                if (!CanResize(mergeImageFormat.DefaultMimeType))
+                    throw new FindxException("Unsupported", "图片格式不支持缩放");
 
-                using (var ms = new MemoryStream())
+                if (ResizeModeMap.TryGetValue(mergeImageDto.ResizeMode, out var resizeMode))
                 {
-                    originalImage.SaveImage(ms, imageFormat);
-                    return ms.ToArray();
+                    mergeImage.Mutate(x => x.Resize(new ResizeOptions
+                        { Size = GetSize(mergeImageDto), Mode = resizeMode }));
                 }
+                else
+                {
+                    throw new FindxException("Unsupported", $"图片缩放模式{mergeImageDto.ResizeMode}不支持");
+                }
+            }
+
+            var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+            using (originalImage)
+            {
+                originalImage.Mutate(o =>
+                {
+                    o.DrawImage(mergeImage, new Point(mergeImageDto.X, mergeImageDto.Y), mergeImageDto.Opacity);
+                });
+                
+                return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
             }
         }
     }
 
+    private static Size GetSize(MergeImageDto imageResizeDto)
+    {
+        var size = new Size();
+        
+        if (imageResizeDto.Width > 0)
+        {
+            size.Width = imageResizeDto.Width;
+        }
+
+        if (imageResizeDto.Height > 0)
+        {
+            size.Height = imageResizeDto.Height;
+        }
+
+        return size;
+    }
+    #endregion
+
+    #region 绘制多行文本
+    
     /// <summary>
     ///     绘制多行文本
     /// </summary>
-    /// <param name="byteData"></param>
+    /// <param name="imageByte"></param>
     /// <param name="text"></param>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
+    /// <param name="drawTextDto"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public byte[] PressText(byte[] byteData, int x, int y, string text, FontOptions fontOptions)
+    public Task<byte[]> DrawTextAsync(byte[] imageByte, string text, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
     {
-        Check.NotNull(fontOptions, nameof(fontOptions));
-        Check.NotNullOrWhiteSpace(text, nameof(text));
-        // 设置字体大小与样式
-        Font font;
-        if (text.IsEnglish() || fontOptions.FontFamilyFilePath.IsNullOrWhiteSpace())
+        var font = CreateFont(drawTextDto);
+        var textOptions = new TextOptions(font)
         {
-            font = SystemFonts.CreateFont("Arial", fontOptions.FontSize, ConvertToFontStyle(fontOptions.FontStyle));
+            Origin = new PointF(drawTextDto.X, drawTextDto.Y),
+            WrappingLength = drawTextDto.WrappingLength,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            LineSpacing = drawTextDto.LineSpacing,
+        };
+        var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
+        
+        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        if (drawTextDto.UseOverlay)
+        {
+            var textSize = TextMeasurer.Measure(text, textOptions);
+            var overlay = new Image<Rgba32>((int)textSize.Width + drawTextDto.X * 2, (int)textSize.Height + drawTextDto.Y * 2);
+            using (overlay)
+            {
+                overlay.Mutate(ctx =>
+                {
+                    ctx.Fill(Color.ParseHex(drawTextDto.OverlayColor).WithAlpha(drawTextDto.OverlayOpacity));
+                    ctx.DrawText(textOptions, text, textBrush);
+                });
+                originalImage.Mutate(o => { o.DrawImage(overlay, location: new Point(drawTextDto.OverlayX, drawTextDto.OverlayY), opacity: 1); });
+            }
         }
         else
         {
-            Check.NotNullOrWhiteSpace(fontOptions.FontFamilyFilePath, nameof(fontOptions.FontFamilyFilePath));
-            // 装载字体文件
-            var fontFamily = FontFamilyDict.GetOrAdd(fontOptions.FontFamilyFilePath, () =>
+            originalImage.Mutate(o => { o.DrawText(textOptions, text, textBrush); });
+        }
+        
+
+        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+    }
+
+    /// <summary>
+    /// 绘制多行文本
+    /// </summary>
+    /// <param name="imageStream"></param>
+    /// <param name="text"></param>
+    /// <param name="drawTextDto"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Stream> DrawTextAsync(Stream imageStream, string text, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
+    {
+        var font = CreateFont(drawTextDto);
+        var textOptions = new TextOptions(font)
+        {
+            Origin = new PointF(drawTextDto.X, drawTextDto.Y),
+            WrappingLength = drawTextDto.WrappingLength,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            LineSpacing = drawTextDto.LineSpacing,
+        };
+        var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using (originalImage)
+        {
+            if (drawTextDto.UseOverlay)
             {
-                var fonts = new FontCollection();
-                return fonts.Add(fontOptions.FontFamilyFilePath);
-            });
-            font = new Font(fontFamily, fontOptions.FontSize, ConvertToFontStyle(fontOptions.FontStyle));
+                var textSize = TextMeasurer.Measure(text, textOptions);
+                var overlay = new Image<Rgba32>((int)textSize.Width + drawTextDto.X * 2, (int)textSize.Height + drawTextDto.Y * 2);
+                using (overlay)
+                {
+                    overlay.Mutate(ctx =>
+                    {
+                        ctx.Fill(Color.ParseHex(drawTextDto.OverlayColor).WithAlpha(drawTextDto.OverlayOpacity));
+                        ctx.DrawText(textOptions, text, textBrush);
+                    });
+                    originalImage.Mutate(o => { o.DrawImage(overlay, location: new Point(drawTextDto.OverlayX, drawTextDto.OverlayY), opacity: 1); });
+                }
+            }
+            else
+            {
+                originalImage.Mutate(o => { o.DrawText(textOptions, text, textBrush); });
+            }
+            
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+        }
+    }
+    
+    private static readonly FontCollection Collection = new();
+    
+    private static Font CreateFont(DrawTextDto drawTextDto)
+    {
+        if (Collection.TryGet(drawTextDto.FontFamily.SafeString(), out var family))
+        {
+            return family.CreateFont(drawTextDto.FontSize, ConvertToFontStyle(drawTextDto.FontStyle));
+        }
+        
+        // 字体不存在且没有字体文件
+        if (!Collection.TryGet(drawTextDto.FontFamily.SafeString(), out _) && drawTextDto.FontFamilyPath.IsNullOrWhiteSpace())
+        {
+            return SystemFonts.CreateFont(drawTextDto.FontFamily ?? "Arial", drawTextDto.FontSize, ConvertToFontStyle(drawTextDto.FontStyle));
+        }
+        
+        // 字体不存在但有字体文件
+        if (!Collection.TryGet(drawTextDto.FontFamily.SafeString(), out _) && !drawTextDto.FontFamilyPath.IsNullOrWhiteSpace())
+        {
+            var fontFamily = Collection.Add(drawTextDto.FontFamilyPath);
+            return fontFamily.CreateFont(drawTextDto.FontSize, ConvertToFontStyle(drawTextDto.FontStyle));
         }
 
-        // 获取文本绘制所需大小
-        // var size = TextMeasurer.Measure(text, new TextOptions(font));
-        // 装载图片
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
+        return SystemFonts.CreateFont("Arial", drawTextDto.FontSize, ConvertToFontStyle(drawTextDto.FontStyle));
+    }
+    
+    private static FontStyle ConvertToFontStyle(Imaging.FontStyle fontStyle)
+    {
+        switch (fontStyle)
         {
-            // 绘制文字
-            originalImage.Mutate(o =>
+            case Imaging.FontStyle.Bold:
+                return FontStyle.Bold;
+            case Imaging.FontStyle.Italic:
+                return FontStyle.Italic;
+            case Imaging.FontStyle.BoldItalic:
+                return FontStyle.BoldItalic;
+            default:
+            case Imaging.FontStyle.Regular:
+                return FontStyle.Regular;
+        }
+    }
+    
+    #endregion
+
+    #region 图片水印
+
+    /// <summary>
+    ///     图片水印
+    /// </summary>
+    /// <param name="imageByte">图片字节数组</param>
+    /// <param name="watermarkImageByte">水印文件物理路径</param>
+    /// <param name="location">图片水印位置：0=不使用 1=左上 2=中上 3=右上 4=中左 5=中中 6=中右 7=下左 8=下中 9=下右</param>
+    /// <param name="opacity">图片水印透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字</param>
+    /// <param name="cancellationToken"></param>
+    public Task<byte[]> ImageWatermarkAsync(byte[] imageByte, byte[] watermarkImageByte, int location, float opacity, CancellationToken cancellationToken = default)
+    {
+        // 装载原图
+        var originalImage = Image.Load(imageByte, out var imageFormat);
+        using (originalImage)
+        {
+            // 装载水印图片
+            var watermarkImage = Image.Load(watermarkImageByte);
+            using (watermarkImage)
             {
-                o.DrawText(text, font, Rgba32.ParseHex(fontOptions.FontColor ?? "#000000"), new PointF(x, y));
-            });
-            using (var ms = new MemoryStream())
-            {
-                originalImage.SaveImage(ms, imageFormat);
-                return ms.ToArray();
+                var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, watermarkImage.Width, watermarkImage.Height);
+                // 绘制水印
+                originalImage.Mutate(o => { o.DrawImage(watermarkImage, point, opacity); });
+                return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
             }
         }
     }
@@ -126,318 +707,191 @@ public class ImageProcessor : IImageProcessor
     /// <summary>
     ///     图片水印
     /// </summary>
-    /// <param name="byteData">图片字节数组</param>
-    /// <param name="imageWatermarkPath">水印文件物理路径</param>
-    /// <param name="location">图片水印位置 0=不使用 1=左上 2=中上 3=右上 4=左中  9=右下</param>
-    /// <param name="opacity">水印的透明度</param>
+    /// <param name="imageStream">图片字节数组</param>
+    /// <param name="watermarkImageStream">水印文件物理路径</param>
+    /// <param name="location">图片水印位置：0=不使用 1=左上 2=中上 3=右上 4=中左 5=中中 6=中右 7=下左 8=下中 9=下右</param>
+    /// <param name="opacity">图片水印透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public byte[] ImageWatermark(byte[] byteData, string imageWatermarkPath, int location, float opacity)
+    public async Task<Stream> ImageWatermarkAsync(Stream imageStream, Stream watermarkImageStream, int location, float opacity, CancellationToken cancellationToken = default)
     {
         // 装载原图
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using (originalImage)
         {
             // 装载水印图片
-            using (var watermarkImage = Image.Load(imageWatermarkPath))
+            var watermarkImage = await Image.LoadAsync(watermarkImageStream, cancellationToken);
+            using (watermarkImage)
             {
-                // 计算位置
-                var xpos = 0;
-                var ypos = 0;
-                switch (location)
-                {
-                    case 1:
-                        xpos = (int)(originalImage.Width * (float).01);
-                        ypos = (int)(originalImage.Height * (float).01);
-                        break;
-                    case 2:
-                        xpos = (int)(originalImage.Width * (float).50 - watermarkImage.Width / 2);
-                        ypos = (int)(originalImage.Height * (float).01);
-                        break;
-                    case 3:
-                        xpos = (int)(originalImage.Width * (float).99 - watermarkImage.Width);
-                        ypos = (int)(originalImage.Height * (float).01);
-                        break;
-                    case 4:
-                        xpos = (int)(originalImage.Width * (float).01);
-                        ypos = (int)(originalImage.Height * (float).50 - watermarkImage.Height / 2);
-                        break;
-                    case 5:
-                        xpos = (int)(originalImage.Width * (float).50 - watermarkImage.Width / 2);
-                        ypos = (int)(originalImage.Height * (float).50 - watermarkImage.Height / 2);
-                        break;
-                    case 6:
-                        xpos = (int)(originalImage.Width * (float).99 - watermarkImage.Width);
-                        ypos = (int)(originalImage.Height * (float).50 - watermarkImage.Height / 2);
-                        break;
-                    case 7:
-                        xpos = (int)(originalImage.Width * (float).01);
-                        ypos = (int)(originalImage.Height * (float).99 - watermarkImage.Height);
-                        break;
-                    case 8:
-                        xpos = (int)(originalImage.Width * (float).50 - watermarkImage.Width / 2);
-                        ypos = (int)(originalImage.Height * (float).99 - watermarkImage.Height);
-                        break;
-                    case 9:
-                        xpos = (int)(originalImage.Width * (float).99 - watermarkImage.Width);
-                        ypos = (int)(originalImage.Height * (float).99 - watermarkImage.Height);
-                        break;
-                }
-
+                var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, watermarkImage.Width, watermarkImage.Height);
                 // 绘制水印
-                originalImage.Mutate(o => { o.DrawImage(watermarkImage, new Point(xpos, ypos), opacity); });
-
-                // 返回字节数组
-                using (var ms = new MemoryStream())
-                {
-                    originalImage.SaveImage(ms, imageFormat);
-                    return ms.ToArray();
-                }
+                originalImage.Mutate(o => { o.DrawImage(watermarkImage, point, opacity); });
+                return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
             }
         }
+    }
+
+    /// <summary>
+    /// 获取水印Size位置
+    /// </summary>
+    /// <param name="location">0=不使用 1=左上 2=中上 3=右上 4=中左 5=中中 6=中右 7=下左 8=下中 9=下右</param>
+    /// <param name="originWidth"></param>
+    /// <param name="originHeight"></param>
+    /// <param name="watermarkWidth"></param>
+    /// <param name="watermarkHeight"></param>
+    /// <returns></returns>
+    private static Point GetWatermarkPoint(int location, int originWidth, int originHeight, int watermarkWidth, int watermarkHeight)
+    {
+        var point = new Point();
+        switch (location)
+        {
+            case 1:
+                point.X = (int)(originWidth * (float).01);
+                point.Y = (int)(originHeight * (float).01);
+                break;
+            case 2:
+                point.X = (originWidth - watermarkWidth) / 2;
+                point.Y = (int)(originHeight * (float).01);
+                break;
+            case 3:
+                point.X = (int)(originWidth * (float).99 - watermarkWidth);
+                point.Y = (int)(originHeight * (float).01);
+                break;
+            case 4:
+                point.X = (int)(originWidth * (float).01);
+                point.Y = (originHeight- watermarkHeight) / 2;
+                break;
+            case 5:
+                point.X = (originWidth - watermarkWidth) / 2;
+                point.Y = (originHeight- watermarkHeight) / 2;
+                break;
+            case 6:
+                point.X = (int)(originWidth * (float).99 - watermarkWidth);
+                point.Y = (originHeight- watermarkHeight) / 2;
+                break;
+            case 7:
+                point.X = (int)(originWidth * (float).01);
+                point.Y = (int)(originHeight * (float).99 - watermarkHeight);
+                break;
+            case 8:
+                point.X = (originWidth - watermarkWidth) / 2;
+                point.Y = (int)(originHeight * (float).99 - watermarkHeight);
+                break;
+            case 9:
+                point.X = (int)(originWidth * (float).99 - watermarkWidth);
+                point.Y = (int)(originHeight * (float).99 - watermarkHeight);
+                break;
+            default:
+                point.X = 0;
+                point.Y = 0;
+                break;
+        }
+
+        return point;
+    }
+
+    #endregion
+
+    #region 文字水印
+
+    /// <summary>
+    ///     文字水印
+    /// </summary>
+    /// <param name="imageByte">图片字节数组</param>
+    /// <param name="text">水印文字</param>
+    /// <param name="location">图片水印位置：0=不使用 1=左上 2=中上 3=右上 4=中左 5=中中 6=中右 7=下左 8=下中 9=下右</param>
+    /// <param name="drawTextDto"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<byte[]> LetterWatermarkAsync(byte[] imageByte, string text, int location, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
+    {
+        var font = CreateFont(drawTextDto);
+        var textOptions = new TextOptions(font)
+        {
+            Origin = new PointF(drawTextDto.X, drawTextDto.Y),
+            WrappingLength = drawTextDto.WrappingLength,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            LineSpacing = drawTextDto.LineSpacing,
+        };
+        var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
+        var textSize = TextMeasurer.Measure(text, textOptions);
+        
+        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        if (drawTextDto.UseOverlay)
+        {
+            
+            var overlay = new Image<Rgba32>((int)textSize.Width + drawTextDto.X * 2, (int)textSize.Height + drawTextDto.Y * 2);
+            using (overlay)
+            {
+                overlay.Mutate(ctx =>
+                {
+                    ctx.Fill(Color.ParseHex(drawTextDto.OverlayColor).WithAlpha(drawTextDto.OverlayOpacity));
+                    ctx.DrawText(textOptions, text, textBrush);
+                });
+                var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, overlay.Width, overlay.Height);
+                originalImage.Mutate(o => { o.DrawImage(overlay, location: point, opacity: 1); });
+            }
+        }
+        else
+        {
+            var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, (int)textSize.Width, (int)textSize.Height);
+            textOptions.Origin = point;
+            originalImage.Mutate(o => { o.DrawText(textOptions, text, textBrush); });
+        }
+
+        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
 
     /// <summary>
     ///     文字水印
     /// </summary>
-    /// <param name="byteData">图片字节数组</param>
+    /// <param name="imageStream">图片字节数组</param>
     /// <param name="text">水印文字</param>
-    /// <param name="location">图片水印位置 0=不使用 1=左上 2=中上 3=右上 4=左中  9=右下</param>
+    /// <param name="location">图片水印位置：0=不使用 1=左上 2=中上 3=右上 4=中左 5=中中 6=中右 7=下左 8=下中 9=下右</param>
+    /// <param name="drawTextDto"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public byte[] LetterWatermark(byte[] byteData, string text, int location, FontOptions fontOptions)
+    public async Task<Stream> LetterWatermarkAsync(Stream imageStream, string text, int location, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
     {
-        Check.NotNull(fontOptions, nameof(fontOptions));
-        // 设置字体大小与样式
-        Font font;
-        if (text.IsEnglish() || fontOptions.FontFamilyFilePath.IsNullOrWhiteSpace())
+        var font = CreateFont(drawTextDto);
+        var textOptions = new TextOptions(font)
         {
-            font = SystemFonts.CreateFont("Arial", fontOptions.FontSize, ConvertToFontStyle(fontOptions.FontStyle));
-        }
-        else
+            Origin = new PointF(drawTextDto.X, drawTextDto.Y),
+            WrappingLength = drawTextDto.WrappingLength,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            LineSpacing = drawTextDto.LineSpacing,
+        };
+        var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
+        var textSize = TextMeasurer.Measure(text, textOptions);
+        
+        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using (originalImage)
         {
-            Check.NotNullOrWhiteSpace(fontOptions.FontFamilyFilePath, nameof(fontOptions.FontFamilyFilePath));
-            // 装载字体文件
-            var fontFamily = FontFamilyDict.GetOrAdd(fontOptions.FontFamilyFilePath, () =>
+            if (drawTextDto.UseOverlay)
             {
-                var fonts = new FontCollection();
-                return fonts.Add(fontOptions.FontFamilyFilePath);
-            });
-            font = new Font(fontFamily, fontOptions.FontSize, ConvertToFontStyle(fontOptions.FontStyle));
-        }
-
-        // 获取文本绘制所需大小
-        var size = TextMeasurer.Measure(text, new TextOptions(font));
-        // 装载图片
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
-        {
-            // 计算位置
-            float xpos = 0;
-            float ypos = 0;
-            switch (location)
-            {
-                case 1:
-                    xpos = originalImage.Width * (float).01;
-                    ypos = originalImage.Height * (float).01;
-                    break;
-                case 2:
-                    xpos = originalImage.Width * (float).50 - size.Width / 2;
-                    ypos = originalImage.Height * (float).01;
-                    break;
-                case 3:
-                    xpos = originalImage.Width * (float).99 - size.Width;
-                    ypos = originalImage.Height * (float).01;
-                    break;
-                case 4:
-                    xpos = originalImage.Width * (float).01;
-                    ypos = originalImage.Height * (float).50 - size.Height / 2;
-                    break;
-                case 5:
-                    xpos = originalImage.Width * (float).50 - size.Width / 2;
-                    ypos = originalImage.Height * (float).50 - size.Height / 2;
-                    break;
-                case 6:
-                    xpos = originalImage.Width * (float).99 - size.Width;
-                    ypos = originalImage.Height * (float).50 - size.Height / 2;
-                    break;
-                case 7:
-                    xpos = originalImage.Width * (float).01;
-                    ypos = originalImage.Height * (float).99 - size.Height;
-                    break;
-                case 8:
-                    xpos = originalImage.Width * (float).50 - size.Width / 2;
-                    ypos = originalImage.Height * (float).99 - size.Height;
-                    break;
-                case 9:
-                    xpos = originalImage.Width * (float).99 - size.Width;
-                    ypos = originalImage.Height * (float).99 - size.Height;
-                    break;
-            }
-
-            // 绘制文字水印
-            originalImage.Mutate(o =>
-            {
-                o.DrawText(text, font, Rgba32.ParseHex(fontOptions.FontColor ?? "#000000"), new PointF(xpos, ypos));
-            });
-
-            // 返回字节数组
-            using (var ms = new MemoryStream())
-            {
-                originalImage.SaveImage(ms, imageFormat);
-                return ms.ToArray();
-            }
-        }
-    }
-
-    /// <summary>
-    ///     图片矩形域裁剪
-    /// </summary>
-    /// <param name="byteData"></param>
-    /// <param name="X"></param>
-    /// <param name="Y"></param>
-    /// <param name="width"></param>
-    /// <returns></returns>
-    public byte[] Crop(byte[] byteData, int X, int Y, int width)
-    {
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
-        {
-            originalImage.Mutate(m => { m.Crop(new Rectangle(X, Y, width, width)); });
-            using (var ms = new MemoryStream())
-            {
-                originalImage.SaveImage(ms, imageFormat);
-                return ms.ToArray();
-            }
-        }
-    }
-
-    /// <summary>
-    ///     图片矩形域裁剪
-    /// </summary>
-    /// <param name="byteData"></param>
-    /// <param name="X"></param>
-    /// <param name="Y"></param>
-    /// <param name="width"></param>
-    /// <returns></returns>
-    public byte[] Crop(byte[] byteData, int X, int Y, int width, int height)
-    {
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
-        {
-            originalImage.Mutate(m => { m.Crop(new Rectangle(X, Y, width, height)); });
-            using (var ms = new MemoryStream())
-            {
-                originalImage.SaveImage(ms, imageFormat);
-                return ms.ToArray();
-            }
-        }
-    }
-
-    /// <summary>
-    ///     图片压缩
-    /// </summary>
-    /// <param name="byteData"></param>
-    /// <param name="quality"></param>
-    /// <returns></returns>
-    public byte[] Compress(byte[] byteData, float quality = 0.8f)
-    {
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
-        {
-            if (imageFormat is JpegFormat)
-                using (var ms = new MemoryStream())
+            
+                var overlay = new Image<Rgba32>((int)textSize.Width + drawTextDto.X * 2, (int)textSize.Height + drawTextDto.Y * 2);
+                using (overlay)
                 {
-                    originalImage.SaveAsJpeg(ms, new JpegEncoder { Quality = (quality * 100).To<int>() });
-                    return ms.ToArray();
+                    overlay.Mutate(ctx =>
+                    {
+                        ctx.Fill(Color.ParseHex(drawTextDto.OverlayColor).WithAlpha(drawTextDto.OverlayOpacity));
+                        ctx.DrawText(textOptions, text, textBrush);
+                    });
+                    var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, overlay.Width, overlay.Height);
+                    originalImage.Mutate(o => { o.DrawImage(overlay, location: point, opacity: 1); });
                 }
-
-            return byteData;
-        }
-    }
-
-    public byte[] Gray(byte[] byteData)
-    {
-        using (var originalImage = Image.Load<Rgba32>(byteData, out var imageFormat))
-        {
-            originalImage.ToGray();
-
-            using (var ms = new MemoryStream())
-            {
-                originalImage.SaveImage(ms, imageFormat);
-                return ms.ToArray();
             }
-        }
-    }
-
-    /// <summary>
-    ///     图片旋转
-    /// </summary>
-    /// <param name="byteData"></param>
-    /// <param name="degre"></param>
-    /// <returns></returns>
-    public byte[] Rotate(byte[] byteData, float degre)
-    {
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
-        {
-            originalImage.Mutate(m => { m.Rotate(degre); });
-
-            using (var ms = new MemoryStream())
+            else
             {
-                originalImage.SaveImage(ms, imageFormat);
-                return ms.ToArray();
+                var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, (int)textSize.Width, (int)textSize.Height);
+                textOptions.Origin = point;
+                originalImage.Mutate(o => { o.DrawText(textOptions, text, textBrush); });
             }
+
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
         }
     }
 
-    /// <summary>
-    ///     图片水平翻转
-    /// </summary>
-    /// <param name="byteData"></param>
-    /// <returns></returns>
-    public byte[] Flip(byte[] byteData)
-    {
-        using (var originalImage = Image.Load(byteData, out var imageFormat))
-        {
-            originalImage.Mutate(m => { m.Flip(FlipMode.Horizontal); });
-
-            using (var ms = new MemoryStream())
-            {
-                originalImage.SaveImage(ms, imageFormat);
-                return ms.ToArray();
-            }
-        }
-    }
-
-    /// <summary>
-    ///     获取图片缩放形式
-    /// </summary>
-    /// <param name="mode"></param>
-    /// <returns></returns>
-    private ResizeMode GetResizeMode(ImageResizeMode mode)
-    {
-        switch (mode)
-        {
-            case ImageResizeMode.Crop:
-                return ResizeMode.Crop;
-            case ImageResizeMode.AutoByWidth:
-                return ResizeMode.Max;
-            case ImageResizeMode.AutoByHeight:
-                return ResizeMode.Min;
-            case ImageResizeMode.Stretch:
-                return ResizeMode.Stretch;
-            default:
-            case ImageResizeMode.Pad:
-                return ResizeMode.BoxPad;
-        }
-    }
-
-    private FontStyle ConvertToFontStyle(Drawing.FontStyle fontStyle)
-    {
-        switch (fontStyle)
-        {
-            case Drawing.FontStyle.Bold:
-                return FontStyle.Bold;
-            case Drawing.FontStyle.Italic:
-                return FontStyle.Italic;
-            case Drawing.FontStyle.BoldItalic:
-                return FontStyle.BoldItalic;
-            default:
-            case Drawing.FontStyle.Regular:
-                return FontStyle.Regular;
-        }
-    }
+    #endregion
 }

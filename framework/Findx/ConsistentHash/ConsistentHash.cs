@@ -131,10 +131,9 @@ public class ConsistentHash<T>
 
         if (keys[end] < hashOfItem || keys[0] > hashOfItem) return 0;
 
-        var mid = begin;
         while (end - begin > 1)
         {
-            mid = (end + begin) / 2;
+            var mid = (end + begin) / 2;
             if (keys[mid] >= hashOfItem) end = mid;
             else begin = mid;
         }

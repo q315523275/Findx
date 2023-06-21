@@ -9,7 +9,7 @@ namespace Findx.RabbitMQ
     ///     Findx-RabbitMQ模块
     /// </summary>
     [Description("Findx-RabbitMQ模块")]
-    public class FindxRabbitMqModule : FindxModule
+    public class FindxRabbitMqModule : StartupModule
     {
         /// <summary>
         ///     等级
@@ -19,7 +19,7 @@ namespace Findx.RabbitMQ
         /// <summary>
         ///     排序
         /// </summary>
-        public override int Order => 110;
+        public override int Order => 100;
 
         /// <summary>
         ///     配置服务

@@ -6,15 +6,16 @@
         <Version>1.9.0</Version>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>1.9.0</PackageVersion>
+        <PackageVersion>1.9.5.1-preview1</PackageVersion>
+        <LangVersion>10</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DinkToPdf" Version="1.0.8"/>
+        <PackageReference Include="DinkToPdf" Version="1.0.8" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Findx\Findx.csproj"/>
+        <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -7,28 +7,27 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <LangVersion>10.0</LangVersion>
-        <PackageVersion>1.9.0</PackageVersion>
+        <PackageVersion>1.9.5.1-preview1</PackageVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="fonts\actionj.ttf"/>
-        <None Remove="SixLabors.ImageSharp.Drawing"/>
-        <None Remove="SixLabors.ImageSharp"/>
-        <None Remove="fonts\Sketch-3D-1.otf"/>
+        <None Remove="fonts\actionj.ttf" />
+        <None Remove="SixLabors.ImageSharp.Drawing" />
+        <None Remove="SixLabors.ImageSharp" />
+        <None Remove="fonts\Sketch-3D-1.otf" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Include="fonts\Actionj.ttf"/>
-        <EmbeddedResource Include="fonts\Sketch-3D-1.otf"/>
+        <EmbeddedResource Include="fonts\Actionj.ttf" />
+        <EmbeddedResource Include="fonts\Sketch-3D-1.otf" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta14"/>
-        <PackageReference Include="SixLabors.ImageSharp" Version="2.1.0"/>
+        <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Findx\Findx.csproj"/>
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
     </ItemGroup>
 
 </Project>

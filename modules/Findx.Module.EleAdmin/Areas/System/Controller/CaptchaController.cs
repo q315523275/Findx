@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
-using Findx.Drawing;
+using Findx.Imaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,18 +19,18 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller;
 [Tags("系统-验证码")]
 public class CaptchaController : AreaApiControllerBase
 {
-    private readonly ICacheProvider _cacheProvider;
+    private readonly ICacheFactory _cacheFactory;
     private readonly IVerifyCoder _verifyCoder;
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    /// <param name="cacheProvider"></param>
     /// <param name="verifyCoder"></param>
-    public CaptchaController(ICacheProvider cacheProvider, IVerifyCoder verifyCoder)
+    /// <param name="cacheFactory"></param>
+    public CaptchaController(IVerifyCoder verifyCoder, ICacheFactory cacheFactory)
     {
-        _cacheProvider = cacheProvider;
         _verifyCoder = verifyCoder;
+        _cacheFactory = cacheFactory;
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class CaptchaController : AreaApiControllerBase
     {
         var code = _verifyCoder.GetCode(length, VerifyCodeType.NumberAndLetter);
         var st = await _verifyCoder.CreateImageAsync(code, width, height);
-        var cache = _cacheProvider.Get();
+        var cache = _cacheFactory.Create(CacheType.DefaultMemory);
         var uuid = Guid.NewGuid().ToString("N");
         var cacheKey = $"verifyCode:{uuid}";
         await cache.AddAsync(cacheKey, code.ToLower(), TimeSpan.FromMinutes(2));

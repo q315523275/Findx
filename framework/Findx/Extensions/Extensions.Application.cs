@@ -16,11 +16,9 @@ public partial class Extensions
     /// <param name="applicationEvent"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task PublishEventAsync(this IApplicationContext context, IApplicationEvent applicationEvent,
-        CancellationToken cancellationToken = default)
+    public static Task PublishEventAsync(this IApplicationContext context, IApplicationEvent applicationEvent, CancellationToken cancellationToken = default)
     {
-        return ServiceLocator.GetService<IApplicationEventPublisher>()
-            .PublishAsync(applicationEvent, cancellationToken);
+        return context.GetService<IApplicationEventPublisher>().PublishAsync(applicationEvent, cancellationToken);
     }
 
     /// <summary>
@@ -28,12 +26,10 @@ public partial class Extensions
     /// </summary>
     /// <param name="context"></param>
     /// <param name="applicationEvent"></param>
-    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static bool PublishEvent(this IApplicationContext context, IApplicationEvent applicationEvent,
-        CancellationToken cancellationToken = default)
+    public static bool PublishEvent(this IApplicationContext context, IApplicationEvent applicationEvent)
     {
-        return ServiceLocator.GetService<IApplicationEventPublisher>().Publish(applicationEvent);
+        return context.GetService<IApplicationEventPublisher>().Publish(applicationEvent);
     }
 
     /// <summary>
@@ -41,7 +37,7 @@ public partial class Extensions
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static T GetService<T>()
+    public static T GetService<T>(this IApplicationContext context)
     {
         return ServiceLocator.GetService<T>();
     }
@@ -49,9 +45,10 @@ public partial class Extensions
     /// <summary>
     ///     获取服务
     /// </summary>
+    /// <param name="context"></param>
     /// <param name="serviceType"></param>
     /// <returns></returns>
-    public static object GetService(Type serviceType)
+    public static object GetService(this IApplicationContext context, Type serviceType)
     {
         return ServiceLocator.GetService(serviceType);
     }
@@ -61,7 +58,7 @@ public partial class Extensions
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public static IEnumerable<T> GetServices<T>()
+    public static IEnumerable<T> GetServices<T>(this IApplicationContext context)
     {
         return ServiceLocator.GetServices<T>();
     }
@@ -69,9 +66,10 @@ public partial class Extensions
     /// <summary>
     ///     获取服务集合
     /// </summary>
+    /// <param name="context"></param>
     /// <param name="serviceType"></param>
     /// <returns></returns>
-    public static IEnumerable<object> GetServices(Type serviceType)
+    public static IEnumerable<object> GetServices(this IApplicationContext context, Type serviceType)
     {
         return ServiceLocator.GetServices(serviceType);
     }

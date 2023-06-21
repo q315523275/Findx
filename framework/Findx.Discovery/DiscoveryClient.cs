@@ -9,7 +9,7 @@ namespace Findx.Discovery.Consul
 {
     public class DiscoveryClient : IDiscoveryClient
     {
-        private readonly ICacheProvider _cacheProvider;
+        private readonly ICacheFactory _cacheFactory;
 
         private readonly IOptionsMonitor<DiscoveryOptions> _options;
 
@@ -17,12 +17,11 @@ namespace Findx.Discovery.Consul
 
         private readonly string ServiceInstancesKeyPrefix = "ServiceInstances:";
 
-        public DiscoveryClient(IServiceInstanceProvider serviceInstanceProvider,
-            IOptionsMonitor<DiscoveryOptions> options, ICacheProvider cacheProvider)
+        public DiscoveryClient(IServiceInstanceProvider serviceInstanceProvider, IOptionsMonitor<DiscoveryOptions> options, ICacheFactory cacheFactory)
         {
             _serviceInstanceProvider = serviceInstanceProvider;
             _options = options;
-            _cacheProvider = cacheProvider;
+            _cacheFactory = cacheFactory;
             ProviderName = _serviceInstanceProvider.ProviderName;
         }
 
@@ -58,10 +57,10 @@ namespace Findx.Discovery.Consul
         {
             if (Options.Cache)
             {
-                var _cache = _cacheProvider.Get(Options.CacheStrategy);
+                var cache = _cacheFactory.Create(Options.CacheStrategy);
 
-                var instanceData = await _cache
-                    .GetAsync<IList<IServiceInstance>>($"{ServiceInstancesKeyPrefix}{serviceName}")
+                var instanceData = await cache
+                    .GetAsync<IList<IServiceInstance>>($"{ServiceInstancesKeyPrefix}{serviceName}", cancellationToken)
                     .ConfigureAwait(false);
                 if (instanceData != null && instanceData.Count > 0) return instanceData;
             }
@@ -72,10 +71,10 @@ namespace Findx.Discovery.Consul
 
             if (Options.Cache)
             {
-                var _cache = _cacheProvider.Get(Options.CacheStrategy);
+                var cache = _cacheFactory.Create(Options.CacheStrategy);
 
-                await _cache.AddAsync($"{ServiceInstancesKeyPrefix}{serviceName}", instances,
-                    TimeSpan.FromSeconds(Options.CacheTTL), cancellationToken);
+                await cache.AddAsync($"{ServiceInstancesKeyPrefix}{serviceName}", instances,
+                    TimeSpan.FromSeconds(Options.CacheTtl), cancellationToken);
             }
 
             return instances;

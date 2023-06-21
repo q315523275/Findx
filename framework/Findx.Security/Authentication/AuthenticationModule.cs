@@ -35,7 +35,7 @@ public sealed class AuthenticationModule : AspNetCoreModuleBase
     /// <summary>
     ///     排序
     /// </summary>
-    public override int Order => 10;
+    public override int Order => 20;
 
     /// <summary>
     ///     添加服务

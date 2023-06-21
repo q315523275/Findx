@@ -1,5 +1,4 @@
-﻿using JetBrains.Annotations;
-
+﻿
 namespace Findx.Security;
 
 /// <summary>
@@ -13,7 +12,6 @@ public static class CurrentUserExtensions
     /// <param name="currentUser"></param>
     /// <param name="claimType"></param>
     /// <returns></returns>
-    [CanBeNull]
     public static string FindClaimValue(this ICurrentUser currentUser, string claimType)
     {
         return currentUser.FindClaim(claimType)?.Value;

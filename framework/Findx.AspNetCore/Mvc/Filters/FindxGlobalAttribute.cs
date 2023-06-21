@@ -27,12 +27,10 @@ public class FindxGlobalAttribute : IActionFilter
         if (!context.ModelState.IsValid)
         {
             var errors = context.ModelState
-                .Where(e => e.Value != null && e.Value.Errors.Any())
-                .Select(e => new ErrorMember
-                    { ErrorMemberName = e.Key, ErrorMessage = e.Value.Errors.First().ErrorMessage });
+                                .Where(e => e.Value != null && e.Value.Errors.Any())
+                                .Select(e => new ErrorMember { ErrorMemberName = e.Key, ErrorMessage = e.Value.Errors.Select(x => x.ErrorMessage).ExpandAndToString() });
 
-            context.Result = new JsonResult(CommonResult.Fail("4001",
-                $"参数校验不通过:{string.Join(';', errors.Select(x => $"{x.ErrorMessage}"))}"));
+            context.Result = new JsonResult(CommonResult.Fail("4001", errors.Select(x => x.ErrorMessage).ExpandAndToString(Utils.Common.Line)));
         }
 
         // 租户赋值

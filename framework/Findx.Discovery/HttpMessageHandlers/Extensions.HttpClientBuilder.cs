@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Findx.Discovery.HttpMessageHandlers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.Discovery
 {

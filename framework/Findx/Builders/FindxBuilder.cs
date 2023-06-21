@@ -8,8 +8,8 @@ namespace Findx.Builders;
 /// </summary>
 public class FindxBuilder : IFindxBuilder
 {
-    private readonly List<FindxModule> _sourceModules;
-    private List<FindxModule> _modules;
+    private readonly List<StartupModule> _sourceModules;
+    private List<StartupModule> _modules;
 
     /// <summary>
     ///     Ctor
@@ -21,7 +21,7 @@ public class FindxBuilder : IFindxBuilder
         Configuration = services.GetConfiguration();
         Check.NotNull(Configuration, nameof(Configuration));
         _sourceModules = GetAllModules(services);
-        _modules = new List<FindxModule>();
+        _modules = new List<StartupModule>();
     }
 
     /// <summary>
@@ -37,14 +37,14 @@ public class FindxBuilder : IFindxBuilder
     /// <summary>
     ///     模块集合
     /// </summary>
-    public IEnumerable<FindxModule> Modules => _modules;
+    public IEnumerable<StartupModule> Modules => _modules;
 
     /// <summary>
     ///     添加泛型模块
     /// </summary>
     /// <typeparam name="TModule"></typeparam>
     /// <returns></returns>
-    public IFindxBuilder AddModule<TModule>() where TModule : FindxModule
+    public IFindxBuilder AddModule<TModule>() where TModule : StartupModule
     {
         var type = typeof(TModule);
         return AddModule(type);
@@ -72,11 +72,11 @@ public class FindxBuilder : IFindxBuilder
     /// <exception cref="Exception"></exception>
     private IFindxBuilder AddModule(Type type)
     {
-        if (!type.IsBaseOn(typeof(FindxModule))) throw new Exception($"要加载的FindxModule型“{type}”不派生于基类 FindxModule");
+        if (!type.IsBaseOn(typeof(StartupModule))) throw new Exception($"要加载的StartupModule型“{type}”不派生于基类 StartupModule");
 
         if (_modules.Any(m => m.GetType() == type)) return this;
 
-        var tmpModules = new FindxModule[_modules.Count()];
+        var tmpModules = new StartupModule[_modules.Count()];
         _modules.CopyTo(tmpModules);
         var module = _sourceModules.FirstOrDefault(m => m.GetType() == type);
         if (module == null) throw new Exception($"类型为“{type.FullName}”的模块实例无法找到");
@@ -114,10 +114,10 @@ public class FindxBuilder : IFindxBuilder
     /// <param name="services"></param>
     /// <param name="module"></param>
     /// <returns></returns>
-    private static IServiceCollection AddModule(IServiceCollection services, FindxModule module)
+    private static IServiceCollection AddModule(IServiceCollection services, StartupModule module)
     {
         var type = module.GetType();
-        var serviceType = typeof(FindxModule);
+        var serviceType = typeof(StartupModule);
 
         if (type.BaseType?.IsAbstract == false)
         {
@@ -132,7 +132,7 @@ public class FindxBuilder : IFindxBuilder
                 m.Lifetime == ServiceLifetime.Singleton && m.ServiceType == serviceType &&
                 m.ImplementationInstance?.GetType() == type)) return services;
 
-        services.AddSingleton(typeof(FindxModule), module);
+        services.AddSingleton(typeof(StartupModule), module);
         module.ConfigureServices(services);
 
         return services;
@@ -143,13 +143,13 @@ public class FindxBuilder : IFindxBuilder
     /// </summary>
     /// <param name="services"></param>
     /// <returns></returns>
-    private static List<FindxModule> GetAllModules(IServiceCollection services)
+    private static List<StartupModule> GetAllModules(IServiceCollection services)
     {
         var moduleTypeFinder =
-            services.GetOrAddTypeFinder<IFindxModuleTypeFinder>(assemblyFinder =>
-                new FindxModuleTypeFinder(assemblyFinder));
+            services.GetOrAddTypeFinder<IStartupModuleTypeFinder>(assemblyFinder =>
+                new StartupModuleTypeFinder(assemblyFinder));
         var moduleTypes = moduleTypeFinder.FindAll();
-        return moduleTypes.Select(m => (FindxModule)Activator.CreateInstance(m))
+        return moduleTypes.Select(m => (StartupModule)Activator.CreateInstance(m))
             .OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName)
             .ToList();
     }

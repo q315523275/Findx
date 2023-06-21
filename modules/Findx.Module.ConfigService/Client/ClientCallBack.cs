@@ -29,7 +29,7 @@ public class ClientCallBack : IClientCallBack
 
         var source = new TaskCompletionSource<ConfigDataChangeDto>();
         var tokenSource = new CancellationTokenSource();
-        tokenSource.Token.Register(() =>
+        var tokenRegister = tokenSource.Token.Register(() =>
         {
             if (_callBacks.TryGetValue(appId, out var clients) && clients.Any(x => x.ReqId == reqId))
             {
@@ -42,7 +42,7 @@ public class ClientCallBack : IClientCallBack
         });
 
         _callBacks[appId].Add(new ClientCallBackInfo<ConfigDataChangeDto>
-            { Task = source, ReqId = reqId, ClientIp = clientIp, CancellationTokenSource = tokenSource });
+            { Task = source, ReqId = reqId, ClientIp = clientIp, CancellationTokenSource = tokenSource, CancellationTokenRegistration = tokenRegister });
 
         tokenSource.CancelAfter(timeout * 1000);
 
@@ -60,9 +60,12 @@ public class ClientCallBack : IClientCallBack
         {
             foreach (var client in clients)
             {
+                client.CancellationTokenRegistration.Unregister();
+                client.CancellationTokenRegistration.Dispose();
+                client.CancellationTokenSource.Dispose();
+                
                 if (!client.Task.Task.IsCompleted)
                     client.Task.SetResult(content);
-                client.CancellationTokenSource.Dispose();
             }
 
             _callBacks.TryRemove(appId, out _);
@@ -77,9 +80,12 @@ public class ClientCallBack : IClientCallBack
         foreach (var callBack in _callBacks)
         foreach (var client in callBack.Value)
         {
+            client.CancellationTokenRegistration.Unregister();
+            client.CancellationTokenRegistration.Dispose();
+            client.CancellationTokenSource.Dispose();
+            
             if (!client.Task.Task.IsCompleted)
                 client.Task.TrySetCanceled();
-            client.CancellationTokenSource.Dispose();
         }
     }
 }

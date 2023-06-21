@@ -17,7 +17,7 @@ namespace Findx.FreeSql
     ///     Findx-FreeSql模块
     /// </summary>
     [Description("Findx-FreeSql模块")]
-    public class FreeSqlModule : FindxModule
+    public class FreeSqlModule : StartupModule
     {
         /// <summary>
         ///     模块等级
@@ -27,7 +27,7 @@ namespace Findx.FreeSql
         /// <summary>
         ///     模块排序
         /// </summary>
-        public override int Order => 100;
+        public override int Order => 50;
 
         /// <summary>
         ///     Option
@@ -70,7 +70,7 @@ namespace Findx.FreeSql
                         it => it.TenantId == TenantManager.Current);
 
                 // AOP
-                freeSql.Aop.CurdAfter += (s, e) =>
+                freeSql.Aop.CurdAfter += (_, e) =>
                 {
                     // 开启SQL打印
                     if (item.Value.PrintSql)
@@ -95,8 +95,7 @@ namespace Findx.FreeSql
                     if (item.Value.OutageDetection && e.ElapsedMilliseconds > item.Value.OutageDetectionInterval * 1000)
                         // 推送慢sql事件
                         ServiceLocator.GetService<IApplicationContext>()
-                            ?.PublishEvent(new SlowSqlEvent
-                                { ElapsedMilliseconds = e.ElapsedMilliseconds, SqlRaw = e.Sql });
+                            ?.PublishEvent(new SqlExecutionSlowEvent { ElapsedMilliseconds = e.ElapsedMilliseconds, SqlRaw = e.Sql });
                 };
 
                 freeSql.Aop.AuditValue += (_, e) =>
@@ -112,7 +111,7 @@ namespace Findx.FreeSql
                 freeSqlClient.TryAdd(item.Key, freeSql);
 
                 // 数据源共享
-                if (item.Value.DataSourceSharing != null && item.Value.DataSourceSharing.Count > 0)
+                if (item.Value.DataSourceSharing is { Count: > 0 })
                     foreach (var sourceKey in item.Value.DataSourceSharing)
                         freeSqlClient.TryAdd(sourceKey, freeSql);
 
@@ -122,13 +121,14 @@ namespace Findx.FreeSql
             }
 
             // 添加仓储实现
-            var descriptor = new ServiceDescriptor(typeof(IRepository<>), typeof(FreeSqlRepository<>),
-                ServiceLifetime.Scoped);
-            services.Replace(descriptor);
+            var repositoryWithTypedId = new ServiceDescriptor(typeof(IRepository<,>), typeof(RepositoryWithTypedId<,>), ServiceLifetime.Scoped);
+            services.Replace(repositoryWithTypedId);
+            
+            var repository = new ServiceDescriptor(typeof(IRepository<>), typeof(Repository<>), ServiceLifetime.Scoped);
+            services.Replace(repository);
 
-            var descriptor2 = new ServiceDescriptor(typeof(IUnitOfWorkManager), typeof(FreeSqlUnitOfWorkManager),
-                ServiceLifetime.Scoped);
-            services.Replace(descriptor2);
+            var unitOfWorkManager = new ServiceDescriptor(typeof(IUnitOfWorkManager), typeof(UnitOfWorkManager), ServiceLifetime.Scoped);
+            services.Replace(unitOfWorkManager);
 
             // Entity属性字典初始化
             SingletonDictionary<Type, EntityExtensionAttribute>.Instance.ThrowIfNull();

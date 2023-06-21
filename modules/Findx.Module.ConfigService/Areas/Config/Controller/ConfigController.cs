@@ -112,7 +112,7 @@ public class ConfigController : AreaApiControllerBase
             model.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
             model.Md5 = Encrypt.Md5By32(req.Content);
             // 保存并通知集群
-            using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true);
+            await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true);
             await _configRepo.WithUnitOfWork(uow).InsertAsync(model);
             // 发布ConfigDataChangeEvent事件,等待执行
             await _messageDispatcher.PublishAsync(model.MapTo<ConfigDataChangeEvent>());
@@ -134,7 +134,7 @@ public class ConfigController : AreaApiControllerBase
             dbConfig.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
             dbConfig.Md5 = Encrypt.Md5By32(req.Content);
             // 保存并通知集群
-            using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true);
+            await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true);
             await _configRepo.WithUnitOfWork(uow).UpdateAsync(dbConfig,
                 ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId });
             await _configHistoryRepo.WithUnitOfWork(uow).InsertAsync(hisConfig);
