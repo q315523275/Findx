@@ -7,6 +7,7 @@ using Findx.DependencyInjection;
 using Findx.Logging;
 using Findx.Modularity;
 using Findx.Reflection;
+using Findx.Utils;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Findx.Extensions;
@@ -205,7 +206,7 @@ public static partial class Extensions
 
         watch.Stop();
         // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
-        logger.LogInformation($"框架初始化完毕，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Process.GetCurrentProcess().Id}");
+        logger.LogInformation($"框架初始化完毕，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Process.GetCurrentProcess().Id}{Common.Line}");
 
         return provider;
     }
@@ -269,7 +270,7 @@ public static partial class Extensions
     /// </summary>
     public static async Task ExecuteScopedWorkAsync(this IServiceProvider provider, Func<IServiceProvider, Task> action)
     {
-        using var scope = provider.CreateScope();
+        await using var scope = provider.CreateAsyncScope();
         await action(scope.ServiceProvider);
     }
 
@@ -289,7 +290,7 @@ public static partial class Extensions
     public static async Task<TResult> ExecuteScopedWorkAsync<TResult>(this IServiceProvider provider,
         Func<IServiceProvider, Task<TResult>> func)
     {
-        using var scope = provider.CreateScope();
+        await using var scope = provider.CreateAsyncScope();
         return await func(scope.ServiceProvider);
     }
     

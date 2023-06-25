@@ -63,7 +63,6 @@ public class FindxCoreModule : StartupModule
         services.TryAddSingleton<ICacheKeyGenerator, StringCacheKeyGenerator>();
 
         // 注入模块
-        services.TryAddSingleton<IHybridServiceScopeFactory, DefaultServiceScopeFactory>();
         services.AddScoped<ScopedDictionary>();
 
         // 事件总线

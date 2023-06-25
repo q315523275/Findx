@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Findx.Events;
-using Findx.Extensions;
 using Findx.Messaging;
 using Findx.Utils;
 using Findx.WebHost.EventHandlers;
@@ -31,7 +30,7 @@ public class MessageController : Controller
     [HttpGet("/message/notify")]
     public async Task<string> MessageNotify([FromServices] IMessageDispatcher context)
     {
-        await context.PublishAsync(new PayedOrderCommand(0));
+        await context.PublishAsync(new PayedOrderCommand(SnowflakeId.Default().NextId()));
         return "ok";
     }
     

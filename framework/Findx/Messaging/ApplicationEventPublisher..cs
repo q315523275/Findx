@@ -102,7 +102,7 @@ public class ApplicationEventPublisher : IApplicationEventPublisher, IDisposable
                         typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
                 try
                 {
-                    using var scope = ServiceLocator.Instance.CreateScope();
+                    await using var scope = ServiceLocator.Instance.CreateAsyncScope();
                     await handler.HandleAsync(message, scope.ServiceProvider, cancellationToken);
                 }
                 catch (Exception ex)

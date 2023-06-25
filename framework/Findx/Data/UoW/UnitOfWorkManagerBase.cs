@@ -30,7 +30,8 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     public async Task<IUnitOfWork> GetConnUnitOfWorkAsync(bool enableTransaction = false, bool beginTransaction = false,
         string dbPrimary = default, CancellationToken cancellationToken = default)
     {
-        var unitOfWork = _scopedDictionary.GetConnUnitOfWork(dbPrimary ?? "null");
+        var cacheKey = dbPrimary ?? "null";
+        var unitOfWork = _scopedDictionary.GetConnUnitOfWork(cacheKey);
         if (unitOfWork != null)
         {
             if (enableTransaction) unitOfWork.EnableTransaction();
@@ -40,7 +41,7 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
         }
 
         unitOfWork = CreateConnUnitOfWork(dbPrimary);
-        _scopedDictionary.SetConnUnitOfWork(dbPrimary ?? "null", unitOfWork);
+        _scopedDictionary.SetConnUnitOfWork(cacheKey, unitOfWork);
         if (enableTransaction) unitOfWork.EnableTransaction();
         if (beginTransaction) await unitOfWork.BeginOrUseTransactionAsync(cancellationToken);
         return unitOfWork;

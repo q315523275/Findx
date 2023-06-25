@@ -37,12 +37,11 @@ namespace Findx.MailKit
             using var client = new SmtpClient();
             client.MessageSent += (s, e) =>
             {
-                _logger.LogDebug($"发送邮件到“{mail.To.JoinAsString(",")}”，标题：{mail.Subject}，结果：{e.Response}");
+                _logger.LogDebug("发送邮件到“{JoinAsString}”，标题：{MailSubject}，结果：{EResponse}", mail.To.JoinAsString(","), mail.Subject, e.Response);
             };
             client.ServerCertificateValidationCallback = (s, c, h, e) => true;
 
-            await client.ConnectAsync(EmailSenderOptions.Host, EmailSenderOptions.Port, EmailSenderOptions.EnableSsl,
-                token);
+            await client.ConnectAsync(EmailSenderOptions.Host, EmailSenderOptions.Port, EmailSenderOptions.EnableSsl, token);
             await client.AuthenticateAsync(EmailSenderOptions.UserName, EmailSenderOptions.Password, token);
             await client.SendAsync(message, token);
             await client.DisconnectAsync(true, token);

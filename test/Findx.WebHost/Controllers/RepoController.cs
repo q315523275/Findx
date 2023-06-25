@@ -1,45 +1,78 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Threading.Tasks;
 using Findx.Data;
+using Findx.DependencyInjection;
 using Findx.WebHost.Model;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.WebHost.Controllers;
 
+/// <summary>
+/// 数据仓储
+/// </summary>
 public class RepoController : Controller
 {
+    /// <summary>
+    /// repo
+    /// </summary>
+    /// <param name="uowManager"></param>
+    /// <param name="keyGenerator"></param>
+    /// <returns></returns>
     [HttpGet("/repo/test")]
-    public async Task<string> RepoTest([FromServices] IRepository<TestNewsInfo, int> repo1, [FromServices] IRepository<TestUserInfo, int> repo2, [FromServices] IUnitOfWorkManager uowManager)
+    public async Task<Guid> RepoTest([FromServices] IUnitOfWorkManager uowManager, [FromServices] IKeyGenerator<Guid> keyGenerator)
     {
-        var uow = await uowManager.GetConnUnitOfWorkAsync(true, true);
-
-        try
+        await using (var uow = await uowManager.GetConnUnitOfWorkAsync(true, true))
         {
-            var a1 = await repo1.PagedAsync(1, 20,
-                orderParameters: new List<OrderByParameter<TestNewsInfo>>
-                    { new() { Expression = x => x.Id, SortDirection = ListSortDirection.Descending } });
+            var repo1 = uow.GetRepository<TestNewsInfo, int>();
+            var repo2 = uow.GetRepository<TestUserInfo, int>();
+            var a1 = await repo1.PagedAsync(1, 20);
             var b2 = await repo2.PagedAsync(1, 20);
 
             var a = await repo1.SelectAsync();
             var b = await repo2.SelectAsync();
 
             var x = await repo1.DeleteAsync();
-            var y = await repo2.DeleteAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            var y = await repo2.DeleteAsync();
 
-            a1.Rows.First().GetProperty<string>("title");
+            // a1.Rows.First().GetProperty<string>("title");
 
-            throw new Exception("123");
 
-            uow.CommitAsync();
+            await uow.CommitAsync();
         }
-        catch
+        return keyGenerator.Create();
+    }
+    
+    /// <summary>
+    /// repo
+    /// </summary>
+    /// <param name="keyGenerator"></param>
+    /// <returns></returns>
+    [HttpGet("/repo/async")]
+    public async Task<Guid> RepoAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
+    {
+        await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
         {
-            uow.RollbackAsync();
-        }
+            var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
+            await using (var uow = await unitOfWorkManager.GetConnUnitOfWorkAsync(true, true))
+            {
+                var repo1 = uow.GetRepository<TestNewsInfo, int>();
+                var repo2 = uow.GetRepository<TestUserInfo, int>();
+                var a1 = await repo1.PagedAsync(1, 20);
+                var b2 = await repo2.PagedAsync(1, 20);
 
-        return DateTime.Now.ToString();
+                var a = await repo1.SelectAsync();
+                var b = await repo2.SelectAsync();
+
+                var x = await repo1.DeleteAsync();
+                var y = await repo2.DeleteAsync();
+
+                // a1.Rows.First().GetProperty<string>("title");
+
+
+                await uow.CommitAsync();
+            }
+        }
+        return keyGenerator.Create();
     }
 }

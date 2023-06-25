@@ -46,7 +46,6 @@ public class AspNetCoreModule : StartupModule
         services.TryAddSingleton<IScopedServiceResolver, HttpContextServiceScopeResolver>();
 
         services.Replace<ICancellationTokenProvider, HttpContextCancellationTokenProvider>(ServiceLifetime.Singleton);
-        services.Replace<IHybridServiceScopeFactory, HttpContextServiceScopeFactory>(ServiceLifetime.Singleton);
 
         services.AddSingleton<IFileUploadService, DefaultFileUploadService>();
 

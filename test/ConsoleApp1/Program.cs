@@ -1,7 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Diagnostics;
+using System.Security.Cryptography;
 using ConsoleApp1;
+using Findx.Extensions;
 using Findx.Utils;
 using MassTransit;
 using SequentialGuidType = ConsoleApp1.SequentialGuidType;
@@ -167,53 +169,53 @@ Console.WriteLine("Hello, World!");
 // var resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
 // Console.WriteLine(Encoding.Default.GetString(resultArray));
 
-SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
-GuidHelper.Next(SequentialGuidType.AsString);
-Guid.NewGuid();
-SnowflakeId.Default().NextId();
-SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
-Console.WriteLine("Guid生成预热结束");
-
-var watch = new Stopwatch();  
-watch.Start();
-for (int i = 0; i < 1000000; i++)
-{
-    Guid.NewGuid();
-}
-watch.Stop();
-Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (int i = 0; i < 1000000; i++)
-{
-    GuidHelper.Next(SequentialGuidType.AsString);
-}
-watch.Stop();
-Console.WriteLine($"纳秒级别有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (int i = 0; i < 1000000; i++)
-{
-    NewId.NextSequentialGuid();
-}
-watch.Stop();
-Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (int i = 0; i < 1000000; i++)
-{
-    SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
-}
-watch.Stop();
-Console.WriteLine($"Abp有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (int i = 0; i < 1000000; i++)
-{
-    SnowflakeId.Default().NextId();
-}
-watch.Stop();
-Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
+// SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
+// GuidHelper.Next(SequentialGuidType.AsString);
+// Guid.NewGuid();
+// SnowflakeId.Default().NextId();
+// SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
+// Console.WriteLine("Guid生成预热结束");
+//
+// var watch = new Stopwatch();  
+// watch.Start();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     Guid.NewGuid();
+// }
+// watch.Stop();
+// Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     GuidHelper.Next(SequentialGuidType.AsString);
+// }
+// watch.Stop();
+// Console.WriteLine($"纳秒级别有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     NewId.NextSequentialGuid();
+// }
+// watch.Stop();
+// Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
+// }
+// watch.Stop();
+// Console.WriteLine($"Abp有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     SnowflakeId.Default().NextId();
+// }
+// watch.Stop();
+// Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
 
 // var sequentialGuidList = new HashSet<string>();
 // for (int i = 0; i < 1000000; i++)
@@ -233,6 +235,3 @@ Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
 // {
 //     Console.WriteLine($"比对:{sequentialGuidList[i] == newGuids[i]},源:{sequentialGuidList[i]},new:{newGuids[i]}");
 // }
-
-
-

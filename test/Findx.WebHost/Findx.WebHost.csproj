@@ -12,6 +12,7 @@
         <ProjectReference Include="..\..\framework\Findx.DinkToPdf\Findx.DinkToPdf.csproj" />
         <ProjectReference Include="..\..\framework\Findx.Discovery.Consul\Findx.Discovery.Consul.csproj" />
         <ProjectReference Include="..\..\framework\Findx.FreeSql\Findx.FreeSql.csproj" />
+        <ProjectReference Include="..\..\framework\Findx.Guids.NewId\Findx.Guids.NewId.csproj" />
         <ProjectReference Include="..\..\framework\Findx.ImageSharp\Findx.ImageSharp.csproj" />
         <ProjectReference Include="..\..\framework\Findx.MailKit\Findx.MailKit.csproj" />
         <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj" />
@@ -46,6 +47,6 @@
         <Folder Include="EventHandlers\" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.693" />
+        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.697" />
     </ItemGroup>
 </Project>

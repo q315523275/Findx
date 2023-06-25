@@ -9,7 +9,7 @@ namespace Findx.Data;
 /// <summary>
 /// 工作单元基类
 /// </summary>
-public abstract class UnitOfWorkBase: IUnitOfWork, IAsyncDisposable
+public abstract class UnitOfWorkBase: IUnitOfWork
 {
     
     private readonly Stack<string> _transactionStack = new();
@@ -81,7 +81,6 @@ public abstract class UnitOfWorkBase: IUnitOfWork, IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public async Task BeginOrUseTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (!IsEnabledTransaction || Transaction != null) return;
@@ -103,7 +102,6 @@ public abstract class UnitOfWorkBase: IUnitOfWork, IAsyncDisposable
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public Task SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         return InternalSaveChangesAsync(cancellationToken);
@@ -136,6 +134,7 @@ public abstract class UnitOfWorkBase: IUnitOfWork, IAsyncDisposable
             throw new FindxException("500", "执行 IUnitOfWork.CommitAsync() 之前，需要在事务开始时调用 IUnitOfWork.EnableTransaction()");
 
         token = _transactionStack.Pop();
+        var transactionCode = Transaction.GetHashCode();
 
         await UnitOfWorkEventDispatcher.PublishEventsAsync(cancellationToken);
 
@@ -143,7 +142,7 @@ public abstract class UnitOfWorkBase: IUnitOfWork, IAsyncDisposable
 
         await UnitOfWorkEventDispatcher.PublishAsyncEventsAsync(cancellationToken);
         
-        Logger.LogDebug("提交事务，标识：{Token}，事务标识：{HashCode}", token, Transaction.GetHashCode());
+        Logger.LogDebug("提交事务，标识：{Token}，事务标识：{TransactionCode}", token, transactionCode);
   
         HasCommitted = true;
     }
@@ -162,8 +161,9 @@ public abstract class UnitOfWorkBase: IUnitOfWork, IAsyncDisposable
     /// <returns></returns>
     public async Task RollbackAsync(CancellationToken cancellationToken = default)
     {
+        var transactionCode = Transaction?.GetHashCode();
         await InternalRollbackAsync(cancellationToken); 
-        Logger.LogDebug("回滚事务，事务标识：{HashCode}", Transaction.GetHashCode());
+        Logger.LogDebug("回滚事务，事务标识：{TransactionCode}", transactionCode);
         HasCommitted = true;
     }
 
@@ -185,12 +185,12 @@ public abstract class UnitOfWorkBase: IUnitOfWork, IAsyncDisposable
     }
     
     private readonly AtomicInteger _disposeCounter = new();
-    
+
     /// <summary>
     /// 资源释放
     /// </summary>
     /// <returns></returns>
-    public virtual async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_disposeCounter.IncrementAndGet() != 1) return;
         

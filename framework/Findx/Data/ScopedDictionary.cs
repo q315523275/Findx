@@ -35,16 +35,22 @@ public class ScopedDictionary : ConcurrentDictionary<string, object>, IAsyncDisp
     public async ValueTask DisposeAsync()
     {
         Function = null;
+        DataAuthValidRoleNames = null;
         AuditOperation = null;
         Identity = null;
 
         foreach (var key in Keys)
         {
-            if (this[key] is IDisposable disposable)
-                disposable.Dispose();
-            
-            if (this[key] is IAsyncDisposable asyncDisposable)
-                await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+            switch (this[key])
+            {
+                case IAsyncDisposable asyncDisposable:
+                    await asyncDisposable.DisposeAsync();
+                    break;
+                
+                case IDisposable disposable:
+                    disposable.Dispose();
+                    break;
+            }
         }
 
         Clear();

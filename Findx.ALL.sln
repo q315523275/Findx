@@ -77,7 +77,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Component.Distributed
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.DistributedEventBus", "framework\Findx.DistributedEventBus\Findx.DistributedEventBus.csproj", "{A091C821-62AD-4B26-A83A-AD846B5F9D67}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Guid.NewId", "framework\Findx.Guid.NewId\Findx.Guid.NewId.csproj", "{F6833433-25F5-49D2-BE09-2D7BE99CE027}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Guids.NewId", "framework\Findx.Guids.NewId\Findx.Guids.NewId.csproj", "{F6833433-25F5-49D2-BE09-2D7BE99CE027}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.SkiaSharp", "framework\Findx.SkiaSharp\Findx.SkiaSharp.csproj", "{576035D4-836E-4F8D-B1AA-C3DAEC99BD4D}"
 EndProject

@@ -5,6 +5,7 @@ using Findx.AspNetCore.Mvc.Middlewares;
 using Findx.Builders;
 using Findx.Extensions;
 using Findx.Logging;
+using Findx.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -81,7 +82,7 @@ public partial class Extensions
         // 框架构建接口
         var findxBuilder = provider.GetRequiredService<IFindxBuilder>();
         var modules = findxBuilder.Modules;
-        logger.LogInformation("共有 {Count} 个模块需要初始化", modules.Count());
+        logger.LogInformation("共有 {Count} 个模块需要初始化{Line}", modules.Count(), Common.Line);
         // 所有模块初始化
         foreach (var module in findxBuilder.Modules)
         {
@@ -105,7 +106,7 @@ public partial class Extensions
         });
 
         watch.Stop();
-        logger.LogInformation(0, "框架初始化完成，耗时:{ElapsedTotalMilliseconds}毫秒，进程编号:{ProcessId}\\r\\n", watch.Elapsed.TotalMilliseconds, Environment.ProcessId);
+        logger.LogInformation(0, "框架初始化完成，耗时:{ElapsedTotalMilliseconds}毫秒，进程编号:{ProcessId}{Line}", watch.Elapsed.TotalMilliseconds, Environment.ProcessId, Common.Line);
 
         return app;
     }

@@ -119,7 +119,7 @@ namespace Findx.RabbitMQ
                     // ignored
                 }
 
-                Logger.LogError(ex, ex.Message);
+                Logger.LogError(ex, "rabbitMqConsumer handleIncomingMessageAsync");
                 await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
             }
         }
@@ -150,7 +150,7 @@ namespace Findx.RabbitMQ
 
                 // var consumer = new AsyncEventingBasicConsumer(Channel);
                 var consumer = new EventingBasicConsumer(Channel);
-                consumer.Received += async (model, basicDeliverEventArgs) =>
+                consumer.Received += async (_, basicDeliverEventArgs) =>
                 {
                     await HandleIncomingMessageAsync(Channel, basicDeliverEventArgs);
                 };
@@ -165,11 +165,11 @@ namespace Findx.RabbitMQ
                     operationInterruptedException.ShutdownReason.ReplyCode == 406 &&
                     operationInterruptedException.Message.Contains("arg 'x-dead-letter-exchange'"))
                 {
-                    Logger.LogWarning(ex, ex.Message);
+                    Logger.LogWarning(ex, "rabbitMqConsumer tryCreateChannelAsync");
                     await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
                 }
 
-                Logger.LogWarning(ex, ex.Message);
+                Logger.LogWarning(ex, "rabbitMqConsumer tryCreateChannelAsync");
                 await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
             }
         }
@@ -196,6 +196,7 @@ namespace Findx.RabbitMQ
             try
             {
                 Channel.Dispose();
+                Channel = null;
             }
             catch (Exception ex)
             {

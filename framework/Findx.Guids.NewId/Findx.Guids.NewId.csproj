@@ -6,6 +6,7 @@
         <Version>1.9.5.1-preview1</Version>
         <Description>MassTransit对应NewId使用,生成连续有序Guid,性能比Abp有序Guid快4倍多</Description>
         <Authors>Findx</Authors>
+        <RootNamespace>Findx.Guids.NewId</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

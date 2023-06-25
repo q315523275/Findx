@@ -72,7 +72,7 @@ namespace Findx.RabbitMQ
                     {
                         var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
 
-                        using var scope = ServiceLocator.Instance.CreateScope();
+                        await using var scope = ServiceLocator.Instance.CreateAsyncScope();
                         var serviceProvider = scope.ServiceProvider;
 
                         foreach (var typeInfo in typeList)

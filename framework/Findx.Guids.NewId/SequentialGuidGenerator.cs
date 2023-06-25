@@ -1,6 +1,4 @@
-﻿using Findx.Guids;
-
-namespace Findx.Guid.NewId
+﻿namespace Findx.Guids.NewId
 {
     public class SequentialGuidGenerator: IGuidGenerator
     {
