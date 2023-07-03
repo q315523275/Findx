@@ -24,6 +24,17 @@ namespace Findx.ImageSharp;
 /// </summary>
 public sealed class ImageProcessor : IImageProcessor
 {
+    private readonly IFontFamilyProvider _fontFamilyProvider;
+    
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="fontFamilyProvider"></param>
+    public ImageProcessor(IFontFamilyProvider fontFamilyProvider)
+    {
+        _fontFamilyProvider = fontFamilyProvider;
+    }
+    
     #region 尺寸调整
 
     /// <summary>
@@ -208,7 +219,7 @@ public sealed class ImageProcessor : IImageProcessor
 
             var encoder = GetCompressEncoder(imageFormat, quality);
 
-            using var memoryStream = Pool.MemoryStream.Rent();
+            var memoryStream = Pool.MemoryStream.Rent();
             await originalImage.SaveAsync(memoryStream, encoder, cancellationToken: cancellationToken);
             memoryStream.Position = 0;
             return memoryStream;
@@ -633,25 +644,23 @@ public sealed class ImageProcessor : IImageProcessor
         }
     }
     
-    private static readonly FontCollection Collection = new();
-    
-    private static Font CreateFont(DrawTextDto drawTextDto)
+    private Font CreateFont(DrawTextDto drawTextDto)
     {
-        if (Collection.TryGet(drawTextDto.FontFamily.SafeString(), out var family))
+        if (_fontFamilyProvider.TryGet(drawTextDto.FontFamily.SafeString(), out var family))
         {
             return family.CreateFont(drawTextDto.FontSize, ConvertToFontStyle(drawTextDto.FontStyle));
         }
         
         // 字体不存在且没有字体文件
-        if (!Collection.TryGet(drawTextDto.FontFamily.SafeString(), out _) && drawTextDto.FontFamilyPath.IsNullOrWhiteSpace())
+        if (!_fontFamilyProvider.TryGet(drawTextDto.FontFamily.SafeString(), out _) && drawTextDto.FontFamilyPath.IsNullOrWhiteSpace())
         {
             return SystemFonts.CreateFont(drawTextDto.FontFamily ?? "Arial", drawTextDto.FontSize, ConvertToFontStyle(drawTextDto.FontStyle));
         }
         
         // 字体不存在但有字体文件
-        if (!Collection.TryGet(drawTextDto.FontFamily.SafeString(), out _) && !drawTextDto.FontFamilyPath.IsNullOrWhiteSpace())
+        if (!_fontFamilyProvider.TryGet(drawTextDto.FontFamily.SafeString(), out _) && !drawTextDto.FontFamilyPath.IsNullOrWhiteSpace())
         {
-            var fontFamily = Collection.Add(drawTextDto.FontFamilyPath);
+            var fontFamily = _fontFamilyProvider.Create(drawTextDto.FontFamilyPath);
             return fontFamily.CreateFont(drawTextDto.FontSize, ConvertToFontStyle(drawTextDto.FontStyle));
         }
 

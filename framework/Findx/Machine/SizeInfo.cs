@@ -21,6 +21,15 @@ public struct SizeInfo
     public UnitType SizeType { get; set; }
 
     /// <summary>
+    /// ToString
+    /// </summary>
+    /// <returns></returns>
+    public override string ToString()
+    {
+        return $"{Size}{SizeType}";
+    }
+
+    /// <summary>
     ///     将字节单位转换为合适的单位
     /// </summary>
     /// <param name="byteLength">字节长度</param>

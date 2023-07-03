@@ -2,11 +2,10 @@
 
 using System.Diagnostics;
 using System.Security.Cryptography;
-using ConsoleApp1;
+using Findx.Configuration;
 using Findx.Extensions;
 using Findx.Utils;
 using MassTransit;
-using SequentialGuidType = ConsoleApp1.SequentialGuidType;
 
 Console.Title = "Findx 控制台测试";
 Console.WriteLine("Hello, World!");
@@ -106,18 +105,18 @@ Console.WriteLine("Hello, World!");
 // }
 
 // 配置中心测试
-// var client = new ConfigClient("1", "2", "dev", "http://localhost:10020;http://localhost:10021");
-// client.OnConfigDataChange(x =>
-// {
-//     Console.WriteLine(x.ToJson());
-//     return Task.CompletedTask;
-// });
-// await client.LoadAsync().ConfigureAwait(false);
-// Console.WriteLine("开始配置监听");
-// Console.ReadLine();
+var client = new ConfigClient("1", "2", "dev", "http://106.54.160.19:10020", isRecover: true);
+client.OnConfigDataChange(x =>
+{
+    Console.WriteLine(x.ToJson());
+    return Task.CompletedTask;
+});
+await client.LoadAsync().ConfigureAwait(false);
+Console.WriteLine("开始配置监听");
+Console.ReadLine();
 
+// 实体扩展字段
 // var user = new User();
-//
 // user.SetProperty("name", "测试");
 // user.SetProperty("obj", new Test { Title = "这是遥远的信息" });
 // user.SetProperty("number", 9.88);
@@ -139,6 +138,10 @@ Console.WriteLine("Hello, World!");
 //     public string Title { get; set; }
 // }
 
+// Json
+Console.WriteLine((new { Name = "测试员", Title = "Json测试" }).ToJson());
+
+// Rsa + Aes
 // var privateKeyStr = XC.RSAUtil.RsaKeyConvert.PrivateKeyPkcs8ToXml("MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAI0NF4GBZ07BejfYZAmhTk0rofIoQqgRf63erVeHRAKfnEPHtTZ/MMfRupgc1uo6/e7DZ0BqOp58SLeXfcYEzWzzos0ThR797eiSA0AY8tB5L8WOy5tOxfhCiAfM87CpNvqyEyYtFwihVYrIHJdPO/Ll0ugoPVhP/MwIEwVHMFA5AgMBAAECgYAUXDNsajVzVNJDhWTLTxFyaj3yKoWUpRH9EwuKeugCSO/RiN5Lg4iTD18T3fXX0bQd5u7ciXj0r5P/jEqHbuIIBB69+xykWSdD/9O8/s2wX43u5+C7UqkhS0N+SEOYAn6j24l/Wd0RRNTMXMrWudHdZ+FI1Yn2gB8Zf/rZTJ6CUQJBAOf6nlHpGJ9m01BbISUzCKmDZMHrvbQgVoLUzi8zPNpld3n+4vyuN5vy3w/aiWp6uYmGOgfnuVaaBEh5WvkUncMCQQCbqCAzhU7YUGNTaoHRy7WzW+KlRDsJQunUWofGniGX3cnz2RUYCv3IfuP22GuCBOX26MAgeapkSfK/KGf3FY5TAkEAyooimNmvydz5OvuV4OjB817pJfcx1oc1gV1T+BoAU56rxjQo8v0ZSGuxHiJsQC+Otuge2rATPe2TN8PdDgRWCQJAAtQoWadXinjThUWPPGfOUocd9FDsHbv4keJfS02+YIsoS2Uri/dPK2Ca9fZy5bb/EuCh9TUg0pfBcJXkZcoffwJALjLX9RAK4UEYz+YDEaGO7dhSLd1QJbBT8H2ekhxEItTwCSp70JmDx8xltjGfgdzhGQjAWY8iEkp2wrOg8WFu6g==");
 // var publicKeyStr = XC.RSAUtil.RsaKeyConvert.PublicKeyPemToXml("MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC/q3kMS8MWnPhFugPSYa/9UiBBQ1KP+cpSO6NtvBPRiBpic9iRNPAcM2sl8wAUIplX2uWHUq3ENQkWkAQaEs5MJ8hZA168OS7Qn+exkLsxR5EjREHGbeIzH1iG5ekHn0ymdc9/bwXba2bzOIaHTNfZT1SuyUdBixYMWshZlVqzuwIDAQAB");
 //
@@ -169,6 +172,7 @@ Console.WriteLine("Hello, World!");
 // var resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
 // Console.WriteLine(Encoding.Default.GetString(resultArray));
 
+// 有序Id
 // SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
 // GuidHelper.Next(SequentialGuidType.AsString);
 // Guid.NewGuid();

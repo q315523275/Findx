@@ -4,9 +4,9 @@
         <TargetFramework>netstandard2.1</TargetFramework>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <Version>1.9.0</Version>
+        <Version>1.9.5.1</Version>
         <Description>RabbitMQ功能增强,属性标注消费、连接池管理、自定义消费等</Description>
-        <PackageVersion>1.9.5.1-preview1</PackageVersion>
+        <PackageVersion>1.9.5.1</PackageVersion>
         <LangVersion>10</LangVersion>
     </PropertyGroup>
 

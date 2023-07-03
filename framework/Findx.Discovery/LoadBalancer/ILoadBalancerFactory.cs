@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Findx.Discovery.LoadBalancer;
 
 namespace Findx.Discovery
 {

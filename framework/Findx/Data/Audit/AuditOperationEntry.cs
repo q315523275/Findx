@@ -7,7 +7,7 @@ namespace Findx.Data;
 /// <summary>
 ///     审计操作信息
 /// </summary>
-public class AuditOperationEntry : IApplicationEvent
+public class AuditOperationEntry : IApplicationEvent, IAsync
 {
 #pragma warning disable CS8618
     /// <summary>

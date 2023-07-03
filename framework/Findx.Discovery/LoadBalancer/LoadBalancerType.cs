@@ -1,12 +1,29 @@
-﻿namespace Findx.Discovery
-{
-    public enum LoadBalancerType
-    {
-        Random,
-        RoundRobin,
-        LeastConnection,
+﻿namespace Findx.Discovery.LoadBalancer;
 
-        // Hash,
-        NoLoadBalancer
-    }
+/// <summary>
+/// 负载均衡器类型
+/// </summary>
+public enum LoadBalancerType
+{
+    /// <summary>
+    /// 随机
+    /// </summary>
+    Random,
+    
+    /// <summary>
+    /// 轮询
+    /// </summary>
+    RoundRobin,
+    
+    /// <summary>
+    /// 最少连接
+    /// </summary>
+    LeastConnection,
+
+    // Hash,
+    
+    /// <summary>
+    /// 无负载
+    /// </summary>
+    NoLoadBalancer
 }

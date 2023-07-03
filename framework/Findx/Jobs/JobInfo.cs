@@ -6,7 +6,7 @@ namespace Findx.Jobs;
 /// <summary>
 ///     定义一个工作详细信息
 /// </summary>
-public class JobInfo : IApplicationEvent
+public class JobInfo : IApplicationEvent, IAsync
 {
     /// <summary>
     ///     作业编号

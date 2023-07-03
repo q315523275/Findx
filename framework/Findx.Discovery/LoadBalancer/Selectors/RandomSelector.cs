@@ -4,41 +4,61 @@ using System.Linq;
 using System.Threading.Tasks;
 using Findx.Utils;
 
-namespace Findx.Discovery.LoadBalancer.Selectors
+namespace Findx.Discovery.LoadBalancer.Selectors;
+
+/// <summary>
+/// 随机选择器
+/// </summary>
+public class RandomSelector : ILoadBalancer
 {
-    public class RandomSelector : ILoadBalancer
+    private readonly Func<int, int, int> _generate;
+    private readonly string _serviceName;
+    private readonly Func<Task<IList<IServiceInstance>>> _services;
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="serviceName"></param>
+    public RandomSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
     {
-        private readonly Func<int, int, int> _generate;
-        private readonly string _serviceName;
-        private readonly Func<Task<IList<IServiceInstance>>> _services;
+        _services = services;
+        _serviceName = serviceName;
+        _generate = RandomUtil.RandomInt;
+    }
 
-        public RandomSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
-        {
-            _services = services;
-            _serviceName = serviceName;
-            _generate = (min, max) => RandomUtil.RandomInt(min, max);
-        }
+    /// <summary>
+    /// 选择器名
+    /// </summary>
+    public LoadBalancerType Name => LoadBalancerType.Random;
 
-        public LoadBalancerType Name => LoadBalancerType.Random;
+    /// <summary>
+    /// 获取服务
+    /// </summary>
+    /// <returns></returns>
+    public async Task<IServiceInstance> ResolveServiceInstanceAsync()
+    {
+        var services = await _services.Invoke();
 
-        public async Task<IServiceInstance> ResolveServiceInstanceAsync()
-        {
-            var services = await _services.Invoke();
+        if (services == null)
+            throw new ArgumentNullException($"{_serviceName}");
 
-            if (services == null)
-                throw new ArgumentNullException($"{_serviceName}");
+        if (!services.Any())
+            throw new ArgumentNullException($"{_serviceName}");
 
-            if (!services.Any())
-                throw new ArgumentNullException($"{_serviceName}");
+        var index = _generate(0, services.Count());
 
-            var index = _generate(0, services.Count());
+        return services[index];
+    }
 
-            return services[index];
-        }
-
-        public Task UpdateStatsAsync(IServiceInstance serviceInstance, TimeSpan responseTime)
-        {
-            return Task.CompletedTask;
-        }
+    /// <summary>
+    /// 更新服务统计
+    /// </summary>
+    /// <param name="serviceInstance"></param>
+    /// <param name="responseTime"></param>
+    /// <returns></returns>
+    public Task UpdateStatsAsync(IServiceInstance serviceInstance, TimeSpan responseTime)
+    {
+        return Task.CompletedTask;
     }
 }

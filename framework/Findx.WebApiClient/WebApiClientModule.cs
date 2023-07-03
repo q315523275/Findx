@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Findx.Discovery;
+using Findx.Discovery.LoadBalancer;
 using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.Extensions.Configuration;

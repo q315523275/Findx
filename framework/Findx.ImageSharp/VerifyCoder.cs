@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.Extensions;
 using Findx.Imaging;
@@ -19,20 +20,25 @@ namespace Findx.ImageSharp;
 /// </summary>
 public class VerifyCoder : IVerifyCoder
 {
-    private static readonly string[] ColorHexArr =
+    private static readonly string[] ColorHexArr = { "#0087FF", "#339933", "#FF6666", "#FF9900", "#996600", "#996699", "#339999", "#6666FF", "#0066CC", "#CC3333", "#0099CC", "#003366" };
+
+    private static readonly string[] LightColorHexArr = { "#FFFACD", "#FDF5E6", "#F0FFFF", "#BBFFFF", "#FAFAD2", "#FFE4E1", "#DCDCDC", "#F0E68C" };
+
+    private readonly List<FontFamily> _fontFamilies;
+
+    private readonly IFontFamilyProvider _fontFamilyProvider;
+    
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="fontFamilyProvider"></param>
+    public VerifyCoder(IFontFamilyProvider fontFamilyProvider)
     {
-        "#00E5EE", "#000000", "#2F4F4F", "#000000", "#43CD80", "#191970", "#006400", "#458B00", "#8B7765", "#CD5B45"
-    };
-
-    private static readonly string[] LightColorHexArr =
-        { "#FFFACD", "#FDF5E6", "#F0FFFF", "#BBFFFF", "#FAFAD2", "#FFE4E1", "#DCDCDC", "#F0E68C" };
-
-    private static Font[] _fontArr;
-
-    public VerifyCoder()
-    {
-        InitFonts(50);
+        _fontFamilies = new List<FontFamily>();
+        _fontFamilyProvider = fontFamilyProvider;
+        InitFonts();
     }
+
 
     /// <summary>
     /// 创建
@@ -40,21 +46,60 @@ public class VerifyCoder : IVerifyCoder
     /// <param name="text"></param>
     /// <param name="imageWidth"></param>
     /// <param name="imageHeight"></param>
+    /// <param name="fontSize"></param>
     /// <returns></returns>
-    public async Task<byte[]> CreateImageAsync(string text, int imageWidth = 120, int imageHeight = 50)
+    public async Task<byte[]> CreateImageAsync(string text, int imageWidth = 120, int imageHeight = 50, int fontSize = 32)
     {
         // 图片太小容易导致
         using var imgText = new Image<Rgba32>(imageWidth, imageHeight);
 
+        // 增加背景色与中心渐变,普通集成ocr无法直接识别
         var lightColorHex = LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)];
-
         imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
         imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(lightColorHex)));
-        imgText.Mutate(ctx => ctx.DrawingEnText(imageWidth, imageHeight, text, ColorHexArr, _fontArr));
+
+        // 绘制验证码
+        imgText.Mutate(ctx => ctx.DrawingEnText(imageWidth, imageHeight, text, ColorHexArr, fontSize, _fontFamilies));
         imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
+        
+        // 读取流
         using var ms = Pool.MemoryStream.Rent();
-        await imgText.SaveAsJpegAsync(ms);
+        await imgText.SaveAsPngAsync(ms);
         return ms.ToArray();
+    }
+
+    public async Task<Stream> CreateImageStreamAsync(string text, int width = 120, int height = 50, int fontSize = 32)
+    {
+        // 图片太小容易导致
+        using var imgText = new Image<Rgba32>(width, height);
+
+        // 增加背景色与中心渐变,普通集成ocr无法直接识别
+        var lightColorHex = LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)];
+        imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
+        imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(lightColorHex)));
+
+        // 绘制验证码
+        imgText.Mutate(ctx => ctx.DrawingEnText(width, height, text, ColorHexArr, fontSize, _fontFamilies));
+        imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
+        
+        // 读取流
+        using var ms = Pool.MemoryStream.Rent();
+        await imgText.SaveAsPngAsync(ms);
+        return ms;
+    }
+
+    public Task SetFontAsync(string fontFamilyPath, CancellationToken cancellationToken = default)
+    {
+        var fontFamily = _fontFamilyProvider.Create(fontFamilyPath);
+        _fontFamilies.Add(fontFamily);
+        return Task.CompletedTask;
+    }
+    
+    public Task SetFontAsync(Stream stream, CancellationToken cancellationToken = default)
+    {
+        var fontFamily = _fontFamilyProvider.Create(stream);
+        _fontFamilies.Add(fontFamily);
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -77,30 +122,23 @@ public class VerifyCoder : IVerifyCoder
     /// <summary>
     ///     初始化字体池
     /// </summary>
-    /// <param name="fontSize">一个初始大小</param>
-    private static void InitFonts(int fontSize)
+    private void InitFonts()
     {
-        if (_fontArr == null)
+        var assembly = Assembly.GetExecutingAssembly();
+        var names = assembly.GetManifestResourceNames();
+
+        if (names.Length > 0)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            var names = assembly.GetManifestResourceNames();
-
-            if (names.Length > 0)
+            foreach (var name in names)
             {
-                var fontList = new List<Font>();
-                var fontCollection = new FontCollection();
-
-                foreach (var name in names)
-                    fontList.Add(new Font(
-                        fontCollection.Add(assembly.GetManifestResourceStream(name) ??
-                                           throw new InvalidOperationException()), fontSize));
-
-                _fontArr = fontList.ToArray();
+                using var stream = assembly.GetManifestResourceStream(name);
+                var fontFamily = _fontFamilyProvider.Create(stream);
+                _fontFamilies.Add(fontFamily);
             }
-            else
-            {
-                throw new Exception("绘制验证码字体文件加载失败");
-            }
+        }
+        else
+        {
+            throw new Exception("绘制验证码字体文件加载失败");
         }
     }
 

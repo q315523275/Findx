@@ -2,11 +2,11 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>1.9.0</Version>
+        <Version>1.9.5.1</Version>
         <Description>MailKit邮件发送器组件包</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>1.9.5.1-preview1</PackageVersion>
+        <PackageVersion>1.9.5.1</PackageVersion>
         <LangVersion>10</LangVersion>
     </PropertyGroup>
 

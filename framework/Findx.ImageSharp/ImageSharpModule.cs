@@ -30,6 +30,7 @@ public class ImageSharpModule : StartupModule
     {
         services.AddSingleton<IImageProcessor, ImageProcessor>();
         services.AddSingleton<IVerifyCoder, VerifyCoder>();
+        services.AddSingleton<IFontFamilyProvider, FontFamilyProvider>();
 
         return services;
     }

@@ -7,9 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Findx" Version="1.9.1.4-preview007" />
+        <PackageReference Include="Findx" Version="1.9.5.1-preview1" />
         <PackageReference Include="Findx.AspNetCore" Version="1.9.5.1-preview1" />
-        <PackageReference Include="Findx.Guid.NewId" Version="1.9.5.1-preview1" />
+        <PackageReference Include="Findx.Guids.NewId" Version="1.9.5.1-preview1" />
         <PackageReference Include="Findx.ImageSharp" Version="1.9.5.1-preview1" />
         <PackageReference Include="Findx.Mapster" Version="1.9.5.1-preview1" />
         <PackageReference Include="Findx.Swagger" Version="1.9.5.1-preview1" />
@@ -24,6 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\Findx.Module.ConfigService\Findx.Module.ConfigService.csproj" />
         <ProjectReference Include="..\Findx.Module.EleAdmin\Findx.Module.EleAdmin.csproj" />
     </ItemGroup>
 

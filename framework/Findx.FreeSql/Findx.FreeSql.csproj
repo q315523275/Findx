@@ -6,8 +6,8 @@
         <Description>Orm-FreeSql,逻辑删除、租户隔离、Sql打印、慢Sql事件、仓储、工作单元及单元事件、分表、实体扩展等扩展功能</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <Version>1.9.1.4</Version>
-        <PackageVersion>1.9.5.1-preview1</PackageVersion>
+        <Version>1.9.5.1</Version>
+        <PackageVersion>1.9.5.1</PackageVersion>
         <LangVersion>10</LangVersion>
     </PropertyGroup>
 

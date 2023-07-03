@@ -3,11 +3,11 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>1.9.0</Version>
+        <Version>1.9.5.1</Version>
         <Description>服务发现、本地发现、Http请求、负载算法(最少请求、轮询、随机、Hash)</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>1.9.5.1-preview1</PackageVersion>
+        <PackageVersion>1.9.5.1</PackageVersion>
         <LangVersion>10</LangVersion>
     </PropertyGroup>
 

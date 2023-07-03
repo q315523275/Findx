@@ -94,13 +94,13 @@ public class FindxController : AreaApiControllerBase
         var memory = MemoryHelper.GetMemoryValue();
         dict.Add("Memory", new
         {
-            memory.AvailablePhysicalMemory,
-            memory.AvailableVirtualMemory,
-            memory.TotalPhysicalMemory,
-            memory.TotalVirtualMemory,
+            AvailablePhysicalMemory = SizeInfo.Get((long)memory.AvailablePhysicalMemory).ToString(),
+            AvailableVirtualMemory = SizeInfo.Get((long)memory.AvailableVirtualMemory).ToString(),
+            TotalPhysicalMemory = SizeInfo.Get((long)memory.TotalPhysicalMemory).ToString(),
+            TotalVirtualMemory = SizeInfo.Get((long)memory.TotalVirtualMemory).ToString(),
             memory.UsedPercentage,
-            memory.UsedPhysicalMemory,
-            memory.UsedVirtualMemory
+            UsedPhysicalMemory = SizeInfo.Get((long)memory.UsedPhysicalMemory).ToString(),
+            UsedVirtualMemory = SizeInfo.Get((long)memory.UsedVirtualMemory).ToString(),
         });
 
         var newRate = network.IpvSpeed();

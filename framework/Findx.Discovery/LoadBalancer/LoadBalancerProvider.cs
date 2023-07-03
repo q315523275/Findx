@@ -3,53 +3,66 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Findx.Discovery.LoadBalancer
+namespace Findx.Discovery.LoadBalancer;
+
+/// <summary>
+/// 服务负载算法提供者
+/// </summary>
+public class LoadBalancerProvider : ILoadBalancerProvider
 {
-    public class LoadBalancerProvider : ILoadBalancerProvider
+    private readonly IDiscoveryClient _discoveryClient;
+    private readonly ILoadBalancerFactory _factory;
+    private readonly ConcurrentDictionary<string, ILoadBalancer> _loadBalancers;
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="discoveryClient"></param>
+    /// <param name="factory"></param>
+    public LoadBalancerProvider(IDiscoveryClient discoveryClient, ILoadBalancerFactory factory)
     {
-        private readonly IDiscoveryClient _discoveryClient;
-        private readonly ILoadBalancerFactory _factory;
-        private readonly ConcurrentDictionary<string, ILoadBalancer> _loadBalancers;
+        _discoveryClient = discoveryClient;
+        _factory = factory;
+        _loadBalancers = new ConcurrentDictionary<string, ILoadBalancer>();
+    }
 
-        public LoadBalancerProvider(IDiscoveryClient discoveryClient, ILoadBalancerFactory factory)
+    /// <summary>
+    /// 获取服务算法计算者
+    /// </summary>
+    /// <param name="serviceName"></param>
+    /// <param name="loadBalancer"></param>
+    /// <returns></returns>
+    /// <exception cref="KeyNotFoundException"></exception>
+    public async Task<ILoadBalancer> GetAsync(string serviceName, LoadBalancerType loadBalancer = LoadBalancerType.Random)
+    {
+        try
         {
-            _discoveryClient = discoveryClient;
-            _factory = factory;
-            _loadBalancers = new ConcurrentDictionary<string, ILoadBalancer>();
-        }
-
-        public async Task<ILoadBalancer> GetAsync(string serviceName,
-            LoadBalancerType _loadBalancer = LoadBalancerType.Random)
-        {
-            try
+            if (_loadBalancers.TryGetValue(serviceName, out var currentLoadBalancer))
             {
-                if (_loadBalancers.TryGetValue(serviceName, out var loadBalancer))
+                currentLoadBalancer = _loadBalancers[serviceName];
+                if (loadBalancer != currentLoadBalancer.Name)
                 {
-                    loadBalancer = _loadBalancers[serviceName];
-                    if (_loadBalancer != loadBalancer.Name)
-                    {
-                        loadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, _loadBalancer);
-                        AddLoadBalancer(serviceName, loadBalancer);
-                    }
-
-                    return loadBalancer;
+                    currentLoadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, loadBalancer);
+                    AddLoadBalancer(serviceName, currentLoadBalancer);
                 }
 
-                {
-                    loadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, _loadBalancer);
-                    AddLoadBalancer(serviceName, loadBalancer);
-                    return loadBalancer;
-                }
+                return currentLoadBalancer;
             }
-            catch (Exception ex)
-            {
-                throw new KeyNotFoundException($"unabe to find load balancer for {serviceName} exception is {ex}");
-            }
-        }
 
-        private void AddLoadBalancer(string key, ILoadBalancer loadBalancer)
-        {
-            _loadBalancers.AddOrUpdate(key, loadBalancer, (x, y) => loadBalancer);
+            {
+                currentLoadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, loadBalancer);
+                AddLoadBalancer(serviceName, currentLoadBalancer);
+                return currentLoadBalancer;
+            }
         }
+        catch (Exception ex)
+        {
+            throw new KeyNotFoundException($"unable to find load balancer for {serviceName} exception is {ex}");
+        }
+    }
+
+    private void AddLoadBalancer(string key, ILoadBalancer loadBalancer)
+    {
+        _loadBalancers.AddOrUpdate(key, loadBalancer, (x, y) => loadBalancer);
     }
 }

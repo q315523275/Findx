@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Extensions;
@@ -16,43 +17,54 @@ namespace Findx.ImageSharp;
 
 public static class ImageSharpExtension
 {
-    public static IImageProcessingContext DrawingEnText(this IImageProcessingContext processingContext,
-        int containerWidth, int containerHeight, string text, string[] colorHexArr, Font[] fonts)
+    /// <summary>
+    /// 绘画文字
+    /// </summary>
+    /// <param name="processingContext"></param>
+    /// <param name="containerWidth"></param>
+    /// <param name="containerHeight"></param>
+    /// <param name="text"></param>
+    /// <param name="colorHexArr"></param>
+    /// <param name="fontSize"></param>
+    /// <param name="fontFamilies"></param>
+    /// <returns></returns>
+    public static void DrawingEnText(this IImageProcessingContext processingContext, int containerWidth, int containerHeight, string text, string[] colorHexArr, int fontSize, IReadOnlyList<FontFamily> fontFamilies)
     {
-        if (!string.IsNullOrEmpty(text))
+        if (string.IsNullOrEmpty(text)) return;
+
+        var textWidth = containerWidth / text.Length;
+        var img2Size = Math.Min(textWidth, containerHeight);
+        var fontMiniSize = (int)(fontSize * 0.9);
+        var fontMaxSize = (int)(fontSize * 1.1);
+        var fontStyleArr = Enum.GetValues(typeof(FontStyle));
+
+        // 逐字绘制,方便控制
+        for (var i = 0; i < text.Length; i++)
         {
-            var textWidth = containerWidth / text.Length;
-            var img2Size = Math.Min(textWidth, containerHeight);
-            var fontMiniSize = (int)(img2Size * 0.9);
-            var fontMaxSize = (int)(img2Size * 1.2);
-            var fontStyleArr = Enum.GetValues(typeof(FontStyle));
+            var fontFamily = fontFamilies.Count > 1 ? fontFamilies[RandomUtil.RandomInt(0, fontFamilies.Count)] : fontFamilies.First();
+            var fontStyle = (FontStyle)fontStyleArr.GetValue(RandomUtil.RandomInt(fontStyleArr.Length));
+            // 随机字体大小
+            fontSize = RandomUtil.RandomInt(fontMiniSize, fontMaxSize);
+            var scaledFont = fontFamily.CreateFont(fontSize, fontStyle);
+            var point = new Point(i * textWidth, 0);
+            var colorHex = colorHexArr[RandomUtil.RandomInt(0, colorHexArr.Length)];
+            
+            using Image<Rgba32> img2 = new(img2Size, containerHeight);
+   
+            // 文字尺寸、位置
+            var size = TextMeasurer.Measure(text[i].ToString(), new TextOptions(scaledFont));
+            var offsetLeft = ((img2.Width - size.Width) / 2).To<int>();
+            var offsetTop = ((img2.Height - size.Height) / 2).To<int>();
 
-            for (var i = 0; i < text.Length; i++)
-            {
-                using Image<Rgba32> img2 = new(img2Size, containerHeight);
-                Font scaledFont = new(fonts[RandomUtil.RandomInt(0, fonts.Length)],
-                    RandomUtil.RandomInt(fontMiniSize, fontMaxSize),
-                    (FontStyle)fontStyleArr.GetValue(RandomUtil.RandomInt(fontStyleArr.Length)));
-                var point = new Point(i * textWidth, 0);
-                var colorHex = colorHexArr[RandomUtil.RandomInt(0, colorHexArr.Length)];
+            var i1 = i;
+            img2.Mutate(ctx =>
+                        ctx.DrawText(text[i1].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(offsetLeft, offsetTop))
+                           .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
+                           .Rotate(RandomUtil.RandomInt(-15, 15)) // 字体自带旋转，意思一下就行
+            );
 
-                // 文字尺寸、位置
-                var size = TextMeasurer.Measure(text[i].ToString(), new TextOptions(scaledFont));
-                var offestLeft = ((img2.Width - size.Width) / 2).To<int>();
-                var offestTop = ((img2.Height - size.Height) / 2).To<int>();
-
-                img2.Mutate(ctx =>
-                        ctx.DrawText(text[i].ToString(), scaledFont, Rgba32.ParseHex(colorHex),
-                                new Point(offestLeft, offestTop))
-                            .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
-                            .Rotate(RandomUtil.RandomInt(-15, 15)) // 字体自带旋转，意思一下就行
-                );
-
-                processingContext.DrawImage(img2, point, 1);
-            }
+            processingContext.DrawImage(img2, point, 1);
         }
-
-        return processingContext;
     }
 
     /// <summary>
@@ -65,11 +77,11 @@ public static class ImageSharpExtension
     /// <param name="count"></param>
     /// <param name="thickness"></param>
     /// <returns></returns>
-    public static IImageProcessingContext DrawingGrid(this IImageProcessingContext processingContext,
-        int containerWidth, int containerHeight, Color color, int count, float thickness)
+    public static IImageProcessingContext DrawingGrid(this IImageProcessingContext processingContext, int containerWidth, int containerHeight, Color color, int count, float thickness)
     {
         var points = new List<PointF> { new(0, 0) };
-        for (var i = 0; i < count; i++) GetCirclePoginF(containerWidth, containerHeight, 9, ref points);
+        for (var i = 0; i < count; i++) 
+            GetCirclePointF(containerWidth, containerHeight, 9, ref points);
         points.Add(new PointF(containerWidth, containerHeight));
 
         processingContext.DrawLines(color, thickness, points.ToArray());
@@ -85,12 +97,11 @@ public static class ImageSharpExtension
     /// <param name="lapR"></param>
     /// <param name="list"></param>
     /// <returns></returns>
-    private static PointF GetCirclePoginF(int containerWidth, int containerHeight, double lapR, ref List<PointF> list)
+    private static PointF GetCirclePointF(int containerWidth, int containerHeight, double lapR, ref List<PointF> list)
     {
         var random = new Random();
         var newPoint = new PointF();
         var retryTimes = 10;
-        double tempDistance = 0;
 
         do
         {
@@ -100,7 +111,7 @@ public static class ImageSharpExtension
             foreach (var p in list)
             {
                 tooClose = false;
-                tempDistance = Math.Sqrt(Math.Pow(p.X - newPoint.X, 2) + Math.Pow(p.Y - newPoint.Y, 2));
+                var tempDistance = Math.Sqrt(Math.Pow(p.X - newPoint.X, 2) + Math.Pow(p.Y - newPoint.Y, 2));
                 if (tempDistance < lapR)
                 {
                     tooClose = true;
@@ -113,9 +124,11 @@ public static class ImageSharpExtension
                 list.Add(newPoint);
                 break;
             }
+            
         } while (retryTimes-- > 0);
 
         if (retryTimes <= 0) list.Add(newPoint);
+        
         return newPoint;
     }
     
@@ -147,7 +160,7 @@ public static class ImageSharpExtension
     /// <param name="image"></param>
     /// <param name="threshold">阈值</param>
     /// <returns></returns>
-    public static Image<Rgba32> ToBinary(this Image<Rgba32> image, int threshold = 180)
+    public static void ToBinary(this Image<Rgba32> image, int threshold = 180)
     {
         image = image.ToGray(); // 先灰度处理
         for (var i = 0; i < image.Width; i++)
@@ -160,8 +173,6 @@ public static class ImageSharpExtension
             // 修改该像素点的RGB的颜色
             image[i, j] = new Rgba32(newColor.R, newColor.G, newColor.B, newColor.A);
         }
-
-        return image;
     }
 
 
@@ -188,7 +199,7 @@ public static class ImageSharpExtension
     /// <returns></returns>
     public static async Task<Stream> SaveAndGetAllStreamAsync(this Image originalImage, IImageFormat imageFormat, CancellationToken cancellationToken = default)
     {
-        using var memoryStream = Pool.MemoryStream.Rent();
+        var memoryStream = Pool.MemoryStream.Rent();
         await originalImage.SaveAsync(memoryStream, imageFormat, cancellationToken: cancellationToken);
         memoryStream.Position = 0;
         return memoryStream;

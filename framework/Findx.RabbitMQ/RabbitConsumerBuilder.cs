@@ -15,7 +15,12 @@ namespace Findx.RabbitMQ
 {
     public class RabbitConsumerBuilder : IRabbitConsumerBuilder
     {
-        private readonly List<IRabbitMqConsumer> _consumerList;
+        /// <summary>
+        /// 消费端
+        /// </summary>
+        // ReSharper disable once CollectionNeverQueried.Local
+        private List<IRabbitMqConsumer> ConsumerList { get; }
+
         private readonly IRabbitMqConsumerFactory _factory;
         private readonly IRabbitConsumerFinder _finder;
         private readonly IMethodInfoFinder _methodFinder;
@@ -35,7 +40,7 @@ namespace Findx.RabbitMQ
             _methodFinder = methodFinder;
             _factory = factory;
             _serializer = serializer;
-            _consumerList = new List<IRabbitMqConsumer>();
+            ConsumerList = new List<IRabbitMqConsumer>();
 
             MethodParameterType = new Dictionary<MethodInfo, Type>();
             MethodHandlers = new Dictionary<MethodInfo, Func<object, object[], object>>();
@@ -78,11 +83,9 @@ namespace Findx.RabbitMQ
                         foreach (var typeInfo in typeList)
                         {
                             var instance = serviceProvider.GetService(typeInfo.Type);
-                            var parameterType = MethodParameterType.GetOrAdd(typeInfo.MethodInfo,
-                                it => typeInfo.MethodInfo.GetParameters()[0].ParameterType);
+                            var parameterType = MethodParameterType.GetOrAdd(typeInfo.MethodInfo, _ => typeInfo.MethodInfo.GetParameters()[0].ParameterType);
                             var parameter = ConvertToParameter(parameterType, message);
-                            var handler = MethodHandlers.GetOrAdd(typeInfo.MethodInfo,
-                                it => FastInvokeHandler.Create(typeInfo.MethodInfo));
+                            var handler = MethodHandlers.GetOrAdd(typeInfo.MethodInfo, _ => FastInvokeHandler.Create(typeInfo.MethodInfo));
 
                             var result = handler.Invoke(instance, new[] { parameter, eventArgs, channel });
                             if (typeInfo.MethodInfo.IsAsync()) await (Task)result;
@@ -93,7 +96,7 @@ namespace Findx.RabbitMQ
                 // 循环绑定RoutingKey
                 foreach (var item in group.DistinctBy2(x => x.RoutingKey)) consumer.BindAsync(item.RoutingKey);
 
-                _consumerList.Add(consumer);
+                ConsumerList.Add(consumer);
             }
         }
 

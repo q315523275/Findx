@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Findx.Data;
 using Findx.Discovery;
+using Findx.Discovery.LoadBalancer;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Mvc;
 

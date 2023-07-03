@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <PackageVersion>1.9.5.1-preview1</PackageVersion>
+        <PackageVersion>1.9.5.1</PackageVersion>
         <Description>Caslte DynamicProxy</Description>
         <LangVersion>10</LangVersion>
         <Authors>Findx</Authors>
