@@ -6,7 +6,7 @@ namespace Findx.Utils;
 /// <summary>
 ///     DNS工具类
 /// </summary>
-public static class DnsUtil
+public static class HostUtil
 {
     /// <summary>
     ///     解析主机地址

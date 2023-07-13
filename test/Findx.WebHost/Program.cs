@@ -16,11 +16,13 @@ builder.Configuration.ReplacePlaceholders();
 
 // Add services to the container.
 builder.Services.AddFindx().AddModules();
+
 builder.Services.AddHttpClient("policy")
                 .AddFallbackPolicy(CommonResult.Fail(), 200)
                 .AddCircuitBreakerPolicy(5, "5s")
                 .AddRetryPolicy(1)
                 .AddTimeoutPolicy(1);
+
 builder.Services.AddControllers()
                 .AddMvcFilter<FindxGlobalAttribute>()
                 .AddJsonOptions(options => { options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All); });

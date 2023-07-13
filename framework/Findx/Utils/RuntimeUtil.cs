@@ -114,9 +114,8 @@ public static class RuntimeUtil
     ///     获取GC信息
     /// </summary>
     /// <returns>单位：KB</returns>
-    public static (double gen0, double gen1, double gen2, double totalMemory) GetGcInfo()
+    public static (long gen0, long gen1, long gen2, long totalMemory) GetGcInfo()
     {
-        return (GcUtil.Gen0CollectCount / 1024.0, GcUtil.Gen1CollectCount / 1024.0, GcUtil.Gen2CollectCount / 1024.0,
-            GcUtil.TotalMemory / 1024.0);
+        return (GcUtil.Gen0CollectCount, GcUtil.Gen1CollectCount, GcUtil.Gen2CollectCount, GcUtil.TotalMemory);
     }
 }

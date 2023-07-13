@@ -1,4 +1,4 @@
-﻿namespace Findx.ConsistentHash;
+﻿namespace Findx;
 
 /// <summary>
 ///     MurmurHash-Hash算法

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using Findx.AspNetCore.Mvc;
 using Findx.Builders;
 using Findx.Data;
@@ -86,11 +87,12 @@ public class FindxController : AreaApiControllerBase
         var oldRateLength = oldRate.ReceivedLength + oldRate.SendLength;
         var networkSpeed = SizeInfo.Get(network.Speed);
         var v1 = CpuHelper.GetCpuTime();
+        
         await Task.Delay(1000);
-
+        
         var cpuValue = CpuHelper.CalculateCpuLoad(v1, CpuHelper.GetCpuTime());
         dict.Add("Cpu", $"{(int)(cpuValue * 100)} %");
-
+        
         var memory = MemoryHelper.GetMemoryValue();
         dict.Add("Memory", new
         {
@@ -102,11 +104,11 @@ public class FindxController : AreaApiControllerBase
             UsedPhysicalMemory = SizeInfo.Get((long)memory.UsedPhysicalMemory).ToString(),
             UsedVirtualMemory = SizeInfo.Get((long)memory.UsedVirtualMemory).ToString(),
         });
-
+        
         var newRate = network.IpvSpeed();
         var nodeRate = SizeInfo.Get(newRate.ReceivedLength + newRate.SendLength - oldRateLength);
         var speed = NetworkInfo.GetSpeed(oldRate, newRate);
-
+        
         dict.Add("NetworkInfo", new
         {
             网卡信息 = new { network.Name, network.Mac, RealIpv4 = NetworkInfo.TryGetRealIpv4().ToString() },
@@ -119,12 +121,20 @@ public class FindxController : AreaApiControllerBase
 
         dict.Add("RuntimeInfo", new
         {
-            ip = app.InstanceIp,
+            Ip = app.InstanceIp,
             Cpu = (await RuntimeUtil.GetCpuUsage()).ToString("0.000"),
-            Memory = (RuntimeUtil.GetMemoryUsage() / 1024).ToString("0.000") + "/" +
-                     (GC.GetTotalMemory(false) / 1024.0 / 1024.0).ToString("0.000"),
+            Memory = SizeInfo.Get(Process.GetCurrentProcess().WorkingSet64).ToString(),
             ThreadCount = RuntimeUtil.GetThreadCount(),
             HandleCount = RuntimeUtil.GetHandleCount()
+        });
+        
+        var gcInfo = RuntimeUtil.GetGcInfo();
+        dict.Add("GcInfo", new
+        {
+            gen0 = SizeInfo.Get(gcInfo.gen0).ToString(),
+            gen1 = SizeInfo.Get(gcInfo.gen1).ToString(),
+            gen2 = SizeInfo.Get(gcInfo.gen2).ToString(),
+            totalMemory = SizeInfo.Get(gcInfo.totalMemory).ToString(),
         });
 
         return CommonResult.Success(dict);

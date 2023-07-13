@@ -8,7 +8,7 @@ namespace Findx.Configuration.Extensions
             ConfigOptions options)
         {
             Check.NotNull(options, nameof(options));
-            configurationBuilder.Add(new ConfigSource(new ConfigClient(options)));
+            if (options.Enabled) configurationBuilder.Add(new ConfigSource(new ConfigClient(options)));
             return configurationBuilder;
         }
 
@@ -24,7 +24,7 @@ namespace Findx.Configuration.Extensions
         {
             var config = configurationBuilder.Build();
             var options = config.GetSection("Findx:Config").Get<ConfigOptions>();
-            configurationBuilder.Add(new ConfigSource(new ConfigClient(options)));
+            if (options.Enabled) configurationBuilder.Add(new ConfigSource(new ConfigClient(options)));
             return configurationBuilder;
         }
     }

@@ -20,7 +20,10 @@ public enum LoadBalancerType
     /// </summary>
     LeastConnection,
 
-    // Hash,
+    /// <summary>
+    /// ip地址Hash
+    /// </summary>
+    IpHash,
     
     /// <summary>
     /// 无负载

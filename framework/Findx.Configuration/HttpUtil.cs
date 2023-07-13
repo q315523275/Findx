@@ -53,7 +53,6 @@ namespace Findx.Configuration
                     request.Headers.Add(kvp.Key, kvp.Value);
 
             var response = await request.GetResponseAsync();
-
             return (HttpWebResponse)response;
         }
 
@@ -65,8 +64,10 @@ namespace Findx.Configuration
         public static async Task<string> ReadAsStringAsync(this HttpWebResponse response)
         {
             await using var responseStream = response.GetResponseStream();
+            if (responseStream == null) return string.Empty;
             using var reader = new StreamReader(responseStream, Encoding.UTF8);
             return await reader.ReadToEndAsync();
+
         }
 
         /// <summary>
@@ -77,6 +78,7 @@ namespace Findx.Configuration
         public static string ReadAsString(this HttpWebResponse response)
         {
             using var responseStream = response.GetResponseStream();
+            if (responseStream == null) return string.Empty;
             using var reader = new StreamReader(responseStream, Encoding.UTF8);
             return reader.ReadToEnd();
         }

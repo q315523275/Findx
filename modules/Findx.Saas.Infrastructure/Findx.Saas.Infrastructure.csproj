@@ -6,4 +6,12 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Findx" Version="1.9.5.1" />
+    </ItemGroup>
+
 </Project>

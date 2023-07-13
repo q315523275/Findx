@@ -16,9 +16,9 @@ public static class NetUtil
         {
             var ping = new Ping();
             var options = new PingOptions { DontFragment = true };
-            var data = "Test Data";
+            const string data = "Test Data";
             var buffer = Encoding.ASCII.GetBytes(data);
-            var timeout = 1000;
+            const int timeout = 1000;
             var reply = ping.Send(ip, timeout, buffer, options);
             return reply is { Status: IPStatus.Success };
         }
@@ -35,14 +35,13 @@ public static class NetUtil
     /// <returns></returns>
     public static bool IsInternalIp(string ipv4Address)
     {
-        if (IPAddress.TryParse(ipv4Address, out var ip))
-        {
-            var ipBytes = ip.GetAddressBytes();
-            if (ipBytes[0] == 10) return true;
-            if (ipBytes[0] == 127 && ipBytes[1] == 0) return true;
-            if (ipBytes[0] == 172 && ipBytes[1] >= 16 && ipBytes[1] <= 31) return true;
-            if (ipBytes[0] == 192 && ipBytes[1] == 168) return true;
-        }
+        if (!IPAddress.TryParse(ipv4Address, out var ip)) return false;
+        
+        var ipBytes = ip.GetAddressBytes();
+        if (ipBytes[0] == 10) return true;
+        if (ipBytes[0] == 127 && ipBytes[1] == 0) return true;
+        if (ipBytes[0] == 172 && ipBytes[1] >= 16 && ipBytes[1] <= 31) return true;
+        if (ipBytes[0] == 192 && ipBytes[1] == 168) return true;
 
         return false;
     }

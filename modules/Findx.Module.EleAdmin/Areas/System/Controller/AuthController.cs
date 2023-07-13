@@ -25,8 +25,7 @@ namespace Findx.Module.EleAdmin.Areas.System.Controller;
 [Area("system")]
 [Route("api/[area]/auth")]
 [Description("系统-账户")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-账户")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-账户")]
 public class AuthController : AreaApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;
@@ -165,8 +164,8 @@ public class AuthController : AreaApiControllerBase
     ///     查看账户信息
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/api/auth/user")]
     [Description("查看账户信息")]
+    [HttpGet("/api/auth/user")]
     [Authorize]
     public new CommonResult User()
     {
@@ -209,9 +208,9 @@ public class AuthController : AreaApiControllerBase
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
+    [Description("修改账户密码")]
     [HttpPut("/api/auth/password")]
     [Authorize]
-    [Description("修改账户密码")]
     public CommonResult Password([FromBody] UpdatePasswordRequest req)
     {
         var userId = _currentUser.UserId.To<Guid>();

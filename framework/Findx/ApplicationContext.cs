@@ -35,7 +35,7 @@ public class ApplicationContext : IApplicationContext
 
         _version = new Lazy<string>(() => options.Value.Version ?? GetType().Assembly.GetProductVersion());
         _instanceIp = new Lazy<string>(() =>
-            options.Value.InstanceIp ?? DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName()));
+            options.Value.InstanceIp ?? HostUtil.ResolveHostAddress(HostUtil.ResolveHostName()));
         _internalIp = new Lazy<string>(() => options.Value.InternalIp ?? _instanceIp.Value);
 
         RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;

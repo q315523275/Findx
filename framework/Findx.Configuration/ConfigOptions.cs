@@ -9,6 +9,11 @@ namespace Findx.Configuration
     public class ConfigOptions : ValidatableObject
     {
         /// <summary>
+        /// 开启使用
+        /// </summary>
+        public bool Enabled { get; set; } = true;
+        
+        /// <summary>
         ///     配置应用编号
         /// </summary>
         [Required]

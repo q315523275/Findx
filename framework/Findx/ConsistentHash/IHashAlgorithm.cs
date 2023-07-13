@@ -1,4 +1,4 @@
-﻿namespace Findx.ConsistentHash;
+﻿namespace Findx;
 
 /// <summary>
 ///     哈希算法接口

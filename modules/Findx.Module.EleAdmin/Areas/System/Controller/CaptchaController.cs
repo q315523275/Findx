@@ -42,7 +42,7 @@ public class CaptchaController : AreaApiControllerBase
     /// <returns></returns>
     [HttpGet("/api/captcha")]
     [Description("获取验证码图片")]
-    public async Task<CommonResult> GetCaptcha(int width = 150, int height = 50, [Range(3, 6)] int length = 4)
+    public async Task<CommonResult> CaptchaAsync(int width = 150, int height = 50, [Range(3, 6)] int length = 4)
     {
         var code = _verifyCoder.GetCode(length, VerifyCodeType.NumberAndLetter);
         var st = await _verifyCoder.CreateImageAsync(code, width, height);
@@ -51,6 +51,6 @@ public class CaptchaController : AreaApiControllerBase
         var cacheKey = $"verifyCode:{uuid}";
         await cache.AddAsync(cacheKey, code.ToLower(), TimeSpan.FromMinutes(2));
         return CommonResult.Success(new
-            { text = code.ToLower(), uuid, Base64 = $"data:image/jpeg;base64,{Convert.ToBase64String(st)}" });
+            { text = code.ToLower(), uuid, Base64 = $"data:image/png;base64,{Convert.ToBase64String(st)}" });
     }
 }

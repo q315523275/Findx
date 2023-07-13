@@ -1,4 +1,5 @@
-﻿using Findx.Discovery.HttpMessageHandlers;
+﻿using System;
+using Findx.Discovery.HttpMessageHandlers;
 using Findx.Discovery.LoadBalancer;
 using Findx.Extensions;
 using Findx.Modularity;
@@ -31,6 +32,9 @@ public abstract class DiscoveryModuleBase : StartupModule
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
         Configuration = services.GetConfiguration();
+        
+        if (!Configuration.GetValue<bool>("Findx:Discovery:Enabled")) return services;
+
         var section = Configuration.GetSection("Findx:Discovery");
         services.Configure<DiscoveryOptions>(section);
 

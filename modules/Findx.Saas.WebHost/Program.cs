@@ -24,15 +24,13 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.Converters.Add(new LongStringJsonConverter());
     });
 builder.Services.AddWebSockets(x => { x.KeepAliveInterval = TimeSpan.FromMinutes(2); });
-// builder.Services.AddCorsAccessor();
-builder.Services.AddCors(options => { options.AddDefaultPolicy(policyBuilder => policyBuilder.AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetIsOriginAllowed(_ => true)); });
+builder.Services.AddCorsAccessor();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseJsonExceptionHandler();
-// app.UseCorsAccessor().UseRouting();
-app.UseCors().UseRouting();
+app.UseCorsAccessor().UseRouting();
 app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/storage",
@@ -44,4 +42,4 @@ app.MapControllersWithAreaRoute();
 // app.UseWelcomePage();
 
 // Run Server
-app.UseFindxStartup().Run();
+app.UseFindxHosting();

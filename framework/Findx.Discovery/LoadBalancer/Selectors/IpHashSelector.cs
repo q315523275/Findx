@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Findx.DependencyInjection;
+using Findx.Threading;
 using Findx.Utils;
 
 namespace Findx.Discovery.LoadBalancer.Selectors;
 
 /// <summary>
-/// 随机选择器
+/// 客户端Ip Hash选择器
 /// </summary>
-public class RandomSelector : ILoadBalancer
+public class IpHashSelector : ILoadBalancer
 {
-    private readonly Func<int, int, int> _generate;
+    private readonly ConsistentHash<IServiceInstance> _serviceInstanceNodes = new();
     private readonly string _serviceName;
     private readonly Func<Task<IList<IServiceInstance>>> _services;
 
@@ -20,17 +22,16 @@ public class RandomSelector : ILoadBalancer
     /// </summary>
     /// <param name="services"></param>
     /// <param name="serviceName"></param>
-    public RandomSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
+    public IpHashSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
     {
         _services = services;
         _serviceName = serviceName;
-        _generate = RandomUtil.RandomInt;
     }
 
     /// <summary>
     /// 选择器名
     /// </summary>
-    public LoadBalancerType Name => LoadBalancerType.Random;
+    public LoadBalancerType Name => LoadBalancerType.IpHash;
 
     /// <summary>
     /// 获取服务
@@ -46,9 +47,26 @@ public class RandomSelector : ILoadBalancer
         if (!services.Any())
             throw new ArgumentNullException($"{_serviceName}");
 
-        var index = _generate(0, services.Count);
-
-        return services[index];
+        // 添加不存在服务
+        foreach (var service in services)
+        {
+            if (!_serviceInstanceNodes.ContainNode(service))
+                _serviceInstanceNodes.Add(service);
+        }
+        
+        // 客户端Ip,不存在客户端Ip时使用本地Ip
+        var clientIp = ServiceLocator.GetService<IThreadCurrentClientIpAccessor>()?.GetClientIp()?? HostUtil.ResolveHostAddress(HostUtil.ResolveHostName());
+        
+        var currentService = (IServiceInstance) null;
+        while (currentService == null || !services.Contains(currentService))
+        {
+            // 移除hash环节点
+            if (currentService != null)
+                _serviceInstanceNodes.Remove(currentService);
+            
+            currentService = _serviceInstanceNodes.GetItemNode(clientIp);
+        }
+        return currentService;
     }
 
     /// <summary>

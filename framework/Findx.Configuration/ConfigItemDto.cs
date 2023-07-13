@@ -5,6 +5,7 @@ namespace Findx.Configuration
     /// <summary>
     ///     配置项Dto
     /// </summary>
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class ConfigItemDto
     {
         /// <summary>
@@ -29,6 +30,9 @@ namespace Findx.Configuration
         public long Version { get; set; }
     }
 
+    /// <summary>
+    /// 数据类型
+    /// </summary>
     public enum DataType
     {
         Text = 0,

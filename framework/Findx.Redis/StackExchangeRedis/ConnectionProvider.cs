@@ -17,11 +17,10 @@ namespace Findx.Redis.StackExchangeRedis
         private bool _isDisposed;
 
 
-        public ConnectionProvider(IOptions<RedisOptions> options,
-            ILogger<ConnectionProvider> logger)
+        public ConnectionProvider(IOptions<RedisOptions> options, ILogger<ConnectionProvider> logger)
         {
-            Options = options.Value;
             _logger = logger;
+            Options = options.Value;
             Connections = new ConcurrentDictionary<string, Lazy<ConnectionMultiplexer>>();
         }
 
@@ -69,10 +68,11 @@ namespace Findx.Redis.StackExchangeRedis
 
                 return lazyConnection.Value;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Connections.TryRemove(connectionName, out _);
-                throw;
+                ex.ReThrow();
+                return default;
             }
         }
 

@@ -1,4 +1,4 @@
-﻿namespace Findx.ConsistentHash;
+﻿namespace Findx;
 
 /// <summary>
 ///     泛型一致性hash

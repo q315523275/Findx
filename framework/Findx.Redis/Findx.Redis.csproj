@@ -2,16 +2,16 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <LangVersion>10</LangVersion>
-        <Version>1.9.5.1</Version>
+        <Version>1.9.5.2</Version>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Redis通用功能、分布式锁等(StackExchangeRedis)</Description>
-        <PackageVersion>1.9.5.1</PackageVersion>
+        <PackageVersion>1.9.5.2</PackageVersion>
+        <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="StackExchange.Redis" Version="2.6.111" />
+        <PackageReference Include="StackExchange.Redis" Version="2.6.122" />
     </ItemGroup>
 
     <ItemGroup>

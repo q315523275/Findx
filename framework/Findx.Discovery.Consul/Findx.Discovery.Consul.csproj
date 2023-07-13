@@ -2,12 +2,12 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>1.9.5.1</Version>
+        <Version>1.9.5.2</Version>
         <Description>服务发现-Consul实现</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>1.9.5.1</PackageVersion>
-        <LangVersion>10</LangVersion>
+        <PackageVersion>1.9.5.2</PackageVersion>
+        <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

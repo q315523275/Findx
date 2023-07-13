@@ -7,7 +7,7 @@ public class SwaggerOptions
 {
     public ICollection<SwaggerEndpoint> Endpoints { get; set; } = new List<SwaggerEndpoint>();
 
-    public bool Enabled { get; set; }
+    public bool Enabled { get; set; } = true;
 
     public bool AllParametersInCamelCase { get; set; } = false;
 

@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Findx.Discovery.LoadBalancer;
 
-namespace Findx.Discovery
+namespace Findx.Discovery.LoadBalancer
 {
     /// <summary>
     ///     负载均衡器创建工厂

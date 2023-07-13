@@ -1,6 +1,8 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Findx.Extensions;
 using Findx.Modularity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.RabbitMQ
@@ -30,6 +32,10 @@ namespace Findx.RabbitMQ
         {
             // 配置服务
             var configuration = services.GetConfiguration();
+            if (!configuration.GetValue<bool>("Findx:RabbitMQ:Enabled"))
+                return services;
+            
+            // 配置参数
             services.Configure<FindxRabbitMqOptions>(configuration.GetSection("Findx:RabbitMQ"));
 
             // MQ连接池
@@ -53,6 +59,17 @@ namespace Findx.RabbitMQ
             services.AddHostedService<RabbitConsumerBuildWorker>();
 
             return services;
+        }
+        
+        /// <summary>
+        /// 启用模块
+        /// </summary>
+        /// <param name="app"></param>
+        public override void UseModule(IServiceProvider app)
+        {
+            var configuration = app.GetRequiredService<IConfiguration>();
+            if (configuration.GetValue<bool>("Findx:RabbitMQ:Enabled"))
+                base.UseModule(app);
         }
     }
 }

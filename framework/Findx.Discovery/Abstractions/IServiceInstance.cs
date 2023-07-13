@@ -52,7 +52,7 @@ namespace Findx.Discovery
         /// </summary>
         /// <param name="serviceInstance"></param>
         /// <returns></returns>
-        public static EndPoint ToIPEndPoint(this IServiceInstance serviceInstance)
+        public static EndPoint ToIpEndPoint(this IServiceInstance serviceInstance)
         {
             return new IPEndPoint(IPAddress.Parse(serviceInstance.Host), serviceInstance.Port);
         }

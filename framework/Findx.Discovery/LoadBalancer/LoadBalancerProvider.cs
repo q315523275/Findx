@@ -32,20 +32,17 @@ public class LoadBalancerProvider : ILoadBalancerProvider
     /// <param name="serviceName"></param>
     /// <param name="loadBalancer"></param>
     /// <returns></returns>
-    /// <exception cref="KeyNotFoundException"></exception>
     public async Task<ILoadBalancer> GetAsync(string serviceName, LoadBalancerType loadBalancer = LoadBalancerType.Random)
     {
         try
         {
             if (_loadBalancers.TryGetValue(serviceName, out var currentLoadBalancer))
             {
-                currentLoadBalancer = _loadBalancers[serviceName];
                 if (loadBalancer != currentLoadBalancer.Name)
                 {
                     currentLoadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, loadBalancer);
                     AddLoadBalancer(serviceName, currentLoadBalancer);
                 }
-
                 return currentLoadBalancer;
             }
 
@@ -63,6 +60,6 @@ public class LoadBalancerProvider : ILoadBalancerProvider
 
     private void AddLoadBalancer(string key, ILoadBalancer loadBalancer)
     {
-        _loadBalancers.AddOrUpdate(key, loadBalancer, (x, y) => loadBalancer);
+        _loadBalancers.AddOrUpdate(key, loadBalancer, (_, _) => loadBalancer);
     }
 }

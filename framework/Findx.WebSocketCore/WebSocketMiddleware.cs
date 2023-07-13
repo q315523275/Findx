@@ -64,7 +64,7 @@ public class WebSocketMiddleware
             Tag = context.Request.Query.TryGetValue("tag", out var tag) ? tag : "",
             Environment = context.Request.Query.TryGetValue("environment", out var environment) ? environment : "",
             RemoteIp = context.GetClientIp(),
-            ServerIp = DnsUtil.ResolveHostAddress(DnsUtil.ResolveHostName()),
+            ServerIp = HostUtil.ResolveHostAddress(HostUtil.ResolveHostName()),
             LastHeartbeatTime = DateTime.Now
         };
         await WebSocketHandler.OnConnected(webSocketClient).ConfigureAwait(false);

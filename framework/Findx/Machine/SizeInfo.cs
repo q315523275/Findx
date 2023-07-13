@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Findx.Machine;
 
 /// <summary>
@@ -18,6 +20,7 @@ public struct SizeInfo
     /// <summary>
     ///     单位
     /// </summary>
+    [JsonConverter(typeof(JsonStringEnumConverter))]
     public UnitType SizeType { get; set; }
 
     /// <summary>

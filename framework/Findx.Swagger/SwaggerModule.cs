@@ -64,7 +64,7 @@ public class SwaggerModule : AspNetCoreModuleBase
             AddXmlComments(options);
 
             // 添加过滤器
-            AddDocumentFilter(options);
+            // AddDocumentFilter(options);
 
             // 添加权限
             AddSecurity(options);
@@ -166,16 +166,17 @@ public class SwaggerModule : AspNetCoreModuleBase
     ///     添加文档过滤器
     /// </summary>
     /// <param name="options"></param>
+    // ReSharper disable once UnusedMember.Local
     private static void AddDocumentFilter(SwaggerGenOptions options)
     {
-        options.DocumentFilter<IgnoreApiDocumentFilter>();
-        // options.DocumentFilter<TagReorderDocumentFilter>();
+        options.DocumentFilter<TagReorderDocumentFilter>();
     }
 
     /// <summary>
     ///     添加标签
     /// </summary>
     /// <param name="options"></param>
+    // ReSharper disable once UnusedMember.Local
     private static void AddActionTag(SwaggerGenOptions options)
     {
         options.TagActionsBy(description =>

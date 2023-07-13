@@ -42,6 +42,7 @@ public class AspNetCoreModule : StartupModule
         services.TryAddTransient<IPrincipal>(provider =>
             provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
         services.TryAddSingleton<ICurrentUser, CurrentUser>();
+        services.TryAddSingleton<IThreadCurrentClientIpAccessor, HttpContextClientIpAccessor>();
 
         services.TryAddSingleton<IScopedServiceResolver, HttpContextServiceScopeResolver>();
 

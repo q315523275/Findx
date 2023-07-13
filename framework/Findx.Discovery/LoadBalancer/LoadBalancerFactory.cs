@@ -28,6 +28,8 @@ public class LoadBalancerFactory : ILoadBalancerFactory
             case LoadBalancerType.LeastConnection:
                 return new LeastConnectionSelector(async () => await discoveryClient.GetInstancesAsync(serviceName),
                     serviceName);
+            case LoadBalancerType.IpHash:
+                return new IpHashSelector(async () => await discoveryClient.GetInstancesAsync(serviceName), serviceName);
             default:
                 return new NoLoadBalancerSelector(await discoveryClient.GetInstancesAsync(serviceName));
         }

@@ -1,12 +1,14 @@
-﻿namespace Findx.Redis
-{
-    public class RedisOptions
-    {
-        public RedisOptions()
-        {
-            Connections = new RedisConnections();
-        }
+﻿using Microsoft.Extensions.Options;
 
-        public RedisConnections Connections { get; }
+namespace Findx.Redis
+{
+    public class RedisOptions: IOptions<RedisOptions>
+    {
+        public RedisConnections Connections { get; set; } = new();
+        
+        
+        public bool Enabled { get; set; } = true;
+        
+        public RedisOptions Value => this;
     }
 }

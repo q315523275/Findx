@@ -18,8 +18,8 @@ namespace Findx.Discovery
         /// </summary>
         public DiscoveryOptions()
         {
-            _hostName = DnsUtil.ResolveHostName();
-            IpAddress = DnsUtil.ResolveHostAddress(_hostName);
+            _hostName = HostUtil.ResolveHostName();
+            IpAddress = HostUtil.ResolveHostAddress(_hostName);
         }
 
         /// <summary>
