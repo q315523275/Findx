@@ -17,7 +17,7 @@ public class AspectController : Controller
     public CommonResult ApplicationInfo()
     {
         var test = (IMachine)ServiceLocator.GetService(typeof(IMachine));
-        test.Purchase(90);
+        test.Purchase(1999999);
         return CommonResult.Success();
     }
 }

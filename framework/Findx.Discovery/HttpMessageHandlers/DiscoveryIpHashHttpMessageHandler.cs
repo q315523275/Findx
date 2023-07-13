@@ -7,9 +7,9 @@ using Findx.Discovery.LoadBalancer;
 namespace Findx.Discovery.HttpMessageHandlers
 {
     /// <summary>
-    /// 随机请求负载计算Http消息处理器
+    /// IpHash值固定地址请求负载计算Http消息处理器
     /// </summary>
-    public class DiscoveryRandomHttpMessageHandler : DelegatingHandler
+    public class DiscoveryIpHashHttpMessageHandler : DelegatingHandler
     {
         private readonly ILoadBalancerProvider _loadBalancerManager;
 
@@ -17,7 +17,7 @@ namespace Findx.Discovery.HttpMessageHandlers
         /// Ctor
         /// </summary>
         /// <param name="loadBalancerManager"></param>
-        public DiscoveryRandomHttpMessageHandler(ILoadBalancerProvider loadBalancerManager)
+        public DiscoveryIpHashHttpMessageHandler(ILoadBalancerProvider loadBalancerManager)
         {
             _loadBalancerManager = loadBalancerManager;
         }
@@ -33,8 +33,7 @@ namespace Findx.Discovery.HttpMessageHandlers
         {
             var current = request.RequestUri;
 
-            var loadBalancer = await _loadBalancerManager.GetAsync(current.Host, LoadBalancerType.Random)
-                .ConfigureAwait(false);
+            var loadBalancer = await _loadBalancerManager.GetAsync(current.Host, LoadBalancerType.IpHash).ConfigureAwait(false);
             var serviceInfo = await loadBalancer.ResolveServiceInstanceAsync().ConfigureAwait(false);
             request.RequestUri = serviceInfo.ToUri(current.Scheme, current.PathAndQuery);
 

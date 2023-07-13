@@ -16,7 +16,6 @@
         <ProjectReference Include="..\..\framework\Findx.ImageSharp\Findx.ImageSharp.csproj" />
         <ProjectReference Include="..\..\framework\Findx.MailKit\Findx.MailKit.csproj" />
         <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj" />
-<!--        <ProjectReference Include="..\..\framework\Findx.NLog\Findx.NLog.csproj"/>-->
         <ProjectReference Include="..\..\framework\Findx.RabbitMQ\Findx.RabbitMQ.csproj" />
         <ProjectReference Include="..\..\framework\Findx.Redis\Findx.Redis.csproj" />
         <ProjectReference Include="..\..\framework\Findx.Security\Findx.Security.csproj" />

@@ -43,5 +43,17 @@ namespace Findx.Discovery
 
             return httpClientBuilder.AddHttpMessageHandler<DiscoveryLeastConnectHttpMessageHandler>();
         }
+        
+        /// <summary>
+        ///     添加IpHash负载均衡
+        /// </summary>
+        /// <param name="httpClientBuilder"></param>
+        /// <returns></returns>
+        public static IHttpClientBuilder AddIpHashLoadBalancer(this IHttpClientBuilder httpClientBuilder)
+        {
+            Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
+
+            return httpClientBuilder.AddHttpMessageHandler<DiscoveryIpHashHttpMessageHandler>();
+        }
     }
 }

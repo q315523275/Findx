@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Dynamic;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
@@ -29,7 +30,6 @@ public class CacheController: ApiControllerBase
     /// <summary>
     ///     缓存信息
     /// </summary>
-    /// <param name="instance"></param>
     /// <returns></returns>
     [HttpGet("info")]
     public CommonResult InfoAsync()
@@ -44,8 +44,10 @@ public class CacheController: ApiControllerBase
     /// <param name="cacheKey"></param>
     /// <returns></returns>
     [HttpGet("get")]
-    public CommonResult GetAsync(string cacheKey)
+    public async Task<CommonResult> GetAsync(string cacheKey)
     {
-        return CommonResult.Success(_cacheFactory.Create(CacheType.DefaultMemory).Get<object>(cacheKey));
+        
+        
+        return CommonResult.Success(await _cacheFactory.Create(CacheType.DefaultMemory).GetAsync<object>(cacheKey));
     }
 }

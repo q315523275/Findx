@@ -79,6 +79,9 @@ public class WebApiClientModule : StartupModule
                     case LoadBalancerType.RoundRobin:
                         httpApiBuilder = httpApiBuilder.AddRoundRobinLoadBalancer();
                         break;
+                    case LoadBalancerType.IpHash:
+                        httpApiBuilder = httpApiBuilder.AddIpHashLoadBalancer();
+                        break;
                     default:
                         httpApiBuilder = httpApiBuilder.AddRandomLoadBalancer();
                         break;

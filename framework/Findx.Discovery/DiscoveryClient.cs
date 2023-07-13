@@ -83,7 +83,8 @@ public class DiscoveryClient : IDiscoveryClient
             var instanceData = await cache
                 .GetAsync<IList<IServiceInstance>>($"{ServiceInstancesKeyPrefix}{serviceName}", cancellationToken)
                 .ConfigureAwait(false);
-            if (instanceData != null && instanceData.Count > 0) return instanceData;
+            if (instanceData is { Count: > 0 }) 
+                return instanceData;
         }
 
         var instances =
@@ -91,7 +92,6 @@ public class DiscoveryClient : IDiscoveryClient
                 cancellationToken);
 
         if (!Options.Cache) return instances;
-        
         {
             var cache = _cacheFactory.Create(Options.CacheStrategy);
 

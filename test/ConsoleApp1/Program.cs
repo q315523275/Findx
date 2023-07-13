@@ -1,7 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Security.Cryptography;
+using Findx;
 using Findx.Configuration;
 using Findx.Extensions;
 using Findx.Utils;
@@ -11,24 +13,23 @@ Console.Title = "Findx 控制台测试";
 Console.WriteLine("Hello, World!");
 
 // 一致哈希
-// var nodes = new ConsistentHash<string>();
-// nodes.Add("192.168.1.101");
-// nodes.Add("192.168.1.102");
-// nodes.Add("192.168.1.103");
-// nodes.Add("192.168.1.104");
-// nodes.Add("192.168.1.105");
-// nodes.Add("192.168.1.106");
-// var dict = new ConcurrentDictionary<string, int>();
-// for (int i = 0; i < 100000; i++)
-// {
-//     var node = nodes.GetItemNode("172.1.0.12"); // 指定固定内容
-//     dict.AddOrUpdate(node, 1, (_, value) => value + 1);
-// }
-// foreach (var item in dict)
-// {
-//     Console.WriteLine($"{item.Key}:{item.Value}");
-// }
-// Console.ReadLine();
+var nodes = new ConsistentHash<string>();
+nodes.Add("192.168.1.101");
+nodes.Add("192.168.1.102");
+nodes.Add("192.168.1.103");
+nodes.Add("192.168.1.104");
+nodes.Add("192.168.1.105");
+nodes.Add("192.168.1.106");
+var dict = new ConcurrentDictionary<string, int>();
+for (int i = 0; i < 100000; i++)
+{
+    var node = nodes.GetItemNode("172.1.0.12"); // 指定固定内容
+    dict.AddOrUpdate(node, 1, (_, value) => value + 1);
+}
+foreach (var item in dict)
+{
+    Console.WriteLine($"{item.Key}:{item.Value}");
+}
 
 // 正则
 // var a = Findx.Utils.RegexUtil.GetValue("abc4d5e6hh5654", @"\d+");
@@ -105,15 +106,15 @@ Console.WriteLine("Hello, World!");
 // }
 
 // 配置中心测试
-var client = new ConfigClient("1", "2", "dev", "http://106.54.160.19:10020", isRecover: true);
-client.OnConfigDataChange(x =>
-{
-    Console.WriteLine(x.ToJson());
-    return Task.CompletedTask;
-});
-await client.LoadAsync().ConfigureAwait(false);
-Console.WriteLine("开始配置监听");
-Console.ReadLine();
+// var client = new ConfigClient("1", "2", "dev", "http://106.54.160.19:10020", isRecover: true);
+// client.OnConfigDataChange(x =>
+// {
+//     Console.WriteLine(x.ToJson());
+//     return Task.CompletedTask;
+// });
+// await client.LoadAsync().ConfigureAwait(false);
+// Console.WriteLine("开始配置监听");
+// Console.ReadLine();
 
 // 实体扩展字段
 // var user = new User();

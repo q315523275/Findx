@@ -39,11 +39,13 @@ public static class FileStorageExtensions
     {
         Check.NotNull(path, nameof(path));
 
-        await using var stream = await storage.GetFileStreamAsync(path, cancellationToken);
+        var stream = await storage.GetFileStreamAsync(path, cancellationToken).ConfigureAwait(false);
+        await using var _ = stream.ConfigureAwait(false);
         if (stream == null) return default;
 
         var bytes = new byte[stream.Length];
-        await stream.ReadAsync(bytes, 0, bytes.Length);
+        // ReSharper disable once MustUseReturnValue
+        await stream.ReadAsync(bytes, 0, bytes.Length, cancellationToken).ConfigureAwait(false);
         stream.Seek(0, SeekOrigin.Begin);
 
         return storage.Serializer.Deserialize<T>(bytes);

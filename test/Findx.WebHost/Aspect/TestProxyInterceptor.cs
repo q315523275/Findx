@@ -11,9 +11,9 @@ namespace Findx.WebHost.Aspect;
 /// </summary>
 public class TestProxyInterceptor : InterceptorBase
 {
-    private readonly IKeyGenerator<long> _keyGenerator;
+    private readonly IKeyGenerator<Guid> _keyGenerator;
 
-    public TestProxyInterceptor(IKeyGenerator<long> keyGenerator)
+    public TestProxyInterceptor(IKeyGenerator<Guid> keyGenerator)
     {
         _keyGenerator = keyGenerator;
     }

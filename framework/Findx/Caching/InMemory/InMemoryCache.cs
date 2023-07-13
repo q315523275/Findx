@@ -113,7 +113,7 @@ public class InMemoryCache : ICache, IServiceNameAware, IDisposable
     /// <param name="key"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    public Task<T> GetAsync<T>(string key, CancellationToken token = default)
+    public async Task<T> GetAsync<T>(string key, CancellationToken token = default)
     {
         Check.NotNull(key, nameof(key));
 
@@ -133,7 +133,7 @@ public class InMemoryCache : ICache, IServiceNameAware, IDisposable
 
         Interlocked.Increment(ref _hits);
 
-        return Task.FromResult((T)item.Visit());
+        return await Task.FromResult((T)item.Visit());
     }
     
     /// <summary>
