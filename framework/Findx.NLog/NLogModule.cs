@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Findx.NLog
@@ -28,8 +29,7 @@ namespace Findx.NLog
         /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ILoggerProvider, NLogLoggerProvider>();
-
+            services.Replace(new ServiceDescriptor(typeof(ILoggerProvider), typeof(NLogLoggerProvider), ServiceLifetime.Singleton));
             return services;
         }
     }

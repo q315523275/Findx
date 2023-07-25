@@ -8,7 +8,7 @@ using Findx.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.System.Controller;
+namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 
 /// <summary>
 ///     文件服务

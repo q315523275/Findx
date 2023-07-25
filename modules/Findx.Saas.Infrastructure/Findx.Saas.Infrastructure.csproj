@@ -11,7 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx" Version="1.9.5.1" />
+      <PackageReference Include="Findx" Version="1.9.5.2" />
     </ItemGroup>
 
 </Project>

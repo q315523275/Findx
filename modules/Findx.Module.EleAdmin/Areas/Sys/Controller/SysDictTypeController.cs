@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.System.Controller;
+namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 
 /// <summary>
 ///     字典类型服务

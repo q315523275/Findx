@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Findx.Module.EleAdmin.Areas.System.Controller;
+namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 
 /// <summary>
 ///     Findx框架

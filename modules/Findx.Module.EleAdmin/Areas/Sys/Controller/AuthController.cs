@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace Findx.Module.EleAdmin.Areas.System.Controller;
+namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 
 /// <summary>
 ///     系统-账户
@@ -33,6 +33,7 @@ public class AuthController : AreaApiControllerBase
     private readonly IKeyGenerator<Guid> _keyGenerator;
 
     private readonly bool _enabledCaptcha;
+    private readonly bool _useAbpJwt;
     private readonly IOptions<JwtOptions> _options;
     private readonly IRepository<SysLoginRecordInfo> _recordRepo;
     private readonly IRepository<SysUserInfo> _repo;
@@ -61,6 +62,7 @@ public class AuthController : AreaApiControllerBase
         _recordRepo = recordRepo;
         _keyGenerator = keyGenerator;
         _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdmin:EnabledCaptcha");
+        _useAbpJwt = settingProvider.GetValue<bool>("Modules:EleAdmin:UseAbpJwt");
     }
 
     /// <summary>
@@ -155,8 +157,13 @@ public class AuthController : AreaApiControllerBase
             { "org_id", accountInfo.OrgId.SafeString() },
             { "org_name", accountInfo.OrgName.SafeString() }
         };
+        if (_useAbpJwt)
+        {
+            payload[System.Security.Claims.ClaimTypes.NameIdentifier] = accountInfo.Id.SafeString();
+            payload[System.Security.Claims.ClaimTypes.Name] = accountInfo.UserName.SafeString();
+            payload[System.Security.Claims.ClaimTypes.GivenName] = accountInfo.Nickname.SafeString();
+        }
         var token = await _tokenBuilder.CreateAsync(payload, _options.Value);
-
         return CommonResult.Success(new { access_token = "Bearer " + token.AccessToken });
     }
 
