@@ -52,7 +52,7 @@ public static class ImageSharpExtension
             using Image<Rgba32> img2 = new(img2Size, containerHeight);
    
             // 文字尺寸、位置
-            var size = TextMeasurer.Measure(text[i].ToString(), new TextOptions(scaledFont));
+            var size = TextMeasurer.MeasureSize(text[i].ToString(), new TextOptions(scaledFont));
             var offsetLeft = ((img2.Width - size.Width) / 2).To<int>();
             var offsetTop = ((img2.Height - size.Height) / 2).To<int>();
 
@@ -77,14 +77,14 @@ public static class ImageSharpExtension
     /// <param name="count"></param>
     /// <param name="thickness"></param>
     /// <returns></returns>
-    public static IImageProcessingContext DrawingGrid(this IImageProcessingContext processingContext, int containerWidth, int containerHeight, Color color, int count, float thickness)
+    private static IImageProcessingContext DrawingGrid(this IImageProcessingContext processingContext, int containerWidth, int containerHeight, Color color, int count, float thickness)
     {
         var points = new List<PointF> { new(0, 0) };
         for (var i = 0; i < count; i++) 
             GetCirclePointF(containerWidth, containerHeight, 9, ref points);
         points.Add(new PointF(containerWidth, containerHeight));
 
-        processingContext.DrawLines(color, thickness, points.ToArray());
+        processingContext.DrawLine(color, thickness, points.ToArray());
 
         return processingContext;
     }
@@ -97,7 +97,7 @@ public static class ImageSharpExtension
     /// <param name="lapR"></param>
     /// <param name="list"></param>
     /// <returns></returns>
-    private static PointF GetCirclePointF(int containerWidth, int containerHeight, double lapR, ref List<PointF> list)
+    private static void GetCirclePointF(int containerWidth, int containerHeight, double lapR, ref List<PointF> list)
     {
         var random = new Random();
         var newPoint = new PointF();
@@ -110,7 +110,6 @@ public static class ImageSharpExtension
             var tooClose = false;
             foreach (var p in list)
             {
-                tooClose = false;
                 var tempDistance = Math.Sqrt(Math.Pow(p.X - newPoint.X, 2) + Math.Pow(p.Y - newPoint.Y, 2));
                 if (tempDistance < lapR)
                 {
@@ -128,8 +127,6 @@ public static class ImageSharpExtension
         } while (retryTimes-- > 0);
 
         if (retryTimes <= 0) list.Add(newPoint);
-        
-        return newPoint;
     }
     
 

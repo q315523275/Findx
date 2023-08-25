@@ -1,4 +1,6 @@
-using Findx.Serialization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.Options;
 
 namespace Findx.WebSocketCore;
 
@@ -6,15 +8,15 @@ namespace Findx.WebSocketCore;
 /// </summary>
 public class WebSocketSerializer : IWebSocketSerializer
 {
-    private readonly ISerializer _serializer;
+    private readonly IOptions<JsonOptions> _options;
 
     /// <summary>
-    ///     Ctor
+    /// Ctor
     /// </summary>
-    /// <param name="serializer"></param>
-    public WebSocketSerializer(ISerializer serializer)
+    /// <param name="options"></param>
+    public WebSocketSerializer(IOptions<JsonOptions> options)
     {
-        _serializer = serializer;
+        _options = options;
     }
 
     /// <summary>
@@ -25,7 +27,7 @@ public class WebSocketSerializer : IWebSocketSerializer
     /// <returns></returns>
     public byte[] Serialize<T>(T item)
     {
-        return _serializer.Serialize(item);
+        return JsonSerializer.SerializeToUtf8Bytes(item, _options.Value.SerializerOptions);
     }
 
     /// <summary>
@@ -36,6 +38,6 @@ public class WebSocketSerializer : IWebSocketSerializer
     /// <returns></returns>
     public T Deserialize<T>(byte[] serializedObject)
     {
-        return _serializer.Deserialize<T>(serializedObject);
+        return JsonSerializer.Deserialize<T>(serializedObject, _options.Value.SerializerOptions);
     }
 }

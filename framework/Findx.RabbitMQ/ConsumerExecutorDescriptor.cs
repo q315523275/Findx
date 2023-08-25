@@ -51,5 +51,10 @@ namespace Findx.RabbitMQ
         /// <summary>
         /// </summary>
         public Type Type { set; get; }
+
+        /// <summary>
+        /// ack消息回执
+        /// </summary>
+        public bool AutoAck { set; get; } = true;
     }
 }

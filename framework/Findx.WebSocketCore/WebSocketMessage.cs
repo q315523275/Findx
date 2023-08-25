@@ -29,7 +29,7 @@ public class WebSocketMessage
     /// <summary>
     ///     类型
     /// </summary>
-    public MessageType MessageType { get; set; }
+    public MessageType Type { get; set; }
 
     /// <summary>
     ///     内容
@@ -46,7 +46,7 @@ public class WebSocketMessage<T>
     /// <summary>
     ///     类型
     /// </summary>
-    public MessageType MessageType { get; set; }
+    public MessageType Type { get; set; }
 
     /// <summary>
     ///     内容

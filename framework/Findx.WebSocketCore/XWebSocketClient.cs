@@ -62,7 +62,13 @@ public class XWebSocketClient : IWebSocketSession, IDisposable
     /// <summary>
     ///     异常委托方法
     /// </summary>
+    [Obsolete("use OnException")]
     public Func<string, Exception, Task> OnError { set; get; }
+    
+    /// <summary>
+    ///     异常委托方法
+    /// </summary>
+    public Func<string, Exception, Task> OnException { set; get; }
 
     /// <summary>
     ///     关闭委托方法
@@ -95,8 +101,7 @@ public class XWebSocketClient : IWebSocketSession, IDisposable
     /// <param name="closeStatus"></param>
     /// <param name="statusDescription"></param>
     /// <param name="cancellationToken"></param>
-    public async Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription,
-        CancellationToken cancellationToken = default)
+    public async Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken = default)
     {
         await _webSocketClient.CloseAsync(closeStatus, statusDescription, cancellationToken).ConfigureAwait(false);
         Status = XWebSocketState.Closed;
@@ -210,13 +215,11 @@ public class XWebSocketClient : IWebSocketSession, IDisposable
                         Status = XWebSocketState.Closed;
                     }
 
-                    if (OnError != null)
-                        await OnError(message, ex);
+                    if (OnException != null) await OnException(message, ex);
                 }
                 catch (Exception ex)
                 {
-                    if (OnError != null)
-                        await OnError(message, ex);
+                    if (OnException != null) await OnException(message, ex);
                 }
             }
         }, _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ConfigureAwait(false);

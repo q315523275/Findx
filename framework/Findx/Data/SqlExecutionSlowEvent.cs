@@ -5,7 +5,7 @@ namespace Findx.Data;
 /// <summary>
 ///     慢Sql事件
 /// </summary>
-public class SqlExecutionSlowEvent : IApplicationEvent
+public class SqlExecutionSlowEvent : IApplicationEvent, IAsync
 {
     /// <summary>
     ///     原始Sql

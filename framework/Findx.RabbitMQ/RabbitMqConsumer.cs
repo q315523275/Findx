@@ -157,7 +157,8 @@ namespace Findx.RabbitMQ
 
                 Channel.BasicQos(0, (ushort)Queue.Qos, false);
 
-                Channel.BasicConsume(Queue.QueueName, Queue.AutoAck, consumer);
+                // 默认必须触发消息ack
+                Channel.BasicConsume(Queue.QueueName, false, consumer);
             }
             catch (Exception ex)
             {

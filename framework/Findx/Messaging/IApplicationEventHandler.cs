@@ -11,8 +11,8 @@ public interface IApplicationEventHandler<in TEvent> : IEventHandler where TEven
 	/// <summary>
 	///     处理泛型知消消息
 	/// </summary>
-	/// <param name="applicationEvent"></param>
+	/// <param name="eventData"></param>
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task HandleAsync(TEvent applicationEvent, CancellationToken cancellationToken = default);
+	Task HandleAsync(TEvent eventData, CancellationToken cancellationToken = default);
 }

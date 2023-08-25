@@ -566,7 +566,7 @@ public sealed class ImageProcessor : IImageProcessor
     public Task<byte[]> DrawTextAsync(byte[] imageByte, string text, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
     {
         var font = CreateFont(drawTextDto);
-        var textOptions = new TextOptions(font)
+        var textOptions = new RichTextOptions(font)
         {
             Origin = new PointF(drawTextDto.X, drawTextDto.Y),
             WrappingLength = drawTextDto.WrappingLength,
@@ -578,14 +578,14 @@ public sealed class ImageProcessor : IImageProcessor
         using var originalImage = Image.Load(imageByte, out var imageFormat);
         if (drawTextDto.UseOverlay)
         {
-            var textSize = TextMeasurer.Measure(text, textOptions);
+            var textSize = TextMeasurer.MeasureSize(text, textOptions);
             var overlay = new Image<Rgba32>((int)textSize.Width + drawTextDto.X * 2, (int)textSize.Height + drawTextDto.Y * 2);
             using (overlay)
             {
                 overlay.Mutate(ctx =>
                 {
                     ctx.Fill(Color.ParseHex(drawTextDto.OverlayColor).WithAlpha(drawTextDto.OverlayOpacity));
-                    ctx.DrawText(textOptions, text, textBrush);
+                    ctx.DrawText(textOptions: textOptions, text: text, brush: textBrush);
                 });
                 originalImage.Mutate(o => { o.DrawImage(overlay, location: new Point(drawTextDto.OverlayX, drawTextDto.OverlayY), opacity: 1); });
             }
@@ -610,7 +610,7 @@ public sealed class ImageProcessor : IImageProcessor
     public async Task<Stream> DrawTextAsync(Stream imageStream, string text, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
     {
         var font = CreateFont(drawTextDto);
-        var textOptions = new TextOptions(font)
+        var textOptions = new RichTextOptions(font)
         {
             Origin = new PointF(drawTextDto.X, drawTextDto.Y),
             WrappingLength = drawTextDto.WrappingLength,
@@ -623,7 +623,7 @@ public sealed class ImageProcessor : IImageProcessor
         {
             if (drawTextDto.UseOverlay)
             {
-                var textSize = TextMeasurer.Measure(text, textOptions);
+                var textSize = TextMeasurer.MeasureSize(text, textOptions);
                 var overlay = new Image<Rgba32>((int)textSize.Width + drawTextDto.X * 2, (int)textSize.Height + drawTextDto.Y * 2);
                 using (overlay)
                 {
@@ -815,7 +815,7 @@ public sealed class ImageProcessor : IImageProcessor
     public Task<byte[]> LetterWatermarkAsync(byte[] imageByte, string text, int location, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
     {
         var font = CreateFont(drawTextDto);
-        var textOptions = new TextOptions(font)
+        var textOptions = new RichTextOptions(font)
         {
             Origin = new PointF(drawTextDto.X, drawTextDto.Y),
             WrappingLength = drawTextDto.WrappingLength,
@@ -823,7 +823,7 @@ public sealed class ImageProcessor : IImageProcessor
             LineSpacing = drawTextDto.LineSpacing,
         };
         var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
-        var textSize = TextMeasurer.Measure(text, textOptions);
+        var textSize = TextMeasurer.MeasureSize(text, textOptions);
         
         using var originalImage = Image.Load(imageByte, out var imageFormat);
         if (drawTextDto.UseOverlay)
@@ -863,7 +863,7 @@ public sealed class ImageProcessor : IImageProcessor
     public async Task<Stream> LetterWatermarkAsync(Stream imageStream, string text, int location, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
     {
         var font = CreateFont(drawTextDto);
-        var textOptions = new TextOptions(font)
+        var textOptions = new RichTextOptions(font)
         {
             Origin = new PointF(drawTextDto.X, drawTextDto.Y),
             WrappingLength = drawTextDto.WrappingLength,
@@ -871,7 +871,7 @@ public sealed class ImageProcessor : IImageProcessor
             LineSpacing = drawTextDto.LineSpacing,
         };
         var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
-        var textSize = TextMeasurer.Measure(text, textOptions);
+        var textSize = TextMeasurer.MeasureSize(text, textOptions);
         
         var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
         using (originalImage)

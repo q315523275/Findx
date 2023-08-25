@@ -57,11 +57,8 @@ namespace Findx.RabbitMQ
             {
                 var defaultQueue = group.First();
 
-                var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(defaultQueue.ExchangeName,
-                    defaultQueue.ExchangeType, defaultQueue.Durable);
-                var queueDeclareConfiguration =
-                    new QueueDeclareConfiguration(defaultQueue.QueueName, qos: defaultQueue.Qos)
-                        { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
+                var exchangeDeclareConfiguration = new ExchangeDeclareConfiguration(defaultQueue.ExchangeName, defaultQueue.ExchangeType, defaultQueue.Durable);
+                var queueDeclareConfiguration = new QueueDeclareConfiguration(defaultQueue.QueueName, qos: defaultQueue.Qos, durable: defaultQueue.Durable, autoAck: defaultQueue.AutoAck) { Arguments = new Dictionary<string, object> { { "x-queue-mode", "lazy" } } };
 
                 var routingKeyDict = group.GroupBy(x => x.RoutingKey).ToDictionary(x => x.Key, x => x);
 
@@ -144,7 +141,8 @@ namespace Findx.RabbitMQ
                     Qos = attr.Qos,
                     RoutingKey = attr.RoutingKey,
                     MethodInfo = method,
-                    Type = type
+                    Type = type,
+                    AutoAck = attr.AutoAck
                 });
             return result;
         }

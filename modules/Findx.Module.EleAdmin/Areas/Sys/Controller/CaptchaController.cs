@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
@@ -45,7 +47,7 @@ public class CaptchaController : AreaApiControllerBase
     public async Task<CommonResult> CaptchaAsync(int width = 150, int height = 50, [Range(3, 6)] int length = 4)
     {
         var code = _verifyCoder.GetCode(length, VerifyCodeType.NumberAndLetter);
-        var st = await _verifyCoder.CreateImageAsync(code, width, height);
+        var st = await _verifyCoder.CreateImageAsync(code, width, height, 38);
         var cache = _cacheFactory.Create(CacheType.DefaultMemory);
         var uuid = Guid.NewGuid().ToString("N");
         var cacheKey = $"verifyCode:{uuid}";

@@ -1,15 +1,13 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Findx.Discovery
+namespace Findx.Discovery.Abstractions
 {
     /// <summary>
     ///     服务注册
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public interface IServiceRegistry<in T> : IDisposable
-        where T : IServiceInstance
+    public interface IServiceRegistry<in T> where T : IServiceInstance
     {
         /// <summary>
         ///     注册服务

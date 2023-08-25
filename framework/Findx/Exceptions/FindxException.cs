@@ -51,4 +51,16 @@ public class FindxException : Exception
     ///     错误描述
     /// </summary>
     public string ErrorMessage { get; private set; }
+
+    /// <summary>
+    /// 判断是否排除业务异常
+    /// </summary>
+    /// <param name="isThrow"></param>
+    /// <param name="code"></param>
+    /// <param name="msg"></param>
+    /// <exception cref="FindxException"></exception>
+    public static void ThrowIf(bool isThrow, string code, string msg)
+    {
+        if (isThrow) throw new FindxException(code, msg);
+    }
 }

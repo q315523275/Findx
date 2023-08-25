@@ -1,5 +1,6 @@
 using System;
 using System.Net.WebSockets;
+using System.Text.Json.Serialization;
 
 namespace Findx.WebSocketCore;
 
@@ -52,5 +53,6 @@ public class WebSocketClient : ClientInfo
     /// <summary>
     ///     连接端
     /// </summary>
+    [JsonIgnore]
     public WebSocket Client { get; set; }
 }

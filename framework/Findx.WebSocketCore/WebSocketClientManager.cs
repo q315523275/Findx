@@ -62,7 +62,7 @@ public class WebSocketClientManager : IWebSocketClientManager
     /// <returns></returns>
     public IEnumerable<string> GetAllClientsFromGroup(string groupId)
     {
-        return _groups.ContainsKey(groupId) ? _groups[groupId] : default;
+        return _groups.TryGetValue(groupId, out var group) ? group : default;
     }
 
     /// <summary>
@@ -81,10 +81,9 @@ public class WebSocketClientManager : IWebSocketClientManager
     /// <param name="groupId"></param>
     public void AddToGroup(WebSocketClient clientInfo, string groupId)
     {
-        if (_groups.ContainsKey(groupId))
+        if (_groups.TryGetValue(groupId, out var group))
         {
-            _groups[groupId].Add(clientInfo.Id);
-
+            group.Add(clientInfo.Id);
             return;
         }
 
@@ -98,7 +97,7 @@ public class WebSocketClientManager : IWebSocketClientManager
     /// <param name="groupId"></param>
     public void RemoveFromGroup(WebSocketClient clientInfo, string groupId)
     {
-        if (_groups.ContainsKey(groupId)) _groups[groupId].Remove(clientInfo.Id);
+        if (_groups.TryGetValue(groupId, out var group)) group.Remove(clientInfo.Id);
     }
 
     /// <summary>

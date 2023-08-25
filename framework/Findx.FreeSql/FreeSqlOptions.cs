@@ -38,8 +38,7 @@ namespace Findx.FreeSql
         /// <summary>
         ///     数据源列表
         /// </summary>
-        public Dictionary<string, FreeSqlConnectionConfig> DataSource { set; get; } =
-            new Dictionary<string, FreeSqlConnectionConfig>();
+        public Dictionary<string, FreeSqlConnectionConfig> DataSource { set; get; } = new();
 
         /// <summary>
         ///     this

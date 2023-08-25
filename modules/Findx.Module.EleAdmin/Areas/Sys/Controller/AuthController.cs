@@ -50,8 +50,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="recordRepo"></param>
     /// <param name="settingProvider"></param>
     /// <param name="keyGenerator"></param>
-    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser,
-        ICacheFactory cacheFactory, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo,
+    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo,
         ISettingProvider settingProvider, IKeyGenerator<Guid> keyGenerator)
     {
         _tokenBuilder = tokenBuilder;
@@ -151,18 +150,20 @@ public class AuthController : AreaApiControllerBase
         {
             { ClaimTypes.UserId, accountInfo.Id.SafeString() },
             { ClaimTypes.UserName, accountInfo.UserName.SafeString() },
+            { ClaimTypes.UserIdTypeName, typeof(Guid).FullName },
             { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
             { ClaimTypes.TenantId, req.TenantId.ToString() },
-            { ClaimTypes.UserIdTypeName, typeof(Guid).FullName },
             { "org_id", accountInfo.OrgId.SafeString() },
             { "org_name", accountInfo.OrgName.SafeString() }
         };
+        payload[ClaimTypes.UserId] = accountInfo.Id.SafeString();
         if (_useAbpJwt)
         {
             payload[System.Security.Claims.ClaimTypes.NameIdentifier] = accountInfo.Id.SafeString();
             payload[System.Security.Claims.ClaimTypes.Name] = accountInfo.UserName.SafeString();
             payload[System.Security.Claims.ClaimTypes.GivenName] = accountInfo.Nickname.SafeString();
         }
+
         var token = await _tokenBuilder.CreateAsync(payload, _options.Value);
         return CommonResult.Success(new { access_token = "Bearer " + token.AccessToken });
     }

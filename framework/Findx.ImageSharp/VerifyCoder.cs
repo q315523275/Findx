@@ -54,9 +54,8 @@ public class VerifyCoder : IVerifyCoder
         using var imgText = new Image<Rgba32>(imageWidth, imageHeight);
 
         // 增加背景色与中心渐变,普通集成ocr无法直接识别
-        var lightColorHex = LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)];
         imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
-        imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(lightColorHex)));
+        imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
 
         // 绘制验证码
         imgText.Mutate(ctx => ctx.DrawingEnText(imageWidth, imageHeight, text, ColorHexArr, fontSize, _fontFamilies));

@@ -22,10 +22,6 @@ namespace Findx.Discovery.Consul
             _logger = logger;
         }
 
-        public void Dispose()
-        {
-        }
-
         public async Task<bool> RegisterAsync(IConsulRegistration registration,
             CancellationToken cancellationToken = default)
         {

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Findx.Exceptions;
 using Findx.Extensions;
 
 namespace Findx.Jobs.Internal;

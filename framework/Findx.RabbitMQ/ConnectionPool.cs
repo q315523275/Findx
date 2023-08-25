@@ -5,7 +5,7 @@ using RabbitMQ.Client;
 
 namespace Findx.RabbitMQ
 {
-    public class ConnectionPool : IConnectionPool, IDisposable
+    public class ConnectionPool : IConnectionPool
     {
         private bool _isDisposed;
 

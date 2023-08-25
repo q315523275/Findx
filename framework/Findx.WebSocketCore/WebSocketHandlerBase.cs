@@ -44,7 +44,7 @@ public abstract class WebSocketHandlerBase
         await SendMessageAsync(client,
             new WebSocketMessage<string>
             {
-                MessageType = MessageType.ConnectionEvent,
+                Type = MessageType.ConnectionEvent,
                 Data = $"{client.Id},{client.Name},{client.RemoteIp},{client.ServerIp}"
             }).ConfigureAwait(false);
     }
@@ -149,15 +149,14 @@ public abstract class WebSocketHandlerBase
     /// <param name="client"></param>
     /// <param name="result"></param>
     /// <param name="receivedMessage"></param>
-    public virtual async Task ReceiveAsync(WebSocketClient client, WebSocketReceiveResult result,
-        string receivedMessage)
+    public virtual async Task ReceiveAsync(WebSocketClient client, WebSocketReceiveResult result, string receivedMessage)
     {
         try
         {
             await SendMessageAsync(client,
                 new WebSocketMessage<string>
                 {
-                    MessageType = MessageType.Text,
+                    Type = MessageType.Text,
                     Data = $"{client.Id},{client.Name},{client.RemoteIp},{client.ServerIp}:{receivedMessage}"
                 }).ConfigureAwait(false);
         }
@@ -165,7 +164,7 @@ public abstract class WebSocketHandlerBase
         {
             await SendMessageAsync(client,
                     new WebSocketMessage<string>
-                        { MessageType = MessageType.Error, Data = "does not take parameters!" })
+                        { Type = MessageType.Error, Data = "does not take parameters!" })
                 .ConfigureAwait(false);
         }
 
@@ -173,7 +172,7 @@ public abstract class WebSocketHandlerBase
         {
             await SendMessageAsync(client,
                     new WebSocketMessage<string>
-                        { MessageType = MessageType.Error, Data = "takes different arguments!" })
+                        { Type = MessageType.Error, Data = "takes different arguments!" })
                 .ConfigureAwait(false);
         }
     }

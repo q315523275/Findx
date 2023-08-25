@@ -57,5 +57,10 @@ namespace Findx.RabbitMQ
         ///     MQ连接名
         /// </summary>
         public string ConnectionName { set; get; }
+
+        /// <summary>
+        /// 自动Ack回执
+        /// </summary>
+        public bool AutoAck { set; get; } = true;
     }
 }

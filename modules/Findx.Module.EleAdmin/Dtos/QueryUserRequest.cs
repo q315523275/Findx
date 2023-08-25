@@ -23,6 +23,11 @@ public class QueryUserRequest : PageBase
     public int Sex { set; get; }
 
     /// <summary>
+    ///     状态
+    /// </summary>
+    public int Status { set; get; } = -1;
+
+    /// <summary>
     ///     机构编号
     /// </summary>
     public Guid? OrgId { set; get; }

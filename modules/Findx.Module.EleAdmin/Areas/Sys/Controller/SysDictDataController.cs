@@ -38,8 +38,8 @@ public class
         }
 
         var whereExp = ExpressionBuilder.Create<SysDictDataInfo>()
-            .AndIF(typeId != Guid.Empty, x => x.TypeId == typeId)
-            .AndIF(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords));
+                                        .AndIF(typeId != Guid.Empty, x => x.TypeId == typeId)
+                                        .AndIF(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords));
 
         return whereExp;
     }

@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
+using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Linq;
 using Findx.Module.EleAdmin.Dtos;
@@ -20,10 +21,20 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Route("api/[area]/user")]
 [Authorize]
 [Description("系统-用户")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-用户")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户")]
 public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
 {
+    private readonly IKeyGenerator<Guid> _keyGenerator;
+
+    /// <summary>
+    /// Ctor
+    /// </summary>
+    /// <param name="keyGenerator"></param>
+    public SysUserController(IKeyGenerator<Guid> keyGenerator)
+    {
+        _keyGenerator = keyGenerator;
+    }
+
     /// <summary>
     ///     构建查询条件
     /// </summary>
@@ -186,8 +197,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
             var user = await repo.FirstAsync(x => x.UserName == req.UserName);
             if (user != null)
             {
-                var list = req.Roles.Select(x => new SysUserRoleInfo
-                    { RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
+                var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
                 await roleRepo.InsertAsync(list);
             }
         }
@@ -218,8 +228,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
         {
             var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
 
-            var list = req.Roles.Select(x => new SysUserRoleInfo
-                { RoleId = x.Id, UserId = model.Id, TenantId = TenantManager.Current });
+            var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id, TenantId = TenantManager.Current });
             await roleRepo.DeleteAsync(x => x.UserId == model.Id);
             await roleRepo.InsertAsync(list);
         }

@@ -17,8 +17,7 @@ namespace Findx.RabbitMQ
         /// <param name="autoDelete"></param>
         /// <param name="qos"></param>
         /// <param name="autoAck"></param>
-        public QueueDeclareConfiguration(string queueName, bool durable = true, bool exclusive = false,
-            bool autoDelete = false, int qos = 1, bool autoAck = true)
+        public QueueDeclareConfiguration(string queueName, bool durable = true, bool exclusive = false, bool autoDelete = false, int qos = 1, bool autoAck = true)
         {
             Check.NotNull(queueName, nameof(queueName));
 
