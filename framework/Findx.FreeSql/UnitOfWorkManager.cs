@@ -1,4 +1,5 @@
 ﻿using System;
+using Findx.Common;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;

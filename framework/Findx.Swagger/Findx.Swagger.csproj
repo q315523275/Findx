@@ -6,7 +6,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Swagger在线文档组件,优化中文展示</Description>
-        <PackageVersion>1.9.5.2</PackageVersion>
+        <PackageVersion>2023.9.5.1</PackageVersion>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 

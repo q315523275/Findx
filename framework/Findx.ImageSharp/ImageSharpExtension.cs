@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Extensions;
-using Findx.Utils;
+using Findx.Utilities;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -41,13 +41,13 @@ public static class ImageSharpExtension
         // 逐字绘制,方便控制
         for (var i = 0; i < text.Length; i++)
         {
-            var fontFamily = fontFamilies.Count > 1 ? fontFamilies[RandomUtil.RandomInt(0, fontFamilies.Count)] : fontFamilies.First();
-            var fontStyle = (FontStyle)fontStyleArr.GetValue(RandomUtil.RandomInt(fontStyleArr.Length));
+            var fontFamily = fontFamilies.Count > 1 ? fontFamilies[RandomUtility.RandomInt(0, fontFamilies.Count)] : fontFamilies.First();
+            var fontStyle = (FontStyle)fontStyleArr.GetValue(RandomUtility.RandomInt(fontStyleArr.Length));
             // 随机字体大小
-            fontSize = RandomUtil.RandomInt(fontMiniSize, fontMaxSize);
+            fontSize = RandomUtility.RandomInt(fontMiniSize, fontMaxSize);
             var scaledFont = fontFamily.CreateFont(fontSize, fontStyle);
             var point = new Point(i * textWidth, 0);
-            var colorHex = colorHexArr[RandomUtil.RandomInt(0, colorHexArr.Length)];
+            var colorHex = colorHexArr[RandomUtility.RandomInt(0, colorHexArr.Length)];
             
             using Image<Rgba32> img2 = new(img2Size, containerHeight);
    
@@ -60,7 +60,7 @@ public static class ImageSharpExtension
             img2.Mutate(ctx =>
                         ctx.DrawText(text[i1].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(offsetLeft, offsetTop))
                            .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
-                           .Rotate(RandomUtil.RandomInt(-15, 15)) // 字体自带旋转，意思一下就行
+                           .Rotate(RandomUtility.RandomInt(-15, 15)) // 字体自带旋转，意思一下就行
             );
 
             processingContext.DrawImage(img2, point, 1);

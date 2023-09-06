@@ -1,5 +1,5 @@
 ﻿using Findx.Extensions;
-using Findx.Utils;
+using Findx.Utilities;
 using Findx.Validations.Validators;
 
 namespace System.ComponentModel.DataAnnotations;
@@ -32,7 +32,7 @@ public class HttpUrlAddressAttribute : ValidationAttribute
     {
         if (value.SafeString().IsNullOrWhiteSpace())
             return ValidationResult.Success;
-        if (RegexUtil.IsMatch(value.SafeString(), ValidatePattern.UrlPattern))
+        if (RegexUtility.IsMatch(value.SafeString(), ValidatePattern.UrlPattern))
             return ValidationResult.Success;
         return new ValidationResult(FormatErrorMessage(string.IsNullOrWhiteSpace(validationContext.DisplayName)
             ? validationContext.MemberName

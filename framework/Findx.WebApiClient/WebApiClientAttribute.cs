@@ -1,4 +1,5 @@
 ﻿using System;
+using Findx.Common;
 using Findx.Discovery;
 using Findx.Discovery.LoadBalancer;
 using WebApiClientCore.Attributes;

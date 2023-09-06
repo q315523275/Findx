@@ -4,6 +4,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using Findx.Common;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Findx.Security.Authentication.Jwt;

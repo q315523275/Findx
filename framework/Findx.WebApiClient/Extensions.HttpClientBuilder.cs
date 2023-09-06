@@ -3,9 +3,10 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Extensions;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
@@ -73,7 +74,7 @@ internal static class Extensions
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak.IsNullOrWhiteSpace()) return httpClientBuilder;
 
-        var breakTimeSpan = Time.ToTimeSpan(durationOfBreak);
+        var breakTimeSpan = TimeSpanUtility.ToTimeSpan(durationOfBreak);
 
         httpClientBuilder.AddTransientHttpErrorPolicy(build =>
         {

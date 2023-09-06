@@ -1,4 +1,4 @@
-using Findx.Utils;
+using Findx.Utilities;
 
 namespace Findx.Machine.Memory;
 
@@ -13,10 +13,10 @@ public static class MemoryHelper
     /// <returns></returns>
     public static MemoryValue GetMemoryValue()
     {
-        if (Common.IsWindows)
+        if (CommonUtility.IsWindows)
             return WindowsMemory.GetMemory();
 
-        if (Common.IsLinux)
+        if (CommonUtility.IsLinux)
             return LinuxMemory.GetMemory();
 
         return default;

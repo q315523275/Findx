@@ -1,5 +1,5 @@
 ﻿using Findx.Extensions;
-using Findx.Utils;
+using Findx.Utilities;
 
 namespace Findx;
 
@@ -20,28 +20,40 @@ public class ApplicationContext : IApplicationContext
     /// <param name="environment"></param>
     /// <param name="hostApplicationLifetime"></param>
     /// <param name="configuration"></param>
-    public ApplicationContext(IOptions<ApplicationOptions> options, IHostEnvironment environment,
-        IHostApplicationLifetime hostApplicationLifetime, IConfiguration configuration)
+    public ApplicationContext(IOptions<ApplicationOptions> options, IHostEnvironment environment, IHostApplicationLifetime hostApplicationLifetime, IConfiguration configuration)
     {
-        _hostApplicationLifetime = hostApplicationLifetime;
-
+        HostEnvironment = environment;
+        AppSetting = configuration;
+        RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;
+        
         ApplicationId = options.Value.Id ?? Guid.NewGuid().ToString();
         ApplicationName = options.Value.Name ?? environment.ApplicationName;
         Port = options.Value.Port > 0 ? options.Value.Port : GlobalListener.GetAvailablePort(5000);
         // 验证端口是否被占用
-        if (options.Value.AvailablePort && !GlobalListener.CanListen(Port))
-            Port = GlobalListener.GetAvailablePort(5000);
+        if (options.Value.AvailablePort && !GlobalListener.CanListen(Port)) Port = GlobalListener.GetAvailablePort(5000);
         Uris = options.Value.Uris ?? $"htt" + $"p://*:{Port}";
 
         _version = new Lazy<string>(() => options.Value.Version ?? GetType().Assembly.GetProductVersion());
-        _instanceIp = new Lazy<string>(() =>
-            options.Value.InstanceIp ?? HostUtil.ResolveHostAddress(HostUtil.ResolveHostName()));
+        _instanceIp = new Lazy<string>(() => options.Value.InstanceIp ?? HostUtility.ResolveHostAddress(HostUtility.ResolveHostName()));
         _internalIp = new Lazy<string>(() => options.Value.InternalIp ?? _instanceIp.Value);
 
-        RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;
-
-        AppSetting = configuration;
+        _hostApplicationLifetime = hostApplicationLifetime;
     }
+    
+    /// <summary>
+    ///     HostEnvironment
+    /// </summary>
+    public IHostEnvironment HostEnvironment { get; }
+
+    /// <summary>
+    ///     配置提供器
+    /// </summary>
+    public IConfiguration AppSetting { get; }
+    
+    /// <summary>
+    ///     根目录
+    /// </summary>
+    public string RootPath { get; }
 
     /// <summary>
     ///     应用编号
@@ -77,16 +89,6 @@ public class ApplicationContext : IApplicationContext
     ///     内网Ip
     /// </summary>
     public string InternalIp => _internalIp.Value;
-
-    /// <summary>
-    ///     根目录
-    /// </summary>
-    public string RootPath { get; }
-    
-    /// <summary>
-    ///     配置提供器
-    /// </summary>
-    public IConfiguration AppSetting { get; }
 
     /// <summary>
     ///     获取绝对路径

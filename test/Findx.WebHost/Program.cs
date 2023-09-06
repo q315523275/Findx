@@ -6,6 +6,7 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Castle;
 using Findx.Data;
 using Findx.Extensions;
+using Findx.Linq;
 using Findx.WebHost.Aspect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,3 +1,4 @@
+using Findx.Common;
 using Findx.Messaging;
 
 namespace Findx.Data;

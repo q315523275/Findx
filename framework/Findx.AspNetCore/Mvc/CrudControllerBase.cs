@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using Findx.Common;
 using Findx.Data;
 using Findx.Mapping;
 using Findx.Security;

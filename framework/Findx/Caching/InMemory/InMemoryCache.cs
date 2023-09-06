@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Threading;
 
@@ -454,7 +455,7 @@ internal class CacheItem
     private object Value { get; set; }
 
     /// <summary>
-    /// 过期时间
+    ///     过期时间
     /// </summary>
     private TimeSpan? ExpiredTimeSpan { get; set; }
 

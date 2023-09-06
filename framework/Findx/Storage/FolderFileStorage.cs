@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Serialization;
-using Findx.Utils;
-using Findx.Utils.Files;
+using Findx.Utilities;
 
 namespace Findx.Storage;
 
@@ -64,7 +64,7 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
             {
                 var directory = Path.GetDirectoryName(targetPath);
                 if (directory != null)
-                    DirectoryTool.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
+                    DirectoryUtility.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
 
                 File.Copy(Path.Combine(_mediaRootFolder, path), Path.Combine(_mediaRootFolder, targetPath), overwrite);
             }
@@ -244,7 +244,7 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
             {
                 var directory = Path.GetDirectoryName(newPath);
                 if (directory != null)
-                    DirectoryTool.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
+                    DirectoryUtility.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
 
                 var oldFullPath = Path.Combine(_mediaRootFolder, path);
                 var newFullPath = Path.Combine(_mediaRootFolder, newPath);
@@ -342,7 +342,7 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
 
         var directory = Path.GetDirectoryName(filePath);
         if (directory != null)
-            DirectoryTool.CreateIfNotExists(directory);
+            DirectoryUtility.CreateIfNotExists(directory);
 
         return File.Create(filePath);
     }

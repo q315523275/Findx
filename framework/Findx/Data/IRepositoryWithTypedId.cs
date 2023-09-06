@@ -110,22 +110,22 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <summary>
     ///     更新实体信息
     /// </summary>
-    /// <param name="entitys"></param>
+    /// <param name="entities"></param>
     /// <param name="updateColumns"></param>
     /// <param name="ignoreColumns"></param>
     /// <returns>影响行数</returns>
-    int Update(IEnumerable<TEntity> entitys, Expression<Func<TEntity, object>> updateColumns = null,
+    int Update(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null,
         Expression<Func<TEntity, object>> ignoreColumns = null);
 
     /// <summary>
     ///     更新实体信息
     /// </summary>
-    /// <param name="entitys"></param>
+    /// <param name="entities"></param>
     /// <param name="updateColumns"></param>
     /// <param name="ignoreColumns"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>影响行数</returns>
-    Task<int> UpdateAsync(IEnumerable<TEntity> entitys, Expression<Func<TEntity, object>> updateColumns = null,
+    Task<int> UpdateAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null,
         Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -196,8 +196,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        CancellationToken cancellationToken = default);
+    Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     查询列表数据
@@ -205,8 +204,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="orderParameters"></param>
     /// <returns></returns>
-    List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
+    List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
 
     /// <summary>
     ///     查询列表数据
@@ -215,8 +213,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="cancellationToken"></param>
     /// <param name="orderParameters"></param>
     /// <returns></returns>
-    Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
+    Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     查询列表数据并返回自定义参数
@@ -226,9 +223,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="orderParameters"></param>
     /// <typeparam name="TObject"></typeparam>
     /// <returns></returns>
-    List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
+    List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
 
     /// <summary>
     ///     查询列表数据并返回自定义参数
@@ -239,9 +234,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="orderParameters"></param>
     /// <typeparam name="TObject"></typeparam>
     /// <returns></returns>
-    Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
+    Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     查询指定条数列表数据
@@ -250,8 +243,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="orderParameters"></param>
     /// <returns></returns>
-    List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
+    List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
 
     /// <summary>
     ///     查询指定条数列表数据
@@ -261,8 +253,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="orderParameters"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
+    Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     查询指定条数自定义参数列表数据
@@ -273,9 +264,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="orderParameters"></param>
     /// <param name="selectExpression"></param>
     /// <returns></returns>
-    List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
+    List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
 
     /// <summary>
     ///     查询指定条数自定义参数列表数据
@@ -287,9 +276,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="cancellationToken"></param>
     /// <param name="orderParameters"></param>
     /// <returns></returns>
-    Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
+    Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
 
     #endregion
 

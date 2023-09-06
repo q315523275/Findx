@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System.Text.Json.Serialization;
+using Findx.Common;
 using Findx.Messaging;
 
 namespace Findx.Data;

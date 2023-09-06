@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Findx.Caching;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Discovery
@@ -18,8 +18,8 @@ namespace Findx.Discovery
         /// </summary>
         public DiscoveryOptions()
         {
-            _hostName = HostUtil.ResolveHostName();
-            IpAddress = HostUtil.ResolveHostAddress(_hostName);
+            _hostName = HostUtility.ResolveHostName();
+            IpAddress = HostUtility.ResolveHostAddress(_hostName);
         }
 
         /// <summary>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Findx.Utils;
+using Findx.Utilities;
 
 namespace Findx.Discovery.LoadBalancer.Selectors;
 
@@ -24,7 +24,7 @@ public class RandomSelector : ILoadBalancer
     {
         _services = services;
         _serviceName = serviceName;
-        _generate = RandomUtil.RandomInt;
+        _generate = RandomUtility.RandomInt;
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-using Findx.Utils;
+using Findx.Utilities;
 
 namespace Findx.Machine.Cpu;
 
@@ -13,10 +13,10 @@ public class CpuHelper
     /// <returns></returns>
     public static CpuTime GetCpuTime()
     {
-        if (Common.IsWindows)
+        if (CommonUtility.IsWindows)
             return WindowsCpu.GetCpuTime();
 
-        if (Common.IsLinux)
+        if (CommonUtility.IsLinux)
             return LinuxCpu.GetCpuTime();
 
         return new CpuTime();

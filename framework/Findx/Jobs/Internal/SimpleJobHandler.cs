@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Findx.Common;
 using Findx.Extensions;
 using Findx.Messaging;
 

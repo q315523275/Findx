@@ -5,6 +5,7 @@ using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using WebApiClientCore.Internals;
 
 namespace Findx.WebApiClient;
 
@@ -31,6 +32,8 @@ public class WebApiClientModule : StartupModule
     /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
+        new ValueStringBuilder();
+        
         var configuration = services.GetConfiguration();
 
         var webApiFinder =

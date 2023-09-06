@@ -2,7 +2,6 @@
 using System.ComponentModel.DataAnnotations;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
-using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Linq;
 using Findx.Module.EleAdmin.Dtos;

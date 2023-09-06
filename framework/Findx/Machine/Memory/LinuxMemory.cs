@@ -1,5 +1,5 @@
 using Findx.Extensions;
-using Findx.Utils;
+using Findx.Utilities;
 
 namespace Findx.Machine.Memory;
 
@@ -21,7 +21,7 @@ public class LinuxMemory
         ulong availableVirtualMemory = 0; // 可用虚拟内存字节数
 
         // 总内存、可用内存
-        var dic = Common.ReadInfo("/proc/meminfo");
+        var dic = CommonUtility.ReadInfo("/proc/meminfo");
         if (dic == null) return default;
 
         if (dic.TryGetValue("MemTotal", out var str))

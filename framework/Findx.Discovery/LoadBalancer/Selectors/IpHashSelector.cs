@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Findx.DependencyInjection;
 using Findx.Threading;
-using Findx.Utils;
+using Findx.Utilities;
 
 namespace Findx.Discovery.LoadBalancer.Selectors;
 
@@ -55,7 +55,7 @@ public class IpHashSelector : ILoadBalancer
         }
         
         // 客户端Ip,不存在客户端Ip时使用本地Ip
-        var clientIp = ServiceLocator.GetService<IThreadCurrentClientIpAccessor>()?.GetClientIp()?? HostUtil.ResolveHostAddress(HostUtil.ResolveHostName());
+        var clientIp = ServiceLocator.GetService<IThreadCurrentClientIpAccessor>()?.GetClientIp()?? HostUtility.ResolveHostAddress(HostUtility.ResolveHostName());
         
         var currentService = (IServiceInstance) null;
         while (currentService == null || !services.Contains(currentService))

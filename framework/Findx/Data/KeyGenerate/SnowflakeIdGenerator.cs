@@ -1,4 +1,4 @@
-﻿using Findx.Utils;
+﻿using Findx.Utilities;
 
 namespace Findx.Data;
 
@@ -13,6 +13,6 @@ public class SnowflakeIdGenerator : IKeyGenerator<long>
     /// <returns></returns>
     public long Create()
     {
-        return SnowflakeId.Default().NextId();
+        return SnowflakeIdUtility.Default().NextId();
     }
 }

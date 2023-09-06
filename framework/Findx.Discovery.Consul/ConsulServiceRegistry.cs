@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Consul;
+using Findx.Common;
 using Microsoft.Extensions.Logging;
 
 namespace Findx.Discovery.Consul

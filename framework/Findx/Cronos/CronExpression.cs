@@ -22,6 +22,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
+using Findx.Extensions;
 
 namespace Findx.Cronos;
 
@@ -303,8 +304,9 @@ public sealed class CronExpression : IEquatable<CronExpression>
     /// <inheritdoc />
     public override string ToString()
     {
-        var expressionBuilder = new StringBuilder();
-
+        // var expressionBuilder = new StringBuilder();
+        using var psb = Pool.StringBuilder.Get(out var expressionBuilder);
+        
         AppendFieldValue(expressionBuilder, CronField.Seconds, _second).Append(' ');
         AppendFieldValue(expressionBuilder, CronField.Minutes, _minute).Append(' ');
         AppendFieldValue(expressionBuilder, CronField.Hours, _hour).Append(' ');

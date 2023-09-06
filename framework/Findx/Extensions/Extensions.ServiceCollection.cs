@@ -3,11 +3,12 @@ using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using Findx.Builders;
+using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Logging;
 using Findx.Modularity;
 using Findx.Reflection;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Findx.Extensions;
@@ -206,7 +207,7 @@ public static partial class Extensions
 
         watch.Stop();
         // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
-        logger.LogInformation($"框架初始化完毕，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Process.GetCurrentProcess().Id}{Common.Line}");
+        logger.LogInformation($"框架初始化完毕，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Process.GetCurrentProcess().Id}{CommonUtility.Line}");
 
         return provider;
     }

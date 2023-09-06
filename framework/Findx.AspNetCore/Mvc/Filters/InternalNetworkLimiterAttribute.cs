@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Findx.AspNetCore.Extensions;
 using Findx.Data;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -23,7 +23,7 @@ public class InternalNetworkLimiterAttribute : ActionFilterAttribute
     public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
         var ipv4Address = context.HttpContext.GetClientIp();
-        if (NetUtil.IsInternalIp(ipv4Address))
+        if (NetUtility.IsInternalIp(ipv4Address))
             await next();
         else
             context.Result = new JsonResult(CommonResult.Fail("4003", $"network request interception; ip({ipv4Address})"));

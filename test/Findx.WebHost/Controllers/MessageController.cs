@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Findx.Events;
 using Findx.Messaging;
-using Findx.Utils;
+using Findx.Utilities;
 using Findx.WebHost.EventHandlers;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +17,7 @@ public class MessageController : Controller
     [HttpGet("/message/request")]
     public async Task<string> MessageSend([FromServices] IMessageDispatcher dispatcher)
     {
-        var orderId = SnowflakeId.Default().NextId();
+        var orderId = SnowflakeIdUtility.Default().NextId();
         var res = await dispatcher.SendAsync(new CancelOrderCommand(orderId.ToString()));
         return $"orderId:{orderId},result:{res}";
     }
@@ -30,7 +30,7 @@ public class MessageController : Controller
     [HttpGet("/message/notify")]
     public async Task<string> MessageNotify([FromServices] IMessageDispatcher context)
     {
-        await context.PublishAsync(new PayedOrderCommand(SnowflakeId.Default().NextId()));
+        await context.PublishAsync(new PayedOrderCommand(SnowflakeIdUtility.Default().NextId()));
         return "ok";
     }
     
@@ -42,7 +42,7 @@ public class MessageController : Controller
     [HttpGet("/message/bus")]
     public async Task<string> Bus([FromServices] IEventBus context)
     {
-        var command = new PayedOrderCommand(SnowflakeId.Default().NextId());
+        var command = new PayedOrderCommand(SnowflakeIdUtility.Default().NextId());
         var orderId = command.OrderId;
         await context.PublishAsync(command);
         return $"IEventBus.PublishAsync###{orderId}****HandleAsync{command.OrderId}";

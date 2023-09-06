@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Imaging;
-using Findx.Utils;
+using Findx.Utilities;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -95,12 +95,12 @@ public sealed class ImageProcessor : IImageProcessor
     private static bool CanResize(string mimeType)
     {
         return mimeType switch {
-            MimeTypes.Image.Jpeg => true,
-            MimeTypes.Image.Png => true,
-            MimeTypes.Image.Gif => true,
-            MimeTypes.Image.Bmp => true,
-            MimeTypes.Image.Tiff => true,
-            MimeTypes.Image.Webp => true,
+            MimeTypeUtility.Image.Jpeg => true,
+            MimeTypeUtility.Image.Png => true,
+            MimeTypeUtility.Image.Gif => true,
+            MimeTypeUtility.Image.Bmp => true,
+            MimeTypeUtility.Image.Tiff => true,
+            MimeTypeUtility.Image.Webp => true,
             _ => false
         };
     }
@@ -229,9 +229,9 @@ public sealed class ImageProcessor : IImageProcessor
     private static bool CanCompress(string mimeType)
     {
         return mimeType switch {
-            MimeTypes.Image.Jpeg => true,
-            MimeTypes.Image.Png => true,
-            MimeTypes.Image.Webp => true,
+            MimeTypeUtility.Image.Jpeg => true,
+            MimeTypeUtility.Image.Png => true,
+            MimeTypeUtility.Image.Webp => true,
             _ => false
         };
     }
@@ -240,12 +240,12 @@ public sealed class ImageProcessor : IImageProcessor
     {
         return format.DefaultMimeType switch
         {
-            MimeTypes.Image.Jpeg => new JpegEncoder { Quality = quality },
-            MimeTypes.Image.Png => new PngEncoder
+            MimeTypeUtility.Image.Jpeg => new JpegEncoder { Quality = quality },
+            MimeTypeUtility.Image.Png => new PngEncoder
             {
                 CompressionLevel = PngCompressionLevel.BestCompression, IgnoreMetadata = true
             },
-            MimeTypes.Image.Webp => new WebpEncoder { Quality = quality },
+            MimeTypeUtility.Image.Webp => new WebpEncoder { Quality = quality },
             _ => throw new FindxException($"图片格式{format.Name}不支持压缩")
         };
     }

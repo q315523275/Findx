@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Net;
+using Findx.Common;
 using Findx.Extensions;
 using Findx.UA;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.AspNetCore.Extensions;
@@ -85,6 +86,6 @@ public static partial class Extensions
     public static UserAgent GetUserAgent(this HttpRequest request)
     {
         var ua = request.Headers.GetOrDefault("User-Agent").SafeString();
-        return UserAgentUtil.Parse(ua);
+        return UserAgentUtility.Parse(ua);
     }
 }

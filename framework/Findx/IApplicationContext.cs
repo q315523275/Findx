@@ -6,6 +6,16 @@
 public interface IApplicationContext
 {
     /// <summary>
+    /// Host environment.
+    /// </summary>
+    IHostEnvironment HostEnvironment { get; }
+    
+    /// <summary>
+    ///     设置提供器
+    /// </summary>
+    IConfiguration AppSetting { get; }
+    
+    /// <summary>
     ///     应用全局唯一ID
     /// </summary>
     string ApplicationId { get; }
@@ -44,11 +54,6 @@ public interface IApplicationContext
     ///     应用根目录
     /// </summary>
     string RootPath { get; }
-
-    /// <summary>
-    ///     设置提供器
-    /// </summary>
-    IConfiguration AppSetting { get; }
 
     /// <summary>
     ///     将虚拟路径转换为物理路径，相对路径转换为绝对路径

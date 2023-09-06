@@ -6,7 +6,7 @@
         <Description>服务发现-Consul实现</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>1.9.5.2</PackageVersion>
+        <PackageVersion>2023.9.5.1</PackageVersion>
         <LangVersion>latestmajor</LangVersion>
     </PropertyGroup>
 

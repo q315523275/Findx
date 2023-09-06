@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Findx.Common;
 
 namespace Findx.Redis
 {

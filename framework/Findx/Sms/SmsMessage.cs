@@ -1,4 +1,6 @@
-﻿namespace Findx.Sms;
+﻿using Findx.Common;
+
+namespace Findx.Sms;
 
 /// <summary>
 ///     短信消息

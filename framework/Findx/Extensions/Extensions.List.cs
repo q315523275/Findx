@@ -1,4 +1,6 @@
-﻿namespace Findx.Extensions;
+﻿using Findx.Common;
+
+namespace Findx.Extensions;
 
 /// <summary>
 ///     系统扩展 - 集合

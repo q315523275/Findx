@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.1</TargetFramework>
         <Description>远端配置中心客户端</Description>
-        <PackageVersion>1.9.5.2</PackageVersion>
+        <PackageVersion>2023.9.5.1</PackageVersion>
         <LangVersion>latestmajor</LangVersion>
         <Authors>Findx</Authors>
     </PropertyGroup>

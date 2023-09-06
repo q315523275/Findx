@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Findx.Common;
 using Findx.ExceptionHandling;
 using Findx.Threading;
 using Microsoft.Extensions.Logging;
@@ -13,8 +14,7 @@ namespace Findx.RabbitMQ
 {
     public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
     {
-        public RabbitMqConsumer(IConnectionPool connectionPool, AsyncTimer timer, IExceptionNotifier exceptionNotifier,
-            ILogger<RabbitMqConsumer> logger)
+        public RabbitMqConsumer(IConnectionPool connectionPool, AsyncTimer timer, IExceptionNotifier exceptionNotifier, ILogger<RabbitMqConsumer> logger)
         {
             ConnectionPool = connectionPool;
             Timer = timer;

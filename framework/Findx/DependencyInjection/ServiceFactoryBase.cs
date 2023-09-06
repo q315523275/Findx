@@ -1,3 +1,5 @@
+using Findx.Common;
+
 namespace Findx.DependencyInjection;
 
 /// <summary>

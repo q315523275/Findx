@@ -6,7 +6,6 @@ using Findx.Extensions;
 using Findx.Guids;
 using Findx.Logging;
 using Findx.Security;
-using Findx.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;

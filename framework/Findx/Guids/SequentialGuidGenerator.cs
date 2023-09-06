@@ -1,4 +1,4 @@
-﻿using Findx.Utils;
+﻿using Findx.Utilities;
 
 namespace Findx.Guids;
 
@@ -25,6 +25,6 @@ public class SequentialGuidGenerator : IGuidGenerator
     public Guid Create()
     {
         var sequentialGuidType = _options.Value.SequentialGuidType ?? SequentialGuidType.AsString;
-        return SequentialGuid.Next(sequentialGuidType);
+        return SequentialGuidUtility.Next(sequentialGuidType);
     }
 }

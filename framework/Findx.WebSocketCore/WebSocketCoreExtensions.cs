@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Findx.Common;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;

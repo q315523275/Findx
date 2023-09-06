@@ -24,7 +24,7 @@ public static partial class Extensions
     /// <returns>格式化后的异常信息字符串</returns>
     public static string FormatMessage(this Exception e, bool isHideStackTrace = false)
     {
-        var sb = new StringBuilder();
+        using var psb = Pool.StringBuilder.Get(out var sb);
         var count = 0;
         var appString = string.Empty;
         while (e != null)

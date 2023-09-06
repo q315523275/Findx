@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Findx.Common;
 using Findx.Data;
 using Findx.Linq;
 using Findx.Mapping;
@@ -45,7 +47,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected virtual Expressionable<TModel> CreatePageWhereExpression(TQueryParameter request)
+    protected virtual Expression<Func<TModel, bool>> CreatePageWhereExpression(TQueryParameter request)
     {
         return null;
     }
@@ -55,13 +57,16 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected virtual List<OrderByParameter<TModel>> CreatePageOrderExpression(TQueryParameter request)
+    protected virtual IEnumerable<OrderByParameter<TModel>> CreatePageOrderExpression(TQueryParameter request)
     {
-        var orderExp = ExpressionBuilder.CreateOrder<TModel>();
+        var orderExp = DataSortBuilder.New<TModel>();
+        
         if (typeof(TModel).IsAssignableTo(typeof(ISort)))
             orderExp.OrderBy(it => (it as ISort).Sort);
+        
         orderExp.OrderByDescending(it => it.Id);
-        return orderExp.ToSort();
+        
+        return orderExp.Build();
     }
 
     /// <summary>
@@ -82,8 +87,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression?.ToExpression(),
-            orderParameters: orderByExpression);
+        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression);
 
         return CommonResult.Success(result);
     }
@@ -107,7 +111,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression?.ToExpression(), orderParameters: orderByExpression);
+        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression);
 
         return CommonResult.Success(list);
     }
@@ -137,7 +141,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    protected virtual List<TListDto> ToListDto(TModel model)
+    protected virtual List<TListDto> ToListDto(List<TModel> model)
     {
         return model.MapTo<List<TListDto>>();
     }

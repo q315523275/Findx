@@ -1,4 +1,6 @@
-﻿namespace Findx.ExceptionHandling;
+﻿using Findx.Common;
+
+namespace Findx.ExceptionHandling;
 
 /// <summary>
 ///     异常通知上下文

@@ -12,7 +12,7 @@ using Findx.Data;
 using Findx.Extensions;
 using Findx.Jobs;
 using Findx.Security;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -90,21 +90,21 @@ public class ApplicationController : Controller
         ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);
         var runtimeInfo = new Dictionary<string, object>
         {
-            { "cpu", (await RuntimeUtil.GetCpuUsage()).ToString("0.000") },
+            { "cpu", (await RuntimeUtility.GetCpuUsage()).ToString("0.000") },
             {
                 "memory",
-                (RuntimeUtil.GetMemoryUsage() / 1024).ToString("0.000") + "/" +
+                (RuntimeUtility.GetMemoryUsage() / 1024).ToString("0.000") + "/" +
                 (GC.GetTotalMemory(false) / 1024.0 / 1024.0).ToString("0.000")
             },
-            { "pid", RuntimeUtil.GetPid().ToString() },
-            { "processorCount", RuntimeUtil.GetProcessorCount().ToString() },
-            { "runTime", RuntimeUtil.GetRunTime().TotalMinutes.ToString("0.00") },
+            { "pid", RuntimeUtility.GetPid().ToString() },
+            { "processorCount", RuntimeUtility.GetProcessorCount().ToString() },
+            { "runTime", RuntimeUtility.GetRunTime().TotalMinutes.ToString("0.00") },
             {
                 "virtualMemory",
-                (RuntimeUtil.GetVirtualMemory() / 1024.0).ToString(CultureInfo.InvariantCulture)
+                (RuntimeUtility.GetVirtualMemory() / 1024.0).ToString(CultureInfo.InvariantCulture)
             },
-            { "threadCount", RuntimeUtil.GetThreadCount().ToString() },
-            { "handleCount", RuntimeUtil.GetHandleCount().ToString() },
+            { "threadCount", RuntimeUtility.GetThreadCount().ToString() },
+            { "handleCount", RuntimeUtility.GetHandleCount().ToString() },
             { "applicationName", app.ApplicationName },
             { "applicationPort", app.Port.ToString() },
             { "uris", string.Join(",", app.Uris) },
@@ -137,7 +137,7 @@ public class ApplicationController : Controller
             { "userInteractive", Environment.UserInteractive.ToString() },
             { "userName", Environment.UserName },
             { "drives", string.Join(";", Environment.GetLogicalDrives()) },
-            { "osName", Common.System },
+            { "osName", CommonUtility.System },
             { "tickCount", $"{Environment.TickCount / 1000 / 60}" }
         };
 

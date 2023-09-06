@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Security;
@@ -391,9 +392,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             return queryable.WithTransaction(UnitOfWork?.Transaction).ToList();
         }
@@ -410,9 +411,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync(cancellationToken);
         }
@@ -429,9 +430,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        select.OrderBy(item.Expression);
+                        select.OrderBy(item.Conditions);
                     else
-                        select.OrderByDescending(item.Expression);
+                        select.OrderByDescending(item.Conditions);
 
             if (selectExpression == null)
                 return select.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>();
@@ -451,9 +452,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        select.OrderBy(item.Expression);
+                        select.OrderBy(item.Conditions);
                     else
-                        select.OrderByDescending(item.Expression);
+                        select.OrderByDescending(item.Conditions);
 
             if (selectExpression == null)
                 return select.WithTransaction(UnitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
@@ -472,9 +473,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToList();
         }
@@ -491,9 +492,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToListAsync(cancellationToken);
         }
@@ -510,9 +511,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             queryable.Take(topSize);
 
@@ -535,9 +536,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             queryable.Take(topSize);
 
@@ -559,9 +560,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             var result = queryable.WithTransaction(UnitOfWork?.Transaction).Count(out var totalRows)
                 .Page(pageNumber, pageSize).ToList();
@@ -582,9 +583,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             var result = await queryable.WithTransaction(UnitOfWork?.Transaction).Count(out var totalRows)
                 .Page(pageNumber, pageSize).ToListAsync(cancellationToken);
@@ -605,9 +606,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             queryable.Count(out var totalRows).Page(pageNumber, pageSize);
 
@@ -632,9 +633,9 @@ namespace Findx.FreeSql
             if (orderParameters != null)
                 foreach (var item in orderParameters)
                     if (item.SortDirection == ListSortDirection.Ascending)
-                        queryable.OrderBy(item.Expression);
+                        queryable.OrderBy(item.Conditions);
                     else
-                        queryable.OrderByDescending(item.Expression);
+                        queryable.OrderByDescending(item.Conditions);
 
             queryable.Count(out var totalRows).Page(pageNumber, pageSize);
 

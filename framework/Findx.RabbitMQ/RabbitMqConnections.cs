@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Findx.Common;
 using RabbitMQ.Client;
 
 namespace Findx.RabbitMQ

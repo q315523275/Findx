@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Serialization;
-using Findx.Utils;
+using Findx.Utilities;
 
 namespace Findx.Jobs.Internal;
 
@@ -99,7 +100,7 @@ public class SimpleJobScheduler : IJobScheduler
         var jobDetail = CreateJobDetail(jobType, parameter);
         jobDetail.IsSingle = false;
         jobDetail.CronExpress = cronExpression;
-        jobDetail.NextRunTime = Cron.GetNextOccurrence(cronExpression);
+        jobDetail.NextRunTime = CronUtility.GetNextOccurrence(cronExpression);
 
         await _storage.InsertAsync(jobDetail, cancellationToken);
         return jobDetail.Id;
@@ -123,7 +124,7 @@ public class SimpleJobScheduler : IJobScheduler
 
         if (!attribute.Interval.IsNullOrWhiteSpace())
         {
-            var span = Time.ToTimeSpan(attribute.Interval);
+            var span = TimeSpanUtility.ToTimeSpan(attribute.Interval);
             jobDetail.IsSingle = false;
             jobDetail.FixedDelay = span.TotalSeconds;
             jobDetail.NextRunTime = DateTimeOffset.UtcNow.Add(span).LocalDateTime;
@@ -133,7 +134,7 @@ public class SimpleJobScheduler : IJobScheduler
         {
             jobDetail.IsSingle = false;
             jobDetail.CronExpress = attribute.Cron;
-            jobDetail.NextRunTime = Cron.GetNextOccurrence(attribute.Cron);
+            jobDetail.NextRunTime = CronUtility.GetNextOccurrence(attribute.Cron);
         }
 
         await _storage.InsertAsync(jobDetail, cancellationToken);
@@ -196,7 +197,7 @@ public class SimpleJobScheduler : IJobScheduler
             CreateTime = DateTimeOffset.UtcNow.LocalDateTime,
             IsEnable = true,
             NextRunTime = DateTimeOffset.UtcNow.LocalDateTime,
-            Id = SnowflakeId.Default().NextId(),
+            Id = SnowflakeIdUtility.Default().NextId(),
             JsonParam = _serializer.Serialize(parameter ?? new Dictionary<string, string>()),
             Name = jobType.Name,
             FullName = jobType.FullName,

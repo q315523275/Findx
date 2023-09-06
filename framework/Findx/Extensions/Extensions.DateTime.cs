@@ -41,4 +41,37 @@ public static partial class Extensions
         var result = length == 10 ? start.AddSeconds(jsTime) : start.AddMilliseconds(jsTime);
         return result.ToUniversalTime();
     }
+    
+    /// <summary>
+    ///     获取指定日期所在月份的第一天
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static DateTime GetFirstDayOfMonth(this DateTime value)
+    {
+        var dtFrom = value;
+        dtFrom = dtFrom.AddDays(-(dtFrom.Day - 1));
+        return dtFrom;
+    }
+    
+    /// <summary>
+    ///     获取指定日期所在月份的最后一天
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static DateTime GetLastDayOfMonth(this DateTime value)
+    {
+        var dtTo = value;
+        dtTo = dtTo.AddMonths(1);
+        dtTo = dtTo.AddDays(-(dtTo.Day));
+        return dtTo;
+    }
+    
+    /// <summary>
+    /// Converts a DateTime to ISO 8601 string
+    /// </summary>
+    public static string ToIso8601String(this DateTime value)
+    {
+        return value.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+    }
 }

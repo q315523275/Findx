@@ -4,7 +4,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.WebSocketCore;
@@ -64,7 +64,7 @@ public class WebSocketMiddleware
             Tag = context.Request.Query.TryGetValue("tag", out var tag) ? tag : "",
             Environment = context.Request.Query.TryGetValue("environment", out var environment) ? environment : "",
             RemoteIp = context.GetClientIp(),
-            ServerIp = HostUtil.ResolveHostAddress(HostUtil.ResolveHostName()),
+            ServerIp = HostUtility.ResolveHostAddress(HostUtility.ResolveHostName()),
             LastHeartbeatTime = DateTime.Now
         };
         await WebSocketHandler.OnConnected(webSocketClient).ConfigureAwait(false);

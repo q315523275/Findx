@@ -1,5 +1,5 @@
 using System.Net.NetworkInformation;
-using Findx.Utils;
+using Findx.Utilities;
 
 namespace Findx;
 
@@ -25,12 +25,12 @@ public static class GlobalListener
     /// <summary>
     ///     http端口
     /// </summary>
-    public static int HttpPort { get; } = Common.IsWindows ? GetAvailableTcpPort(80) : GetAvailableTcpPort(3880);
+    public static int HttpPort { get; } = CommonUtility.IsWindows ? GetAvailableTcpPort(80) : GetAvailableTcpPort(3880);
 
     /// <summary>
     ///     https端口
     /// </summary>
-    public static int HttpsPort { get; } = Common.IsWindows ? GetAvailableTcpPort(443) : GetAvailableTcpPort(38443);
+    public static int HttpsPort { get; } = CommonUtility.IsWindows ? GetAvailableTcpPort(443) : GetAvailableTcpPort(38443);
 
     /// <summary>
     ///     获取已监听的端口

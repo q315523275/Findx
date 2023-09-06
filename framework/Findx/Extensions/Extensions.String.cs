@@ -1,7 +1,8 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Web;
-using Findx.Utils;
+using Findx.Common;
+using Findx.Utilities;
 
 namespace Findx.Extensions;
 
@@ -549,7 +550,7 @@ public static partial class Extensions
     /// <returns></returns>
     public static string ToMd5(this string str)
     {
-        return Encrypt.Md5By32(str);
+        return EncryptUtility.Md5By32(str);
     }
 
     /// <summary>
@@ -792,7 +793,7 @@ public static partial class Extensions
     /// <returns>十六进制字符串</returns>
     public static string ToHexString(this byte[] bytes)
     {
-        return Encrypt.ToHexString(bytes);
+        return EncryptUtility.ToHexString(bytes);
     }
 
     /// <summary>
@@ -802,7 +803,7 @@ public static partial class Extensions
     /// <returns>byte[]数组</returns>
     public static byte[] ToHexBytes(this string hexString)
     {
-        return Encrypt.FromHexString(hexString);
+        return EncryptUtility.FromHexString(hexString);
     }
 
     /// <summary>
@@ -824,8 +825,9 @@ public static partial class Extensions
         return regex.Replace(source,
             m =>
             {
-                if (short.TryParse(m.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InstalledUICulture,
-                        out var s)) return "" + (char)s;
+                if (short.TryParse(m.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InstalledUICulture, out var s)) 
+                    return "" + (char)s;
+                
                 return m.Value;
             });
     }

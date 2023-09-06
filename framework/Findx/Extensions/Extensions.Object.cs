@@ -166,6 +166,7 @@ public static partial class Extensions
 
     /// <summary>
     ///     对象深度拷贝，复制出一个数据一样，但地址不一样的新版本
+    ///     如实现了IMapper,请使用Mapper方式进行深拷贝
     /// </summary>
     public static T DeepClone<T>(this T obj) where T : class
     {

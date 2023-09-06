@@ -1,4 +1,4 @@
-﻿using Findx.Utils;
+﻿using Findx.Utilities;
 
 namespace Findx.Guids;
 

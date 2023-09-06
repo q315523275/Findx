@@ -1,4 +1,6 @@
-﻿namespace Findx.Mapping;
+﻿using Findx.Common;
+
+namespace Findx.Mapping;
 
 /// <summary>
 ///     对象映射扩展

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.Tasks;
+using Findx.Common;
 using Findx.Extensions;
 
 namespace Findx.Security.Authentication.Jwt;

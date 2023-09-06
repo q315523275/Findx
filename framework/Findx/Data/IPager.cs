@@ -16,14 +16,4 @@ public interface IPager
     ///     分页条数
     /// </summary>
     int PageSize { get; set; }
-
-    /// <summary>
-    ///     排序字段
-    /// </summary>
-    string SortField { get; set; }
-
-    /// <summary>
-    ///     排序字段
-    /// </summary>
-    ListSortDirection SortDirection { get; set; }
 }

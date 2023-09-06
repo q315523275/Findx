@@ -1,4 +1,5 @@
-﻿using Findx.Extensions;
+﻿using Findx.Common;
+using Findx.Extensions;
 
 namespace Findx.Caching;
 

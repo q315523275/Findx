@@ -1,4 +1,4 @@
-﻿using Findx.Utils;
+﻿using Findx.Utilities;
 
 namespace Findx.UA;
 
@@ -49,6 +49,6 @@ public class Engine : UserAgentInfo
     public string GetVersion(string userAgentString)
     {
         if (IsUnknown()) return null;
-        return RegexUtil.GetValue(userAgentString, _versionPattern);
+        return RegexUtility.GetValue(userAgentString, _versionPattern);
     }
 }

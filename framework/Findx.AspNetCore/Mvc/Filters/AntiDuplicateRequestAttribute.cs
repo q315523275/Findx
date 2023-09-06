@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Extensions;
+using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Locks;
 using Findx.Security;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,7 +51,7 @@ public class AntiDuplicateRequestAttribute : ActionFilterAttribute
 
         var redLock = GetLock(context);
         var key = GetLockKey(context);
-        var expire = Time.ToTimeSpan(Interval);
+        var expire = TimeSpanUtility.ToTimeSpan(Interval);
 
         var getLock = await redLock.AcquireAsync(key, expire, renew: true);
         if (getLock.IsLocked())

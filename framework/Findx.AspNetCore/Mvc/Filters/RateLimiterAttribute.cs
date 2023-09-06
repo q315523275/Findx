@@ -2,10 +2,11 @@
 using System.Threading.Tasks;
 using Findx.AspNetCore.Extensions;
 using Findx.Caching;
+using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Security;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +58,7 @@ public class RateLimiterAttribute : ActionFilterAttribute
         if (atomic == default)
         {
             atomic = new AtomicInteger(Limit);
-            await cache.AddAsync(rateLimitKey, atomic, Time.ToTimeSpan(Period));
+            await cache.AddAsync(rateLimitKey, atomic, TimeSpanUtility.ToTimeSpan(Period));
         }
 
         if (atomic.DecrementAndGet() < 0)

@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Upload.Params;
-using Findx.Utils.Files;
+using Findx.Common;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.AspNetCore.Upload;

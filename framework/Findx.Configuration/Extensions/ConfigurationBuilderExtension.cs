@@ -1,3 +1,4 @@
+using Findx.Common;
 using Microsoft.Extensions.Configuration;
 
 namespace Findx.Configuration.Extensions

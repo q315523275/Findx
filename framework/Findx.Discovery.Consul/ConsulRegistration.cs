@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Consul;
-using Findx.Utils;
+using Findx.Common;
+using Findx.Utilities;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Discovery.Consul
@@ -104,13 +105,13 @@ namespace Findx.Discovery.Consul
             }
 
             if (!string.IsNullOrEmpty(Options.HealthCheckInterval))
-                check.Interval = Time.ToTimeSpan(Options.HealthCheckInterval);
+                check.Interval = TimeSpanUtility.ToTimeSpan(Options.HealthCheckInterval);
 
             if (!string.IsNullOrEmpty(Options.HealthCheckTimeout))
-                check.Timeout = Time.ToTimeSpan(Options.HealthCheckTimeout);
+                check.Timeout = TimeSpanUtility.ToTimeSpan(Options.HealthCheckTimeout);
 
             if (!string.IsNullOrEmpty(Options.HealthCheckCriticalTimeout))
-                check.DeregisterCriticalServiceAfter = Time.ToTimeSpan(Options.HealthCheckCriticalTimeout);
+                check.DeregisterCriticalServiceAfter = TimeSpanUtility.ToTimeSpan(Options.HealthCheckCriticalTimeout);
 
             check.TLSSkipVerify = Options.HealthCheckTlsSkipVerify;
 

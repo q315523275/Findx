@@ -1,5 +1,6 @@
-﻿using Findx.Messaging;
-using Findx.Utils;
+﻿using Findx.Common;
+using Findx.Messaging;
+using Findx.Utilities;
 
 namespace Findx.Jobs;
 
@@ -94,7 +95,7 @@ public class JobInfo : IApplicationEvent, IAsync
             NextRunTime = null;
         else if (FixedDelay > 0)
             NextRunTime = DateTimeOffset.UtcNow.LocalDateTime.Add(TimeSpan.FromSeconds(FixedDelay));
-        else if (!string.IsNullOrWhiteSpace(CronExpress)) NextRunTime = Cron.GetNextOccurrence(CronExpress);
+        else if (!string.IsNullOrWhiteSpace(CronExpress)) NextRunTime = CronUtility.GetNextOccurrence(CronExpress);
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Text;
+using Findx.Common;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Extensions;
@@ -111,7 +112,8 @@ public class FreeSqlModule : StartupModule
         // 开启SQL打印
         if (config.PrintSql)
         {
-            var sb = new StringBuilder("Creating a new SqlSession");
+            using var psb = Pool.StringBuilder.Get(out var sb);
+            sb.AppendLine("Creating a new SqlSession");
             sb.AppendLine("==>  Preparing:" + e.Sql);
             if (e.DbParms.Length > 0)
             {

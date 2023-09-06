@@ -9,7 +9,7 @@ using Findx.Data;
 using Findx.Extensions;
 using Findx.Jobs;
 using Findx.Pdf;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -31,7 +31,7 @@ public class CommonController : ApiControllerBase
     [HttpGet("/snowflakeId")]
     public string SnowflakeId()
     {
-        return Utils.SnowflakeId.Default().NextId().ToString();
+        return SnowflakeIdUtility.Default().NextId().ToString();
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ public class CommonController : ApiControllerBase
     [HttpGet("/verifyCreditCode")]
     public string VerifyCreditCode([Required] string creditCode)
     {
-        return $"{CreditCode.IsCreditCode(creditCode)}|{CreditCode.RandomCreditCode()}";
+        return $"{CreditCodeUtility.IsCreditCode(creditCode)}|{CreditCodeUtility.RandomCreditCode()}";
     }
 
 
@@ -183,7 +183,7 @@ public class CommonController : ApiControllerBase
     [HttpGet("/kill")]
     public object Kill()
     {
-        RuntimeUtil.Destroy();
+        RuntimeUtility.Destroy();
         return DateTime.Now;
     }
 
@@ -207,6 +207,6 @@ public class CommonController : ApiControllerBase
     [HttpGet("/Ping")]
     public bool Ping([Required] string ip)
     {
-        return NetUtil.Ping(ip);
+        return NetUtility.Ping(ip);
     }
 }

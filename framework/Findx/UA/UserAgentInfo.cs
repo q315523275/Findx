@@ -1,4 +1,4 @@
-﻿using Findx.Utils;
+﻿using Findx.Utilities;
 
 namespace Findx.UA;
 
@@ -40,7 +40,7 @@ public class UserAgentInfo
 	/// <returns></returns>
 	public bool IsMatch(string content)
     {
-        return RegexUtil.IsMatch(content, Pattern);
+        return RegexUtility.IsMatch(content, Pattern);
     }
 
 	/// <summary>

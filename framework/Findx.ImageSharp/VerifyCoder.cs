@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Findx.Extensions;
 using Findx.Imaging;
-using Findx.Utils;
+using Findx.Utilities;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Drawing.Processing;
@@ -54,8 +54,8 @@ public class VerifyCoder : IVerifyCoder
         using var imgText = new Image<Rgba32>(imageWidth, imageHeight);
 
         // 增加背景色与中心渐变,普通集成ocr无法直接识别
-        imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
-        imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
+        imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtility.RandomInt(0, LightColorHexArr.Length)])));
+        imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(LightColorHexArr[RandomUtility.RandomInt(0, LightColorHexArr.Length)])));
 
         // 绘制验证码
         imgText.Mutate(ctx => ctx.DrawingEnText(imageWidth, imageHeight, text, ColorHexArr, fontSize, _fontFamilies));
@@ -73,8 +73,8 @@ public class VerifyCoder : IVerifyCoder
         using var imgText = new Image<Rgba32>(width, height);
 
         // 增加背景色与中心渐变,普通集成ocr无法直接识别
-        var lightColorHex = LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)];
-        imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtil.RandomInt(0, LightColorHexArr.Length)])));
+        var lightColorHex = LightColorHexArr[RandomUtility.RandomInt(0, LightColorHexArr.Length)];
+        imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtility.RandomInt(0, LightColorHexArr.Length)])));
         imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(lightColorHex)));
 
         // 绘制验证码
@@ -149,7 +149,7 @@ public class VerifyCoder : IVerifyCoder
     private static string GetRandomNums(int length)
     {
         var ints = new int[length];
-        for (var i = 0; i < length; i++) ints[i] = RandomUtil.RandomInt(0, 9);
+        for (var i = 0; i < length; i++) ints[i] = RandomUtility.RandomInt(0, 9);
         return ints.ExpandAndToString("");
     }
 
@@ -167,7 +167,7 @@ public class VerifyCoder : IVerifyCoder
         var result = new List<string>();
         while (result.Count < length)
         {
-            var index = RandomUtil.RandomInt(allChars.Length);
+            var index = RandomUtility.RandomInt(allChars.Length);
             var c = allChars[index];
             result.Add(c);
         }

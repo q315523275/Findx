@@ -6,9 +6,9 @@ using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Upload.Params;
+using Findx.Common;
 using Findx.Exceptions;
-using Findx.Utils;
-using Findx.Utils.Files;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.AspNetCore.Upload;
@@ -106,7 +106,7 @@ internal class DefaultFileUploadService : IFileUploadService
         // 全目录
         var fullDir = Path.Combine(rootPath, pathDir);
         // 创建文件夹
-        DirectoryTool.CreateIfNotExists(fullDir);
+        DirectoryUtility.CreateIfNotExists(fullDir);
         // 文件全路径
         var fullPath = Path.Combine(fullDir, saveName);
         fileInfo.Md5 = await SaveWithMd5Async(formFile, fullPath, cancellationToken);

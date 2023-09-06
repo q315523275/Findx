@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Security.Principal;
+using Findx.Common;
 using Findx.Extensions;
 
 namespace Findx.Security;

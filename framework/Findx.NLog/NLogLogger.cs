@@ -1,4 +1,5 @@
 ﻿using System;
+using Findx.Common;
 using Microsoft.Extensions.Logging;
 using NLog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;

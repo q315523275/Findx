@@ -1,4 +1,5 @@
 ﻿using System.Security.Principal;
+using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Security;

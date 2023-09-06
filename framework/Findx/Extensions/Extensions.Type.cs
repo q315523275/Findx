@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Findx.Common;
 
 namespace Findx.Extensions;
 
@@ -243,7 +244,7 @@ public static partial class Extensions
     /// </summary>
     public static string DisplayName(this Type type, bool fullName = true)
     {
-        var sb = new StringBuilder();
+        using var psb = Pool.StringBuilder.Get(out var sb);
         ProcessType(sb, type, fullName);
         return sb.ToString();
     }

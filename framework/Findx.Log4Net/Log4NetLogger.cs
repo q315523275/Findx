@@ -1,4 +1,5 @@
 ﻿using System;
+using Findx.Common;
 using log4net;
 using Microsoft.Extensions.Logging;
 

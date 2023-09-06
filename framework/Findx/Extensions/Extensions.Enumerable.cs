@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Findx.Common;
 
 namespace Findx.Extensions;
 
@@ -59,7 +60,7 @@ public static partial class Extensions
         if (!collection.Any()) 
             return string.Empty;
         
-        var sb = new StringBuilder();
+        using var psb = Pool.StringBuilder.Get(out var sb);
         var i = 0;
         // ReSharper disable once PossibleMultipleEnumeration
         var count = collection.Count();
