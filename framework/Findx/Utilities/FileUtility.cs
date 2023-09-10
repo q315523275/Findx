@@ -7,7 +7,7 @@ namespace Findx.Utilities;
 /// <summary>
 ///     文件辅助操作类
 /// </summary>
-public class FileUtility
+public static class FileUtility
 {
     /// <summary>
     ///     文件是否存在
@@ -99,7 +99,7 @@ public class FileUtility
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public virtual DateTime GetCreationTime(string path)
+    public static DateTime GetCreationTime(string path)
     {
         return File.GetCreationTime(path);
     }
@@ -109,7 +109,7 @@ public class FileUtility
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public virtual DateTime GetLastAccessTime(string path)
+    public static DateTime GetLastAccessTime(string path)
     {
         return File.GetLastAccessTime(path);
     }
@@ -119,7 +119,7 @@ public class FileUtility
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public virtual DateTime GetLastWriteTime(string path)
+    public static DateTime GetLastWriteTime(string path)
     {
         return File.GetLastWriteTime(path);
     }
@@ -195,7 +195,7 @@ public class FileUtility
     /// <returns>返回系统默认的编码方式</returns>
     public static Encoding GetEncoding(FileStream fs)
     {
-        //Encoding.Default 系统默认的编码方式
+        // Encoding.Default 系统默认的编码方式
         return GetEncoding(fs, Encoding.Default);
     }
 

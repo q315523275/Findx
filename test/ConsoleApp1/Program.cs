@@ -288,7 +288,26 @@ Console.WriteLine((new { Name = "测试员", Title = "Json测试" }).ToJson());
 //
 // Console.ReadLine();
 
+// var moveFile = "/Users/tianliang/Downloads/生产流程图.jpg";
+// var moveToFile = "/Users/tianliang/Downloads/生产流程图_222.jpg";
+// var moveToFile2 = "/Users/tianliang/Downloads/生产流程图_333.jpg";
+// FileUtility.Copy(moveFile, moveToFile, true);
+// FileUtility.Move(moveToFile, moveToFile2);
+// Console.WriteLine(FileUtility.GetCreationTime(moveFile));
+// Console.WriteLine(FileUtility.GetLastAccessTime(moveFile));
+// Console.WriteLine(FileUtility.GetEncoding(moveFile).EncodingName);
+// Console.WriteLine(FileUtility.GetFileMd5(moveFile));
 
+// var movePath = "/Users/tianliang/Downloads/psi-master";
+// var moveToPath = "/Users/tianliang/Downloads/psi-master2";
+//
+// DirectoryUtility.Move(movePath, moveToPath);
+// DirectoryUtility.Copy(movePath, moveToPath);
+// Console.WriteLine(DirectoryUtility.GetFiles(movePath, "*").Select(x => x.Name).ToJson());
+// Console.WriteLine(DirectoryUtility.EnumerateFiles(movePath, "*").ToJson());
+// Console.WriteLine(DirectoryUtility.GetDirectories(movePath, "*").ToJson());
+
+Console.WriteLine($"11111");
 
 
 

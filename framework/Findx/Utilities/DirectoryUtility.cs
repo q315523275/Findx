@@ -118,19 +118,18 @@ public class DirectoryUtility
     }
 
     /// <summary>
-    ///     转移指定文件夹及文件夹/文件
+    ///     将文件或目录及其内容移到新位置
     /// </summary>
     /// <param name="sourceDirName"> 源文件夹路径 </param>
-    /// <param name="destDirName"> 目的文件夹路径 </param>
+    /// <param name="destDirName"> 目的文件夹路径,必须不存在 </param>
     public static void Move(string sourceDirName, string destDirName)
     {
         if (!Directory.Exists(sourceDirName)) 
             throw new DirectoryNotFoundException("转移文件夹时源目录不存在。");
         
-        if (!Directory.Exists(destDirName)) 
-            Directory.CreateDirectory(destDirName);
-        
-        Directory.Move(sourceDirName, destDirName);
+        //文件夹移动不能同名目录
+        var di = new DirectoryInfo(sourceDirName);
+        di.MoveTo(destDirName);
     }
 
     /// <summary>
@@ -155,7 +154,7 @@ public class DirectoryUtility
     /// <param name="searchPattern"> 匹配规则 </param>
     /// <param name="topDirectoryOnly"> 是否递归查询 </param>
     /// <returns></returns>
-    public string[] GetDirectories(string path, string searchPattern = "", bool topDirectoryOnly = true)
+    public static string[] GetDirectories(string path, string searchPattern = "", bool topDirectoryOnly = true)
     {
         if (string.IsNullOrEmpty(searchPattern))
             searchPattern = "*";
