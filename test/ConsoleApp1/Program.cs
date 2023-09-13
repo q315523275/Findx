@@ -300,7 +300,7 @@ Console.WriteLine((new { Name = "测试员", Title = "Json测试" }).ToJson());
 
 // var movePath = "/Users/tianliang/Downloads/psi-master";
 // var moveToPath = "/Users/tianliang/Downloads/psi-master2";
-//
+
 // DirectoryUtility.Move(movePath, moveToPath);
 // DirectoryUtility.Copy(movePath, moveToPath);
 // Console.WriteLine(DirectoryUtility.GetFiles(movePath, "*").Select(x => x.Name).ToJson());

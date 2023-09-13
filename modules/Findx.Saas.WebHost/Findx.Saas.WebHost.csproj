@@ -7,13 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Findx.AspNetCore" Version="1.9.5.2" />
-        <PackageReference Include="Findx.Guids.NewId" Version="1.9.5.1" />
-        <PackageReference Include="Findx.ImageSharp" Version="1.9.5.1" />
-        <PackageReference Include="Findx.Mapster" Version="1.9.5.1" />
-        <PackageReference Include="Findx.Swagger" Version="1.9.5.2" />
-        <PackageReference Include="Findx.WebSocketCore" Version="1.9.5.1" />
-        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.698" />
+        <PackageReference Include="Findx.AspNetCore" Version="2023.9.5.1" />
+        <PackageReference Include="Findx.Guids.NewId" Version="2023.9.5.1" />
+        <PackageReference Include="Findx.ImageSharp" Version="2023.9.5.1" />
+        <PackageReference Include="Findx.Mapster" Version="2023.9.5.1" />
+        <PackageReference Include="Findx.Swagger" Version="2023.9.5.1" />
+        <PackageReference Include="Findx.WebSocketCore" Version="2023.9.5.1" />
+        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.700" />
     </ItemGroup>
 
     <ItemGroup>

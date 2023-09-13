@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
 using Findx.Extensions;
 using Findx.Linq;
@@ -27,7 +28,7 @@ public class
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Expressionable<SysDictDataInfo> CreatePageWhereExpression(QueryDictDataRequest request)
+    protected override Expression<Func<SysDictDataInfo, bool>> CreatePageWhereExpression(QueryDictDataRequest request)
     {
         var typeId = request.TypeId;
         if (!request.TypeCode.IsNullOrWhiteSpace())
@@ -37,10 +38,10 @@ public class
             typeId = model?.Id ?? Guid.Empty;
         }
 
-        var whereExp = ExpressionBuilder.Create<SysDictDataInfo>()
-                                        .AndIF(typeId != Guid.Empty, x => x.TypeId == typeId)
-                                        .AndIF(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords));
-
+        var whereExp = PredicateBuilder.New<SysDictDataInfo>()
+                                       .AndIf(typeId != Guid.Empty, x => x.TypeId == typeId)
+                                       .AndIf(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords))
+                                       .Build();
         return whereExp;
     }
 }

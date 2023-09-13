@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
@@ -27,13 +28,14 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Expressionable<SysRoleInfo> CreatePageWhereExpression(QueryRoleRequest request)
+    protected override Expression<Func<SysRoleInfo, bool>> CreatePageWhereExpression(QueryRoleRequest request)
     {
-        var whereExp = ExpressionBuilder.Create<SysRoleInfo>()
-            .AndIF(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
-            .AndIF(!request.Code.IsNullOrWhiteSpace(), x => x.Code.Contains(request.Code))
-            .AndIF(!request.Comments.IsNullOrWhiteSpace(), x => x.Comments.Contains(request.Comments))
-            .AndIF(!request.ApplicationCode.IsNullOrWhiteSpace(), x => x.ApplicationCode == request.ApplicationCode);
+        var whereExp = PredicateBuilder.New<SysRoleInfo>()
+                                       .AndIf(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
+                                       .AndIf(!request.Code.IsNullOrWhiteSpace(), x => x.Code.Contains(request.Code))
+                                       .AndIf(!request.Comments.IsNullOrWhiteSpace(), x => x.Comments.Contains(request.Comments))
+                                       .AndIf(!request.ApplicationCode.IsNullOrWhiteSpace(), x => x.ApplicationCode == request.ApplicationCode)
+                                       .Build();
         return whereExp;
     }
 

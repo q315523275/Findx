@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Findx.AspNetCore.Mvc;
+using Findx.Common;
 using Findx.Data;
 using Findx.Exceptions;
 using Findx.Module.EleAdmin.Dtos;

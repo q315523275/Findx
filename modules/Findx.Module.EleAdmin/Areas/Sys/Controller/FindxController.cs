@@ -10,7 +10,7 @@ using Findx.Machine.Memory;
 using Findx.Machine.Network;
 using Findx.Machine.System;
 using Findx.Security;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -122,13 +122,13 @@ public class FindxController : AreaApiControllerBase
         dict.Add("RuntimeInfo", new
         {
             Ip = app.InstanceIp,
-            Cpu = (await RuntimeUtil.GetCpuUsage()).ToString("0.000"),
+            Cpu = (await RuntimeUtility.GetCpuUsage()).ToString("0.000"),
             Memory = SizeInfo.Get(Process.GetCurrentProcess().WorkingSet64).ToString(),
-            ThreadCount = RuntimeUtil.GetThreadCount(),
-            HandleCount = RuntimeUtil.GetHandleCount()
+            ThreadCount = RuntimeUtility.GetThreadCount(),
+            HandleCount = RuntimeUtility.GetHandleCount()
         });
         
-        var gcInfo = RuntimeUtil.GetGcInfo();
+        var gcInfo = RuntimeUtility.GetGcInfo();
         dict.Add("GcInfo", new
         {
             gen0 = SizeInfo.Get(gcInfo.gen0).ToString(),

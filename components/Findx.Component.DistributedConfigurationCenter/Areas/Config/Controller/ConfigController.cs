@@ -1,8 +1,5 @@
-using System;
 using System.ComponentModel;
 using System.Security.Principal;
-using System.Threading;
-using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Component.DistributedConfigurationCenter.Dtos;
 using Findx.Component.DistributedConfigurationCenter.Handling;
@@ -12,7 +9,7 @@ using Findx.Events;
 using Findx.Extensions;
 using Findx.Linq;
 using Findx.Mapping;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -60,11 +57,11 @@ public class ConfigController : AreaApiControllerBase
     [HttpGet("page")]
     public async Task<CommonResult> PageAsync([FromQuery] QueryConfigDto req)
     {
-        var whereExp = ExpressionBuilder.Create<ConfigInfo>()
-                                        .AndIF(!req.DataId.IsNullOrWhiteSpace(), x => x.DataId.Contains(req.DataId))
-                                        .AndIF(!req.AppId.IsNullOrWhiteSpace(), x => x.AppId == req.AppId)
-                                        .AndIF(!req.Environment.IsNullOrWhiteSpace(), x => x.Environment == req.Environment)
-                                        .ToExpression();
+        var whereExp = PredicateBuilder.New<ConfigInfo>()
+                                       .AndIf(!req.DataId.IsNullOrWhiteSpace(), x => x.DataId.Contains(req.DataId))
+                                       .AndIf(!req.AppId.IsNullOrWhiteSpace(), x => x.AppId == req.AppId)
+                                       .AndIf(!req.Environment.IsNullOrWhiteSpace(), x => x.Environment == req.Environment)
+                                       .Build();
 
         var rows = await _configRepo.PagedAsync<ConfigSimpleDto>(req.PageNo, req.PageSize, whereExp);
 
@@ -107,12 +104,12 @@ public class ConfigController : AreaApiControllerBase
         if (model != null)
             return CommonResult.Fail("no.found", "源配置信息不存在");
         
-        var whereExp = ExpressionBuilder.CreateWhere<ConfigHistoryInfo>()
-                                        .And(x => x.AppId == model.AppId)
-                                        .And(x => x.Environment == model.Environment)
-                                        .And(x => x.DataId == model.DataId)
-                                        .ToExpression();
-        var orderExp = ExpressionBuilder.CreateOrder<ConfigHistoryInfo>().OrderByDescending(x => x.Version).ToSort();
+        var whereExp = PredicateBuilder.New<ConfigHistoryInfo>()
+                                       .And(x => x.AppId == model.AppId)
+                                       .And(x => x.Environment == model.Environment)
+                                       .And(x => x.DataId == model.DataId)
+                                       .Build();
+        var orderExp = DataSortBuilder.New<ConfigHistoryInfo>().OrderByDescending(x => x.Version).Build();
         
         var rows = await _historyRepo.SelectAsync(whereExpression: whereExp, orderParameters: orderExp);
         
@@ -137,7 +134,7 @@ public class ConfigController : AreaApiControllerBase
             model.SetEmptyKey();
             model.CheckCreationAudited<ConfigInfo, Guid>(_principal);
             model.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
-            model.Md5 = Encrypt.Md5By32(req.Content);
+            model.Md5 = EncryptUtility.Md5By32(req.Content);
             // 保存并通知集群
             await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true, cancellationToken);
             await _configRepo.WithUnitOfWork(uow).InsertAsync(model, cancellationToken);
@@ -146,7 +143,7 @@ public class ConfigController : AreaApiControllerBase
             // 提交事物
             await uow.CommitAsync(cancellationToken);
         }
-        else if (dbConfig.Md5 != Encrypt.Md5By32(req.Content))
+        else if (dbConfig.Md5 != EncryptUtility.Md5By32(req.Content))
         {
             // 修改配置
             
@@ -161,7 +158,7 @@ public class ConfigController : AreaApiControllerBase
             dbConfig.DataType = req.DataType;
             dbConfig.Content = req.Content;
             dbConfig.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
-            dbConfig.Md5 = Encrypt.Md5By32(req.Content);
+            dbConfig.Md5 = EncryptUtility.Md5By32(req.Content);
             // 保存并通知集群
             await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true, cancellationToken);
             await _configRepo.WithUnitOfWork(uow).UpdateAsync(dbConfig, ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId }, cancellationToken: cancellationToken);

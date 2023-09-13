@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx" Version="1.9.5.2" />
+      <PackageReference Include="Findx" Version="2023.9.5.3" />
     </ItemGroup>
 
 </Project>

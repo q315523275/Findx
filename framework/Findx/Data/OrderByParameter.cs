@@ -23,6 +23,7 @@ public class OrderByParameter<TEntity>
     /// <param name="sortDirection"></param>
     public OrderByParameter(string field, ListSortDirection sortDirection = ListSortDirection.Descending)
     {
+        // Todo 增加TypeName_Field:Expression<Func<TEntity, object>>的缓存
         var parameter = Expression.Parameter(typeof(TEntity), "x");
         Expression propertyAccess = parameter;
         var propertyNames = field.Split('.');

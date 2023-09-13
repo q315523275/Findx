@@ -23,22 +23,17 @@ public class WebSocketHandler : WebSocketHandlerBase
         try
         {
             await foreach (var item in ProcessX.StartAsync(receivedMessage))
-                await SendMessageAsync(socket,
-                    new WebSocketMessage<string> { MessageType = MessageType.Text, Data = item }).ConfigureAwait(false);
+            {
+                await SendMessageAsync(socket, new WebSocketMessage<string> { Type = MessageType.Text, Data = item }).ConfigureAwait(false);
+            }
         }
         catch (TargetParameterCountException)
         {
-            await SendMessageAsync(socket,
-                    new WebSocketMessage<string>
-                        { MessageType = MessageType.Error, Data = "does not take parameters!" })
-                .ConfigureAwait(false);
+            await SendMessageAsync(socket, new WebSocketMessage<string> { Type = MessageType.Error, Data = "does not take parameters!" }).ConfigureAwait(false);
         }
         catch (ArgumentException)
         {
-            await SendMessageAsync(socket,
-                    new WebSocketMessage<string>
-                        { MessageType = MessageType.Error, Data = "takes different arguments!" })
-                .ConfigureAwait(false);
+            await SendMessageAsync(socket, new WebSocketMessage<string> { Type = MessageType.Error, Data = "takes different arguments!" }).ConfigureAwait(false);
         }
     }
 }

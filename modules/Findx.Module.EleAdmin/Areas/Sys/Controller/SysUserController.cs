@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
 using Findx.Module.EleAdmin.Dtos;
 using Findx.Module.EleAdmin.Models;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -39,13 +40,14 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    protected override Expressionable<SysUserInfo> CreatePageWhereExpression(QueryUserRequest req)
+    protected override Expression<Func<SysUserInfo, bool>> CreatePageWhereExpression(QueryUserRequest req)
     {
-        var whereExp = ExpressionBuilder.Create<SysUserInfo>()
-            .AndIF(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
-            .AndIF(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-            .AndIF(req.Sex > 0, x => x.Sex == req.Sex)
-            .AndIF(req.OrgId.HasValue, x => x.OrgId == req.OrgId);
+        var whereExp = PredicateBuilder.New<SysUserInfo>()
+                                       .AndIf(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
+                                       .AndIf(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
+                                       .AndIf(req.Sex > 0, x => x.Sex == req.Sex)
+                                       .AndIf(req.OrgId.HasValue, x => x.OrgId == req.OrgId)
+                                       .Build();
         return whereExp;
     }
 
@@ -56,31 +58,11 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     /// <returns></returns>
     protected override List<OrderByParameter<SysUserInfo>> CreatePageOrderExpression(QueryUserRequest request)
     {
-        var orderExp = ExpressionBuilder.CreateOrder<SysUserInfo>();
-        switch (request.SortField)
-        {
-            case "userName":
-                orderExp.Order(it => it.UserName, request.SortDirection);
-                break;
-            case "nickname":
-                orderExp.Order(it => it.Nickname, request.SortDirection);
-                break;
-            case "sex":
-                orderExp.Order(it => it.Sex, request.SortDirection);
-                break;
-            case "phone":
-                orderExp.Order(it => it.Phone, request.SortDirection);
-                break;
-            case "createdTime":
-                orderExp.Order(it => it.CreatedTime, request.SortDirection);
-                break;
-            case "status":
-                orderExp.Order(it => it.Status, request.SortDirection);
-                break;
-        }
-
+        var orderExp = DataSortBuilder.New<SysUserInfo>();
+        if (!request.SortField.IsNullOrWhiteSpace())
+            orderExp.Order(request.SortField, request.SortDirection);
         orderExp.OrderByDescending(it => it.Id);
-        return orderExp.ToSort();
+        return orderExp.Build();
     }
 
     /// <summary>
@@ -96,8 +78,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression?.ToExpression(),
-            orderParameters: orderByExpression);
+        var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression);
         var ids = res.Rows.Select(x => x.Id).Distinct();
         var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId));
         foreach (var item in res.Rows)
@@ -130,7 +111,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     public CommonResult Password([FromBody] SetUserPropertyRequest req)
     {
         var repo = GetRepository<SysUserInfo>();
-        var pwd = Encrypt.Md5By32(req.Password);
+        var pwd = EncryptUtility.Md5By32(req.Password);
         repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == req.Id);
         return CommonResult.Success();
     }
@@ -146,10 +127,10 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     [Description("检查是否存在")]
     public CommonResult Existence([Required] string field, [Required] string value, Guid id)
     {
-        var whereExp = ExpressionBuilder.Create<SysUserInfo>()
-            .AndIF(field == "userName", x => x.UserName == value)
-            .And(x => x.Id != id)
-            .ToExpression();
+        var whereExp = PredicateBuilder.New<SysUserInfo>()
+                                       .AndIf(field == "userName", x => x.UserName == value)
+                                       .And(x => x.Id != id)
+                                       .Build();
         var repo = GetRepository<SysUserInfo>();
         return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
     }
@@ -175,7 +156,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     /// <param name="req"></param>
     protected override async Task AddBeforeAsync(SysUserInfo model, SetUserRequest req)
     {
-        if (!req.Password.IsNullOrWhiteSpace()) model.Password = Encrypt.Md5By32(req.Password);
+        if (!req.Password.IsNullOrWhiteSpace()) model.Password = EncryptUtility.Md5By32(req.Password);
 
         await base.AddBeforeAsync(model, req);
     }

@@ -21,9 +21,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="1.9.5.2" />
-      <PackageReference Include="Findx.FreeSql" Version="1.9.5.2" />
-      <PackageReference Include="Findx.Security" Version="1.9.5.1" />
+      <PackageReference Include="Findx.AspNetCore" Version="2023.9.5.1" />
+      <PackageReference Include="Findx.FreeSql" Version="2023.9.5.1" />
+      <PackageReference Include="Findx.Security" Version="2023.9.5.1" />
     </ItemGroup>
 
     <ItemGroup>

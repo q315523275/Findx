@@ -11,7 +11,7 @@ using Findx.Module.EleAdmin.Models;
 using Findx.Security;
 using Findx.Security.Authentication.Jwt;
 using Findx.Setting;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -111,7 +111,7 @@ public class AuthController : AreaApiControllerBase
         CommonResult fail = null;
 
         // 验证帐号密码是否正确
-        if (accountInfo.Password != Encrypt.Md5By32(req.Password))
+        if (accountInfo.Password != EncryptUtility.Md5By32(req.Password))
         {
             // 增加错误次数
             errorCount++;
@@ -227,10 +227,10 @@ public class AuthController : AreaApiControllerBase
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
-        if (userInfo.Password != Encrypt.Md5By32(req.OldPassword))
+        if (userInfo.Password != EncryptUtility.Md5By32(req.OldPassword))
             return CommonResult.Fail("D1000", "旧密码错误");
 
-        var pwd = Encrypt.Md5By32(req.Password);
+        var pwd = EncryptUtility.Md5By32(req.Password);
         _repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == userInfo.Id);
 
         return CommonResult.Success();

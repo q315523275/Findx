@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
@@ -27,11 +28,12 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, SetOrgRequest, Qu
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Expressionable<SysOrgInfo> CreatePageWhereExpression(QueryOrgRequest request)
+    protected override Expression<Func<SysOrgInfo, bool>> CreatePageWhereExpression(QueryOrgRequest request)
     {
-        var whereExp = ExpressionBuilder.Create<SysOrgInfo>()
-            .AndIF(request.Pid != null && request.Pid != Guid.Empty, x => x.ParentId == request.Pid)
-            .AndIF(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords));
+        var whereExp = PredicateBuilder.New<SysOrgInfo>()
+                                       .AndIf(request.Pid != null && request.Pid != Guid.Empty, x => x.ParentId == request.Pid)
+                                       .AndIf(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords))
+                                       .Build();
         return whereExp;
     }
 
@@ -42,6 +44,6 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, SetOrgRequest, Qu
     /// <returns></returns>
     protected override List<OrderByParameter<SysOrgInfo>> CreatePageOrderExpression(QueryOrgRequest request)
     {
-        return ExpressionBuilder.CreateOrder<SysOrgInfo>().OrderBy(x => x.Sort).ToSort();
+        return DataSortBuilder.New<SysOrgInfo>().OrderBy(x => x.Sort).Build();
     }
 }

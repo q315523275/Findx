@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
 using Findx.Component.DistributedConfigurationCenter.Dtos;
 using Findx.Component.DistributedConfigurationCenter.Models;
@@ -26,11 +27,12 @@ public class AppController: CrudControllerBase<AppInfo, AppInfo, CreateAppDto, U
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Expressionable<AppInfo> CreatePageWhereExpression(QueryAppDto request)
+    protected override Expression<Func<AppInfo, bool>> CreatePageWhereExpression(QueryAppDto request)
     {
-        var whereExp = ExpressionBuilder.Create<AppInfo>()
-                                        .AndIF(!request.AppId.IsNullOrWhiteSpace(), x => request.AppId == x.AppId)
-                                        .AndIF(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name));
+        var whereExp = PredicateBuilder.New<AppInfo>()
+                                       .AndIf(!request.AppId.IsNullOrWhiteSpace(), x => request.AppId == x.AppId)
+                                       .AndIf(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
+                                       .Build();
 
         return whereExp;
     }
@@ -42,6 +44,6 @@ public class AppController: CrudControllerBase<AppInfo, AppInfo, CreateAppDto, U
     /// <returns></returns>
     protected override List<OrderByParameter<AppInfo>> CreatePageOrderExpression(QueryAppDto request)
     {
-        return ExpressionBuilder.CreateOrder<AppInfo>().OrderByDescending(x => x.Id).ToSort();
+        return DataSortBuilder.New<AppInfo>().OrderByDescending(x => x.Id).Build();
     }
 }

@@ -1,18 +1,16 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Threading.Tasks;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
+using Findx.Common;
 using Findx.Component.DistributedConfigurationCenter.Client;
 using Findx.Component.DistributedConfigurationCenter.Dtos;
 using Findx.Component.DistributedConfigurationCenter.Models;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Serialization;
-using Findx.Utils;
+using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -62,7 +60,7 @@ public class ConfigClientController : AreaApiControllerBase
         var model = await _appRepo.FirstAsync(x => x.AppId == appId);
         Check.NotNull(model, nameof(model));
         // 验证签名
-        var verifySign = Encrypt.Md5By32($"{appId}{model.Secret}{reqId}{environment}{version}");
+        var verifySign = EncryptUtility.Md5By32($"{appId}{model.Secret}{reqId}{environment}{version}");
         if (verifySign != sign)
         {
             Response.StatusCode = HttpStatusCode.Forbidden.To<int>();
