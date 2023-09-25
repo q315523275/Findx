@@ -167,12 +167,12 @@ public class XWebSocketClient : IWebSocketSession, IDisposable
 
         foreach (var kv in headers) _webSocketClient.Options.SetRequestHeader(kv.Key, kv.Value);
 
-        _logger?.LogTrace($"client try connect to server {uri}");
+        _logger?.LogTrace("client try connect to server {Uri}", uri);
 
         await _webSocketClient.ConnectAsync(uri, cancellationToken);
 
         if (_webSocketClient.State == WebSocketState.Open)
-            _logger?.LogTrace($"client connect server {uri} successful .");
+            _logger?.LogTrace("client connect server {Uri} successful ", uri);
     }
 
     /// <summary>
@@ -257,7 +257,7 @@ public class XWebSocketClient : IWebSocketSession, IDisposable
     {
         //发送消息
         await _webSocketClient
-            .SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, cancellationToken)
-            .ConfigureAwait(false);
+                    .SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, cancellationToken)
+                    .ConfigureAwait(false);
     }
 }

@@ -131,6 +131,23 @@ public class DirectoryUtility
         var di = new DirectoryInfo(sourceDirName);
         di.MoveTo(destDirName);
     }
+    
+    /// <summary>
+    ///     获取指定目录下的文件信息集合
+    /// </summary>
+    /// <param name="directoryPath"></param>
+    /// <param name="searchPattern"></param>
+    /// <param name="topDirectoryOnly"></param>
+    /// <returns></returns>
+    /// <exception cref="DirectoryNotFoundException"></exception>
+    public static FileInfo[] GetFiles(string directoryPath, string searchPattern, bool topDirectoryOnly = true)
+    {
+        if (!Directory.Exists(directoryPath)) 
+            throw new DirectoryNotFoundException("源目录不存在。");
+
+        var dir = new DirectoryInfo(directoryPath);
+        return dir.GetFiles(searchPattern, topDirectoryOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories);
+    }
 
     /// <summary>
     ///     列出指定文件夹下匹配的文件的完整名称（包括路径）集合
@@ -163,20 +180,19 @@ public class DirectoryUtility
     }
     
     /// <summary>
-    ///     获取指定目录下的文件信息集合
+    ///     获取指定目录下的子目录的名称（包括路径）集合
     /// </summary>
-    /// <param name="directoryPath"></param>
-    /// <param name="searchPattern"></param>
-    /// <param name="topDirectoryOnly"></param>
+    /// <param name="path"> 根目录 </param>
+    /// <param name="searchPattern"> 匹配规则 </param>
+    /// <param name="topDirectoryOnly"> 是否递归查询 </param>
     /// <returns></returns>
-    /// <exception cref="DirectoryNotFoundException"></exception>
-    public static IEnumerable<FileInfo> GetFiles(string directoryPath, string searchPattern, bool topDirectoryOnly = true)
+    public static IEnumerable<DirectoryInfo> EnumerateDirectories(string path, string searchPattern = "", bool topDirectoryOnly = true)
     {
-        if (!Directory.Exists(directoryPath)) 
-            throw new DirectoryNotFoundException("源目录不存在。");
+        if (string.IsNullOrEmpty(searchPattern))
+            searchPattern = "*";
 
-        var dir = new DirectoryInfo(directoryPath);
-        return dir.GetFiles(searchPattern, topDirectoryOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories);
+        var directory = new DirectoryInfo(path);
+        return directory.EnumerateDirectories(searchPattern, topDirectoryOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories);
     }
 
     /// <summary>

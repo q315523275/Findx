@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.WebSocketCore;
@@ -58,13 +59,15 @@ public interface IWebSocketClientManager : IDisposable
     ///     移除连接
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task RemoveClientAsync(string id);
+    public Task RemoveClientAsync(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     移除连接
     /// </summary>
     /// <param name="clientInfo"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task RemoveClientAsync(WebSocketClient clientInfo);
+    public Task RemoveClientAsync(WebSocketClient clientInfo, CancellationToken cancellationToken = default);
 }

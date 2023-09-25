@@ -67,25 +67,19 @@ public class WebSocketMiddleware
             ServerIp = HostUtility.ResolveHostAddress(HostUtility.ResolveHostName()),
             LastHeartbeatTime = DateTime.Now
         };
-        await WebSocketHandler.OnConnected(webSocketClient).ConfigureAwait(false);
-
-        await ReceiveAsync(webSocketClient, async (result, serializedMessage) =>
-        {
-            if (result.MessageType == WebSocketMessageType.Text)
-            {
-                await WebSocketHandler.ReceiveAsync(webSocketClient, result, serializedMessage).ConfigureAwait(false);
-                return;
-            }
-
-            if (result.MessageType == WebSocketMessageType.Close)
-                await WebSocketHandler.OnDisconnected(webSocketClient);
-        });
+        // 无效
+        // var cancellationToken = context.RequestAborted;
+        var cts = new CancellationTokenSource();
+        await WebSocketHandler.OnConnected(webSocketClient, cts.Token).ConfigureAwait(false);
+        await ReceiveAsync(webSocketClient, cts.Token);
+        cts.Cancel();
     }
 
-    private async Task ReceiveAsync(WebSocketClient client, Func<WebSocketReceiveResult, string, Task> handleMessage)
+    private async Task ReceiveAsync(WebSocketClient client, CancellationToken cancellationToken = default)
     {
         while (client.Client.State == WebSocketState.Open)
         {
+            // 缓冲区大小
             var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
             try
             {
@@ -95,14 +89,13 @@ public class WebSocketMiddleware
                 {
                     do
                     {
-                        result = await client.Client.ReceiveAsync(buffer, CancellationToken.None).ConfigureAwait(false);
+                        result = await client.Client.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
                         if (buffer.Array != null)
                             ms.Write(buffer.Array, buffer.Offset, result.Count);
                     } while (!result.EndOfMessage);
                     
-                    // 可以直接使用buffer读取内容
+                    // 可以ArrayPool<byte>方式读取内容
                     // 这里使用固定byte+MemoryStream方式读取内容
-
                     client.LastHeartbeatTime = DateTime.Now;
 
                     ms.Seek(0, SeekOrigin.Begin);
@@ -111,15 +104,29 @@ public class WebSocketMiddleware
                         message = await reader.ReadToEndAsync().ConfigureAwait(false);
                     }
                 }
-
-                handleMessage(result, message);
+                
+                // 通过配置可以限定最大并行数量
+                HandleAsync(client, result, message, cancellationToken).ConfigureAwait(false);
             }
             catch (WebSocketException e)
             {
-                if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely) client.Client.Abort();
+                if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely) 
+                    client.Client.Abort();
             }
         }
 
-        await WebSocketHandler.OnDisconnected(client);
+        await WebSocketHandler.OnDisconnected(client, cancellationToken);
+    }
+
+    private async Task HandleAsync(WebSocketClient client, WebSocketReceiveResult result, string msg, CancellationToken cancellationToken = default)
+    {
+        if (result.MessageType == WebSocketMessageType.Text)
+        {
+            await WebSocketHandler.ReceiveAsync(client, result, msg, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        if (result.MessageType == WebSocketMessageType.Close)
+            await WebSocketHandler.OnDisconnected(client, cancellationToken).ConfigureAwait(false);
     }
 }

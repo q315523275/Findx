@@ -97,14 +97,16 @@ public class WebSocketClientManager : IWebSocketClientManager
     /// <param name="groupId"></param>
     public void RemoveFromGroup(WebSocketClient clientInfo, string groupId)
     {
-        if (_groups.TryGetValue(groupId, out var group)) group.Remove(clientInfo.Id);
+        if (_groups.TryGetValue(groupId, out var group)) 
+            group.Remove(clientInfo.Id);
     }
 
     /// <summary>
     ///     移除连接
     /// </summary>
     /// <param name="id"></param>
-    public async Task RemoveClientAsync(string id)
+    /// <param name="cancellationToken"></param>
+    public async Task RemoveClientAsync(string id, CancellationToken cancellationToken = default)
     {
         if (id == null) return;
 
@@ -113,9 +115,11 @@ public class WebSocketClientManager : IWebSocketClientManager
             if (client.Client?.State != WebSocketState.Open)
                 return;
 
-            await client.Client.CloseAsync(WebSocketCloseStatus.NormalClosure,
-                "Closed by the WebSocketManager",
-                CancellationToken.None).ConfigureAwait(false);
+            await client.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务端主动关闭连接", cancellationToken).ConfigureAwait(false);
+            
+            client.Client?.Abort();
+            client.Client?.Dispose();
+            client.Client = null;
         }
     }
 
@@ -123,7 +127,8 @@ public class WebSocketClientManager : IWebSocketClientManager
     ///     移除连接
     /// </summary>
     /// <param name="clientInfo"></param>
-    public async Task RemoveClientAsync(WebSocketClient clientInfo)
+    /// <param name="cancellationToken"></param>
+    public async Task RemoveClientAsync(WebSocketClient clientInfo, CancellationToken cancellationToken = default)
     {
         if (clientInfo?.Id == null) return;
 
@@ -132,13 +137,11 @@ public class WebSocketClientManager : IWebSocketClientManager
             if (client.Client?.State != WebSocketState.Open)
                 return;
 
-            await client.Client.CloseAsync(WebSocketCloseStatus.NormalClosure,
-                "Closed by the WebSocketManager",
-                CancellationToken.None).ConfigureAwait(false);
+            await client.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务端主动关闭连接", cancellationToken).ConfigureAwait(false);
 
             client.Client?.Abort();
             client.Client?.Dispose();
-            client.Client = default;
+            client.Client = null;
         }
     }
 }
