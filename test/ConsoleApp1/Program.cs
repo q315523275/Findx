@@ -143,7 +143,7 @@ foreach (var item in dict)
 // }
 
 // Json
-Console.WriteLine((new { Name = "测试员", Title = "Json测试" }).ToJson());
+Console.WriteLine(new { Name = "测试员", Title = "Json测试" }.ToJson());
 
 // Rsa + Aes
 // var privateKeyStr = XC.RSAUtil.RsaKeyConvert.PrivateKeyPkcs8ToXml("MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAI0NF4GBZ07BejfYZAmhTk0rofIoQqgRf63erVeHRAKfnEPHtTZ/MMfRupgc1uo6/e7DZ0BqOp58SLeXfcYEzWzzos0ThR797eiSA0AY8tB5L8WOy5tOxfhCiAfM87CpNvqyEyYtFwihVYrIHJdPO/Ll0ugoPVhP/MwIEwVHMFA5AgMBAAECgYAUXDNsajVzVNJDhWTLTxFyaj3yKoWUpRH9EwuKeugCSO/RiN5Lg4iTD18T3fXX0bQd5u7ciXj0r5P/jEqHbuIIBB69+xykWSdD/9O8/s2wX43u5+C7UqkhS0N+SEOYAn6j24l/Wd0RRNTMXMrWudHdZ+FI1Yn2gB8Zf/rZTJ6CUQJBAOf6nlHpGJ9m01BbISUzCKmDZMHrvbQgVoLUzi8zPNpld3n+4vyuN5vy3w/aiWp6uYmGOgfnuVaaBEh5WvkUncMCQQCbqCAzhU7YUGNTaoHRy7WzW+KlRDsJQunUWofGniGX3cnz2RUYCv3IfuP22GuCBOX26MAgeapkSfK/KGf3FY5TAkEAyooimNmvydz5OvuV4OjB817pJfcx1oc1gV1T+BoAU56rxjQo8v0ZSGuxHiJsQC+Otuge2rATPe2TN8PdDgRWCQJAAtQoWadXinjThUWPPGfOUocd9FDsHbv4keJfS02+YIsoS2Uri/dPK2Ca9fZy5bb/EuCh9TUg0pfBcJXkZcoffwJALjLX9RAK4UEYz+YDEaGO7dhSLd1QJbBT8H2ekhxEItTwCSp70JmDx8xltjGfgdzhGQjAWY8iEkp2wrOg8WFu6g==");
@@ -244,49 +244,49 @@ Console.WriteLine((new { Name = "测试员", Title = "Json测试" }).ToJson());
 //     Console.WriteLine($"比对:{sequentialGuidList[i] == newGuids[i]},源:{sequentialGuidList[i]},new:{newGuids[i]}");
 // }
 
-// // Json表达式解析
-// var dynamicFilter = new DynamicFilterInfo
-// {
-//     Logic = FilterOperate.And,
-//     Filters = new List<FilterConditions>
-//     {
-//         new()
-//         {
-//             Field = "Name", Value = "Name110", Operator = FilterOperate.NotContains
-//         },
-//         new ()
-//         {
-//             Field = "Status", Value = "0,1", Operator = FilterOperate.In
-//         },
-//         new()
-//         {
-//             Field = "CreatedTime", Value = "2021-12-30", Operator = FilterOperate.GreaterOrEqual
-//         }
-//     }
-// };
-// var orderConditions = new List<OrderConditions> { new() { Field = "CreatedTime", SortDirection = ListSortDirection.Descending }, new() { Field = "Status", SortDirection = ListSortDirection.Descending } };
-// var dataSort = DataSortBuilder.New<SysAppInfo>().OrderBy("Status").Build();
-//
-// var filter = LinqExpressionParser.ParseConditions<SysAppInfo>(dynamicFilter);
-//
-// var entities = new List<SysAppInfo>();
-// for (var i = 0; i < 1000; i++)
-// {
-//     entities.Add(new SysAppInfo
-//     {
-//         Id = SequentialGuidUtility.Next(SequentialGuidType.AsString),
-//         Name = "Name" + (i + 1),
-//         Code = "Code" + (i + 1),
-//         CreatedTime = DateTime.Now,
-//         Status = i,
-//     });
-// }
-//
-// var s = entities.Where(filter.Compile()).OrderBy(dataSort.First().Conditions.Compile());  //.OrderConditions(orderConditions);
-//
-// Console.WriteLine($"{entities.Count}---{s.Count()}");
-//
-// Console.ReadLine();
+// Json表达式解析
+var dynamicFilter = new DynamicFilterInfo
+{
+    Logic = FilterOperate.And,
+    Filters = new List<FilterConditions>
+    {
+        new()
+        {
+            Field = "Name", Value = "Name110", Operator = FilterOperate.NotContains
+        },
+        new ()
+        {
+            Field = "Status", Value = "0,1", Operator = FilterOperate.In
+        },
+        new()
+        {
+            Field = "CreatedTime", Value = "2021-12-30", Operator = FilterOperate.GreaterOrEqual
+        }
+    }
+};
+var orderConditions = new List<OrderConditions> { new() { Field = "CreatedTime", SortDirection = ListSortDirection.Descending }, new() { Field = "Status", SortDirection = ListSortDirection.Descending } };
+var dataSort = DataSortBuilder.New<SysAppInfo>().OrderBy("Status").OrderBy(x => new { x.CreatedTime, x.Id}).Build();
+
+var filter = LinqExpressionParser.ParseConditions<SysAppInfo>(dynamicFilter);
+
+var entities = new List<SysAppInfo>();
+for (var i = 0; i < 1000; i++)
+{
+    entities.Add(new SysAppInfo
+    {
+        Id = SequentialGuidUtility.Next(SequentialGuidType.AsString),
+        Name = "Name" + (i + 1),
+        Code = "Code" + (i + 1),
+        CreatedTime = DateTime.Now,
+        Status = i,
+    });
+}
+
+var s = entities.Where(filter.Compile()).OrderBy(dataSort.First().Conditions.Compile());  //.OrderConditions(orderConditions);
+
+Console.WriteLine($"{entities.Count}---{s.Count()}");
+
+Console.ReadLine();
 
 // var moveFile = "/Users/tianliang/Downloads/生产流程图.jpg";
 // var moveToFile = "/Users/tianliang/Downloads/生产流程图_222.jpg";

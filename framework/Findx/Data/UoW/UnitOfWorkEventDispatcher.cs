@@ -83,6 +83,7 @@ public class UnitOfWorkEventDispatcher: IUnitOfWorkEventDispatcher
             foreach (var integrationEvent in _distributedEvents)
                 await _distributedEventBus.PublishAsync(integrationEvent, cancellationToken);
         }
+        
         _distributedEvents.Clear();
     }
 

@@ -44,7 +44,8 @@ public class OrderByParameter<TEntity>
         {
             propertyAccess = Expression.Property(parameter, field);
         }
-        Conditions = Expression.Lambda<Func<TEntity, object>>(propertyAccess, parameter);
+        Expression conversion = Expression.Convert(propertyAccess, typeof(object));
+        Conditions = Expression.Lambda<Func<TEntity, object>>(conversion, parameter);
         SortDirection = sortDirection;
     }
     
