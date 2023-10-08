@@ -155,6 +155,34 @@ public class ExpressionSorter<T>
     }
 
     /// <summary>
+    ///     排序
+    /// </summary>
+    /// <param name="isExp"></param>
+    /// <param name="field"></param>
+    /// <param name="sortDirection"></param>
+    /// <returns></returns>
+    public ExpressionSorter<T> OrderIf(bool isExp, string field, ListSortDirection sortDirection)
+    {
+        if (!isExp)
+            return this;
+        
+        switch (sortDirection)
+        {
+            case ListSortDirection.Ascending:
+                OrderBy(field);
+                break;
+            
+            case ListSortDirection.Descending:
+                OrderByDescending(field);
+                break;
+            
+            default:
+                throw new ArgumentOutOfRangeException(nameof(sortDirection), sortDirection, null);
+        }
+        return this;
+    }
+
+    /// <summary>
     ///     返回排序集合
     /// </summary>
     /// <returns></returns>
