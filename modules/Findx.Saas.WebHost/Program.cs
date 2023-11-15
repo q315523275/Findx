@@ -1,5 +1,6 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Extensions;
@@ -19,6 +20,7 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
         options.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
         options.JsonSerializerOptions.Converters.Add(new LongStringJsonConverter());

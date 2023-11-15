@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
+using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
 using Findx.Module.EleAdmin.Dtos;
@@ -39,9 +40,21 @@ public class
         }
 
         var whereExp = PredicateBuilder.New<SysDictDataInfo>()
+                                       .And(x => x.TypeId == x.TypeInfo.Id)
                                        .AndIf(typeId != Guid.Empty, x => x.TypeId == typeId)
                                        .AndIf(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords))
                                        .Build();
         return whereExp;
+    }
+
+    /// <summary>
+    ///      列表查询
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    public override async Task<CommonResult<List<SysDictDataInfo>>> ListAsync([FromQuery] QueryDictDataRequest request)
+    {
+        request.PageSize = 9999;
+        return await base.ListAsync(request);
     }
 }

@@ -10,30 +10,29 @@ public class WebSocketHandler : WebSocketHandlerBase
         clientManager, serializer)
     {
     }
-
     /// <summary>
     ///     接收消息
     /// </summary>
-    /// <param name="socket"></param>
+    /// <param name="client"></param>
     /// <param name="result"></param>
     /// <param name="receivedMessage"></param>
-    public override async Task ReceiveAsync(WebSocketClient socket, WebSocketReceiveResult result,
-        string receivedMessage)
+    /// <param name="cancellationToken"></param>
+    public override async Task ReceiveAsync(WebSocketClient client, WebSocketReceiveResult result, string receivedMessage, CancellationToken cancellationToken = default)
     {
         try
         {
             await foreach (var item in ProcessX.StartAsync(receivedMessage))
             {
-                await SendMessageAsync(socket, new WebSocketMessage<string> { Type = MessageType.Text, Data = item }).ConfigureAwait(false);
+                await SendMessageAsync(client, new WebSocketMessage<string> { Type = MessageType.Text, Data = item }, cancellationToken).ConfigureAwait(false);
             }
         }
         catch (TargetParameterCountException)
         {
-            await SendMessageAsync(socket, new WebSocketMessage<string> { Type = MessageType.Error, Data = "does not take parameters!" }).ConfigureAwait(false);
+            await SendMessageAsync(client, new WebSocketMessage<string> { Type = MessageType.Error, Data = "does not take parameters!" }, cancellationToken).ConfigureAwait(false);
         }
         catch (ArgumentException)
         {
-            await SendMessageAsync(socket, new WebSocketMessage<string> { Type = MessageType.Error, Data = "takes different arguments!" }).ConfigureAwait(false);
+            await SendMessageAsync(client, new WebSocketMessage<string> { Type = MessageType.Error, Data = "takes different arguments!" }, cancellationToken).ConfigureAwait(false);
         }
     }
 }

@@ -64,7 +64,7 @@ namespace Findx.FreeSql
         /// <summary>
         ///     数据源共享
         /// </summary>
-        public List<string> DataSourceSharing { set; get; } = new List<string>();
+        public List<string> DataSourceSharing { set; get; } = new();
 
         /// <summary>
         ///     字段名称转换类型

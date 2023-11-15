@@ -50,4 +50,10 @@ public class SysDictDataInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ISor
     ///     排序号
     /// </summary>
     public int Sort { get; set; }
+    
+    /// <summary>
+    ///     字典类型信息
+    /// </summary>
+    [Navigate(nameof(TypeId))]
+    public SysDictTypeInfo TypeInfo { get; set; }
 }

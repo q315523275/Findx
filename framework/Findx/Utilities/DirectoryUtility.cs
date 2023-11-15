@@ -124,10 +124,10 @@ public class DirectoryUtility
     /// <param name="destDirName"> 目的文件夹路径,必须不存在 </param>
     public static void Move(string sourceDirName, string destDirName)
     {
-        if (!Directory.Exists(sourceDirName)) 
+        if (!Directory.Exists(sourceDirName))
             throw new DirectoryNotFoundException("转移文件夹时源目录不存在。");
         
-        //文件夹移动不能同名目录
+        // 文件夹移动不能同名目录
         var di = new DirectoryInfo(sourceDirName);
         di.MoveTo(destDirName);
     }

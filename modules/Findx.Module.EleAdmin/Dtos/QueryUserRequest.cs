@@ -20,12 +20,12 @@ public class QueryUserRequest : PageBase
     /// <summary>
     ///     性别
     /// </summary>
-    public int Sex { set; get; }
+    public int? Sex { set; get; }
 
     /// <summary>
     ///     状态
     /// </summary>
-    public int Status { set; get; } = -1;
+    public int? Status { set; get; }
 
     /// <summary>
     ///     机构编号

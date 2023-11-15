@@ -4,7 +4,7 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <PackageVersion>1.0.6</PackageVersion>
+        <PackageVersion>2023.11.3.1</PackageVersion>
         <UserSecretsId>d8300641-e05e-4c99-a4a7-81271fcd8d0f</UserSecretsId>
     </PropertyGroup>
     <ItemGroup>
@@ -24,9 +24,5 @@
       <PackageReference Include="Findx.AspNetCore" Version="2023.9.5.1" />
       <PackageReference Include="Findx.FreeSql" Version="2023.9.5.1" />
       <PackageReference Include="Findx.Security" Version="2023.9.5.1" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Findx.Saas.Infrastructure\Findx.Saas.Infrastructure.csproj" />
     </ItemGroup>
 </Project>

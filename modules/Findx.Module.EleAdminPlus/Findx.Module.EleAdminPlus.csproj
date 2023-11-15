@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Findx.AspNetCore" Version="2023.9.5.1" />
+      <PackageReference Include="Findx.FreeSql" Version="2023.9.5.1" />
+      <PackageReference Include="Findx.Security" Version="2023.9.5.1" />
+    </ItemGroup>
+
+</Project>

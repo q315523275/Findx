@@ -14,7 +14,7 @@ namespace Findx.RabbitMQ
             _serializer = serializer;
         }
 
-        public void Publish(object obj, string exchangeName, string exchangeType, string routingKey)
+        public void Publish(object obj, string exchangeName, string exchangeType, string routingKey, bool durable = false, bool autoDelete = false)
         {
             var message = _serializer.Serialize(obj);
             var body = Encoding.UTF8.GetBytes(message);
@@ -22,7 +22,7 @@ namespace Findx.RabbitMQ
             using (var channel = _connectionPool.Get().CreateModel())
             {
                 // 创建并配置交换器
-                channel.ExchangeDeclare(exchangeName, exchangeType);
+                channel.ExchangeDeclare(exchangeName, exchangeType, durable: durable, autoDelete: autoDelete);
                 // 创建队列属性
                 var properties = channel.CreateBasicProperties();
                 // 决定发送数据类型

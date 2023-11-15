@@ -6,7 +6,12 @@ namespace Findx.Data;
 public interface IDataOwner<TUser>: ICreatedTime where TUser : struct
 {
     /// <summary>
-    ///     拥有者用户
+    ///     数据拥有者编号
     /// </summary>
     TUser? OwnerId { get; set; }
+    
+    /// <summary>
+    ///     数据拥有者
+    /// </summary>
+    string Owner { get; set; }
 }
