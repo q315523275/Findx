@@ -44,6 +44,7 @@ public static partial class Extensions
         }
 
         using var sr = new StreamReader(stream, encoding);
+        sr.BaseStream.Seek(0, SeekOrigin.Begin);
         return await sr.ReadToEndAsync();
     }
     

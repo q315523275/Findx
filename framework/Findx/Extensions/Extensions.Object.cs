@@ -16,7 +16,7 @@ public static partial class Extensions
     /// <returns></returns>
     public static string SafeString(this object input)
     {
-        return input?.ToString().Trim() ?? string.Empty;
+        return input?.ToString()?.Trim() ?? string.Empty;
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ public static partial class Extensions
 
         if (conversionType.IsNullableType()) conversionType = conversionType.GetUnNullableType();
 
-        if (conversionType.IsEnum) return (T)Enum.Parse(conversionType, obj.ToString());
+        if (conversionType.IsEnum) return (T)Enum.Parse(conversionType, obj.ToString() ?? string.Empty);
 
         if (conversionType == typeof(Guid))
             return (T)TypeDescriptor.GetConverter(conversionType).ConvertFromInvariantString(obj.ToString());
@@ -76,10 +76,10 @@ public static partial class Extensions
             conversionType = conversionType.GetUnNullableType();
         
         if (conversionType.IsEnum) 
-            return Enum.Parse(conversionType, value.ToString());
+            return Enum.Parse(conversionType, value.ToString() ?? string.Empty);
         
         if (conversionType == typeof(Guid)) 
-            return Guid.Parse(value.ToString());
+            return Guid.Parse(value.ToString() ?? string.Empty);
         
         return Convert.ChangeType(value, conversionType);
     }
@@ -168,6 +168,7 @@ public static partial class Extensions
     ///     对象深度拷贝，复制出一个数据一样，但地址不一样的新版本
     ///     如实现了IMapper,请使用Mapper方式进行深拷贝
     /// </summary>
+    [Obsolete("Obsolete")]
     public static T DeepClone<T>(this T obj) where T : class
     {
         if (obj == null) return default;

@@ -13,7 +13,7 @@ public class SysDictDataInfo : FullAuditedBase<long, long>, ISoftDeletable, ISor
     /// <summary>
     ///     字典项id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override long Id { get; set; }
 
     /// <summary>

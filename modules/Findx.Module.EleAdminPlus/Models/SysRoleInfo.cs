@@ -13,7 +13,7 @@ public class SysRoleInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant,
     /// <summary>
     ///     角色id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override long Id { get; set; }
 
     /// <summary>

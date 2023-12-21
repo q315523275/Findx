@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -18,6 +19,7 @@ namespace Findx.Configuration
         /// <param name="headers"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
+        [Obsolete("Obsolete")]
         public static HttpWebResponse Get(string url, IDictionary<string, string> headers, int? timeout)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);
@@ -41,6 +43,7 @@ namespace Findx.Configuration
         /// <param name="headers"></param>
         /// <param name="timeout"></param>
         /// <returns></returns>
+        [Obsolete("Obsolete")]
         public static async Task<HttpWebResponse> GetAsync(string url, Dictionary<string, string> headers, int? timeout)
         {
             var request = (HttpWebRequest)WebRequest.Create(url);

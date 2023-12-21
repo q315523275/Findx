@@ -1,25 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
         <Version>1.9.5.2</Version>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Swagger在线文档组件,优化中文展示</Description>
-        <PackageVersion>2023.9.5.1</PackageVersion>
-        <LangVersion>latestmajor</LangVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
-
-    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-        <WarningLevel>4</WarningLevel>
-    </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Findx.AspNetCore\Findx.AspNetCore.csproj" />
-        <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    </ItemGroup>
+    
+    
 </Project>

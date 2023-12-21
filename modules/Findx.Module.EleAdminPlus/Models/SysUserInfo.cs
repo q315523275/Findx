@@ -13,7 +13,7 @@ public class SysUserInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant,
     /// <summary>
     ///     用户id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override long Id { get; set; }
 
     /// <summary>

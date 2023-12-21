@@ -191,6 +191,7 @@ public class ConfigClient : IConfigClient, IDisposable
     ///     生成http地址
     /// </summary>
     /// <returns></returns>
+    [Obsolete("Obsolete")]
     private string GenerateApiUrl()
     {
         var reqId = Guid.NewGuid().ToString();
@@ -220,6 +221,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <summary>
     ///     加载配置
     /// </summary>
+    [Obsolete("Obsolete")]
     public async Task LoadAsync()
     {
         try
@@ -279,6 +281,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <summary>
     ///     执行循环
     /// </summary>
+    [Obsolete("Obsolete")]
     private void StartListenConfigChange()
     {
         // 开启polling

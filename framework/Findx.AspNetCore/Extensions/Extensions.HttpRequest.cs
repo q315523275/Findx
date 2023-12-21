@@ -1,5 +1,7 @@
 ﻿using System;
+using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Extensions;
 using Findx.UA;
@@ -88,4 +90,26 @@ public static partial class Extensions
         var ua = request.Headers.GetOrDefault("User-Agent").SafeString();
         return UserAgentUtility.Parse(ua);
     }
+    
+    
+    /// <summary>
+    /// 读取<see cref="HttpRequest"/>的Body为字符串
+    /// </summary>
+    public static async Task<string> ReadAsStringAsync(this HttpRequest request)
+    {
+        using var reader = new StreamReader(request.Body);
+        reader.BaseStream.Seek(0, SeekOrigin.Begin);
+        return await reader.ReadToEndAsync();
+    }
+
+    /// <summary>
+    /// 读取<see cref="HttpResponse"/>的Body为字符串
+    /// </summary>
+    public static async Task<string> ReadAsStringAsync(this HttpResponse response)
+    {
+        using var reader = new StreamReader(response.Body);
+        reader.BaseStream.Seek(0, SeekOrigin.Begin);
+        return await reader.ReadToEndAsync();
+    }
+
 }

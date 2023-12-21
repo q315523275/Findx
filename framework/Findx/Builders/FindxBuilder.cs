@@ -115,7 +115,7 @@ public class FindxBuilder : IFindxBuilder
     /// <param name="services"></param>
     /// <param name="module"></param>
     /// <returns></returns>
-    private static IServiceCollection AddModule(IServiceCollection services, StartupModule module)
+    private static void AddModule(IServiceCollection services, StartupModule module)
     {
         var type = module.GetType();
         var serviceType = typeof(StartupModule);
@@ -131,12 +131,11 @@ public class FindxBuilder : IFindxBuilder
 
         if (services.Any(m =>
                 m.Lifetime == ServiceLifetime.Singleton && m.ServiceType == serviceType &&
-                m.ImplementationInstance?.GetType() == type)) return services;
+                m.ImplementationInstance?.GetType() == type))
+            return;
 
         services.AddSingleton(typeof(StartupModule), module);
         module.ConfigureServices(services);
-
-        return services;
     }
 
     /// <summary>
@@ -151,7 +150,9 @@ public class FindxBuilder : IFindxBuilder
                 new StartupModuleTypeFinder(assemblyFinder));
         var moduleTypes = moduleTypeFinder.FindAll();
         return moduleTypes.Select(m => (StartupModule)Activator.CreateInstance(m))
-            .OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName)
+            .OrderBy(m => 
+                // ReSharper disable once PossibleNullReferenceException
+                m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName)
             .ToList();
     }
 }

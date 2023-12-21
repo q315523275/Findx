@@ -1,12 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
         <Nullable>enable</Nullable>
-        <Version>2023.9.5.1</Version>
+        <Version>2023.12.25.1</Version>
         <Description>MassTransit对应NewId使用,生成连续有序Guid,性能比Abp有序Guid快4倍多</Description>
         <Authors>Findx</Authors>
         <RootNamespace>Findx.Guids.NewId</RootNamespace>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

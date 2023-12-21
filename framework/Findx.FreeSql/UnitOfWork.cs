@@ -47,7 +47,6 @@ namespace Findx.FreeSql
             
             // 数据库连接池获取连接
             _conn = _fsql.Ado.MasterPool.Get();
-            
             try
             {
                 Transaction = await _conn.Value.BeginTransactionAsync(cancellationToken);

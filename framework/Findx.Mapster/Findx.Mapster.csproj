@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <Version>2023.9.5.1</Version>
+        <Version>2023.12.25.1</Version>
         <Description>Mapster高性能实体映射器,性能比AutoMapper高很多</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <LangVersion>10</LangVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Mapster" Version="7.3.0" />
+        <PackageReference Include="Mapster" Version="7.4.0" />
     </ItemGroup>
 
     <ItemGroup>

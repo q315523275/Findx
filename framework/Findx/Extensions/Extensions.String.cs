@@ -548,6 +548,7 @@ public static partial class Extensions
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
+    [Obsolete("Obsolete")]
     public static string ToMd5(this string str)
     {
         return EncryptUtility.Md5By32(str);

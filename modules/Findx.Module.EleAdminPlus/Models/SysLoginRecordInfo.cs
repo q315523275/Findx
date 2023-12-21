@@ -13,7 +13,7 @@ public class SysLoginRecordInfo : EntityBase<long>, ICreatedTime, ITenant, IResp
     /// <summary>
     ///     编号
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override long Id { get; set; }
 
     /// <summary>

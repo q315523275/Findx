@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
@@ -73,10 +74,11 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     ///     查询数据
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("page")]
     [Description("分页")]
-    public virtual async Task<CommonResult<PageResult<List<TListDto>>>> PageAsync([FromQuery] TQueryParameter request)
+    public virtual async Task<CommonResult<PageResult<List<TListDto>>>> PageAsync([FromQuery] TQueryParameter request, CancellationToken cancellationToken = default)
     {
         Check.NotNull(request, nameof(request));
 
@@ -87,7 +89,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression);
+        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(result);
     }
@@ -96,10 +98,11 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     ///     查询列表数据
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("list")]
     [Description("列表")]
-    public virtual async Task<CommonResult<List<TListDto>>> ListAsync([FromQuery] TQueryParameter request)
+    public virtual async Task<CommonResult<List<TListDto>>> ListAsync([FromQuery] TQueryParameter request, CancellationToken cancellationToken = default)
     {
         Check.NotNull(request, nameof(request));
         // 默认条数提升到99条
@@ -111,7 +114,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression);
+        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(list);
     }
@@ -120,16 +123,17 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     ///     查询单条数据
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("detail")]
     [Description("详情")]
-    public virtual async Task<CommonResult<TDetailDto>> Detail(TKey id)
+    public virtual async Task<CommonResult<TDetailDto>> Detail(TKey id, CancellationToken cancellationToken = default)
     {
         Check.NotNull(id, nameof(id));
         var repo = GetRepository<TModel, TKey>();
         Check.NotNull(repo, nameof(repo));
 
-        var model = await repo.GetAsync(id);
+        var model = await repo.GetAsync(id, cancellationToken);
         var result = ToDetailDto(model);
         await DetailAfterAsync(model, result);
 

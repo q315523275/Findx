@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
-        <PackageVersion>2023.9.5.1</PackageVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
         <Description>Caslte DynamicProxy</Description>
-        <LangVersion>10</LangVersion>
+        <LangVersion>default</LangVersion>
         <Authors>Findx</Authors>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>

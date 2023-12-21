@@ -1,13 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Version>1.9.5.1</Version>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>自定义认证授权、Token自动续期、自定义权限控制、可配置到接口级别权限等</Description>
-        <PackageVersion>2023.9.5.1</PackageVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,8 +20,12 @@
         <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.21" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     </ItemGroup>
 
 </Project>

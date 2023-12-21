@@ -44,11 +44,13 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="imageResizeDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> ResizeAsync(byte[] imageByte, ImageResizeDto imageResizeDto,  CancellationToken cancellationToken = default)
+    public async Task<byte[]> ResizeAsync(byte[] imageByte, ImageResizeDto imageResizeDto,  CancellationToken cancellationToken = default)
     {
-        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        using var originalImage = Image.Load(imageByte);
+
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         
-        if (!CanResize(imageFormat.DefaultMimeType))
+        if (!CanResize(imageFormat?.DefaultMimeType))
             throw new FindxException("Unsupported", "图片格式不支持");
         
         if (ResizeModeMap.TryGetValue(imageResizeDto.Mode, out var resizeMode))
@@ -60,7 +62,7 @@ public sealed class ImageProcessor : IImageProcessor
             throw new FindxException("Unsupported", $"图片缩放模式{imageResizeDto.Mode}不支持");
         }
 
-        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+        return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
 
     /// <summary>
@@ -72,24 +74,24 @@ public sealed class ImageProcessor : IImageProcessor
     /// <returns></returns>
     public async Task<Stream> ResizeAsync(Stream imageStream, ImageResizeDto imageResizeDto, CancellationToken cancellationToken = default)
     {
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
-        using (originalImage)
+        using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+        
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+        
+        if (!CanResize(imageFormat?.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持");
+
+        if (ResizeModeMap.TryGetValue(imageResizeDto.Mode, out var resizeMode))
         {
-            if (!CanResize(imageFormat.DefaultMimeType))
-                throw new FindxException("Unsupported", "图片格式不支持");
-
-            if (ResizeModeMap.TryGetValue(imageResizeDto.Mode, out var resizeMode))
-            {
-                originalImage.Mutate(x => x.Resize(new ResizeOptions
-                    { Size = GetSize(imageResizeDto), Mode = resizeMode }));
-            }
-            else
-            {
-                throw new FindxException("Unsupported", $"图片缩放模式{imageResizeDto.Mode}不支持");
-            }
-
-            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+            originalImage.Mutate(x => x.Resize(new ResizeOptions
+                { Size = GetSize(imageResizeDto), Mode = resizeMode }));
         }
+        else
+        {
+            throw new FindxException("Unsupported", $"图片缩放模式{imageResizeDto.Mode}不支持");
+        }
+
+        return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
     }
 
     private static bool CanResize(string mimeType)
@@ -142,16 +144,17 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="imageCropDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> CropAsync(byte[] imageByte, ImageCropDto imageCropDto, CancellationToken cancellationToken = default)
+    public async Task<byte[]> CropAsync(byte[] imageByte, ImageCropDto imageCropDto, CancellationToken cancellationToken = default)
     {
-        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        using var originalImage = Image.Load(imageByte);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         
-        if (!CanResize(imageFormat.DefaultMimeType))
+        if (!CanResize(imageFormat?.DefaultMimeType))
             throw new FindxException("Unsupported", "图片格式不支持裁剪");
         
         originalImage.Mutate(m => { m.Crop(new Rectangle(imageCropDto.X, imageCropDto.Y, imageCropDto.Width, imageCropDto.Height)); });
         
-        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+        return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
 
     /// <summary>
@@ -163,20 +166,20 @@ public sealed class ImageProcessor : IImageProcessor
     /// <returns></returns>
     public async Task<Stream> CropAsync(Stream imageStream, ImageCropDto imageCropDto, CancellationToken cancellationToken = default)
     {
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
-        using (originalImage)
+        using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+
+        if (!CanResize(imageFormat?.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持裁剪");
+
+        originalImage.Mutate(m =>
         {
-            if (!CanResize(imageFormat.DefaultMimeType))
-                throw new FindxException("Unsupported", "图片格式不支持裁剪");
+            m.Crop(new Rectangle(imageCropDto.X, imageCropDto.Y, imageCropDto.Width, imageCropDto.Height));
+        });
 
-            originalImage.Mutate(m =>
-            {
-                m.Crop(new Rectangle(imageCropDto.X, imageCropDto.Y, imageCropDto.Width, imageCropDto.Height));
-            });
-
-            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
-        }
+        return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
     }
+
     #endregion
 
     #region 图片压缩
@@ -190,9 +193,10 @@ public sealed class ImageProcessor : IImageProcessor
     /// <returns></returns>
     public async Task<byte[]> CompressAsync(byte[] imageByte, int quality = 75, CancellationToken cancellationToken = default)
     {
-        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        using var originalImage = Image.Load(imageByte);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         
-        if (!CanCompress(imageFormat.DefaultMimeType))
+        if (!CanCompress(imageFormat?.DefaultMimeType))
             throw new FindxException("Unsupported", "图片格式不支持压缩");
 
         var encoder = GetCompressEncoder(imageFormat, quality);
@@ -201,7 +205,7 @@ public sealed class ImageProcessor : IImageProcessor
         await originalImage.SaveAsync(memoryStream, encoder, cancellationToken: cancellationToken);
         return memoryStream.ToArray();
     }
-    
+
     /// <summary>
     ///     图片压缩
     /// </summary>
@@ -211,19 +215,19 @@ public sealed class ImageProcessor : IImageProcessor
     /// <returns></returns>
     public async Task<Stream> CompressAsync(Stream imageStream, int quality = 75, CancellationToken cancellationToken = default)
     {
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
-        using (originalImage)
-        {
-            if (!CanCompress(imageFormat.DefaultMimeType))
-                throw new FindxException("Unsupported", "图片格式不支持压缩");
+        using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+        
+        if (!CanCompress(imageFormat?.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持压缩");
 
-            var encoder = GetCompressEncoder(imageFormat, quality);
+        var encoder = GetCompressEncoder(imageFormat, quality);
 
-            var memoryStream = Pool.MemoryStream.Rent();
-            await originalImage.SaveAsync(memoryStream, encoder, cancellationToken: cancellationToken);
-            memoryStream.Position = 0;
-            return memoryStream;
-        }
+        var memoryStream = Pool.MemoryStream.Rent();
+        await originalImage.SaveAsync(memoryStream, encoder, cancellationToken: cancellationToken);
+        memoryStream.Position = 0;
+        return memoryStream;
+
     }
 
     private static bool CanCompress(string mimeType)
@@ -241,10 +245,7 @@ public sealed class ImageProcessor : IImageProcessor
         return format.DefaultMimeType switch
         {
             MimeTypeUtility.Image.Jpeg => new JpegEncoder { Quality = quality },
-            MimeTypeUtility.Image.Png => new PngEncoder
-            {
-                CompressionLevel = PngCompressionLevel.BestCompression, IgnoreMetadata = true
-            },
+            MimeTypeUtility.Image.Png => new PngEncoder { CompressionLevel = PngCompressionLevel.BestCompression },
             MimeTypeUtility.Image.Webp => new WebpEncoder { Quality = quality },
             _ => throw new FindxException($"图片格式{format.Name}不支持压缩")
         };
@@ -259,17 +260,18 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="imageByte">图片字节数组</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> GrayAsync(byte[] imageByte, CancellationToken cancellationToken = default)
+    public async Task<byte[]> GrayAsync(byte[] imageByte, CancellationToken cancellationToken = default)
     {
-        using var originalImage = Image.Load<Rgba32>(imageByte, out var imageFormat);
+        using var originalImage = Image.Load<Rgba32>(imageByte);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         
-        if (!CanResize(imageFormat.DefaultMimeType))
+        if (!CanResize(imageFormat?.DefaultMimeType))
             throw new FindxException("Unsupported", "图片格式不支持灰色化");
         
         // 像素点逐个替换
         originalImage.ToGray();
 
-        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+        return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
 
     /// <summary>
@@ -280,17 +282,17 @@ public sealed class ImageProcessor : IImageProcessor
     /// <returns></returns>
     public async Task<Stream> GrayAsync(Stream imageStream, CancellationToken cancellationToken = default)
     {
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync<Rgba32>(imageStream, cancellationToken);
-        using (originalImage)
-        {
-            if (!CanResize(imageFormat.DefaultMimeType))
-                throw new FindxException("Unsupported", "图片格式不支持灰色化");
+        using var originalImage = await Image.LoadAsync<Rgba32>(imageStream, cancellationToken);
 
-            // 像素点逐个替换
-            originalImage.ToGray();
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+        
+        if (!CanResize(imageFormat?.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持灰色化");
 
-            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
-        }
+        // 像素点逐个替换
+        originalImage.ToGray();
+
+        return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
     }
     #endregion
 
@@ -303,17 +305,18 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="threshold">阀值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> BinaryAsync(byte[] imageByte, int threshold = 180, CancellationToken cancellationToken = default)
+    public async Task<byte[]> BinaryAsync(byte[] imageByte, int threshold = 180, CancellationToken cancellationToken = default)
     {
-        using var originalImage = Image.Load<Rgba32>(imageByte, out var imageFormat);
+        using var originalImage = Image.Load<Rgba32>(imageByte);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         
-        if (!CanResize(imageFormat.DefaultMimeType))
+        if (!CanResize(imageFormat?.DefaultMimeType))
             throw new FindxException("Unsupported", "图片格式不支持二值化");
         
         // 像素点逐个替换
         originalImage.ToBinary(threshold);
 
-        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+        return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
     
     /// <summary>
@@ -325,17 +328,16 @@ public sealed class ImageProcessor : IImageProcessor
     /// <returns></returns>
     public async Task<Stream> BinaryAsync(Stream imageStream, int threshold = 180, CancellationToken cancellationToken = default)
     {
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync<Rgba32>(imageStream, cancellationToken);
-        using (originalImage)
-        {
-            if (!CanResize(imageFormat.DefaultMimeType))
-                throw new FindxException("Unsupported", "图片格式不支持二值化");
+        using var originalImage = await Image.LoadAsync<Rgba32>(imageStream, cancellationToken);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+        
+        if (!CanResize(imageFormat?.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持二值化");
 
-            // 像素点逐个替换
-            originalImage.ToBinary(threshold);
+        // 像素点逐个替换
+        originalImage.ToBinary(threshold);
 
-            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
-        }
+        return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
     }
 
     #endregion
@@ -349,16 +351,17 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="degrees"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> RotateAsync(byte[] byteData, float degrees, CancellationToken cancellationToken = default)
+    public async Task<byte[]> RotateAsync(byte[] byteData, float degrees, CancellationToken cancellationToken = default)
     {
-        using var originalImage = Image.Load(byteData, out var imageFormat);
+        using var originalImage = Image.Load(byteData);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         
-        if (!CanResize(imageFormat.DefaultMimeType))
+        if (!CanResize(imageFormat?.DefaultMimeType))
             throw new FindxException("Unsupported", "图片格式不支持旋转");
         
         originalImage.Mutate(m => { m.Rotate(degrees); });
 
-        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+        return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
 
     /// <summary>
@@ -371,18 +374,18 @@ public sealed class ImageProcessor : IImageProcessor
     /// <exception cref="FindxException"></exception>
     public async Task<Stream> RotateAsync(Stream imageStream, float degrees, CancellationToken cancellationToken = default)
     {
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
-        using (originalImage)
-        {
-            if (!CanResize(imageFormat.DefaultMimeType))
-                throw new FindxException("Unsupported", "图片格式不支持旋转");
+        using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+        
+        
+        if (!CanResize(imageFormat?.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持旋转");
 
-            originalImage.Mutate(m => { m.Rotate(degrees); });
+        originalImage.Mutate(m => { m.Rotate(degrees); });
 
-            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
-        }
+        return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
     }
-    
+
     #endregion
 
     #region 翻转
@@ -394,11 +397,12 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="imageFlipMode"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> FlipAsync(byte[] imageByte, ImageFlipMode imageFlipMode, CancellationToken cancellationToken = default)
+    public async Task<byte[]> FlipAsync(byte[] imageByte, ImageFlipMode imageFlipMode, CancellationToken cancellationToken = default)
     {
-        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        using var originalImage = Image.Load(imageByte);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         
-        if (!CanResize(imageFormat.DefaultMimeType))
+        if (!CanResize(imageFormat?.DefaultMimeType))
             throw new FindxException("Unsupported", "图片格式不支持翻转");
         
         if (FlipModeMap.TryGetValue(imageFlipMode, out var flipMode))
@@ -410,7 +414,7 @@ public sealed class ImageProcessor : IImageProcessor
             throw new FindxException("Unsupported", $"图片翻转模式{imageFlipMode}不支持");
         }
 
-        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+        return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
 
     /// <summary>
@@ -422,22 +426,22 @@ public sealed class ImageProcessor : IImageProcessor
     /// <returns></returns>
     public async Task<Stream> FlipAsync(Stream imageStream, ImageFlipMode imageFlipMode, CancellationToken cancellationToken = default)
     {
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
-        using (originalImage)
+        using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+
+        if (!CanResize(imageFormat?.DefaultMimeType))
+            throw new FindxException("Unsupported", "图片格式不支持翻转");
+
+        if (FlipModeMap.TryGetValue(imageFlipMode, out var flipMode))
         {
-            if (!CanResize(imageFormat.DefaultMimeType))
-                throw new FindxException("Unsupported", "图片格式不支持翻转");
-        
-            if (FlipModeMap.TryGetValue(imageFlipMode, out var flipMode))
-            {
-                originalImage.Mutate(m => { m.Flip(flipMode); });
-            }
-            else
-            {
-                throw new FindxException("Unsupported", $"图片翻转模式{imageFlipMode}不支持");
-            }
-            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
+            originalImage.Mutate(m => { m.Flip(flipMode); });
         }
+        else
+        {
+            throw new FindxException("Unsupported", $"图片翻转模式{imageFlipMode}不支持");
+        }
+
+        return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
     }
 
     private static readonly Dictionary<ImageFlipMode, FlipMode> FlipModeMap = new() {
@@ -457,21 +461,22 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="mergeImageDto">合并图片参数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> MergeImageAsync(byte[] imageByte, byte[] mergeImageByte, MergeImageDto mergeImageDto, CancellationToken cancellationToken = default)
+    public async Task<byte[]> MergeImageAsync(byte[] imageByte, byte[] mergeImageByte, MergeImageDto mergeImageDto, CancellationToken cancellationToken = default)
     {
-        var mergeImage = Image.Load(mergeImageByte, out var mergeImageFormat);
+        var mergeImage = Image.Load(mergeImageByte);
+        var mergeImageFormat = mergeImage.Metadata.DecodedImageFormat;
+
         using (mergeImage)
         {
             // 合并图片需要缩放
             if (mergeImageDto.Width > 0 || mergeImageDto.Height > 0)
             {
-                if (!CanResize(mergeImageFormat.DefaultMimeType))
+                if (!CanResize(mergeImageFormat?.DefaultMimeType))
                     throw new FindxException("Unsupported", "图片格式不支持缩放");
 
                 if (ResizeModeMap.TryGetValue(mergeImageDto.ResizeMode, out var resizeMode))
                 {
-                    mergeImage.Mutate(x => x.Resize(new ResizeOptions
-                        { Size = GetSize(mergeImageDto), Mode = resizeMode }));
+                    mergeImage.Mutate(x => x.Resize(new ResizeOptions { Size = GetSize(mergeImageDto), Mode = resizeMode }));
                 }
                 else
                 {
@@ -479,16 +484,14 @@ public sealed class ImageProcessor : IImageProcessor
                 }
             }
 
-            var originalImage = Image.Load(imageByte, out var imageFormat);
-            using (originalImage)
+            using var originalImage = Image.Load(imageByte);
+            var imageFormat = originalImage.Metadata.DecodedImageFormat;
+            originalImage.Mutate(o =>
             {
-                originalImage.Mutate(o =>
-                {
-                    o.DrawImage(mergeImage, new Point(mergeImageDto.X, mergeImageDto.Y), mergeImageDto.Opacity);
-                });
+                o.DrawImage(mergeImage, new Point(mergeImageDto.X, mergeImageDto.Y), mergeImageDto.Opacity);
+            });
 
-                return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
-            }
+            return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
         }
     }
 
@@ -502,13 +505,15 @@ public sealed class ImageProcessor : IImageProcessor
     /// <returns></returns>
     public async Task<Stream> MergeImageAsync(Stream imageStream, Stream mergeImageStream, MergeImageDto mergeImageDto, CancellationToken cancellationToken = default)
     {
-        var (mergeImage, mergeImageFormat) = await Image.LoadWithFormatAsync(mergeImageStream, cancellationToken);
+        var mergeImage = await Image.LoadAsync(mergeImageStream, cancellationToken);
+        var mergeImageFormat = mergeImage.Metadata.DecodedImageFormat;
+
         using (mergeImage)
         {
             // 合并图片需要缩放
             if (mergeImageDto.Width > 0 || mergeImageDto.Height > 0)
             {
-                if (!CanResize(mergeImageFormat.DefaultMimeType))
+                if (!CanResize(mergeImageFormat?.DefaultMimeType))
                     throw new FindxException("Unsupported", "图片格式不支持缩放");
 
                 if (ResizeModeMap.TryGetValue(mergeImageDto.ResizeMode, out var resizeMode))
@@ -522,16 +527,14 @@ public sealed class ImageProcessor : IImageProcessor
                 }
             }
 
-            var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
-            using (originalImage)
+            using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+            var imageFormat = originalImage.Metadata.DecodedImageFormat;
+            originalImage.Mutate(o =>
             {
-                originalImage.Mutate(o =>
-                {
-                    o.DrawImage(mergeImage, new Point(mergeImageDto.X, mergeImageDto.Y), mergeImageDto.Opacity);
-                });
-                
-                return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
-            }
+                o.DrawImage(mergeImage, new Point(mergeImageDto.X, mergeImageDto.Y), mergeImageDto.Opacity);
+            });
+
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
         }
     }
 
@@ -563,7 +566,7 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="drawTextDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> DrawTextAsync(byte[] imageByte, string text, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
+    public async Task<byte[]> DrawTextAsync(byte[] imageByte, string text, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
     {
         var font = CreateFont(drawTextDto);
         var textOptions = new RichTextOptions(font)
@@ -575,7 +578,8 @@ public sealed class ImageProcessor : IImageProcessor
         };
         var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
         
-        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        using var originalImage = Image.Load(imageByte);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         if (drawTextDto.UseOverlay)
         {
             var textSize = TextMeasurer.MeasureSize(text, textOptions);
@@ -587,7 +591,7 @@ public sealed class ImageProcessor : IImageProcessor
                     ctx.Fill(Color.ParseHex(drawTextDto.OverlayColor).WithAlpha(drawTextDto.OverlayOpacity));
                     ctx.DrawText(textOptions: textOptions, text: text, brush: textBrush);
                 });
-                originalImage.Mutate(o => { o.DrawImage(overlay, location: new Point(drawTextDto.OverlayX, drawTextDto.OverlayY), opacity: 1); });
+                originalImage.Mutate(o => { o.DrawImage(overlay, new Point(drawTextDto.OverlayX, drawTextDto.OverlayY), opacity: 1); });
             }
         }
         else
@@ -596,7 +600,7 @@ public sealed class ImageProcessor : IImageProcessor
         }
         
 
-        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+        return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
 
     /// <summary>
@@ -618,30 +622,29 @@ public sealed class ImageProcessor : IImageProcessor
             LineSpacing = drawTextDto.LineSpacing,
         };
         var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
-        using (originalImage)
+        
+        using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+        if (drawTextDto.UseOverlay)
         {
-            if (drawTextDto.UseOverlay)
+            var textSize = TextMeasurer.MeasureSize(text, textOptions);
+            var overlay = new Image<Rgba32>((int)textSize.Width + drawTextDto.X * 2, (int)textSize.Height + drawTextDto.Y * 2);
+            using (overlay)
             {
-                var textSize = TextMeasurer.MeasureSize(text, textOptions);
-                var overlay = new Image<Rgba32>((int)textSize.Width + drawTextDto.X * 2, (int)textSize.Height + drawTextDto.Y * 2);
-                using (overlay)
+                overlay.Mutate(ctx =>
                 {
-                    overlay.Mutate(ctx =>
-                    {
-                        ctx.Fill(Color.ParseHex(drawTextDto.OverlayColor).WithAlpha(drawTextDto.OverlayOpacity));
-                        ctx.DrawText(textOptions, text, textBrush);
-                    });
-                    originalImage.Mutate(o => { o.DrawImage(overlay, location: new Point(drawTextDto.OverlayX, drawTextDto.OverlayY), opacity: 1); });
-                }
+                    ctx.Fill(Color.ParseHex(drawTextDto.OverlayColor).WithAlpha(drawTextDto.OverlayOpacity));
+                    ctx.DrawText(textOptions, text, textBrush);
+                });
+                originalImage.Mutate(o => { o.DrawImage(overlay, new Point(drawTextDto.OverlayX, drawTextDto.OverlayY), opacity: 1); });
             }
-            else
-            {
-                originalImage.Mutate(o => { o.DrawText(textOptions, text, textBrush); });
-            }
-            
-            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
         }
+        else
+        {
+            originalImage.Mutate(o => { o.DrawText(textOptions, text, textBrush); });
+        }
+            
+        return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
     }
     
     private Font CreateFont(DrawTextDto drawTextDto)
@@ -695,21 +698,21 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="location">图片水印位置：0=不使用 1=左上 2=中上 3=右上 4=中左 5=中中 6=中右 7=下左 8=下中 9=下右</param>
     /// <param name="opacity">图片水印透明度：alpha 必须是范围 [0.0, 1.0] 之内（包含边界值）的一个浮点数字</param>
     /// <param name="cancellationToken"></param>
-    public Task<byte[]> ImageWatermarkAsync(byte[] imageByte, byte[] watermarkImageByte, int location, float opacity, CancellationToken cancellationToken = default)
+    public async Task<byte[]> ImageWatermarkAsync(byte[] imageByte, byte[] watermarkImageByte, int location, float opacity, CancellationToken cancellationToken = default)
     {
         // 装载原图
-        var originalImage = Image.Load(imageByte, out var imageFormat);
-        using (originalImage)
+        using var originalImage = Image.Load(imageByte);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+        
+        // 装载水印图片
+        var watermarkImage = Image.Load(watermarkImageByte);
+        using (watermarkImage)
         {
-            // 装载水印图片
-            var watermarkImage = Image.Load(watermarkImageByte);
-            using (watermarkImage)
-            {
-                var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, watermarkImage.Width, watermarkImage.Height);
-                // 绘制水印
-                originalImage.Mutate(o => { o.DrawImage(watermarkImage, point, opacity); });
-                return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
-            }
+            var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, watermarkImage.Width,
+                watermarkImage.Height);
+            // 绘制水印
+            originalImage.Mutate(o => { o.DrawImage(watermarkImage, point, opacity); });
+            return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
         }
     }
 
@@ -725,18 +728,18 @@ public sealed class ImageProcessor : IImageProcessor
     public async Task<Stream> ImageWatermarkAsync(Stream imageStream, Stream watermarkImageStream, int location, float opacity, CancellationToken cancellationToken = default)
     {
         // 装载原图
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
-        using (originalImage)
+        using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
+        
+        // 装载水印图片
+        var watermarkImage = await Image.LoadAsync(watermarkImageStream, cancellationToken);
+        using (watermarkImage)
         {
-            // 装载水印图片
-            var watermarkImage = await Image.LoadAsync(watermarkImageStream, cancellationToken);
-            using (watermarkImage)
-            {
-                var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, watermarkImage.Width, watermarkImage.Height);
-                // 绘制水印
-                originalImage.Mutate(o => { o.DrawImage(watermarkImage, point, opacity); });
-                return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
-            }
+            var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, watermarkImage.Width,
+                watermarkImage.Height);
+            // 绘制水印
+            originalImage.Mutate(o => { o.DrawImage(watermarkImage, point, opacity); });
+            return await originalImage.SaveAndGetAllStreamAsync(imageFormat, cancellationToken);
         }
     }
 
@@ -812,7 +815,7 @@ public sealed class ImageProcessor : IImageProcessor
     /// <param name="drawTextDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<byte[]> LetterWatermarkAsync(byte[] imageByte, string text, int location, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
+    public async Task<byte[]> LetterWatermarkAsync(byte[] imageByte, string text, int location, DrawTextDto drawTextDto, CancellationToken cancellationToken = default)
     {
         var font = CreateFont(drawTextDto);
         var textOptions = new RichTextOptions(font)
@@ -825,7 +828,8 @@ public sealed class ImageProcessor : IImageProcessor
         var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
         var textSize = TextMeasurer.MeasureSize(text, textOptions);
         
-        using var originalImage = Image.Load(imageByte, out var imageFormat);
+        using var originalImage = Image.Load(imageByte);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         if (drawTextDto.UseOverlay)
         {
             
@@ -838,7 +842,7 @@ public sealed class ImageProcessor : IImageProcessor
                     ctx.DrawText(textOptions, text, textBrush);
                 });
                 var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, overlay.Width, overlay.Height);
-                originalImage.Mutate(o => { o.DrawImage(overlay, location: point, opacity: 1); });
+                originalImage.Mutate(o => { o.DrawImage(overlay, point, opacity: 1); });
             }
         }
         else
@@ -848,7 +852,7 @@ public sealed class ImageProcessor : IImageProcessor
             originalImage.Mutate(o => { o.DrawText(textOptions, text, textBrush); });
         }
 
-        return originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
+        return await originalImage.SaveAndGetAllBytesAsync(imageFormat, cancellationToken);
     }
 
     /// <summary>
@@ -873,7 +877,8 @@ public sealed class ImageProcessor : IImageProcessor
         var textBrush = Brushes.Solid(Color.ParseHex(drawTextDto.FontColor));
         var textSize = TextMeasurer.MeasureSize(text, textOptions);
         
-        var (originalImage, imageFormat) = await Image.LoadWithFormatAsync(imageStream, cancellationToken);
+        using var originalImage = await Image.LoadAsync(imageStream, cancellationToken);
+        var imageFormat = originalImage.Metadata.DecodedImageFormat;
         using (originalImage)
         {
             if (drawTextDto.UseOverlay)
@@ -888,7 +893,7 @@ public sealed class ImageProcessor : IImageProcessor
                         ctx.DrawText(textOptions, text, textBrush);
                     });
                     var point = GetWatermarkPoint(location, originalImage.Width, originalImage.Height, overlay.Width, overlay.Height);
-                    originalImage.Mutate(o => { o.DrawImage(overlay, location: point, opacity: 1); });
+                    originalImage.Mutate(o => { o.DrawImage(overlay, point, opacity: 1); });
                 }
             }
             else

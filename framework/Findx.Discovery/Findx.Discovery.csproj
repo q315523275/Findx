@@ -1,22 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Version>1.9.5.2</Version>
         <Description>服务发现、本地发现、Http请求、负载算法(最少请求、轮询、随机、Hash)</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>2023.9.5.1</PackageVersion>
-        <LangVersion>latestmajor</LangVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
         <PackageReference Include="Microsoft.Extensions.Http" Version="6.0.0" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     </ItemGroup>
 
 </Project>

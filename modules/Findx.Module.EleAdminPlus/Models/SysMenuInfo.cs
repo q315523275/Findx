@@ -13,7 +13,7 @@ public class SysMenuInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant,
     /// <summary>
     ///     菜单id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override long Id { get; set; }
 
     /// <summary>

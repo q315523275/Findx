@@ -54,7 +54,7 @@ public class JwtTokenRenewalMiddleware
                     var jwtBuilder = context.RequestServices.GetRequiredService<IJwtTokenBuilder>();
                     var token = await jwtBuilder.CreateAsync(renewalDict, options.Value);
 
-                    context.Response.Headers.Add("Authorization", $"Bearer {token.AccessToken}");
+                    context.Response.Headers.Append("Authorization", $"Bearer {token.AccessToken}");
                 }
             }
         }

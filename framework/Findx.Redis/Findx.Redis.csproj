@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
         <Version>1.9.5.2</Version>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Redis通用功能、分布式锁等(StackExchangeRedis)</Description>
-        <PackageVersion>2023.9.5.1</PackageVersion>
-        <LangVersion>latestmajor</LangVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="StackExchange.Redis" Version="2.6.122" />
+        <PackageReference Include="StackExchange.Redis" Version="2.7.10" />
     </ItemGroup>
 
     <ItemGroup>

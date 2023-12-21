@@ -1,17 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Version>1.9.5.2</Version>
         <Description>NLog日志组件包</Description>
-        <PackageVersion>2023.9.5.1</PackageVersion>
-        <LangVersion>latestmajor</LangVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NLog" Version="5.2.3" />
+        <PackageReference Include="NLog" Version="5.2.7" />
     </ItemGroup>
 
     <ItemGroup>

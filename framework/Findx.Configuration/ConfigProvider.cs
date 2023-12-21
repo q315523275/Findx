@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
@@ -23,6 +24,7 @@ namespace Findx.Configuration
             Data = new Dictionary<string, string>();
         }
 
+        [Obsolete("Obsolete")]
         public override void Load()
         {
             _client.LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();

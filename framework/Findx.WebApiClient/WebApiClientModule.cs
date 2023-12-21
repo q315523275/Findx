@@ -32,8 +32,6 @@ public class WebApiClientModule : StartupModule
     /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
-        new ValueStringBuilder();
-        
         var configuration = services.GetConfiguration();
 
         var webApiFinder =

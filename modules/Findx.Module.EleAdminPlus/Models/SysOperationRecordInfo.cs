@@ -13,7 +13,7 @@ public class SysOperationRecordInfo : EntityBase<long>, ICreatedTime, ITenant, I
     /// <summary>
     ///     编号
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override long Id { get; set; }
 
     /// <summary>

@@ -144,6 +144,7 @@ public static class FileUtility
     /// </summary>
     /// <param name="fileName"> 文件名 </param>
     /// <returns> 32位MD5 </returns>
+    [Obsolete("Obsolete")]
     public static string GetFileMd5(string fileName)
     {
         using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);

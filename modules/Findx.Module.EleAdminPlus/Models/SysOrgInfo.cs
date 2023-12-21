@@ -13,7 +13,7 @@ public class SysOrgInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant, 
     /// <summary>
     ///     机构id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override long Id { get; set; }
 
     /// <summary>

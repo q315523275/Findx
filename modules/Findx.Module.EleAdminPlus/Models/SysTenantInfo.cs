@@ -13,7 +13,7 @@ public class SysTenantInfo : FullAuditedBase<Guid, long>, ISoftDeletable
     /// <summary>
     ///     租户id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override Guid Id { get; set; }
 
     /// <summary>

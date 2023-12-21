@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
         <Description>远端配置中心客户端</Description>
-        <PackageVersion>2023.9.5.1</PackageVersion>
-        <LangVersion>latestmajor</LangVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
+        <LangVersion>default</LangVersion>
         <Authors>Findx</Authors>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>

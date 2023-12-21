@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Nullable>disable</Nullable>
         <Version>1.9.5.2</Version>
         <Description>限速、限流、防重提交、内网限定、请求策略、动态API、上传、MVC扩展等</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>2023.9.5.1</PackageVersion>
-        <LangVersion>latestmajor</LangVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,8 +20,12 @@
         <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
         <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="6.0.21" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.0" />
     </ItemGroup>
 
     <ItemGroup>

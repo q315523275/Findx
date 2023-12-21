@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
@@ -180,10 +181,11 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     ///     添加数据
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("add")]
     [Description("新增")]
-    public virtual async Task<CommonResult> AddAsync([FromBody] TCreateRequest request)
+    public virtual async Task<CommonResult> AddAsync([FromBody] TCreateRequest request, CancellationToken cancellationToken = default)
     {
         Check.NotNull(request, nameof(request));
 
@@ -202,7 +204,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         model.SetEmptyKey(); // 判断设置ID值
 
         await AddBeforeAsync(model, request);
-        var res = await repo.InsertAsync(model);
+        var res = await repo.InsertAsync(model, cancellationToken);
         await AddAfterAsync(model, request, res);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
@@ -212,10 +214,11 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     ///     修改数据
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPut("edit")]
     [Description("编辑")]
-    public virtual async Task<CommonResult> EditAsync([FromBody] TUpdateRequest request)
+    public virtual async Task<CommonResult> EditAsync([FromBody] TUpdateRequest request, CancellationToken cancellationToken = default)
     {
         Check.NotNull(request, nameof(request));
 
@@ -234,7 +237,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         model.CheckUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
 
         await EditBeforeAsync(model, request);
-        var res = await repo.UpdateAsync(model, ignoreNullColumns: true);
+        var res = await repo.UpdateAsync(model, ignoreNullColumns: true, cancellationToken: cancellationToken);
         await EditAfterAsync(model, request, res);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.edit.error", "数据更新失败");
@@ -244,10 +247,11 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     ///     删除数据
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("delete")]
     [Description("删除")]
-    public virtual async Task<CommonResult> DeleteAsync([FromBody] [MinLength(1)] List<TKey> request)
+    public virtual async Task<CommonResult> DeleteAsync([FromBody] [MinLength(1)] List<TKey> request, CancellationToken cancellationToken = default)
     {
         Check.NotNull(request, nameof(request));
         if (request.Count == 0)
@@ -261,7 +265,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
 
         await DeleteBeforeAsync(request);
 
-        var total = await repo.DeleteAsync(x => request.Contains(x.Id));
+        var total = await repo.DeleteAsync(x => request.Contains(x.Id), cancellationToken);
 
         await DeleteAfterAsync(request, total);
 

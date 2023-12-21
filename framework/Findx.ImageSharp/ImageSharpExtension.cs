@@ -42,6 +42,7 @@ public static class ImageSharpExtension
         for (var i = 0; i < text.Length; i++)
         {
             var fontFamily = fontFamilies.Count > 1 ? fontFamilies[RandomUtility.RandomInt(0, fontFamilies.Count)] : fontFamilies.First();
+            // ReSharper disable once PossibleNullReferenceException
             var fontStyle = (FontStyle)fontStyleArr.GetValue(RandomUtility.RandomInt(fontStyleArr.Length));
             // 随机字体大小
             fontSize = RandomUtility.RandomInt(fontMiniSize, fontMaxSize);
@@ -60,8 +61,11 @@ public static class ImageSharpExtension
             img2.Mutate(ctx =>
                         ctx.DrawText(text[i1].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(offsetLeft, offsetTop))
                            .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
-                           .Rotate(RandomUtility.RandomInt(-15, 15)) // 字体自带旋转，意思一下就行
+                           .Rotate(RandomUtility.RandomInt(-15, 15))
             );
+            // 旋转后超出幕布
+            var rotatedWidth = img2.Width;
+            img2.Mutate(ctx => ctx.Crop(new Rectangle(0,0, rotatedWidth, containerHeight)));
 
             processingContext.DrawImage(img2, point, 1);
         }

@@ -13,7 +13,7 @@ public class SysRoleMenuInfo : EntityBase<long>, ITenant
     /// <summary>
     ///     主键id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = true)]
+    [Column(IsPrimary = true, IsIdentity = false)]
     public override long Id { get; set; }
 
     /// <summary>

@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
         <Description>图片处理（验证码、缩放、裁剪、压缩、二值化、旋转、翻转、添加图片、添加文字、水印）</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <LangVersion>10.0</LangVersion>
+        <LangVersion>default</LangVersion>
         <Version>1.9.5.1</Version>
-        <PackageVersion>2023.9.5.1</PackageVersion>
+        <PackageVersion>2023.12.25.1</PackageVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
     
     <ItemGroup>
@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.0" />
     </ItemGroup>
     
 </Project>

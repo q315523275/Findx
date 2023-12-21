@@ -14,6 +14,7 @@ public static class EncryptUtility
     /// <summary>
     ///     SHA256加密
     /// </summary>
+    [Obsolete("Obsolete")]
     public static string Sha256(string str)
     {
         var bytes = Encoding.UTF8.GetBytes(str);
@@ -29,6 +30,7 @@ public static class EncryptUtility
     ///     Md5加密，返回16位结果
     /// </summary>
     /// <param name="value">值</param>
+    [Obsolete("Obsolete")]
     public static string Md5By16(string value)
     {
         return Md5By16(value, Encoding.UTF8);
@@ -39,6 +41,7 @@ public static class EncryptUtility
     /// </summary>
     /// <param name="value">值</param>
     /// <param name="encoding">字符编码</param>
+    [Obsolete("Obsolete")]
     public static string Md5By16(string value, Encoding encoding)
     {
         return Md5(value, encoding, 4, 8);
@@ -47,6 +50,7 @@ public static class EncryptUtility
     /// <summary>
     ///     Md5加密
     /// </summary>
+    [Obsolete("Obsolete")]
     private static string Md5(string value, Encoding encoding, int? startIndex, int? length)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -72,6 +76,7 @@ public static class EncryptUtility
     ///     Md5加密，返回32位结果
     /// </summary>
     /// <param name="value">值</param>
+    [Obsolete("Obsolete")]
     public static string Md5By32(string value)
     {
         return Md5By32(value, Encoding.UTF8);
@@ -82,6 +87,7 @@ public static class EncryptUtility
     /// </summary>
     /// <param name="value">值</param>
     /// <param name="encoding">字符编码</param>
+    [Obsolete("Obsolete")]
     public static string Md5By32(string value, Encoding encoding)
     {
         return Md5(value, encoding, null, null);
@@ -100,6 +106,7 @@ public static class EncryptUtility
     ///     DES加密
     /// </summary>
     /// <param name="value">待加密的值</param>
+    [Obsolete("Obsolete")]
     public static string DesEncrypt(object value)
     {
         return DesEncrypt(value, DesKey);
@@ -110,6 +117,7 @@ public static class EncryptUtility
     /// </summary>
     /// <param name="value">待加密的值</param>
     /// <param name="key">密钥,24位</param>
+    [Obsolete("Obsolete")]
     public static string DesEncrypt(object value, string key)
     {
         return DesEncrypt(value, key, Encoding.UTF8);
@@ -121,6 +129,7 @@ public static class EncryptUtility
     /// <param name="value">待加密的值</param>
     /// <param name="key">密钥,24位</param>
     /// <param name="encoding">编码</param>
+    [Obsolete("Obsolete")]
     public static string DesEncrypt(object value, string key, Encoding encoding)
     {
         var text = value.SafeString();
@@ -144,10 +153,10 @@ public static class EncryptUtility
     /// <summary>
     ///     创建Des加密服务提供程序
     /// </summary>
+    [Obsolete]
     private static DESCryptoServiceProvider CreateDesProvider(string key)
     {
-        return new DESCryptoServiceProvider
-            { Key = Encoding.ASCII.GetBytes(key), IV = Encoding.ASCII.GetBytes(key), Mode = CipherMode.ECB };
+        return new DESCryptoServiceProvider { Key = Encoding.ASCII.GetBytes(key), IV = Encoding.ASCII.GetBytes(key), Mode = CipherMode.ECB };
     }
 
     /// <summary>
@@ -164,6 +173,7 @@ public static class EncryptUtility
     ///     DES解密
     /// </summary>
     /// <param name="value">加密后的值</param>
+    [Obsolete("Obsolete")]
     public static string DesDecrypt(object value)
     {
         return DesDecrypt(value, DesKey);
@@ -174,6 +184,7 @@ public static class EncryptUtility
     /// </summary>
     /// <param name="value">加密后的值</param>
     /// <param name="key">密钥,24位</param>
+    [Obsolete("Obsolete")]
     public static string DesDecrypt(object value, string key)
     {
         return DesDecrypt(value, key, Encoding.UTF8);
@@ -185,6 +196,7 @@ public static class EncryptUtility
     /// <param name="value">加密后的值</param>
     /// <param name="key">密钥,24位</param>
     /// <param name="encoding">编码</param>
+    [Obsolete("Obsolete")]
     public static string DesDecrypt(object value, string key, Encoding encoding)
     {
         var text = value.SafeString();
