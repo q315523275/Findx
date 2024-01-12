@@ -71,8 +71,7 @@ public abstract class EmailSenderBase : IEmailSender
     protected virtual void NormalizeMail(MailMessage mail)
     {
         if (mail.From == null || mail.From.Address.IsNullOrEmpty())
-            mail.From = new MailAddress(EmailSenderOptions.FromAddress, EmailSenderOptions.FromDisplayName,
-                Encoding.UTF8);
+            mail.From = new MailAddress(EmailSenderOptions.FromAddress, EmailSenderOptions.FromDisplayName, Encoding.UTF8);
 
         mail.HeadersEncoding ??= Encoding.UTF8;
         mail.SubjectEncoding ??= Encoding.UTF8;

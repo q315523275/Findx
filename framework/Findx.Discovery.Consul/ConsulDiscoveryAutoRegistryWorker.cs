@@ -11,8 +11,13 @@ namespace Findx.Discovery.Consul
         private readonly IConsulRegistration _registration;
         private readonly IConsulServiceRegistry _registry;
 
-        public ConsulDiscoveryAutoRegistryWorker(IOptionsMonitor<DiscoveryOptions> options,
-            IConsulServiceRegistry registry, IConsulRegistration registration)
+        /// <summary>
+        ///     Ctor
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="registry"></param>
+        /// <param name="registration"></param>
+        public ConsulDiscoveryAutoRegistryWorker(IOptionsMonitor<DiscoveryOptions> options, IConsulServiceRegistry registry, IConsulRegistration registration)
         {
             _options = options;
             _registry = registry;

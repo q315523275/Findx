@@ -50,10 +50,11 @@ public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDict
     ///      列表查询
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<List<SysDictDataInfo>>> ListAsync([FromQuery] QueryDictDataRequest request)
+    public override async Task<CommonResult<List<SysDictDataInfo>>> ListAsync([FromQuery] QueryDictDataRequest request, CancellationToken cancellationToken = default)
     {
         request.PageSize = 9999;
-        return await base.ListAsync(request);
+        return await base.ListAsync(request, cancellationToken);
     }
 }

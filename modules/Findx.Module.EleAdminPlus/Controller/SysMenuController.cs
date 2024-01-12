@@ -43,10 +43,11 @@ public class SysMenuController : CrudControllerBase<SysMenuInfo, SetMenuRequest,
     ///     列表查询
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override Task<CommonResult<List<SysMenuInfo>>> ListAsync(QueryMenuRequest request)
+    public override Task<CommonResult<List<SysMenuInfo>>> ListAsync(QueryMenuRequest request, CancellationToken cancellationToken = default)
     {
         request.PageSize = 9999;
-        return base.ListAsync(request);
+        return base.ListAsync(request, cancellationToken);
     }
 }

@@ -29,8 +29,7 @@ namespace Findx.MailKit
         /// <returns></returns>
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            services.Replace(new ServiceDescriptor(typeof(IEmailSender), typeof(MailKitEmailSender),
-                ServiceLifetime.Singleton));
+            services.Replace(new ServiceDescriptor(typeof(IEmailSender), typeof(MailKitEmailSender), ServiceLifetime.Singleton));
 
             return services;
         }

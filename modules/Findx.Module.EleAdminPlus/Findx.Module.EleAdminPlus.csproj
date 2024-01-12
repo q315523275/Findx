@@ -4,14 +4,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <LangVersion>default</LangVersion>
-        <Version>2023.11.1.1</Version>
+        <Version>2023.12.25.1</Version>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="2023.9.5.1" />
-      <PackageReference Include="Findx.FreeSql" Version="2023.9.5.1" />
-      <PackageReference Include="Findx.Security" Version="2023.9.5.1" />
+      <PackageReference Include="Findx.AspNetCore" Version="2023.12.25.1" />
+      <PackageReference Include="Findx.FreeSql" Version="2023.12.25.1" />
+      <PackageReference Include="Findx.Security" Version="2023.12.25.1" />
     </ItemGroup>
 
 </Project>

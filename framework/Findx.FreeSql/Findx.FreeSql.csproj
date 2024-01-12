@@ -6,13 +6,13 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Version>1.9.5.2</Version>
-        <PackageVersion>2023.12.25.1</PackageVersion>
+        <PackageVersion>2024.01.12.1</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FreeSql" Version="3.2.700" />
+        <PackageReference Include="FreeSql" Version="3.2.808" />
     </ItemGroup>
     
     <ItemGroup>
