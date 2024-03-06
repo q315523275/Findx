@@ -4,11 +4,11 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdminPlus.Models;
 
 /// <summary>
-///     系统用户角色
+///     角色机构
 /// </summary>
-[Table(Name = "sys_user_role")]
+[Table(Name = "sys_role_org")]
 [EntityExtension(DataSource = "system")]
-public class SysUserRoleInfo : EntityBase<long>
+public class SysRoleOrgInfo : EntityBase<long>
 {
     /// <summary>
     ///     主键id
@@ -17,18 +17,18 @@ public class SysUserRoleInfo : EntityBase<long>
     public override long Id { get; set; }
 
     /// <summary>
-    ///     用户id
-    /// </summary>
-    public long UserId { get; set; }
-
-    /// <summary>
     ///     角色id
     /// </summary>
     public long RoleId { get; set; }
+
+    /// <summary>
+    ///     机构id
+    /// </summary>
+    public long OrgId { get; set; }
     
     /// <summary>
-    ///     角色信息
+    ///     机构信息
     /// </summary>
-    [Navigate(nameof(RoleId))]
-    public virtual SysRoleInfo RoleInfo { set; get; }
+    [Navigate(nameof(OrgId))]
+    public virtual SysOrgInfo OrgInfo { set; get; }
 }

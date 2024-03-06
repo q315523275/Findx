@@ -177,60 +177,51 @@ Console.WriteLine(new { Name = "测试员", Title = "Json测试" }.ToJson());
 // Console.WriteLine(Encoding.Default.GetString(resultArray));
 
 // 有序Id
-// SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
-// GuidHelper.Next(SequentialGuidType.AsString);
-// Guid.NewGuid();
-// SnowflakeId.Default().NextId();
-// SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
-// Console.WriteLine("Guid生成预热结束");
-//
-// var watch = new Stopwatch();  
-// watch.Start();
-// for (int i = 0; i < 1000000; i++)
-// {
-//     Guid.NewGuid();
-// }
-// watch.Stop();
-// Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-//
-// watch.Restart();
-// for (int i = 0; i < 1000000; i++)
-// {
-//     GuidHelper.Next(SequentialGuidType.AsString);
-// }
-// watch.Stop();
-// Console.WriteLine($"纳秒级别有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-//
-// watch.Restart();
-// for (int i = 0; i < 1000000; i++)
-// {
-//     NewId.NextSequentialGuid();
-// }
-// watch.Stop();
-// Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-//
-// watch.Restart();
-// for (int i = 0; i < 1000000; i++)
-// {
-//     SequentialGuid.Next(Findx.Utils.SequentialGuidType.AsString);
-// }
-// watch.Stop();
-// Console.WriteLine($"Abp有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-//
-// watch.Restart();
-// for (int i = 0; i < 1000000; i++)
-// {
-//     SnowflakeId.Default().NextId();
-// }
-// watch.Stop();
-// Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
+SequentialGuidUtility.Next(SequentialGuidType.AsString);
+Guid.NewGuid();
+SnowflakeIdUtility.Default().NextId();
+SequentialGuidUtility.Next(SequentialGuidType.AsString);
+Console.WriteLine("Guid生成预热结束");
 
-// var sequentialGuidList = new HashSet<string>();
-// for (int i = 0; i < 1000000; i++)
-// {
-//     sequentialGuidList.Add(NewId.NextSequentialGuid().ToString());
-// }
-// Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 1000000}");
+var watch = new Stopwatch();  
+watch.Start();
+for (int i = 0; i < 1000000; i++)
+{
+    Guid.NewGuid();
+}
+watch.Stop();
+Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+watch.Restart();
+for (int i = 0; i < 1000000; i++)
+{
+    NewId.NextSequentialGuid();
+}
+watch.Stop();
+Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+watch.Restart();
+for (int i = 0; i < 1000000; i++)
+{
+    SequentialGuidUtility.Next(SequentialGuidType.AsString);
+}
+watch.Stop();
+Console.WriteLine($"Abp有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+watch.Restart();
+for (int i = 0; i < 1000000; i++)
+{
+    SnowflakeIdUtility.Default().NextId();
+}
+watch.Stop();
+Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+var sequentialGuidList = new HashSet<string>();
+for (int i = 0; i < 1000000; i++)
+{
+    sequentialGuidList.Add(NewId.NextSequentialGuid().ToString());
+}
+Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 1000000}");
 
 // var sequentialGuidList = new List<Guid>();
 // for (int i = 0; i < 100; i++)

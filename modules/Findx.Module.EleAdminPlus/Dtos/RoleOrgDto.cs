@@ -1,9 +1,6 @@
-﻿namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos;
 
-/// <summary>
-///     角色菜单Dto模型
-/// </summary>
-public class RoleMenuDto
+public class RoleOrgDto
 {
     /// <summary>
     ///     id
@@ -16,10 +13,15 @@ public class RoleMenuDto
     public long ParentId { get; set; }
 
     /// <summary>
-    ///     菜单名称
+    ///     机构名称
     /// </summary>
-    public string Title { get; set; }
+    public string Name { get; set; }
 
+    /// <summary>
+    ///     机构全称
+    /// </summary>
+    public string FullName { get; set; }
+    
     /// <summary>
     ///     排序号
     /// </summary>

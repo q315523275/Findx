@@ -15,12 +15,11 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/file")]
-[Description("系统-文件")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-文件")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-文件"), Description("系统-文件")]
 public class SysFileController: AreaApiControllerBase
 {
     private readonly IApplicationContext _applicationContext;
-    private readonly IKeyGenerator<Guid> _keyGenerator;
+    private readonly IKeyGenerator<long> _keyGenerator;
     private readonly IFileStorage _fileStorage;
 
     /// <summary>
@@ -29,7 +28,7 @@ public class SysFileController: AreaApiControllerBase
     /// <param name="keyGenerator"></param>
     /// <param name="applicationContext"></param>
     /// <param name="storageFactory"></param>
-    public SysFileController(IKeyGenerator<Guid> keyGenerator, IApplicationContext applicationContext, IStorageFactory storageFactory)
+    public SysFileController(IKeyGenerator<long> keyGenerator, IApplicationContext applicationContext, IStorageFactory storageFactory)
     {
         _keyGenerator = keyGenerator;
         _applicationContext = applicationContext;
@@ -54,12 +53,15 @@ public class SysFileController: AreaApiControllerBase
                 uploadFileDto.File = HttpContext.Request.Form.Files[0];
             }
         }
+        
         // 判断是否选择文件
         if (uploadFileDto.File == null || uploadFileDto.File.Length < 1)
             return CommonResult.Fail("4401", "请选择文件!");
+        
         // 文件大小检查
         if (uploadFileDto.File.Length > 1024 * 1024 * 50)
             return CommonResult.Fail("4401", "选择的文件已超过5M限制!");
+        
         // 组装目录及文件名
         var date = DateTime.Now;
         var name = uploadFileDto.File.FileName;
@@ -69,8 +71,10 @@ public class SysFileController: AreaApiControllerBase
         var saveName = $"{id.ToString().Replace("-", "")}{Path.GetExtension(name)}"; // 文件名
         var path = Path.Combine(pathDir, saveName);
         var fileInfo = new FileSpec(path, size, name, id.ToString()) { SaveName = saveName };
+        
         // 文件全路径
         var fullPath = Path.Combine(_applicationContext.RootPath, fileInfo.Path.SafeString());
+        
         // 压缩保存
         await using (var fileStream = uploadFileDto.File.OpenReadStream())
         {
@@ -78,6 +82,7 @@ public class SysFileController: AreaApiControllerBase
             // 替换域名
             fileInfo.Url = Path.Combine(_applicationContext.Uris, fileInfo.Path.SafeString()).NormalizePath();
         }
+        
         return CommonResult.Success(fileInfo);
     }
 }

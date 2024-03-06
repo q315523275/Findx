@@ -22,43 +22,16 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/findx")]
-[Description("Findx框架")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("Findx框架")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("Findx框架"), Description("Findx框架")]
 public class FindxController : AreaApiControllerBase
 {
-    /// <summary>
-    ///     模块列表
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="keyGenerator"></param>
-    /// <returns></returns>
-    [HttpGet("modules")]
-    [Description("模块列表")]
-    [DisableAuditing]
-    public CommonResult Modules([FromServices] IFindxBuilder builder, [FromServices] IKeyGenerator<Guid> keyGenerator)
-    {
-        var res = builder.Modules.Select(m => new
-        {
-            m.GetType().Name,
-            Display = m.GetType().GetDescription(),
-            Class = m.GetType().FullName,
-            m.Level,
-            m.Order,
-            m.IsEnabled,
-            Id = keyGenerator.Create()
-        });
-        return CommonResult.Success(res);
-    }
-
     /// <summary>
     ///     系统指标
     /// </summary>
     /// <returns></returns>
-    [HttpGet("metrics")]
-    [Description("系统指标")]
+    [HttpGet("metrics"), Description("系统指标")]
     [DisableAuditing]
-    public async Task<CommonResult> Metrics([FromServices] IApplicationContext app)
+    public async Task<CommonResult> MetricsAsync([FromServices] IApplicationContext app, CancellationToken cancellationToken = default)
     {
         var dict = new Dictionary<string, object>
         {
@@ -88,7 +61,7 @@ public class FindxController : AreaApiControllerBase
         var networkSpeed = SizeInfo.Get(network.Speed);
         var v1 = CpuHelper.GetCpuTime();
         
-        await Task.Delay(1000);
+        await Task.Delay(1000, cancellationToken);
         
         var cpuValue = CpuHelper.CalculateCpuLoad(v1, CpuHelper.GetCpuTime());
         dict.Add("Cpu", $"{(int)(cpuValue * 100)} %");
@@ -139,37 +112,38 @@ public class FindxController : AreaApiControllerBase
 
         return CommonResult.Success(dict);
     }
+    
+    /// <summary>
+    ///     模块列表
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="keyGenerator"></param>
+    /// <returns></returns>
+    [HttpGet("modules"), Description("模块列表")]
+    [DisableAuditing]
+    public CommonResult Modules([FromServices] IFindxBuilder builder, [FromServices] IKeyGenerator<Guid> keyGenerator)
+    {
+        var res = builder.Modules.Select(m => new
+        {
+            m.GetType().Name,
+            Display = m.GetType().GetDescription(),
+            Class = m.GetType().FullName,
+            m.Level,
+            m.Order,
+            m.IsEnabled,
+            Id = keyGenerator.Create()
+        });
+        return CommonResult.Success(res);
+    }
 
     /// <summary>
     ///     方法集合
     /// </summary>
     /// <returns></returns>
-    [HttpGet("functions")]
+    [HttpGet("functions"), Description("接口目录")]
     [DisableAuditing]
     public CommonResult Functions([FromServices] IFunctionStore<MvcFunction> store)
     {
         return CommonResult.Success(store.GetFromDatabase());
-    }
-
-    /// <summary>
-    ///     test
-    /// </summary>
-    /// <param name="logger"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    [HttpPost("test")]
-    [DisableAuditing]
-    public CommonResult Test([FromServices] ILogger<FindxController> logger)
-    {
-        try
-        {
-            throw new Exception("这是一条来自测试的异常");
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "findx");
-        }
-
-        return CommonResult.Success();
     }
 }

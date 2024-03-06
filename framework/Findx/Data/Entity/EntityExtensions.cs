@@ -162,7 +162,7 @@ public static class EntityExtensions
     /// <returns></returns>
     public static TEntity CheckTenant<TEntity>(this TEntity entity, IPrincipal user) where TEntity : IEntity
     {
-        if (entity is ITenant entity1 && user.Identity.IsAuthenticated &&
+        if (user.Identity != null && entity is ITenant entity1 && user.Identity.IsAuthenticated &&
             !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
         {
             entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<Guid>();

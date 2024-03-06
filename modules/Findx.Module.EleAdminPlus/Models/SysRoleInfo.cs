@@ -27,6 +27,11 @@ public class SysRoleInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant,
     public string Code { get; set; }
 
     /// <summary>
+    ///     数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）
+    /// </summary>
+    public int DataScope { get; set; } = 1;
+    
+    /// <summary>
     ///     备注
     /// </summary>
     public string Comments { get; set; }

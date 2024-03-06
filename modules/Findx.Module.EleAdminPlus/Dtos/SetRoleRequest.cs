@@ -26,4 +26,9 @@ public class SetRoleRequest : IRequest
     ///     备注
     /// </summary>
     public string Comments { get; set; }
+
+    /// <summary>
+    ///     菜单集合
+    /// </summary>
+    public List<long> MenuIds { get; set; } = new();
 }

@@ -18,9 +18,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Area("system")]
 [Route("api/[area]/dictData")]
 [Authorize]
-[Description("系统-字典值")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-字典值")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-字典值"), Description("系统-字典值")]
 public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest, long, long>
 {
     /// <summary>

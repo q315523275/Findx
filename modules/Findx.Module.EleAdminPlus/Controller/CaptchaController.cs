@@ -12,25 +12,26 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// <summary>
 ///     验证码服务
 /// </summary>
-[Description("系统-验证码")]
 [Area("system")]
 [Route("api/[area]/captcha")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-验证码")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-验证码"), Description("系统-验证码")]
 public class CaptchaController : AreaApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;
     private readonly IVerifyCoder _verifyCoder;
+    private readonly IKeyGenerator<Guid> _keyGenerator;
 
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="verifyCoder"></param>
     /// <param name="cacheFactory"></param>
-    public CaptchaController(IVerifyCoder verifyCoder, ICacheFactory cacheFactory)
+    /// <param name="keyGenerator"></param>
+    public CaptchaController(IVerifyCoder verifyCoder, ICacheFactory cacheFactory, IKeyGenerator<Guid> keyGenerator)
     {
         _verifyCoder = verifyCoder;
         _cacheFactory = cacheFactory;
+        _keyGenerator = keyGenerator;
     }
 
     /// <summary>
@@ -39,18 +40,18 @@ public class CaptchaController : AreaApiControllerBase
     /// <param name="width"></param>
     /// <param name="height"></param>
     /// <param name="length"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpGet("/api/captcha")]
-    [Description("获取验证码图片")]
-    public async Task<CommonResult> CaptchaAsync(int width = 150, int height = 50, [Range(3, 6)] int length = 4)
+    [HttpGet("/api/captcha"), Description("获取验证码图片")]
+    [DisableAuditing]
+    public async Task<CommonResult> CaptchaAsync(int width = 150, int height = 50, [Range(3, 6)] int length = 4, CancellationToken cancellationToken = default)
     {
         var code = _verifyCoder.GetCode(length, VerifyCodeType.NumberAndLetter);
         var st = await _verifyCoder.CreateImageAsync(code, width, height, 38);
-        var cache = _cacheFactory.Create(CacheType.DefaultMemory);
-        var uuid = Guid.NewGuid().ToString("N");
+        var uuid = _keyGenerator.Create();
         var cacheKey = $"verifyCode:{uuid}";
-        await cache.AddAsync(cacheKey, code.ToLower(), TimeSpan.FromMinutes(2));
-        return CommonResult.Success(new
-            { text = code.ToLower(), uuid, Base64 = $"data:image/png;base64,{Convert.ToBase64String(st)}" });
+        var cache = _cacheFactory.Create(CacheType.DefaultMemory);
+        await cache.AddAsync(cacheKey, code.ToLower(), TimeSpan.FromMinutes(2), cancellationToken);
+        return CommonResult.Success(new { text = code.ToLower(), uuid, Base64 = $"data:image/png;base64,{Convert.ToBase64String(st)}" });
     }
 }

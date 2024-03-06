@@ -24,8 +24,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/auth")]
-[Description("系统-账户")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-账户")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-账户"), Description("系统-账户")]
 public class AuthController : AreaApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;
@@ -35,7 +34,7 @@ public class AuthController : AreaApiControllerBase
     private readonly bool _enabledCaptcha;
     private readonly bool _useAbpJwt;
     private readonly IOptions<JwtOptions> _options;
-    private readonly IRepository<SysLoginRecordInfo, long> _recordRepo;
+    private readonly IRepository<SysLoginRecordInfo, long> _loginRecordRepo;
     private readonly IRepository<SysUserInfo, long> _repo;
     private readonly IJwtTokenBuilder _tokenBuilder;
 
@@ -47,18 +46,17 @@ public class AuthController : AreaApiControllerBase
     /// <param name="currentUser"></param>
     /// <param name="cacheFactory"></param>
     /// <param name="repo"></param>
-    /// <param name="recordRepo"></param>
+    /// <param name="loginRecordRepo"></param>
     /// <param name="settingProvider"></param>
     /// <param name="keyGenerator"></param>
-    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo, long> repo, IRepository<SysLoginRecordInfo, long> recordRepo,
-        ISettingProvider settingProvider, IKeyGenerator<long> keyGenerator)
+    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo, long> repo, IRepository<SysLoginRecordInfo, long> loginRecordRepo, ISettingProvider settingProvider, IKeyGenerator<long> keyGenerator)
     {
         _tokenBuilder = tokenBuilder;
         _options = options;
         _currentUser = currentUser;
         _cacheFactory = cacheFactory;
         _repo = repo;
-        _recordRepo = recordRepo;
+        _loginRecordRepo = loginRecordRepo;
         _keyGenerator = keyGenerator;
         _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdmin:EnabledCaptcha");
         _useAbpJwt = settingProvider.GetValue<bool>("Modules:EleAdmin:UseAbpJwt");
@@ -68,10 +66,10 @@ public class AuthController : AreaApiControllerBase
     ///     账号密码登录
     /// </summary>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [Description("登录")]
-    [HttpPost("/api/login")]
-    public async Task<CommonResult> Login([FromBody] LoginRequest req)
+    [HttpPost("/api/login"), Description("登录")]
+    public async Task<CommonResult> LoginAsync([FromBody] LoginRequest req, CancellationToken cancellationToken = default)
     {
         var cache = _cacheFactory.Create(CacheType.DefaultMemory);
 
@@ -86,7 +84,7 @@ public class AuthController : AreaApiControllerBase
         if (errorCount >= 5)
             return CommonResult.Fail("50509", "密码错误次数超出限制");
 
-        var accountInfo = await _repo.FirstAsync(it => it.UserName == req.UserName && it.TenantId == req.TenantId);
+        var accountInfo = await _repo.FirstAsync(it => it.UserName == req.UserName && it.TenantId == req.TenantId, cancellationToken);
         // 验证帐号是否存在
         if (accountInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
@@ -109,13 +107,12 @@ public class AuthController : AreaApiControllerBase
         };
 
         CommonResult fail = null;
-
         // 验证帐号密码是否正确
         if (accountInfo.Password != EncryptUtility.Md5By32(req.Password))
         {
             // 增加错误次数
             errorCount++;
-            await cache.AddAsync(errorCacheKey, errorCount, TimeSpan.FromMinutes(15));
+            await cache.AddAsync(errorCacheKey, errorCount, TimeSpan.FromMinutes(15), cancellationToken);
             loginLog.Comments = $"账号密码错误,剩余重试次数{5 - errorCount}次";
             fail = CommonResult.Fail("D1000", loginLog.Comments);
         }
@@ -129,28 +126,28 @@ public class AuthController : AreaApiControllerBase
 
         // 清空验证码
         if (_enabledCaptcha)
-            await cache.RemoveAsync(cacheKey);
+            await cache.RemoveAsync(cacheKey, cancellationToken);
 
         // 登录失败
         if (fail != null)
         {
             loginLog.LoginType = 1;
-            await _recordRepo.InsertAsync(loginLog);
+            await _loginRecordRepo.InsertAsync(loginLog, cancellationToken);
             return fail;
         }
 
         // 登录成功
         loginLog.LoginType = 0;
         loginLog.Comments = "登录成功";
-        await _recordRepo.InsertAsync(loginLog);
-        await cache.RemoveAsync(errorCacheKey);
+        await _loginRecordRepo.InsertAsync(loginLog, cancellationToken);
+        await cache.RemoveAsync(errorCacheKey, cancellationToken);
 
         // token票据
         var payload = new Dictionary<string, string>
         {
             { ClaimTypes.UserId, accountInfo.Id.SafeString() },
-            { ClaimTypes.UserName, accountInfo.UserName.SafeString() },
             { ClaimTypes.UserIdTypeName, typeof(long).FullName },
+            { ClaimTypes.UserName, accountInfo.UserName.SafeString() },
             { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
             { ClaimTypes.TenantId, req.TenantId.ToString() },
             { "org_id", accountInfo.OrgId.SafeString() },
@@ -172,13 +169,11 @@ public class AuthController : AreaApiControllerBase
     ///     查看账户信息
     /// </summary>
     /// <returns></returns>
-    [Description("查看账户信息")]
-    [HttpGet("/api/auth/user")]
-    [Authorize]
-    public new CommonResult User()
+    [HttpGet("/api/auth/user"), Authorize, Description("查看账户信息")]
+    public async Task<CommonResult> UserAsync()
     {
         var userId = _currentUser.UserId.To<long>();
-        var userInfo = _repo.First(x => x.Id == userId);
+        var userInfo = await _repo.FirstAsync(x => x.Id == userId);
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
@@ -192,7 +187,9 @@ public class AuthController : AreaApiControllerBase
         // ReSharper disable once PossibleMultipleEnumeration
         var menus = roleIds.Any() ?
                 // ReSharper disable once PossibleMultipleEnumeration
-                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuDto { MenuId = x.MenuId }) : new List<MenuDto>();
+                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuDto { MenuId = x.MenuId }) :
+                [
+                ];
         
         var result = userInfo.MapTo<UserAuthDto>();
         // ReSharper disable once PossibleMultipleEnumeration
@@ -207,13 +204,11 @@ public class AuthController : AreaApiControllerBase
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    [Description("修改账户密码")]
-    [HttpPut("/api/auth/password")]
-    [Authorize]
-    public CommonResult Password([FromBody] UpdatePasswordRequest req)
+    [HttpPut("/api/auth/password"), Authorize, Description("修改账户密码")]
+    public async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordRequest req)
     {
         var userId = _currentUser.UserId.To<long>();
-        var userInfo = _repo.First(x => x.Id == userId);
+        var userInfo = await _repo.FirstAsync(x => x.Id == userId);
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
@@ -221,7 +216,7 @@ public class AuthController : AreaApiControllerBase
             return CommonResult.Fail("D1000", "旧密码错误");
 
         var pwd = EncryptUtility.Md5By32(req.Password);
-        _repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == userInfo.Id);
+        await _repo.UpdateColumnsAsync(x => new SysUserInfo { Password = pwd }, x => x.Id == userInfo.Id);
 
         return CommonResult.Success();
     }

@@ -32,6 +32,16 @@ public static partial class Extensions
     {
         return string.IsNullOrWhiteSpace(str);
     }
+    
+    /// <summary>
+    ///     字符串是否不为空
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static bool IsNotNullOrWhiteSpace(this string str)
+    {
+        return !string.IsNullOrWhiteSpace(str);
+    }
 
     /// <summary>
     ///     是否英文字符串

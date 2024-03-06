@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using FreeSql;
 
 namespace Findx.FreeSql;
@@ -19,8 +18,7 @@ public static class Extensions
     public static ISelect<T1> CountIf<T1>(this ISelect<T1> select, bool condition, out long count) where T1 : class
     {
         if (condition) return select.Count(out count);
-
-        count = 0;
+        count = -1;
         return select;
     }
 
@@ -37,8 +35,7 @@ public static class Extensions
         where T1 : class where T2 : class
     {
         if (condition) return select.Count(out count);
-
-        count = 0;
+        count = -1;
         return select;
     }
 
@@ -52,13 +49,11 @@ public static class Extensions
     /// <typeparam name="T2"></typeparam>
     /// <typeparam name="T3"></typeparam>
     /// <returns></returns>
-    public static ISelect<T1, T2, T3> CountIf<T1, T2, T3>(this ISelect<T1, T2, T3> select, bool condition,
-        out long count)
+    public static ISelect<T1, T2, T3> CountIf<T1, T2, T3>(this ISelect<T1, T2, T3> select, bool condition, out long count)
         where T1 : class where T2 : class where T3 : class
     {
         if (condition) return select.Count(out count);
-
-        count = 0;
+        count = -1;
         return select;
     }
 
@@ -73,13 +68,11 @@ public static class Extensions
     /// <typeparam name="T3"></typeparam>
     /// <typeparam name="T4"></typeparam>
     /// <returns></returns>
-    public static ISelect<T1, T2, T3, T4> CountIf<T1, T2, T3, T4>(this ISelect<T1, T2, T3, T4> select, bool condition,
-        out long count)
+    public static ISelect<T1, T2, T3, T4> CountIf<T1, T2, T3, T4>(this ISelect<T1, T2, T3, T4> select, bool condition, out long count)
         where T1 : class where T2 : class where T3 : class where T4 : class
     {
         if (condition) return select.Count(out count);
-
-        count = 0;
+        count = -1;
         return select;
     }
 
@@ -95,13 +88,11 @@ public static class Extensions
     /// <typeparam name="T4"></typeparam>
     /// <typeparam name="T5"></typeparam>
     /// <returns></returns>
-    public static ISelect<T1, T2, T3, T4, T5> CountIf<T1, T2, T3, T4, T5>(this ISelect<T1, T2, T3, T4, T5> select,
-        bool condition, out long count)
+    public static ISelect<T1, T2, T3, T4, T5> CountIf<T1, T2, T3, T4, T5>(this ISelect<T1, T2, T3, T4, T5> select, bool condition, out long count)
         where T1 : class where T2 : class where T3 : class where T4 : class where T5 : class
     {
         if (condition) return select.Count(out count);
-
-        count = 0;
+        count = -1;
         return select;
     }
 }

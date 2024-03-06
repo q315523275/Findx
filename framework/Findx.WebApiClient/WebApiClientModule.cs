@@ -5,7 +5,6 @@ using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using WebApiClientCore.Internals;
 
 namespace Findx.WebApiClient;
 

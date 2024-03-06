@@ -47,9 +47,9 @@ public class SysOrgInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant, 
     public long? LeaderId { get; set; }
 
     /// <summary>
-    ///     负责人昵称
+    ///     负责人
     /// </summary>
-    public string LeaderNickname { get; set; }
+    public string Leader { get; set; }
 
     /// <summary>
     ///     排序号

@@ -184,8 +184,7 @@ public class SwaggerModule : AspNetCoreModuleBase
             var tagAttribute = description.ActionDescriptor.EndpointMetadata.OfType<TagsAttribute>().FirstOrDefault();
             if (tagAttribute != null) return tagAttribute.Tags.ToList();
 
-            return new List<string>
-                { description.ActionDescriptor.CastTo<ControllerActionDescriptor>().ControllerName };
+            return new List<string> { description.ActionDescriptor.CastTo<ControllerActionDescriptor>().ControllerName };
         });
     }
 

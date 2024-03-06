@@ -18,9 +18,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Area("system")]
 [Route("api/[area]/menu")]
 [Authorize]
-[Description("系统-菜单")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-菜单")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-菜单"), Description("系统-菜单")]
 public class SysMenuController : CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, long, long>
 {
     /// <summary>

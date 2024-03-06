@@ -20,14 +20,13 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Area("system")]
 [Route("api/[area]/user")]
 [Authorize]
-[Description("系统-用户")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户"), Description("系统-用户")]
 public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, long, long>
 {
     private readonly IKeyGenerator<long> _keyGenerator;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="keyGenerator"></param>
     public SysUserController(IKeyGenerator<long> keyGenerator)
@@ -93,8 +92,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    [HttpPut("status")]
-    [Description("修改状态")]
+    [HttpPut("status"), Description("修改状态")]
     public CommonResult Status([FromBody] SetUserPropertyRequest req)
     {
         var repo = GetRepository<SysUserInfo, long>();
@@ -107,8 +105,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    [HttpPut("password")]
-    [Description("修改密码")]
+    [HttpPut("password"), Description("修改密码")]
     public CommonResult Password([FromBody] SetUserPropertyRequest req)
     {
         var repo = GetRepository<SysUserInfo, long>();
@@ -124,8 +121,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     /// <param name="value"></param>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("existence")]
-    [Description("检查是否存在")]
+    [HttpGet("existence"), Description("检查是否存在")]
     public CommonResult Existence([Required] string field, [Required] string value, long id)
     {
         var whereExp = PredicateBuilder.New<SysUserInfo>()
@@ -178,7 +174,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
             var user = await repo.FirstAsync(x => x.UserName == req.UserName);
             if (user != null)
             {
-                var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
+                var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = user.Id });
                 await roleRepo.InsertAsync(list);
             }
         }
@@ -209,7 +205,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
         {
             var roleRepo = GetRepository<SysUserRoleInfo, long>();
 
-            var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id, TenantId = TenantManager.Current });
+            var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id });
             await roleRepo.DeleteAsync(x => x.UserId == model.Id);
             await roleRepo.InsertAsync(list);
         }
