@@ -5,7 +5,7 @@ namespace Findx.Component.DistributedConfigurationCenter.Dtos;
 /// <summary>
 ///     查询配置模型
 /// </summary>
-public class QueryConfigDto : PageBase
+public class QueryConfigDataDto : PageBase
 {
     /// <summary>
     ///     数据编号

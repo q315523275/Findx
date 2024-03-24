@@ -1,5 +1,3 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Findx.Component.DistributedConfigurationCenter.Client;
 using Findx.Component.DistributedConfigurationCenter.Dtos;
 
@@ -30,7 +28,6 @@ public class DumpService : IDumpService
     public Task DumpAsync(ConfigDataChangeDto changeDto, CancellationToken cancellationToken = default)
     {
         _clientCallBack.CallBack($"{changeDto.AppId}-{changeDto.Environment}", changeDto);
-
         return Task.CompletedTask;
     }
 }

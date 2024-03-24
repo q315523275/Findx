@@ -1,5 +1,3 @@
-using System;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
@@ -10,15 +8,15 @@ namespace Findx.Component.DistributedConfigurationCenter.Models;
 /// </summary>
 [Table("config_apps")]
 [EntityExtension(DataSource = "config")]
-public class AppInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, IResponse
+public class AppInfo : FullAuditedBase<long, long>, ISoftDeletable, IResponse
 {
     /// <summary>
-    ///     主键id
+    ///     记录编号
     /// </summary>
     [Key]
-    [Column("id")]
-    public override Guid Id { get; set; }
-
+    [Column(name: "id")]
+    public override long Id { get; set; }
+    
     /// <summary>
     ///     应用名称
     /// </summary>

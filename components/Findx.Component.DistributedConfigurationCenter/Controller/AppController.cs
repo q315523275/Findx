@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
@@ -8,19 +6,21 @@ using Findx.Component.DistributedConfigurationCenter.Models;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Component.DistributedConfigurationCenter.Areas.Config.Controller;
+namespace Findx.Component.DistributedConfigurationCenter.Controller;
 
 /// <summary>
 /// 配置服务App
 /// </summary>
 [Area("findx")]
 [Route("api/config/app")]
+[Authorize]
 [Description("配置服务App")]
 [ApiExplorerSettings(GroupName = "config"), Tags("配置服务-App")]
-public class AppController: CrudControllerBase<AppInfo, AppInfo, CreateAppDto, UpdateAppDto, QueryAppDto, Guid, Guid>
+public class AppController: CrudControllerBase<AppInfo, AppInfo, CreateAppDto, UpdateAppDto, QueryAppDto, long, long>
 {
     /// <summary>
     /// 创建查询条件
@@ -33,7 +33,6 @@ public class AppController: CrudControllerBase<AppInfo, AppInfo, CreateAppDto, U
                                        .AndIf(!request.AppId.IsNullOrWhiteSpace(), x => request.AppId == x.AppId)
                                        .AndIf(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
                                        .Build();
-
         return whereExp;
     }
 

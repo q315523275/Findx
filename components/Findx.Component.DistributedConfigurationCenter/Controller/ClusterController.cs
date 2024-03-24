@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Component.DistributedConfigurationCenter.Dtos;
@@ -9,7 +7,7 @@ using Findx.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Component.DistributedConfigurationCenter.Areas.Config.Controller;
+namespace Findx.Component.DistributedConfigurationCenter.Controller;
 
 /// <summary>
 ///     配置服务 - 集群

@@ -1,18 +1,16 @@
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Findx.Component.DistributedConfigurationCenter.Dtos;
 
 namespace Findx.Component.DistributedConfigurationCenter.Client;
 
 /// <summary>
-///     客户端回调
+///     客户端回调管理
 /// </summary>
 public class ClientCallBack : IClientCallBack
 {
+    /// <summary>
+    ///     客户端连接字典
+    /// </summary>
     private readonly ConcurrentDictionary<string, List<ClientCallBackInfo<ConfigDataChangeDto>>> _callBacks = new();
 
     /// <summary>
@@ -27,7 +25,7 @@ public class ClientCallBack : IClientCallBack
     public Task<ConfigDataChangeDto> NewCallBackTaskAsync(string appId, string reqId, string clientIp, int timeout)
     {
         if (!_callBacks.ContainsKey(appId))
-            _callBacks.TryAdd(appId, new List<ClientCallBackInfo<ConfigDataChangeDto>>());
+            _callBacks.TryAdd(appId, []);
 
         if (_callBacks[appId].Any(x => x.ReqId == reqId))
             throw new ArgumentException($"Client {reqId} callback already registered for '{appId}'", nameof(reqId));

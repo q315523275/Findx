@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Component.DistributedConfigurationCenter;
@@ -16,7 +15,7 @@ public class ConfigServiceOptions : IOptions<ConfigServiceOptions>
     /// <summary>
     ///     集群节点
     /// </summary>
-    public List<string> ClusterNodes { get; } = new();
+    public List<string> ClusterNodes { get; } = [];
 
     /// <summary>
     ///     this

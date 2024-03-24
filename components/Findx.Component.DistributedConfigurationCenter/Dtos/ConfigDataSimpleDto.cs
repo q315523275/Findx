@@ -1,4 +1,3 @@
-using System;
 using Findx.Data;
 
 namespace Findx.Component.DistributedConfigurationCenter.Dtos;
@@ -6,12 +5,12 @@ namespace Findx.Component.DistributedConfigurationCenter.Dtos;
 /// <summary>
 ///     配置简略信息Dto
 /// </summary>
-public class ConfigSimpleDto : IResponse
+public class ConfigDataSimpleDto : IResponse
 {
     /// <summary>
     ///     记录编号
     /// </summary>
-    public Guid Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     ///     应用编号
@@ -31,7 +30,7 @@ public class ConfigSimpleDto : IResponse
     /// <summary>
     ///     描述
     /// </summary>
-    public string Comment { get; set; }
+    public string Comments { get; set; }
 
     /// <summary>
     ///     创建时间

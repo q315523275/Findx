@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Component.DistributedConfigurationCenter.Areas.Config.Controller;
+namespace Findx.Component.DistributedConfigurationCenter.Controller;
 
 /// <summary>
 /// 配置服务-度量信息

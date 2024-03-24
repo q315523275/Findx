@@ -1,5 +1,3 @@
-using System;
-
 namespace Findx.Component.DistributedConfigurationCenter.Dtos;
 
 /// <summary>
@@ -10,5 +8,5 @@ public class UpdateAppDto: CreateAppDto
     /// <summary>
     ///     主键id
     /// </summary>
-    public Guid Id { get; set; }
+    public long Id { get; set; }
 }

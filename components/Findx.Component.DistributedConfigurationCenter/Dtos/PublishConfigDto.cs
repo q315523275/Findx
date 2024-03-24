@@ -35,7 +35,7 @@ public class PublishConfigDto : IRequest
     /// <summary>
     ///     描述
     /// </summary>
-    public string Comment { get; set; }
+    public string Comments { get; set; }
 
     /// <summary>
     ///     是否Beta(灰度)

@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Findx.Component.DistributedConfigurationCenter.Dtos;
 using Findx.Component.DistributedConfigurationCenter.Services;
 using Findx.Messaging;
@@ -47,13 +44,20 @@ public class ConfigDataChangeEventHandler : IApplicationEventHandler<ConfigDataC
             Environment = applicationEvent.Environment,
             Version = applicationEvent.Version
         };
+        
         // 先通知自己
         await _dumpService.DumpAsync(changeDataDto, cancellationToken);
+        
         // 通知集群其他节点
         var notifyTasks = new List<Task>();
         foreach (var nodeInfo in _options.Value.ClusterNodes)
+        {
             if (nodeInfo != _options.Value.CurrentNode)
+            {
                 notifyTasks.Add(_clusterService.ConfigChangeClusterSyncNotifyAsync(nodeInfo, changeDataDto, cancellationToken));
+            }
+        }
+
         await Task.WhenAll(notifyTasks);
     }
 }

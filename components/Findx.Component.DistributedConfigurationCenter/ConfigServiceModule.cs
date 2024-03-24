@@ -1,4 +1,3 @@
-using System;
 using System.ComponentModel;
 using Findx.Component.DistributedConfigurationCenter.Client;
 using Findx.Component.DistributedConfigurationCenter.Handling;
@@ -54,8 +53,8 @@ public class ConfigServiceModule : StartupModule
     /// <param name="provider"></param>
     public override void OnShutdown(IServiceProvider provider)
     {
-        var clientCallBack = provider.GetRequiredService<IClientCallBack>();
-        clientCallBack.Dispose();
+        var clientCallBack = provider.GetService<IClientCallBack>();
+        clientCallBack?.Dispose();
         base.OnShutdown(provider);
     }
 }

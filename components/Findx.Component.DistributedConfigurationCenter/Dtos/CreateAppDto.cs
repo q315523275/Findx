@@ -3,7 +3,7 @@ using Findx.Data;
 namespace Findx.Component.DistributedConfigurationCenter.Dtos;
 
 /// <summary>
-/// 创建App Dto
+///     创建App Dto
 /// </summary>
 public class CreateAppDto: IRequest
 {

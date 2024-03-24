@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Findx.Component.DistributedConfigurationCenter.Dtos;
 
 namespace Findx.Component.DistributedConfigurationCenter.Client;
@@ -21,14 +18,14 @@ public interface IClientCallBack : IDisposable
     Task<ConfigDataChangeDto> NewCallBackTaskAsync(string appId, string reqId, string clientIp, int timeout);
 
     /// <summary>
-    ///     执行回调
+    ///     执行回调任务
     /// </summary>
     /// <param name="appId"></param>
     /// <param name="content"></param>
     void CallBack(string appId, ConfigDataChangeDto content);
 
     /// <summary>
-    /// 客户端信息
+    ///     客户端信息集合
     /// </summary>
     /// <returns></returns>
     IDictionary<string, List<ClientCallBackInfo<ConfigDataChangeDto>>> Metrics();

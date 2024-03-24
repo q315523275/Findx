@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
@@ -14,7 +13,7 @@ using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Component.DistributedConfigurationCenter.Areas.Config.Controller;
+namespace Findx.Component.DistributedConfigurationCenter.Controller;
 
 /// <summary>
 ///     客户端调用服务
@@ -25,8 +24,8 @@ namespace Findx.Component.DistributedConfigurationCenter.Areas.Config.Controller
 [ApiExplorerSettings(GroupName = "config"), Tags("配置服务-客户端服务")]
 public class ConfigClientController : AreaApiControllerBase
 {
-    private readonly IRepository<AppInfo> _appRepo;
-    private readonly IRepository<ConfigInfo> _configRepo;
+    private readonly IRepository<AppInfo, long> _appRepo;
+    private readonly IRepository<ConfigDataInfo, long> _configRepo;
     private readonly IClientCallBack _clientCallBack;
     private readonly ISerializer _serializer;
 
@@ -37,7 +36,7 @@ public class ConfigClientController : AreaApiControllerBase
     /// <param name="appRepo"></param>
     /// <param name="configRepo"></param>
     /// <param name="serializer"></param>
-    public ConfigClientController(IClientCallBack clientCallBack, IRepository<AppInfo> appRepo, IRepository<ConfigInfo> configRepo, ISerializer serializer)
+    public ConfigClientController(IClientCallBack clientCallBack, IRepository<AppInfo, long> appRepo, IRepository<ConfigDataInfo, long> configRepo, ISerializer serializer)
     {
         _clientCallBack = clientCallBack;
         _appRepo = appRepo;
@@ -59,6 +58,7 @@ public class ConfigClientController : AreaApiControllerBase
     {
         var model = await _appRepo.FirstAsync(x => x.AppId == appId);
         Check.NotNull(model, nameof(model));
+        
         // 验证签名
         var verifySign = EncryptUtility.Md5By32($"{appId}{model.Secret}{reqId}{environment}{version}");
         if (verifySign != sign)
@@ -70,9 +70,7 @@ public class ConfigClientController : AreaApiControllerBase
         // 是否初次加载或指定加载
         if (version == 0 || load)
         {
-            var rows = await _configRepo.SelectAsync(
-                x => x.AppId == appId && x.Environment == environment && x.Version > version,
-                x => new { x.DataId, x.DataType, x.Content, x.Version });
+            var rows = await _configRepo.SelectAsync(x => x.AppId == appId && x.Environment == environment && x.Version > version, x => new { x.DataId, x.DataType, x.Content, x.Version });
             // 返回监听结果
             Response.ContentType = "application/json; charset=utf-8";
             await Response.Body.WriteAsync(_serializer.Serialize(rows));
@@ -82,9 +80,8 @@ public class ConfigClientController : AreaApiControllerBase
         // 变更监听
         try
         {
-            // 注册变更监听TaskCompletionSource
-            var res = await _clientCallBack.NewCallBackTaskAsync($"{appId}-{environment}", reqId,
-                HttpContext.GetClientIp(), 30);
+            // 注册变更监听 TaskCompletionSource
+            var res = await _clientCallBack.NewCallBackTaskAsync($"{appId}-{environment}", reqId, HttpContext.GetClientIp(), 30);
             var rows = new List<ConfigDataChangeDto> { res };
             // 返回监听结果
             Response.ContentType = "application/json; charset=utf-8";
@@ -95,19 +92,4 @@ public class ConfigClientController : AreaApiControllerBase
             Response.StatusCode = HttpStatusCode.NoContent.To<int>();
         }
     }
-    //
-    // /// <summary>
-    // ///     设置数据(演示)
-    // /// </summary>
-    // /// <param name="appId"></param>
-    // /// <param name="environment"></param>
-    // /// <param name="value"></param>
-    // /// <returns></returns>
-    // [HttpPut]
-    // public CommonResult PutAsync(string appId, string environment, [FromBody] ConfigDataChangeDto value)
-    // {
-    //     _clientCallBack.CallBack($"{appId}-{environment}", value);
-    //
-    //     return CommonResult.Success();
-    // }
 }

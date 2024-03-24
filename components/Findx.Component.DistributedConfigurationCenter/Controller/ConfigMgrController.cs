@@ -14,21 +14,21 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Component.DistributedConfigurationCenter.Areas.Config.Controller;
+namespace Findx.Component.DistributedConfigurationCenter.Controller;
 
 /// <summary>
 ///     配置服务-管理
 /// </summary>
 [Area("findx")]
-[Route("api/config/manage")]
+[Route("api/config/mgr")]
 [Authorize]
 [Description("配置服务-管理")]
 [ApiExplorerSettings(GroupName = "config"), Tags("配置服务-管理")]
-public class ConfigController : AreaApiControllerBase
+public class ConfigMgrController : AreaApiControllerBase
 {
     private readonly IUnitOfWorkManager _unitOfWorkManager;
-    private readonly IRepository<ConfigHistoryInfo> _historyRepo;
-    private readonly IRepository<ConfigInfo> _configRepo;
+    private readonly IRepository<ConfigHistoryInfo, long> _historyRepo;
+    private readonly IRepository<ConfigDataInfo, long> _configDataRepo;
     private readonly IEventBus _eventBus;
     private readonly IPrincipal _principal;
 
@@ -37,14 +37,14 @@ public class ConfigController : AreaApiControllerBase
     /// </summary>
     /// <param name="unitOfWorkManager"></param>
     /// <param name="historyRepo"></param>
-    /// <param name="configRepo"></param>
+    /// <param name="configDataRepo"></param>
     /// <param name="eventBus"></param>
     /// <param name="principal"></param>
-    public ConfigController(IUnitOfWorkManager unitOfWorkManager, IRepository<ConfigHistoryInfo> historyRepo, IRepository<ConfigInfo> configRepo, IEventBus eventBus, IPrincipal principal)
+    public ConfigMgrController(IUnitOfWorkManager unitOfWorkManager, IRepository<ConfigHistoryInfo, long> historyRepo, IRepository<ConfigDataInfo, long> configDataRepo, IEventBus eventBus, IPrincipal principal)
     {
         _unitOfWorkManager = unitOfWorkManager;
         _historyRepo = historyRepo;
-        _configRepo = configRepo;
+        _configDataRepo = configDataRepo;
         _eventBus = eventBus;
         _principal = principal;
     }
@@ -55,15 +55,15 @@ public class ConfigController : AreaApiControllerBase
     /// <param name="req">查询条件信息</param>
     /// <returns></returns>
     [HttpGet("page")]
-    public async Task<CommonResult> PageAsync([FromQuery] QueryConfigDto req)
+    public async Task<CommonResult> PageAsync([FromQuery] QueryConfigDataDto req)
     {
-        var whereExp = PredicateBuilder.New<ConfigInfo>()
+        var whereExp = PredicateBuilder.New<ConfigDataInfo>()
                                        .AndIf(!req.DataId.IsNullOrWhiteSpace(), x => x.DataId.Contains(req.DataId))
                                        .AndIf(!req.AppId.IsNullOrWhiteSpace(), x => x.AppId == req.AppId)
                                        .AndIf(!req.Environment.IsNullOrWhiteSpace(), x => x.Environment == req.Environment)
                                        .Build();
 
-        var rows = await _configRepo.PagedAsync<ConfigSimpleDto>(req.PageNo, req.PageSize, whereExp);
+        var rows = await _configDataRepo.PagedAsync<ConfigDataSimpleDto>(req.PageNo, req.PageSize, whereExp);
 
         return CommonResult.Success(rows);
     }
@@ -74,9 +74,9 @@ public class ConfigController : AreaApiControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("getConfig")]
-    public async Task<CommonResult> GetConfigAsync(Guid id)
+    public async Task<CommonResult> GetConfigAsync(long id)
     {
-        var model = await _configRepo.GetAsync(id);
+        var model = await _configDataRepo.GetAsync(id);
         return CommonResult.Success(model);
     }
 
@@ -86,9 +86,9 @@ public class ConfigController : AreaApiControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpDelete("delete")]
-    public async Task<CommonResult> DeleteAsync(Guid id)
+    public async Task<CommonResult> DeleteAsync(long id)
     {
-        await _configRepo.DeleteAsync(id);
+        await _configDataRepo.DeleteAsync(id);
         return CommonResult.Success();
     }
 
@@ -98,9 +98,9 @@ public class ConfigController : AreaApiControllerBase
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("history")]
-    public async Task<CommonResult> HistoryAsync(Guid id)
+    public async Task<CommonResult> HistoryAsync(long id)
     {
-        var model = await _configRepo.GetAsync(id);
+        var model = await _configDataRepo.GetAsync(id);
         if (model != null)
             return CommonResult.Fail("no.found", "源配置信息不存在");
         
@@ -125,19 +125,19 @@ public class ConfigController : AreaApiControllerBase
     [HttpPost("publishConfig")]
     public async Task<CommonResult> PublishConfigAsync([FromBody] PublishConfigDto req, CancellationToken cancellationToken)
     {
-        var dbConfig = await _configRepo.FirstAsync(x => x.DataId == req.DataId, cancellationToken);
+        var dbConfig = await _configDataRepo.FirstAsync(x => x.DataId == req.DataId, cancellationToken);
         if (dbConfig == null)
         {
             // 新配置
             
-            var model = req.MapTo<ConfigInfo>();
+            var model = req.MapTo<ConfigDataInfo>();
             model.SetEmptyKey();
-            model.CheckCreationAudited<ConfigInfo, Guid>(_principal);
+            model.CheckCreationAudited<ConfigDataInfo, long>(_principal);
             model.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
             model.Md5 = EncryptUtility.Md5By32(req.Content);
             // 保存并通知集群
-            await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true, cancellationToken);
-            await _configRepo.WithUnitOfWork(uow).InsertAsync(model, cancellationToken);
+            await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigDataInfo>(true, true, cancellationToken);
+            await _configDataRepo.WithUnitOfWork(uow).InsertAsync(model, cancellationToken);
             // 发布ConfigDataChangeEvent事件,等待执行
             await _eventBus.PublishAsync(model.MapTo<ConfigDataChangeEvent>(), cancellationToken);
             // 提交事物
@@ -149,19 +149,18 @@ public class ConfigController : AreaApiControllerBase
             
             // 历史记录
             var hisConfig = dbConfig.MapTo<ConfigHistoryInfo>();
-            hisConfig.Id = Guid.Empty;
             hisConfig.SetEmptyKey();
-            hisConfig.CheckCreationAudited<ConfigHistoryInfo, Guid>(_principal);
+            hisConfig.CheckCreationAudited<ConfigHistoryInfo, long>(_principal);
             // 修改内容
-            dbConfig.CheckUpdateAudited<ConfigInfo, Guid>(_principal);
-            dbConfig.Comment = req.Comment;
+            dbConfig.CheckUpdateAudited<ConfigDataInfo, long>(_principal);
+            dbConfig.Comments = req.Comments;
             dbConfig.DataType = req.DataType;
             dbConfig.Content = req.Content;
             dbConfig.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
             dbConfig.Md5 = EncryptUtility.Md5By32(req.Content);
             // 保存并通知集群
-            await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigInfo>(true, true, cancellationToken);
-            await _configRepo.WithUnitOfWork(uow).UpdateAsync(dbConfig, ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId }, cancellationToken: cancellationToken);
+            await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigDataInfo>(true, true, cancellationToken);
+            await _configDataRepo.WithUnitOfWork(uow).UpdateAsync(dbConfig, ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId }, cancellationToken: cancellationToken);
             await _historyRepo.WithUnitOfWork(uow).InsertAsync(hisConfig, cancellationToken);
             // 发布ConfigDataChangeEvent事件,等待执行
             await _eventBus.PublishAsync(dbConfig.MapTo<ConfigDataChangeEvent>(), cancellationToken);
@@ -171,11 +170,10 @@ public class ConfigController : AreaApiControllerBase
         else
         {
             // 修改配置,但是配置内容未修改
-            
-            dbConfig.CheckUpdateAudited<ConfigInfo, Guid>(_principal);
-            dbConfig.Comment = req.Comment;
+            dbConfig.CheckUpdateAudited<ConfigDataInfo, long>(_principal);
+            dbConfig.Comments = req.Comments;
             dbConfig.DataType = req.DataType;
-            await _configRepo.UpdateAsync(dbConfig, x => new { x.Comment, x.DataType, x.CreatedTime, x.CreatorId }, cancellationToken: cancellationToken);
+            await _configDataRepo.UpdateAsync(dbConfig, x => new { x.Comments, x.DataType, x.CreatedTime, x.CreatorId }, cancellationToken: cancellationToken);
         }
 
         return CommonResult.Success();

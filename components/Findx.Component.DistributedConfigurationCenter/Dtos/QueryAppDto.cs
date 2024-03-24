@@ -3,7 +3,7 @@ using Findx.Data;
 namespace Findx.Component.DistributedConfigurationCenter.Dtos;
 
 /// <summary>
-/// 查询App Dto
+///     查询App Dto
 /// </summary>
 public class QueryAppDto: PageBase
 {

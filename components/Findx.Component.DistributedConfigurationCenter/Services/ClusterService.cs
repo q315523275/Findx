@@ -25,8 +25,7 @@ public class ClusterService : IClusterService
     /// <param name="nodeInfo"></param>
     /// <param name="changeDto"></param>
     /// <param name="cancellationToken"></param>
-    public async Task ConfigChangeClusterSyncNotifyAsync(string nodeInfo, ConfigDataChangeDto changeDto,
-        CancellationToken cancellationToken = default)
+    public async Task ConfigChangeClusterSyncNotifyAsync(string nodeInfo, ConfigDataChangeDto changeDto, CancellationToken cancellationToken = default)
     {
         var client = _httpClientFactory.CreateClient();
         var httpUrl = $"http://{nodeInfo}/api/config/cluster/configChangeNotify";
