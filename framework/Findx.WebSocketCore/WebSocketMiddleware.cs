@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text;
@@ -24,8 +25,7 @@ public class WebSocketMiddleware
     /// <param name="next"></param>
     /// <param name="webSocketHandler"></param>
     /// <param name="webSocketAuthorization"></param>
-    public WebSocketMiddleware(RequestDelegate next, WebSocketHandlerBase webSocketHandler,
-        IWebSocketAuthorization webSocketAuthorization)
+    public WebSocketMiddleware(RequestDelegate next, WebSocketHandlerBase webSocketHandler, IWebSocketAuthorization webSocketAuthorization)
     {
         WebSocketHandler = webSocketHandler;
         _next = next;
@@ -67,6 +67,7 @@ public class WebSocketMiddleware
             ServerIp = HostUtility.ResolveHostAddress(HostUtility.ResolveHostName()),
             LastHeartbeatTime = DateTime.Now
         };
+        
         // 无效
         // var cancellationToken = context.RequestAborted;
         var cts = new CancellationTokenSource();
@@ -77,36 +78,37 @@ public class WebSocketMiddleware
 
     private async Task ReceiveAsync(WebSocketClient client, CancellationToken cancellationToken = default)
     {
+        // 缓冲区大小
+        var buffer = new byte[2048];
         while (client.Client.State == WebSocketState.Open)
         {
-            // 缓冲区大小
-            var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
+            var arraySegment = new ArraySegment<byte>(buffer);
             try
             {
-                string message;
+                string receiveMessage;
                 WebSocketReceiveResult result;
                 using (var ms = Pool.MemoryStream.Rent())
                 {
                     do
                     {
-                        result = await client.Client.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
-                        if (buffer.Array != null)
-                            ms.Write(buffer.Array, buffer.Offset, result.Count);
+                        result = await client.Client.ReceiveAsync(arraySegment, cancellationToken).ConfigureAwait(false);
+                        if (arraySegment.Array != null)
+                            ms.Write(arraySegment.Array, arraySegment.Offset, result.Count);
+                        
                     } while (!result.EndOfMessage);
-                    
-                    // 可以ArrayPool<byte>方式读取内容
-                    // 这里使用固定byte+MemoryStream方式读取内容
+
+                    // 使用固定 byte + MemoryStream方式读取内容,自动组合超过缓冲区内容
                     client.LastHeartbeatTime = DateTime.Now;
 
                     ms.Seek(0, SeekOrigin.Begin);
                     using (var reader = new StreamReader(ms, Encoding.UTF8))
                     {
-                        message = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        receiveMessage = await reader.ReadToEndAsync().ConfigureAwait(false);
                     }
                 }
                 
                 // 通过配置可以限定最大并行数量
-                HandleAsync(client, result, message, cancellationToken).ConfigureAwait(false);
+                HandleAsync(client, result, receiveMessage, cancellationToken).ConfigureAwait(false);
             }
             catch (WebSocketException e)
             {
@@ -127,6 +129,8 @@ public class WebSocketMiddleware
         }
 
         if (result.MessageType == WebSocketMessageType.Close)
+        {
             await WebSocketHandler.OnDisconnected(client, cancellationToken).ConfigureAwait(false);
+        }
     }
 }
