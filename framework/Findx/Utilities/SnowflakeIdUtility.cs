@@ -63,7 +63,7 @@ public class SnowflakeIdUtility
     {
         InitTimestampAndSequence();
         // sanity check for workerId
-        if (workerId > MaxWorkerId || workerId < 0)
+        if (workerId is > MaxWorkerId or < 0)
             throw new ArgumentException($"worker Id can't be greater than {MaxWorkerId} or less than 0");
 
         WorkerId = workerId << (TimestampBits + SequenceBits);
@@ -171,7 +171,7 @@ internal static class Util
     /// <returns>workerId</returns>
     private static long GenerateWorkerIdBaseOnMac()
     {
-        NetworkInterface[] nice = NetworkInterface.GetAllNetworkInterfaces();
+        var nice = NetworkInterface.GetAllNetworkInterfaces();
         // exclude virtual and Loopback
         var firstUpInterface = nice.OrderByDescending(x => x.Speed).FirstOrDefault(x => !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up);
         if (firstUpInterface == null) throw new Exception("no available mac found");

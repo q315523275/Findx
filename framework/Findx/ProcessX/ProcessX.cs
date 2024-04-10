@@ -22,7 +22,7 @@ public static class ProcessX
     /// <returns></returns>
     private static bool IsInvalidExitCode(Process process)
     {
-        return AcceptableExitCodes.All(x => x != process.ExitCode);
+        return AcceptableExitCodes.Any(x => x != process.ExitCode);
     }
 
     /// <summary>
@@ -73,8 +73,7 @@ public static class ProcessX
     /// <param name="environmentVariable">环境变量字典</param>
     /// <param name="encoding">编码</param>
     /// <returns></returns>
-    public static ProcessAsyncEnumerable StartAsync(string command, string? workingDirectory = null,
-        IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
+    public static ProcessAsyncEnumerable StartAsync(string command, string? workingDirectory = null, IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
     {
         var (fileName, arguments) = ParseCommand(command);
         return StartAsync(fileName, arguments, workingDirectory, environmentVariable, encoding);
@@ -89,8 +88,7 @@ public static class ProcessX
     /// <param name="environmentVariable">环境变量字典</param>
     /// <param name="encoding">编码</param>
     /// <returns></returns>
-    public static ProcessAsyncEnumerable StartAsync(string fileName, string? arguments, string? workingDirectory = null,
-        IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
+    public static ProcessAsyncEnumerable StartAsync(string fileName, string? arguments, string? workingDirectory = null, IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
     {
         var pi = new ProcessStartInfo
         {
@@ -98,11 +96,18 @@ public static class ProcessX
             Arguments = arguments
         };
 
-        if (workingDirectory != null) pi.WorkingDirectory = workingDirectory;
+        if (workingDirectory != null)
+        {
+            pi.WorkingDirectory = workingDirectory;
+        }
 
         if (environmentVariable != null)
+        {
             foreach (var item in environmentVariable)
+            {
                 pi.EnvironmentVariables[item.Key] = item.Value;
+            }
+        }
 
         if (encoding != null)
         {
@@ -137,9 +142,13 @@ public static class ProcessX
         void OnOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data != null)
+            {
                 outputChannel.Writer.TryWrite(e.Data);
+            }
             else
+            {
                 waitOutputDataCompleted.TrySetResult(null);
+            }
         }
 
         process.OutputDataReceived += OnOutputDataReceived;
@@ -148,12 +157,16 @@ public static class ProcessX
         process.ErrorDataReceived += (_, e) =>
         {
             if (e.Data != null)
+            {
                 lock (errorList)
                 {
                     errorList.Add(e.Data);
                 }
+            }
             else
+            {
                 waitErrorDataCompleted.TrySetResult(null);
+            }
         };
 
         process.Exited += async (_, _) =>
@@ -161,9 +174,13 @@ public static class ProcessX
             await waitErrorDataCompleted.Task.ConfigureAwait(false);
 
             if (errorList.Count == 0)
+            {
                 await waitOutputDataCompleted.Task.ConfigureAwait(false);
+            }
             else
+            {
                 process.OutputDataReceived -= OnOutputDataReceived;
+            }
 
             if (IsInvalidExitCode(process))
             {
@@ -172,15 +189,20 @@ public static class ProcessX
             else
             {
                 if (errorList.Count == 0)
+                {
                     outputChannel.Writer.TryComplete();
+                }
                 else
+                {
                     outputChannel.Writer.TryComplete(new ProcessErrorException(process.ExitCode, errorList.ToArray()));
+                }
             }
         };
 
         if (!process.Start())
-            throw new InvalidOperationException("Can't start process. FileName:" + processStartInfo.FileName +
-                                                ", Arguments:" + processStartInfo.Arguments);
+        {
+            throw new InvalidOperationException("Can't start process. FileName:" + processStartInfo.FileName + ", Arguments:" + processStartInfo.Arguments);
+        }
 
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
@@ -196,9 +218,7 @@ public static class ProcessX
     /// <param name="environmentVariable"></param>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public static (Process Process, ProcessAsyncEnumerable StdOut, ProcessAsyncEnumerable StdError)
-        GetDualAsyncEnumerable(string command, string? workingDirectory = null,
-            IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
+    public static (Process Process, ProcessAsyncEnumerable StdOut, ProcessAsyncEnumerable StdError) GetDualAsyncEnumerable(string command, string? workingDirectory = null, IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
     {
         var (fileName, arguments) = ParseCommand(command);
         return GetDualAsyncEnumerable(fileName, arguments, workingDirectory, environmentVariable, encoding);
@@ -213,9 +233,7 @@ public static class ProcessX
     /// <param name="environmentVariable"></param>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public static (Process Process, ProcessAsyncEnumerable StdOut, ProcessAsyncEnumerable StdError)
-        GetDualAsyncEnumerable(string fileName, string? arguments, string? workingDirectory = null,
-            IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
+    public static (Process Process, ProcessAsyncEnumerable StdOut, ProcessAsyncEnumerable StdError) GetDualAsyncEnumerable(string fileName, string? arguments, string? workingDirectory = null, IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
     {
         var pi = new ProcessStartInfo
         {
@@ -223,11 +241,18 @@ public static class ProcessX
             Arguments = arguments
         };
 
-        if (workingDirectory != null) pi.WorkingDirectory = workingDirectory;
+        if (workingDirectory != null)
+        {
+            pi.WorkingDirectory = workingDirectory;
+        }
 
         if (environmentVariable != null)
+        {
             foreach (var item in environmentVariable)
+            {
                 pi.EnvironmentVariables.Add(item.Key, item.Value);
+            }
+        }
 
         if (encoding != null)
         {
@@ -244,8 +269,7 @@ public static class ProcessX
     /// <param name="processStartInfo"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static (Process Process, ProcessAsyncEnumerable StdOut, ProcessAsyncEnumerable StdError)
-        GetDualAsyncEnumerable(ProcessStartInfo processStartInfo)
+    public static (Process Process, ProcessAsyncEnumerable StdOut, ProcessAsyncEnumerable StdError) GetDualAsyncEnumerable(ProcessStartInfo processStartInfo)
     {
         var process = SetupRedirectableProcess(ref processStartInfo, true);
 
@@ -299,15 +323,15 @@ public static class ProcessX
         };
 
         if (!process.Start())
-            throw new InvalidOperationException("Can't start process. FileName:" + processStartInfo.FileName +
-                                                ", Arguments:" + processStartInfo.Arguments);
+        {
+            throw new InvalidOperationException("Can't start process. FileName:" + processStartInfo.FileName + ", Arguments:" + processStartInfo.Arguments);
+        }
 
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
 
         // error itertor does not handle process itself.
-        return (process, new ProcessAsyncEnumerable(process, outputChannel.Reader),
-            new ProcessAsyncEnumerable(null, errorChannel.Reader));
+        return (process, new ProcessAsyncEnumerable(process, outputChannel.Reader), new ProcessAsyncEnumerable(null, errorChannel.Reader));
     }
 
     /// <summary>
@@ -318,8 +342,7 @@ public static class ProcessX
     /// <param name="environmentVariable"></param>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public static Task<byte[]> StartReadBinaryAsync(string command, string? workingDirectory = null,
-        IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
+    public static Task<byte[]> StartReadBinaryAsync(string command, string? workingDirectory = null, IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
     {
         var (fileName, arguments) = ParseCommand(command);
         return StartReadBinaryAsync(fileName, arguments, workingDirectory, environmentVariable, encoding);
@@ -334,8 +357,7 @@ public static class ProcessX
     /// <param name="environmentVariable"></param>
     /// <param name="encoding"></param>
     /// <returns></returns>
-    public static Task<byte[]> StartReadBinaryAsync(string fileName, string? arguments, string? workingDirectory = null,
-        IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
+    public static Task<byte[]> StartReadBinaryAsync(string fileName, string? arguments, string? workingDirectory = null, IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
     {
         var pi = new ProcessStartInfo
         {
@@ -343,11 +365,18 @@ public static class ProcessX
             Arguments = arguments
         };
 
-        if (workingDirectory != null) pi.WorkingDirectory = workingDirectory;
+        if (workingDirectory != null)
+        {
+            pi.WorkingDirectory = workingDirectory;
+        }
 
         if (environmentVariable != null)
+        {
             foreach (var item in environmentVariable)
+            {
                 pi.EnvironmentVariables.Add(item.Key, item.Value);
+            }
+        }
 
         if (encoding != null)
         {
@@ -378,12 +407,16 @@ public static class ProcessX
         process.ErrorDataReceived += (_, e) =>
         {
             if (e.Data != null)
+            {
                 lock (errorList)
                 {
                     errorList.Add(e.Data);
                 }
+            }
             else
+            {
                 waitErrorDataCompleted.TrySetResult(null);
+            }
         };
 
         process.Exited += async (_, _) =>
@@ -406,8 +439,9 @@ public static class ProcessX
         };
 
         if (!process.Start())
-            throw new InvalidOperationException("Can't start process. FileName:" + processStartInfo.FileName +
-                                                ", Arguments:" + processStartInfo.Arguments);
+        {
+            throw new InvalidOperationException("Can't start process. FileName:" + processStartInfo.FileName + ", Arguments:" + processStartInfo.Arguments);
+        }
 
         RunAsyncReadFully(process.StandardOutput.BaseStream, readTask, cts.Token);
         process.BeginErrorReadLine();
@@ -415,8 +449,7 @@ public static class ProcessX
         return resultTask.Task;
     }
 
-    private static async void RunAsyncReadFully(Stream stream, TaskCompletionSource<byte[]?> completion,
-        CancellationToken cancellationToken)
+    private static async void RunAsyncReadFully(Stream stream, TaskCompletionSource<byte[]?> completion, CancellationToken cancellationToken)
     {
         try
         {

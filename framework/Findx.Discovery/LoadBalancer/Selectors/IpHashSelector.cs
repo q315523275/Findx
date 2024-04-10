@@ -14,8 +14,8 @@ namespace Findx.Discovery.LoadBalancer.Selectors;
 public class IpHashSelector : ILoadBalancer
 {
     private readonly ConsistentHash<IServiceInstance> _serviceInstanceNodes = new();
-    private readonly string _serviceName;
     private readonly Func<Task<IList<IServiceInstance>>> _services;
+    private readonly string _serviceName;
 
     /// <summary>
     /// Ctor

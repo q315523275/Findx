@@ -28,13 +28,11 @@ namespace Findx.Discovery.HttpMessageHandlers
         /// <param name="request"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
-            CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var current = request.RequestUri;
 
-            var loadBalancer = await _loadBalancerProvider.GetAsync(current.Host, LoadBalancerType.RoundRobin)
-                .ConfigureAwait(false);
+            var loadBalancer = await _loadBalancerProvider.GetAsync(current.Host, LoadBalancerType.RoundRobin).ConfigureAwait(false);
             var serviceInfo = await loadBalancer.ResolveServiceInstanceAsync().ConfigureAwait(false);
             request.RequestUri = serviceInfo.ToUri(current.Scheme, current.PathAndQuery);
 
