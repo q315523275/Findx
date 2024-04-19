@@ -379,6 +379,12 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     #region 库表信息查询
 
     /// <summary>
+    ///     获取数据源名称
+    /// </summary>
+    /// <returns></returns>
+    string GetDataSource();
+    
+    /// <summary>
     ///     获取数据库表名
     /// </summary>
     /// <returns></returns>

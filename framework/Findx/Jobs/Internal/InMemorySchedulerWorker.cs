@@ -56,7 +56,7 @@ public class InMemorySchedulerWorker : BackgroundService, IJobSchedulerWorker
     /// <returns></returns>
     private async Task ExecuteOnceAsync(CancellationToken cancellationToken)
     {
-        var shouldRunJobs = await _storage.GetShouldRunJobsAsync(_options.Value.MaxFetchJobCount, cancellationToken);
+        var shouldRunJobs = await _storage.GetShouldRunJobsAsync(_options.Value.MaxFetchJobCount, DateTimeOffset.UtcNow.LocalDateTime, cancellationToken);
 
         foreach (var jobDetail in shouldRunJobs)
         {

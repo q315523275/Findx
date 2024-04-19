@@ -62,7 +62,7 @@ public class RateLimiterAttribute : ActionFilterAttribute
         }
 
         if (atomic.DecrementAndGet() < 0)
-            context.Result = new JsonResult(CommonResult.Fail("4029", "Frequent network requests"));
+            context.Result = new JsonResult(CommonResult.Fail("429", "Frequent network requests"));
         else
             await next();
     }

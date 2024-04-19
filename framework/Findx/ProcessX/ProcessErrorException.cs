@@ -1,6 +1,7 @@
 /// <summary>
 ///     进程执行异常信息
 /// </summary>
+// ReSharper disable once CheckNamespace
 public class ProcessErrorException : Exception
 {
     /// <summary>
@@ -8,10 +9,7 @@ public class ProcessErrorException : Exception
     /// </summary>
     /// <param name="exitCode"></param>
     /// <param name="errorOutput"></param>
-    public ProcessErrorException(int exitCode, string[] errorOutput) : base("Process returns error, ExitCode:" +
-                                                                            exitCode + Environment.NewLine +
-                                                                            string.Join(Environment.NewLine,
-                                                                                errorOutput))
+    public ProcessErrorException(int exitCode, string[] errorOutput) : base("Process returns error, ExitCode:" + exitCode + Environment.NewLine + string.Join(Environment.NewLine, errorOutput))
     {
         ExitCode = exitCode;
         ErrorOutput = errorOutput;

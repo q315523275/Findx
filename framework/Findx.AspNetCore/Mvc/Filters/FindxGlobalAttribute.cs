@@ -31,7 +31,7 @@ public class FindxGlobalAttribute : IActionFilter
                                 .Where(e => e.Value != null && e.Value.Errors.Any())
                                 .Select(e => new ErrorMember { ErrorMemberName = e.Key, ErrorMessage = e.Value.Errors.Select(x => x.ErrorMessage).ExpandAndToString() });
 
-            context.Result = new JsonResult(CommonResult.Fail("4001", errors.Select(x => x.ErrorMessage).ExpandAndToString(CommonUtility.Line)));
+            context.Result = new JsonResult(CommonResult.Fail("400", errors.Select(x => x.ErrorMessage).ExpandAndToString(CommonUtility.Line)));
         }
 
         // 租户赋值

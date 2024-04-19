@@ -126,10 +126,11 @@ public partial class Extensions
     ///     使用跨域请求
     /// </summary>
     /// <param name="app"></param>
+    /// <param name="policyName">策略名称</param>
     /// <returns></returns>
-    public static WebApplication UseCorsAccessor(this WebApplication app)
+    public static WebApplication UseCorsAccessor(this WebApplication app, string policyName = "findx.cors")
     {
-        app.UseCors("findx.cors");
+        app.UseCors(policyName);
         return app;
     }
 }

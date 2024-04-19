@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 /// <summary>
 ///     进程异步可迭代集合
 /// </summary>
+// ReSharper disable once CheckNamespace
 public class ProcessAsyncEnumerable : IAsyncEnumerable<string>
 {
-    private readonly ChannelReader<string> _channel;
     private readonly Process? _process;
+    private readonly ChannelReader<string> _channel;
 
     /// <summary>
     ///     Ctor
@@ -23,6 +24,7 @@ public class ProcessAsyncEnumerable : IAsyncEnumerable<string>
     }
 
     /// <summary>
+    ///     返回异步流集合
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -32,7 +34,7 @@ public class ProcessAsyncEnumerable : IAsyncEnumerable<string>
     }
 
     /// <summary>
-    ///     Consume all result and wait complete asynchronously.
+    ///     使用所有结果并异步等待完成。
     /// </summary>
     public async Task WaitAsync(CancellationToken cancellationToken = default)
     {
@@ -42,39 +44,58 @@ public class ProcessAsyncEnumerable : IAsyncEnumerable<string>
     }
 
     /// <summary>
-    ///     Returning first value and wait complete asynchronously.
+    ///     返回第一个值并异步等待完成。
     /// </summary>
     public async Task<string> FirstAsync(CancellationToken cancellationToken = default)
     {
         string? data = null;
-        await foreach (var item in this.WithCancellation(cancellationToken).ConfigureAwait(false)) data ??= item ?? "";
+        await foreach (var item in this.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (data == null)
+            {
+                data = (item ?? "");
+            }
+        }
 
-        if (data == null) throw new InvalidOperationException("Process does not return any data.");
+        if (data == null)
+        {
+            throw new InvalidOperationException("Process does not return any data.");
+        }
 
         return data;
     }
 
     /// <summary>
-    ///     Returning first value or null and wait complete asynchronously.
+    ///     异步返回第一个值或null并等待完成。
     /// </summary>
     public async Task<string?> FirstOrDefaultAsync(CancellationToken cancellationToken = default)
     {
         string? data = null;
-        await foreach (var item in this.WithCancellation(cancellationToken).ConfigureAwait(false)) data ??= item ?? "";
+        await foreach (var item in this.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            if (data == null)
+            {
+                data = (item ?? "");
+            }
+        }
 
         return data;
     }
 
     /// <summary>
+    ///     异步获取结果并转换为字符串集合
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IEnumerable<string>> ToListAsync(CancellationToken cancellationToken = default)
+    public async Task<string[]> ToTask(CancellationToken cancellationToken = default)
     {
         var list = new List<string>();
-        await foreach (var item in this.WithCancellation(cancellationToken).ConfigureAwait(false)) list.Add(item);
+        await foreach (var item in this.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
+            list.Add(item);
+        }
 
-        return list;
+        return list.ToArray();
     }
 
     /// <summary>
@@ -83,6 +104,8 @@ public class ProcessAsyncEnumerable : IAsyncEnumerable<string>
     public async Task WriteLineAllAsync(CancellationToken cancellationToken = default)
     {
         await foreach (var item in this.WithCancellation(cancellationToken).ConfigureAwait(false))
+        {
             Console.WriteLine(item);
+        }
     }
 }

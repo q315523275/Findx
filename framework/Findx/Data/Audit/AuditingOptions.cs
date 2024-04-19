@@ -6,22 +6,22 @@ namespace Findx.Data;
 public class AuditingOptions : IOptions<AuditingOptions>
 {
     /// <summary>
-    ///     是否启用
+    ///     获取或设置 是否启用
     /// </summary>
     public bool Enabled { set; get; }
 
     /// <summary>
-    ///     是否记录请求参数
+    ///     获取或设置 提取请求参数
     /// </summary>
-    public bool RecordRequestBody { set; get; }
+    public bool ExtractRequestBody { set; get; }
 
     /// <summary>
-    ///     是否记录返回结果
+    ///     获取或设置 提取返回结果
     /// </summary>
-    public bool RecordResponseBody { set; get; }
+    public bool ExtractResponseBody { set; get; }
 
     /// <summary>
-    ///     值
+    ///     审计选项
     /// </summary>
     public AuditingOptions Value => this;
 }

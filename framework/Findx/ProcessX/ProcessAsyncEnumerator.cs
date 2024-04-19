@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 /// <summary>
 ///     进程异步迭代器
 /// </summary>
+// ReSharper disable once CheckNamespace
 internal class ProcessAsyncEnumerator : IAsyncEnumerator<string>
 {
+    private readonly Process? _process;
+    private readonly ChannelReader<string> _channel;
     private readonly CancellationToken _cancellationToken;
     private readonly CancellationTokenRegistration _cancellationTokenRegistration;
-    private readonly ChannelReader<string> _channel;
-    private readonly Process? _process;
     private string? _current;
     private bool _disposed;
 
@@ -28,7 +29,9 @@ internal class ProcessAsyncEnumerator : IAsyncEnumerator<string>
         _channel = channel;
         _cancellationToken = cancellationToken;
         if (cancellationToken.CanBeCanceled)
+        {
             _cancellationTokenRegistration = cancellationToken.Register(() => { _ = DisposeAsync(); });
+        }
     }
 
 #pragma warning disable CS8603
@@ -44,8 +47,12 @@ internal class ProcessAsyncEnumerator : IAsyncEnumerator<string>
         }
 
         if (await _channel.WaitToReadAsync(_cancellationToken).ConfigureAwait(false))
+        {
             if (_channel.TryRead(out _current))
+            {
                 return true;
+            }
+        }
 
         return false;
     }
@@ -61,12 +68,18 @@ internal class ProcessAsyncEnumerator : IAsyncEnumerator<string>
                 if (_process != null)
                 {
                     _process.EnableRaisingEvents = false;
-                    if (!_process.HasExited) _process.Kill();
+                    if (!_process.HasExited)
+                    {
+                        _process.Kill();
+                    }
                 }
             }
             finally
             {
-                if (_process != null) _process.Dispose();
+                if (_process != null)
+                {
+                    _process.Dispose();
+                }
             }
         }
 

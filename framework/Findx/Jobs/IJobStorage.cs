@@ -43,9 +43,10 @@ public interface IJobStorage
     ///     查询可以执行任务列表
     /// </summary>
     /// <param name="maxResultCount"></param>
+    /// <param name="runTime">执行时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IEnumerable<JobInfo>> GetShouldRunJobsAsync(int maxResultCount, CancellationToken cancellationToken = default);
+    Task<IEnumerable<JobInfo>> GetShouldRunJobsAsync(int maxResultCount, DateTime runTime, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     查询所有任务

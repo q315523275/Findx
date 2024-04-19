@@ -58,13 +58,13 @@ public class InMemoryJobStorage : IJobStorage
     ///     获取指定数量的待执行工作
     /// </summary>
     /// <param name="maxResultCount"></param>
+    /// <param name="runTime"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IEnumerable<JobInfo>> GetShouldRunJobsAsync(int maxResultCount, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<JobInfo>> GetShouldRunJobsAsync(int maxResultCount, DateTime runTime, CancellationToken cancellationToken = default)
     {
         using var asyncLock = await _lock.LockAsync(cancellationToken);
-        var referenceTime = DateTimeOffset.UtcNow.LocalDateTime;
-        var tasksThatShouldRun = _jobs.Where(t => t != null && t.ShouldRun(referenceTime))
+        var tasksThatShouldRun = _jobs.Where(t => t != null && t.ShouldRun(runTime))
                                       .OrderBy(t => t.TryCount)
                                       .ThenBy(t => t.NextRunTime)
                                       .Take(maxResultCount);

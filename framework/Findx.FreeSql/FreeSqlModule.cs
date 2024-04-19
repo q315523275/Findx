@@ -53,7 +53,7 @@ public class FreeSqlModule : StartupModule
         if (!FreeSqlOptions.Enabled) return services;
 
         // 构建FreeSql
-        var freeSqlClient = services.GetOrAddSingletonInstance(() => new FreeSqlClient());
+        var freeSqlClient = services.GetOrAddSingletonInstance(() => new FreeSqlClient(FreeSqlOptions));
         foreach (var item in FreeSqlOptions.DataSource)
         {
             // FreeSQL构建开始

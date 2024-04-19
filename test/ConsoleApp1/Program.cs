@@ -3,6 +3,7 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using ConsoleApp1;
 using Findx;
@@ -298,6 +299,19 @@ Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 10000
 // Console.WriteLine(DirectoryUtility.EnumerateFiles(movePath, "*").ToJson());
 // Console.WriteLine(DirectoryUtility.GetDirectories(movePath, "*").ToJson());
 
+Console.WriteLine(GenerateWorkerIdBaseOnMac());
+
+static long GenerateWorkerIdBaseOnMac()
+{
+    var nice = NetworkInterface.GetAllNetworkInterfaces();
+    // exclude virtual and Loopback
+    var firstUpInterface = nice.OrderByDescending(x => x.Speed).FirstOrDefault(x => !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up);
+    if (firstUpInterface == null) throw new Exception("no available mac found");
+    var address = firstUpInterface.GetPhysicalAddress();
+    var mac = address.GetAddressBytes();
+
+    return ((mac[4] & 0B11) << 8) | (mac[5] & 0xFF);
+}
 Console.WriteLine($"11111");
 
 

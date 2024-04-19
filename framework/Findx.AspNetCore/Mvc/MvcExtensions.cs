@@ -1,4 +1,6 @@
-﻿using Findx.Common;
+﻿using System;
+using System.Reflection;
+using Findx.Common;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Extensions;
@@ -13,6 +15,28 @@ namespace Findx.AspNetCore.Mvc;
 /// </summary>
 public static class MvcExtensions
 {
+    /// <summary>
+    /// 判断类型是否是Controller
+    /// </summary>
+    public static bool IsController(this Type type, bool isAbstract = false)
+    {
+        Check.NotNull(type, nameof(type));
+            
+        return IsController(type.GetTypeInfo(), isAbstract);
+    }
+
+    /// <summary>
+    /// 判断类型是否是Controller
+    /// </summary>
+    public static bool IsController(this TypeInfo typeInfo, bool isAbstract = false)
+    {
+        Check.NotNull(typeInfo, nameof(typeInfo));
+
+        return typeInfo.IsClass && (isAbstract || !typeInfo.IsAbstract) && !typeInfo.IsNestedPrivate && !typeInfo.ContainsGenericParameters
+               && !typeInfo.IsDefined(typeof(NonControllerAttribute)) && (typeInfo.Name.EndsWith("Controller", StringComparison.OrdinalIgnoreCase)
+                                                                          || typeInfo.IsDefined(typeof(ControllerAttribute)));
+    }
+    
     /// <summary>
     ///     获取正在执行的Action的相关功能信息
     /// </summary>

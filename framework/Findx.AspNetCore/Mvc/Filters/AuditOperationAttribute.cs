@@ -50,6 +50,7 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
         // 审计数据初始化
         var operation = new AuditOperationEntry
         {
+            FunctionName = function.Name,
             Ip = httpContext.GetClientIp(),
             UserAgent = httpContext.Request.Headers.GetOrDefault("User-Agent"),
             CreatedTime = DateTime.Now
@@ -71,25 +72,22 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
 
         // 审计执行判断
         if (!options.Value.Enabled || !function.AuditOperationEnabled) return;
-
+        
         operation.EndedTime = DateTime.Now;
-        operation.FunctionName = function.Name;
         operation.Exception = actionContext.Exception;
 
         // Mvc参数
         dict.AuditOperation.ExtraObject.Add("http.url", context.HttpContext.Request.GetDisplayUrl());
         dict.AuditOperation.ExtraObject.Add("http.path", context.HttpContext.Request.Path);
         dict.AuditOperation.ExtraObject.Add("http.method", context.HttpContext.Request.Method);
-        dict.AuditOperation.ExtraObject.Add("http.status_code",
-            actionContext.HttpContext.Response.StatusCode.ToString());
+        dict.AuditOperation.ExtraObject.Add("http.status_code", actionContext.HttpContext.Response.StatusCode.ToString());
 
         // 参数报文
-        if (options.Value.RecordRequestBody)
-            dict.AuditOperation.ExtraObject.Add("http.request",
-                SerializeConvertArguments(context.ActionArguments, serializer));
+        if (options.Value.ExtractRequestBody)
+            dict.AuditOperation.ExtraObject.Add("http.request", SerializeConvertArguments(context.ActionArguments, serializer));
 
         // 返回结果
-        if (options.Value.RecordResponseBody)
+        if (options.Value.ExtractResponseBody)
         {
             if (actionContext.Exception is FindxException findxException)
                 dict.AuditOperation.ExtraObject.Add("http.response", serializer.Serialize(CommonResult.Fail(findxException.ErrorCode, findxException.ErrorMessage)));
@@ -99,7 +97,8 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
 
         // 存储
         var store = provider.GetService<IAuditStore>();
-        if (store != null) await store.SaveAsync(dict.AuditOperation, context.HttpContext.RequestAborted);
+        if (store != null) 
+            await store.SaveAsync(dict.AuditOperation, context.HttpContext.RequestAborted);
     }
 
     /// <summary>

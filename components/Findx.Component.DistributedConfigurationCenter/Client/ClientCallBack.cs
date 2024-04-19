@@ -75,7 +75,7 @@ public class ClientCallBack : IClientCallBack
     }
 
     /// <summary>
-    /// 客户端信息
+    ///     客户端信息
     /// </summary>
     /// <returns></returns>
     public IDictionary<string, List<ClientCallBackInfo<ConfigDataChangeDto>>> Metrics()

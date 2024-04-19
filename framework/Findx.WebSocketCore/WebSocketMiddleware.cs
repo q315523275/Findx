@@ -72,7 +72,11 @@ public class WebSocketMiddleware
         var cts = new CancellationTokenSource();
         await WebSocketHandler.OnConnected(webSocketClient, cts.Token).ConfigureAwait(false);
         await ReceiveAsync(webSocketClient, cts.Token);
-        cts.Cancel();
+        #if !NET8_0_OR_GREATER
+            cts.Cancel();
+        #else
+            await cts.CancelAsync(); 
+        #endif
     }
 
     private async Task ReceiveAsync(WebSocketClient client, CancellationToken cancellationToken = default)
@@ -102,7 +106,11 @@ public class WebSocketMiddleware
                     ms.Seek(0, SeekOrigin.Begin);
                     using (var reader = new StreamReader(ms, Encoding.UTF8))
                     {
-                        receiveMessage = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        #if !NET8_0_OR_GREATER
+                            receiveMessage = await reader.ReadToEndAsync().ConfigureAwait(false);
+                        #else
+                            receiveMessage = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
+                        #endif
                     }
                 }
                 
