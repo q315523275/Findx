@@ -4,34 +4,38 @@ using Findx.Extensions;
 namespace Findx.Utilities;
 
 /// <summary>
-///     Csv数据转换工具类
+///     Csv数据转换工具类 - 简单版
 /// </summary>
 public static class CsvUtility
 {
     /// <summary>
     ///     读取Csv数据
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">属性顺序需与csv列顺序一致</typeparam>
     /// <param name="stream"></param>
     /// <param name="skipFirstLine"></param>
     /// <param name="csvDelimiter"></param>
     /// <returns></returns>
     public static IList<T> ReadCsvStream<T>(Stream stream, bool skipFirstLine = true, string csvDelimiter = ",") where T : new()
     {
+        // 可以增加映射实现自动匹配属性名,无需现在必须顺序一致
+        // 当前处理模式性能一般
         var records = new List<T>();
+        var item = new T();
+        var properties = item.GetType().GetProperties();
+        var csvDelimiters = csvDelimiter.ToCharArray();
         using var reader = new StreamReader(stream);
         while (!reader.EndOfStream)
         {
             var line = reader.ReadLine();
-            var values = line.Split(csvDelimiter.ToCharArray());
+            if (line == null) continue;
+            var values = line.Split(csvDelimiters);
             if (skipFirstLine)
             {
                 skipFirstLine = false;
             }
             else
             {
-                var item = new T();
-                var properties = item.GetType().GetProperties();
                 for (var i = 0; i < values.Length; i++)
                 {
                     properties[i].SetValue(item, Convert.ChangeType(values[i], properties[i].PropertyType, CultureInfo.CurrentCulture), null);
@@ -61,10 +65,12 @@ public static class CsvUtility
         else
             itemType = type.GetElementType();
 
+        var csvDelimiterLen = csvDelimiter.Length;
+        
         using var stringWriter = new StringWriter();
         if (includeHeader)
             stringWriter.WriteLine(string.Join<string>(csvDelimiter, itemType.GetProperties().Select(x => x.Name)));
-
+        
         using var psb = Pool.StringBuilder.Get(out var sb);
         foreach (var obj in data)
         {
@@ -74,12 +80,14 @@ public static class CsvUtility
                 if (val.Value != null)
                 {
                     var escapeVal = val.Value.ToString();
-                    if (escapeVal.Contains(",")) escapeVal = string.Concat("\"", escapeVal, "\"");
+                    // ReSharper disable once PossibleNullReferenceException
+                    if (escapeVal.Contains(',')) 
+                        escapeVal = string.Concat("\"", escapeVal, "\"");
 
-                    if (escapeVal.Contains("\r", StringComparison.OrdinalIgnoreCase))
+                    if (escapeVal.Contains('\r', StringComparison.OrdinalIgnoreCase))
                         escapeVal = escapeVal.ReplaceFirst("\r", " ", StringComparison.OrdinalIgnoreCase);
 
-                    if (escapeVal.Contains("\n", StringComparison.OrdinalIgnoreCase))
+                    if (escapeVal.Contains('\n', StringComparison.OrdinalIgnoreCase))
                         escapeVal = escapeVal.ReplaceFirst("\n", " ", StringComparison.OrdinalIgnoreCase);
 
                     sb.Append(escapeVal).Append(csvDelimiter);
@@ -89,7 +97,9 @@ public static class CsvUtility
                     sb.Append(string.Empty).Append(csvDelimiter);
                 }
             }
-            stringWriter.WriteLine(sb.ToString().TrimEnd(csvDelimiter.ToCharArray()));
+
+            sb.Remove(sb.Length - csvDelimiterLen, csvDelimiterLen);
+            stringWriter.WriteLine(sb.ToString());
             sb.Clear();
         }
         return stringWriter.ToString();

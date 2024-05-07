@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net.Sockets;
 using System.Security.Cryptography;
+using Findx.Common;
 
 namespace Findx.Utilities;
 
@@ -25,10 +26,13 @@ public static class FileUtility
     /// <param name="fileName">要创建的文件</param>
     public static void CreateIfNotExists(string fileName)
     {
+        fileName.ThrowIfNull();
+        
         if (File.Exists(fileName)) return;
 
         var dir = Path.GetDirectoryName(fileName);
         if (dir != null) DirectoryUtility.CreateIfNotExists(dir);
+        // ReSharper disable once AssignNullToNotNullAttribute
         File.Create(fileName);
     }
 
@@ -144,39 +148,45 @@ public static class FileUtility
     /// </summary>
     /// <param name="fileName"> 文件名 </param>
     /// <returns> 32位MD5 </returns>
-    [Obsolete("Obsolete")]
     public static string GetFileMd5(string fileName)
     {
         using var fs = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-        
         const int bufferSize = 1024 * 1024;
         var buffer = new byte[bufferSize];
-        
-        using var md5 = new MD5CryptoServiceProvider();
+        using var md5 = MD5.Create();
         md5.Initialize();
         long offset = 0;
         while (offset < fs.Length)
         {
             long readSize = bufferSize;
-            if (offset + readSize > fs.Length) readSize = fs.Length - offset;
+            if (offset + readSize > fs.Length)
+            {
+                readSize = fs.Length - offset;
+            }
 
-            _ = fs.Read(buffer, 0, (int)readSize);
+            // ReSharper disable once MustUseReturnValue
+            fs.Read(buffer, 0, (int)readSize);
             if (offset + readSize < fs.Length)
+            {
                 md5.TransformBlock(buffer, 0, (int)readSize, buffer, 0);
+            }
             else
+            {
                 md5.TransformFinalBlock(buffer, 0, (int)readSize);
+            }
+
             offset += bufferSize;
         }
 
         fs.Close();
         var result = md5.Hash;
+        if (result == null)
+        {
+            return null;
+        }
         md5.Clear();
-        
-        var sb = new StringBuilder(32);
-        foreach (var b in result) 
-            sb.Append(b.ToString("X2"));
-        
-        return sb.ToString();
+
+        return Convert.ToHexString(result);
     }
 
     /// <summary>
@@ -228,24 +238,37 @@ public static class FileUtility
             byte b3 = 0;
             byte b4 = 0;
 
-            var oriPos = fs.Seek(0, SeekOrigin.Begin);
+            // ReSharper disable once UnusedVariable
+            var originalPostion = fs.Seek(0, SeekOrigin.Begin);
             fs.Seek(0, SeekOrigin.Begin);
 
             b1 = Convert.ToByte(fs.ReadByte());
             b2 = Convert.ToByte(fs.ReadByte());
-            if (fs.Length > 2) b3 = Convert.ToByte(fs.ReadByte());
-            if (fs.Length > 3) b4 = Convert.ToByte(fs.ReadByte());
+            if (fs.Length > 2)
+            {
+                b3 = Convert.ToByte(fs.ReadByte());
+            }
+            if (fs.Length > 3)
+            {
+                b4 = Convert.ToByte(fs.ReadByte());
+            }
 
             // 根据文件流的前4个字节判断Encoding
             // Unicode {0xFF, 0xFE};
             // BE-Unicode {0xFE, 0xFF};
             // UTF8 = {0xEF, 0xBB, 0xBF};
             if (b1 == 0xFE && b2 == 0xFF) // UnicodeBe
+            {
                 targetEncoding = Encoding.BigEndianUnicode;
+            }
             if (b1 == 0xFF && b2 == 0xFE && b3 != 0xFF) // Unicode
+            {
                 targetEncoding = Encoding.Unicode;
+            }
             if (b1 == 0xEF && b2 == 0xBB && b3 == 0xBF) // UTF8
+            {
                 targetEncoding = Encoding.UTF8;
+            }
 
             fs.Seek(0, SeekOrigin.Begin);
         }

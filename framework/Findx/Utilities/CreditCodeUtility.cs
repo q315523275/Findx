@@ -14,7 +14,7 @@ namespace Findx.Utilities;
 /// </summary>
 public static class CreditCodeUtility
 {
-    private static readonly int[] Weight = { 1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28 };
+    private static readonly int[] Weight = [1, 3, 9, 27, 19, 26, 16, 17, 20, 29, 25, 13, 8, 24, 10, 30, 28];
 
     // ReSharper disable once StringLiteralTypo
     private static readonly char[] BaseCodeArray = "0123456789ABCDEFGHJKLMNPQRTUWXY".ToCharArray();
@@ -56,27 +56,27 @@ public static class CreditCodeUtility
     /// <returns></returns>
     public static string RandomCreditCode()
     {
-        var buf = new StringBuilder(18);
+        var buff = new StringBuilder(18);
 
         for (var i = 0; i < 2; i++)
         {
-            var num = RandomUtility.RandomInt(BaseCodeArray.Length - 1);
-            buf.Append(char.ToUpper(BaseCodeArray[num]));
+            var numb = RandomUtility.RandomInt(BaseCodeArray.Length - 1);
+            buff.Append(char.ToUpper(BaseCodeArray[numb]));
         }
 
         for (var i = 2; i < 8; i++)
         {
-            var num = RandomUtility.RandomInt(10);
-            buf.Append(BaseCodeArray[num]);
+            var numb = RandomUtility.RandomInt(10);
+            buff.Append(BaseCodeArray[numb]);
         }
 
         for (var i = 8; i < 17; i++)
         {
-            var num = RandomUtility.RandomInt(BaseCodeArray.Length - 1);
-            buf.Append(BaseCodeArray[num]);
+            var numb = RandomUtility.RandomInt(BaseCodeArray.Length - 1);
+            buff.Append(BaseCodeArray[numb]);
         }
 
-        var code = buf.ToString();
+        var code = buff.ToString();
 
         return code + BaseCodeArray[GetParityBit(code)];
     }

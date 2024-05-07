@@ -38,6 +38,6 @@ public static class CronUtility
 
         var next = expression.GetNextOccurrence(dateTimeOffset, TimeZoneInfo.Local);
 
-        return next.HasValue ? next.Value.LocalDateTime : default;
+        return next?.LocalDateTime ?? default;
     }
 }

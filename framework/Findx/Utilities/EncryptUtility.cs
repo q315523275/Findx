@@ -14,12 +14,11 @@ public static class EncryptUtility
     /// <summary>
     ///     SHA256加密
     /// </summary>
-    [Obsolete("Obsolete")]
     public static string Sha256(string str)
     {
         var bytes = Encoding.UTF8.GetBytes(str);
-        var managed = new SHA256Managed();
-        return ToHexString(managed.ComputeHash(bytes));
+        var hashValue = SHA256.HashData(bytes);
+        return ToHexString(hashValue);
     }
 
     #endregion
@@ -30,7 +29,6 @@ public static class EncryptUtility
     ///     Md5加密，返回16位结果
     /// </summary>
     /// <param name="value">值</param>
-    [Obsolete("Obsolete")]
     public static string Md5By16(string value)
     {
         return Md5By16(value, Encoding.UTF8);
@@ -41,42 +39,28 @@ public static class EncryptUtility
     /// </summary>
     /// <param name="value">值</param>
     /// <param name="encoding">字符编码</param>
-    [Obsolete("Obsolete")]
     public static string Md5By16(string value, Encoding encoding)
     {
-        return Md5(value, encoding, 4, 8);
+        return Md5(value, encoding)?.Sub(8, 16);
     }
 
     /// <summary>
     ///     Md5加密
     /// </summary>
-    [Obsolete("Obsolete")]
-    private static string Md5(string value, Encoding encoding, int? startIndex, int? length)
+
+    private static string Md5(string value, Encoding encoding)
     {
         if (string.IsNullOrWhiteSpace(value))
             return string.Empty;
-        var md5 = new MD5CryptoServiceProvider();
-        string result;
-        try
-        {
-            var hash = md5.ComputeHash(encoding.GetBytes(value));
-            result = startIndex == null
-                ? BitConverter.ToString(hash)
-                : BitConverter.ToString(hash, startIndex.SafeValue(), length.SafeValue());
-        }
-        finally
-        {
-            md5.Clear();
-        }
-
-        return result.Replace("-", "").ToLower();
+        var inputBytes = encoding.GetBytes(value);
+        var hashBytes = MD5.HashData(inputBytes);
+        return Convert.ToHexString(hashBytes);
     }
 
     /// <summary>
     ///     Md5加密，返回32位结果
     /// </summary>
     /// <param name="value">值</param>
-    [Obsolete("Obsolete")]
     public static string Md5By32(string value)
     {
         return Md5By32(value, Encoding.UTF8);
@@ -87,134 +71,9 @@ public static class EncryptUtility
     /// </summary>
     /// <param name="value">值</param>
     /// <param name="encoding">字符编码</param>
-    [Obsolete("Obsolete")]
     public static string Md5By32(string value, Encoding encoding)
     {
-        return Md5(value, encoding, null, null);
-    }
-
-    #endregion
-
-    #region DES加密
-
-    /// <summary>
-    ///     DES密钥,24位字符串
-    /// </summary>
-    private const string DesKey = "3pk0y1rx";
-
-    /// <summary>
-    ///     DES加密
-    /// </summary>
-    /// <param name="value">待加密的值</param>
-    [Obsolete("Obsolete")]
-    public static string DesEncrypt(object value)
-    {
-        return DesEncrypt(value, DesKey);
-    }
-
-    /// <summary>
-    ///     DES加密
-    /// </summary>
-    /// <param name="value">待加密的值</param>
-    /// <param name="key">密钥,24位</param>
-    [Obsolete("Obsolete")]
-    public static string DesEncrypt(object value, string key)
-    {
-        return DesEncrypt(value, key, Encoding.UTF8);
-    }
-
-    /// <summary>
-    ///     DES加密
-    /// </summary>
-    /// <param name="value">待加密的值</param>
-    /// <param name="key">密钥,24位</param>
-    /// <param name="encoding">编码</param>
-    [Obsolete("Obsolete")]
-    public static string DesEncrypt(object value, string key, Encoding encoding)
-    {
-        var text = value.SafeString();
-        if (ValidateDes(text, key) == false)
-            return string.Empty;
-        using var des = CreateDesProvider(key);
-        using var transform = des.CreateDecryptor();
-        return GetEncryptResult(text, encoding, transform);
-    }
-
-    /// <summary>
-    ///     验证Des加密参数
-    /// </summary>
-    private static bool ValidateDes(string text, string key)
-    {
-        if (string.IsNullOrWhiteSpace(text) || string.IsNullOrWhiteSpace(key))
-            return false;
-        return key.Length == 8;
-    }
-
-    /// <summary>
-    ///     创建Des加密服务提供程序
-    /// </summary>
-    [Obsolete]
-    private static DESCryptoServiceProvider CreateDesProvider(string key)
-    {
-        return new DESCryptoServiceProvider { Key = Encoding.ASCII.GetBytes(key), IV = Encoding.ASCII.GetBytes(key), Mode = CipherMode.ECB };
-    }
-
-    /// <summary>
-    ///     获取加密结果
-    /// </summary>
-    private static string GetEncryptResult(string value, Encoding encoding, ICryptoTransform transform)
-    {
-        var bytes = encoding.GetBytes(value);
-        var result = transform.TransformFinalBlock(bytes, 0, bytes.Length);
-        return Convert.ToBase64String(result);
-    }
-
-    /// <summary>
-    ///     DES解密
-    /// </summary>
-    /// <param name="value">加密后的值</param>
-    [Obsolete("Obsolete")]
-    public static string DesDecrypt(object value)
-    {
-        return DesDecrypt(value, DesKey);
-    }
-
-    /// <summary>
-    ///     DES解密
-    /// </summary>
-    /// <param name="value">加密后的值</param>
-    /// <param name="key">密钥,24位</param>
-    [Obsolete("Obsolete")]
-    public static string DesDecrypt(object value, string key)
-    {
-        return DesDecrypt(value, key, Encoding.UTF8);
-    }
-
-    /// <summary>
-    ///     DES解密
-    /// </summary>
-    /// <param name="value">加密后的值</param>
-    /// <param name="key">密钥,24位</param>
-    /// <param name="encoding">编码</param>
-    [Obsolete("Obsolete")]
-    public static string DesDecrypt(object value, string key, Encoding encoding)
-    {
-        var text = value.SafeString();
-        if (!ValidateDes(text, key))
-            return string.Empty;
-        using var des = CreateDesProvider(key);
-        using var transform = des.CreateDecryptor();
-        return GetDecryptResult(text, encoding, transform);
-    }
-
-    /// <summary>
-    ///     获取解密结果
-    /// </summary>
-    private static string GetDecryptResult(string value, Encoding encoding, ICryptoTransform transform)
-    {
-        var bytes = Convert.FromBase64String(value);
-        var result = transform.TransformFinalBlock(bytes, 0, bytes.Length);
-        return encoding.GetString(result);
+        return Md5(value, encoding);
     }
 
     #endregion
@@ -224,17 +83,7 @@ public static class EncryptUtility
     /// <summary>
     ///     AES密钥
     /// </summary>
-    private const string Aeskey = "0123456789abcdef";
-
-    /// <summary>
-    ///     Aes加密
-    /// </summary>
-    /// <param name="content"></param>
-    /// <returns></returns>
-    public static string AesEncrypt(string content)
-    {
-        return AesEncrypt(content, Aeskey);
-    }
+    private const string AesKey = "MDEyMzQ1Njc4OWFiY2RlZg==";
 
     /// <summary>
     ///     Aes加密
@@ -242,24 +91,10 @@ public static class EncryptUtility
     /// <param name="content"></param>
     /// <param name="key">常规字符串</param>
     /// <returns></returns>
-    public static string AesEncrypt(string content, string key)
+    public static string AesEncrypt(string content, string key = AesKey)
     {
         var toEncryptArray = Encoding.UTF8.GetBytes(content);
-        var des = CreateSymmetricAlgorithm(key);
-
-        using var cTransform = des.CreateEncryptor();
-        var resultArray = GetTransformFinalBlock(cTransform, toEncryptArray);
-        return Convert.ToBase64String(resultArray);
-    }
-
-    /// <summary>
-    ///     Aes解密
-    /// </summary>
-    /// <param name="content"></param>
-    /// <returns></returns>
-    public static string AesDecrypt(string content)
-    {
-        return AesDecrypt(content, Aeskey);
+        return Convert.ToBase64String(AesEncrypt(toEncryptArray, key));
     }
 
     /// <summary>
@@ -268,51 +103,114 @@ public static class EncryptUtility
     /// <param name="content"></param>
     /// <param name="key">常规字符串</param>
     /// <returns></returns>
-    public static string AesDecrypt(string content, string key)
+    public static string AesDecrypt(string content, string key = AesKey)
     {
-        var toEncryptArray = Convert.FromBase64String(content);
-        var des = CreateSymmetricAlgorithm(key);
-
-        using var cTransform = des.CreateDecryptor();
-        var resultArray = GetTransformFinalBlock(cTransform, toEncryptArray);
-        return Encoding.Default.GetString(resultArray);
+        var toDecryptArray = Convert.FromBase64String(content);
+        return Encoding.Default.GetString(AesDecrypt(toDecryptArray, key));
     }
 
     /// <summary>
-    ///     创建SymmetricAlgorithm
+    ///     加密字节数组
     /// </summary>
-    /// <param name="aesKey"></param>
-    /// <returns></returns>
-    private static SymmetricAlgorithm CreateSymmetricAlgorithm(string aesKey)
+    public static byte[] AesEncrypt(byte[] contentBytes, string key, bool needIv = false)
     {
-        var keyArray = Encoding.UTF8.GetBytes(aesKey);
-        SymmetricAlgorithm des = Aes.Create();
-        des.Key = keyArray;
-        des.Mode = CipherMode.ECB;
-        des.Padding = PaddingMode.PKCS7;
-        return des;
+        contentBytes.ThrowIfNull();
+        
+        using var aes = Aes.Create();
+        
+        aes.ThrowIfNull();
+        
+        aes.Key = CheckKey(key);
+        aes.Padding = PaddingMode.PKCS7;
+        aes.Mode = CipherMode.ECB;
+        
+        var ivBytes = Array.Empty<byte>();
+        if (needIv)
+        {
+            aes.Mode = CipherMode.CBC;
+            aes.GenerateIV();
+            ivBytes = aes.IV;
+        }
+
+        using var encryptor = aes.CreateEncryptor();
+        
+        var encodeBytes = encryptor.TransformFinalBlock(contentBytes, 0, contentBytes.Length);
+        aes.Clear();
+        
+        return needIv ? ivBytes.Concat(encodeBytes).ToArray() : encodeBytes;
+    }
+    
+    /// <summary>
+    ///     解密字节数组
+    /// </summary>
+    public static byte[] AesDecrypt(byte[] encodeBytes, string key, bool needIv = false)
+    {
+        encodeBytes.ThrowIfNull();
+
+        using var aes = Aes.Create();
+        
+        aes.ThrowIfNull();
+        
+        aes.Key = CheckKey(key);
+        aes.Padding = PaddingMode.PKCS7;
+        aes.Mode = CipherMode.ECB;
+
+        if (needIv)
+        {
+            aes.Mode = CipherMode.CBC;
+            const int ivLength = 16;
+            byte[] ivBytes = new byte[ivLength], newEncodeBytes = new byte[encodeBytes.Length - ivLength];
+            Array.Copy(encodeBytes, 0, ivBytes, 0, ivLength);
+            aes.IV = ivBytes;
+            Array.Copy(encodeBytes, ivLength, newEncodeBytes, 0, newEncodeBytes.Length);
+            encodeBytes = newEncodeBytes;
+        }
+
+        // ReSharper disable once IdentifierTypo
+        using var decryptor = aes.CreateDecryptor();
+        var decodeBytes = decryptor.TransformFinalBlock(encodeBytes, 0, encodeBytes.Length);
+        aes.Clear();
+        
+        return decodeBytes;
     }
 
-    private static byte[] GetTransformFinalBlock(ICryptoTransform cTransform, byte[] dateArray)
+    /// <summary>
+    ///     检查密钥，AES加密密钥长度为16位，不足补全多则截断
+    /// </summary>
+    private static byte[] CheckKey(string key)
     {
-        return cTransform.TransformFinalBlock(dateArray, 0, dateArray.Length);
+        key.ThrowIfNull();
+        
+        byte[] bytes, keyBytes = new byte[16];
+
+        try
+        {
+            bytes = Convert.FromBase64String(key);
+        }
+        catch (FormatException)
+        {
+            bytes = key.ToBytes();
+        }
+        
+        if (bytes.Length < 16)
+        {
+            Array.Copy(bytes, 0, keyBytes, 0, bytes.Length);
+        }
+        else if (bytes.Length > 16)
+        {
+            Array.Copy(bytes, 0, keyBytes, 0, 16);
+        }
+        else
+        {
+            keyBytes = bytes;
+        }
+
+        return keyBytes;
     }
 
     #endregion
 
     #region Hex16进制工具
-
-    /// <summary>
-    ///     Hex
-    /// </summary>
-    /// <param name="text"></param>
-    /// <returns></returns>
-    public static string ToHexString(byte[] text)
-    {
-        using var psb = Pool.StringBuilder.Get(out var sb);
-        foreach (var b in text) sb.AppendFormat("{0:x2}", b);
-        return sb.ToString();
-    }
 
     /// <summary>
     ///     ToHexString
@@ -323,7 +221,17 @@ public static class EncryptUtility
     {
         return ToHexString(Encoding.UTF8.GetBytes(text));
     }
-
+    
+    /// <summary>
+    ///     Hex
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public static string ToHexString(byte[] text)
+    {
+        return Convert.ToHexString(text.AsSpan());
+    }
+    
     /// <summary>
     ///     FromHexString
     /// </summary>
@@ -331,22 +239,7 @@ public static class EncryptUtility
     /// <returns></returns>
     public static byte[] FromHexString(string hexString)
     {
-        byte[] data = null;
-        try
-        {
-            if (!string.IsNullOrEmpty(hexString))
-            {
-                var length = hexString.Length / 2;
-                data = new byte[length];
-                for (var i = 0; i < length; i++) data[i] = Convert.ToByte(hexString.Substring(2 * i, 2), 16);
-            }
-        }
-        catch
-        {
-            // ignored
-        }
-
-        return data;
+        return Convert.FromHexString(hexString);
     }
 
     #endregion
@@ -364,7 +257,7 @@ public static class EncryptUtility
     }
 
     /// <summary>
-    ///     HMACSHA256加密
+    ///     HmacSha256加密
     /// </summary>
     /// <param name="value">值</param>
     /// <param name="key">密钥</param>
@@ -373,79 +266,14 @@ public static class EncryptUtility
     {
         if (string.IsNullOrWhiteSpace(value) || string.IsNullOrWhiteSpace(key))
             return string.Empty;
-        var sha256 = new HMACSHA256(encoding.GetBytes(key));
-        var hash = sha256.ComputeHash(encoding.GetBytes(value));
-        return string.Join("", hash.Select(t => t.ToString("x2")));
+        
+        var hashValue = HMACSHA256.HashData(encoding.GetBytes(key), encoding.GetBytes(value));
+        return ToHexString(hashValue);
     }
 
     #endregion
 
     #region Rsa加密
-
-    /// <summary>
-    ///     使用指定公钥加密字节数组
-    /// </summary>
-    /// <param name="source"></param>
-    /// <param name="publicKey">xml格式公钥</param>
-    /// <returns></returns>
-    public static byte[] RsaEncrypt(byte[] source, string publicKey)
-    {
-        Check.NotNull(source, nameof(source));
-        Check.NotNull(publicKey, nameof(publicKey));
-
-        var rsa = RSA.Create();
-        rsa.FromXmlStringEx(publicKey);
-        return rsa.Encrypt(source, RSAEncryptionPadding.Pkcs1);
-    }
-
-    /// <summary>
-    ///     使用私钥解密字节数组
-    /// </summary>
-    /// <param name="source"></param>
-    /// <param name="privateKey">xml格式私钥</param>
-    /// <returns></returns>
-    public static byte[] RsaDecrypt(byte[] source, string privateKey)
-    {
-        Check.NotNull(source, nameof(source));
-        Check.NotNull(privateKey, nameof(privateKey));
-
-        var rsa = RSA.Create();
-        rsa.FromXmlStringEx(privateKey);
-        return rsa.Decrypt(source, RSAEncryptionPadding.Pkcs1);
-    }
-
-    /// <summary>
-    ///     使用指定私钥对明文进行签名，返回明文签名的字节数组
-    /// </summary>
-    /// <param name="source">要签名的明文字节数组</param>
-    /// <param name="privateKey">xml格式私钥</param>
-    /// <returns>明文签名的字节数组</returns>
-    public static byte[] RsaSignData(byte[] source, string privateKey)
-    {
-        Check.NotNull(source, nameof(source));
-        Check.NotNull(privateKey, nameof(privateKey));
-
-        var rsa = RSA.Create();
-        rsa.FromXmlStringEx(privateKey);
-        return rsa.SignData(source, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
-    }
-
-    /// <summary>
-    ///     使用指定公钥验证解密得到的明文是否符合签名
-    /// </summary>
-    /// <param name="source">解密的明文字节数组</param>
-    /// <param name="signData">明文签名字节数组</param>
-    /// <param name="publicKey">xml格式公钥</param>
-    /// <returns>验证是否通过</returns>
-    public static bool RsaVerifyData(byte[] source, byte[] signData, string publicKey)
-    {
-        Check.NotNull(source, nameof(source));
-        Check.NotNull(publicKey, nameof(publicKey));
-
-        var rsa = RSA.Create();
-        rsa.FromXmlStringEx(publicKey);
-        return rsa.VerifyData(source, signData, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
-    }
 
     /// <summary>
     ///     使用指定公钥加密字符串
@@ -456,28 +284,68 @@ public static class EncryptUtility
         Check.NotNull(publicKey, nameof(publicKey));
 
         var bytes = Encoding.UTF8.GetBytes(source);
-        bytes = RsaEncrypt(bytes, publicKey);
+        bytes = RsaEncrypt(bytes, publicKey, RSAEncryptionPadding.Pkcs1);
         return Convert.ToBase64String(bytes);
+    }
+
+    /// <summary>
+    ///     使用指定公钥加密字节数组
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="publicKey">xml格式公钥</param>
+    /// <param name="padding"></param>
+    /// <returns></returns>
+    public static byte[] RsaEncrypt(byte[] source, string publicKey, RSAEncryptionPadding padding)
+    {
+        Check.NotNull(source, nameof(source));
+        Check.NotNull(publicKey, nameof(publicKey));
+
+        using var rsa = RSA.Create();
+        rsa.FromXmlString(publicKey);
+        var res = rsa.Encrypt(source, padding);
+        rsa.Clear();
+        return res;
     }
 
     /// <summary>
     ///     使用指定私钥解密字符串
     /// </summary>
+    /// <param name="source"></param>
+    /// <param name="privateKey">xml格式私钥</param>
     public static string RsaDecrypt(string source, string privateKey)
     {
         Check.NotNull(source, nameof(source));
         Check.NotNull(privateKey, nameof(privateKey));
 
         var bytes = Convert.FromBase64String(source);
-        bytes = RsaDecrypt(bytes, privateKey);
+        bytes = RsaDecrypt(bytes, privateKey, RSAEncryptionPadding.Pkcs1);
         return Encoding.UTF8.GetString(bytes);
     }
 
     /// <summary>
+    ///     使用私钥解密字节数组
+    /// </summary>
+    /// <param name="source"></param>
+    /// <param name="privateKey">xml格式私钥</param>
+    /// <param name="padding"></param>
+    /// <returns></returns>
+    public static byte[] RsaDecrypt(byte[] source, string privateKey, RSAEncryptionPadding padding)
+    {
+        Check.NotNull(source, nameof(source));
+        Check.NotNull(privateKey, nameof(privateKey));
+
+        using var rsa = RSA.Create();
+        rsa.FromXmlString(privateKey);
+        var res = rsa.Decrypt(source, padding);
+        rsa.Clear();
+        return res;
+    }
+    
+    /// <summary>
     ///     使用指定私钥签名字符串
     /// </summary>
     /// <param name="source">要签名的字符串</param>
-    /// <param name="privateKey">私钥</param>
+    /// <param name="privateKey">xml格式私钥</param>
     /// <returns></returns>
     public static string RsaSignData(string source, string privateKey)
     {
@@ -485,16 +353,36 @@ public static class EncryptUtility
         Check.NotNull(privateKey, nameof(privateKey));
 
         var bytes = Encoding.UTF8.GetBytes(source);
-        var signBytes = RsaSignData(bytes, privateKey);
+        var signBytes = RsaSignData(bytes, privateKey, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
         return Convert.ToBase64String(signBytes);
     }
 
+    /// <summary>
+    ///     使用指定私钥对明文进行签名，返回明文签名的字节数组
+    /// </summary>
+    /// <param name="source">要签名的明文字节数组</param>
+    /// <param name="privateKey">xml格式私钥</param>
+    /// <param name="hashAlgorithmName"></param>
+    /// <param name="padding"></param>
+    /// <returns>明文签名的字节数组</returns>
+    public static byte[] RsaSignData(byte[] source, string privateKey, HashAlgorithmName hashAlgorithmName, RSASignaturePadding padding)
+    {
+        Check.NotNull(source, nameof(source));
+        Check.NotNull(privateKey, nameof(privateKey));
+
+        using var rsa = RSA.Create();
+        rsa.FromXmlString(privateKey);
+        var res = rsa.SignData(source, hashAlgorithmName, padding);
+        rsa.Clear();
+        return res;
+    }
+    
     /// <summary>
     ///     使用指定公钥验证解密得到的明文是否符合签名
     /// </summary>
     /// <param name="source">解密得到的明文</param>
     /// <param name="signData">明文签名的BASE64字符串</param>
-    /// <param name="publicKey">公钥</param>
+    /// <param name="publicKey">xml格式公钥</param>
     /// <returns>验证是否通过</returns>
     public static bool RsaVerifyData(string source, string signData, string publicKey)
     {
@@ -503,7 +391,28 @@ public static class EncryptUtility
 
         var sourceBytes = Encoding.UTF8.GetBytes(source);
         var signBytes = Convert.FromBase64String(signData);
-        return RsaVerifyData(sourceBytes, signBytes, publicKey);
+        return RsaVerifyData(sourceBytes, signBytes, publicKey, HashAlgorithmName.SHA1, RSASignaturePadding.Pkcs1);
+    }
+
+    /// <summary>
+    ///     使用指定公钥验证解密得到的明文是否符合签名
+    /// </summary>
+    /// <param name="source">解密的明文字节数组</param>
+    /// <param name="signData">明文签名字节数组</param>
+    /// <param name="publicKey">xml格式公钥</param>
+    /// <param name="hashAlgorithmName"></param>
+    /// <param name="padding"></param>
+    /// <returns>验证是否通过</returns>
+    public static bool RsaVerifyData(byte[] source, byte[] signData, string publicKey, HashAlgorithmName hashAlgorithmName, RSASignaturePadding padding)
+    {
+        Check.NotNull(source, nameof(source));
+        Check.NotNull(publicKey, nameof(publicKey));
+
+        using var rsa = RSA.Create();
+        rsa.FromXmlString(publicKey);
+        var res = rsa.VerifyData(source, signData, hashAlgorithmName, padding);
+        rsa.Clear();
+        return res;
     }
 
     #endregion

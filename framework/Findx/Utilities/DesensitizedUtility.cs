@@ -26,7 +26,7 @@ public static class DesensitizedUtility
     /// <param name="endExclude"></param>
     /// <param name="replacedChar"></param>
     /// <returns></returns>
-    private static string Replace(string str, int startInclude, int endExclude, char replacedChar = '*')
+    public static string Replace(string str, int startInclude, int endExclude, char replacedChar = '*')
     {
         if (string.IsNullOrWhiteSpace(str)) 
             return string.Empty;
@@ -106,7 +106,7 @@ public static class DesensitizedUtility
     }
 
     /// <summary>
-    /// 【中国车牌】车牌中间用*代替，比如：苏D4***0
+    ///     【中国车牌】车牌中间用*代替，比如：苏D4***0
     /// </summary>
     /// <param name="carLicense"></param>
     /// <returns></returns>

@@ -68,17 +68,13 @@ public static class CommonUtility
         {
             // 按行读取
             var line = reader.ReadLine();
-            if (line != null)
-            {
-                // 分割
-                var p = line.IndexOf(separate);
-                if (p > 0)
-                {
-                    var key = line.Substring(0, p).Trim();
-                    var value = line.Substring(p + 1).Trim();
-                    dic[key] = value;
-                }
-            }
+            if (line == null) continue;
+            // 分割
+            var p = line.IndexOf(separate);
+            if (p <= 0) continue;
+            var key = line[..p].Trim();
+            var value = line[(p + 1)..].Trim();
+            dic[key] = value;
         }
 
         return dic;
@@ -98,7 +94,7 @@ public static class CommonUtility
 
         try
         {
-            value = File.ReadAllText(fileName)?.Trim();
+            value = File.ReadAllText(fileName).Trim();
             if (value.IsNullOrEmpty()) return false;
         }
         catch
