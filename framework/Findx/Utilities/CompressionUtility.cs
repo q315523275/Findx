@@ -1,6 +1,5 @@
 ﻿using System.IO.Compression;
 using System.Threading.Tasks;
-using Findx.Common;
 using Findx.Extensions;
 
 namespace Findx.Utilities;
@@ -8,57 +7,60 @@ namespace Findx.Utilities;
 /// <summary>
 ///     压缩工具类
 /// </summary>
-public class CompressionUtility
+public static class CompressionUtility
 {
     /// <summary>
-    ///     对byte数组进行压缩
+    ///     对byte数组进行压缩(GZip)
     /// </summary>
-    /// <param name="buffer">待压缩的byte数组</param>
+    /// <param name="bytes">待压缩的byte数组</param>
     /// <returns>压缩后的byte数组</returns>
-    public static async Task<byte[]> CompressAsync(byte[] buffer)
+    public static async Task<byte[]> CompressAsync(byte[] bytes)
     {
-        Check.NotNull(buffer, nameof(buffer));
-
+        if (bytes is not { Length: > 0 }) return bytes;
+        
         using var compressedStream = new MemoryStream();
-        await using var zipStream = new GZipStream(compressedStream, CompressionMode.Compress);
-        await zipStream.WriteAsync(buffer);
-        zipStream.Close();
+        await using (var zipStream = new GZipStream(compressedStream, CompressionMode.Compress))
+        {
+            await zipStream.WriteAsync(bytes);
+        }
         return compressedStream.ToArray();
     }
 
     /// <summary>
-    ///     对byte[]数组进行解压
+    ///     对byte[]数组进行解压(GZip)
     /// </summary>
-    /// <param name="buffer">待解压的byte数组</param>
+    /// <param name="bytes">待解压的byte数组</param>
     /// <returns>解压后的byte数组</returns>
-    public static async Task<byte[]> DecompressAsync(byte[] buffer)
+    public static async Task<byte[]> DecompressAsync(byte[] bytes)
     {
-        Check.NotNull(buffer, nameof(buffer));
+        if (bytes is not { Length: > 0 }) return bytes;
 
-        using var compressedStream = new MemoryStream(buffer);
-        await using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
-        using var resultStream = new MemoryStream();
-        await zipStream.CopyToAsync(resultStream);
-        return resultStream.ToArray();
+        using var originalStream = new MemoryStream(bytes);
+        using var decompressedStream = new MemoryStream();
+        await using (var decompressionStream = new GZipStream(originalStream, CompressionMode.Decompress))
+        {
+            await decompressionStream.CopyToAsync(decompressedStream);
+        }
+        return decompressedStream.ToArray();
     }
 
     /// <summary>
-    ///     对字符串进行压缩
+    ///     对字符串进行压缩(GZip)
     /// </summary>
     /// <param name="value">待压缩的字符串</param>
-    /// <returns>压缩后的字符串</returns>
+    /// <returns>压缩后的字符串(Base64String)</returns>
     public static async Task<string> CompressAsync(string value)
     {
         if (value.IsNullOrEmpty()) return string.Empty;
         var bytes = Encoding.UTF8.GetBytes(value);
         bytes = await CompressAsync(bytes);
-        return Convert.ToBase64String(bytes);
+        return Convert.ToBase64String(bytes.AsSpan());
     }
 
     /// <summary>
-    ///     对字符串进行解压
+    ///     对字符串进行解压(GZip)
     /// </summary>
-    /// <param name="value">待解压的字符串</param>
+    /// <param name="value">待解压的字符串(Base64String)</param>
     /// <returns>解压后的字符串</returns>
     public static async Task<string> DecompressAsync(string value)
     {
@@ -68,6 +70,41 @@ public class CompressionUtility
         return Encoding.UTF8.GetString(bytes);
     }
 
+    /// <summary>
+    ///     字节数组压缩(Brotli)
+    /// </summary>
+    /// <param name="bytes"></param>
+    /// <returns></returns>
+    public static async Task<byte[]> CompressByBrotliAsync(byte[] bytes)
+    {
+        if (bytes is not { Length: > 0 }) return bytes;
+        
+        using var compressedStream = new MemoryStream();
+        await using (var zipStream = new BrotliStream(compressedStream, CompressionMode.Compress))
+        {
+            await zipStream.WriteAsync(bytes);
+        }
+        return compressedStream.ToArray();
+    }
+
+    /// <summary>
+    ///     字节数组解压(Brotli)
+    /// </summary>
+    /// <param name="bytes"></param>
+    /// <returns></returns>
+    public static async Task<byte[]> DecompressByBrotliAsync(byte[] bytes)
+    {
+        if (bytes is not { Length: > 0 }) return bytes;
+
+        using var originalStream = new MemoryStream(bytes);
+        using var decompressedStream = new MemoryStream();
+        await using (var decompressionStream = new BrotliStream(originalStream, CompressionMode.Decompress))
+        {
+            await decompressionStream.CopyToAsync(decompressedStream);
+        }
+        return decompressedStream.ToArray();
+    }
+    
     /// <summary>
     /// 将文件夹压缩成zip文件
     /// </summary>
