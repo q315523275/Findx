@@ -123,9 +123,10 @@ public sealed class ProcessExecutor : IDisposable
     /// <param name="input"></param>
     public async Task SendInput(string input)
     {
+        input.ThrowIfNull();
         try
         {
-            await _process.StandardInput.WriteAsync(input!);
+            await _process.StandardInput.WriteAsync(input);
         }
         catch (Exception e)
         {

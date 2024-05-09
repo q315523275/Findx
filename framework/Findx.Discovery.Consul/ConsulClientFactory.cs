@@ -3,23 +3,22 @@ using Consul;
 using Findx.Common;
 using Findx.Utilities;
 
-namespace Findx.Discovery.Consul
+namespace Findx.Discovery.Consul;
+
+public static class ConsulClientFactory
 {
-    public static class ConsulClientFactory
+    public static IConsulClient CreateClient(ConsulOptions options)
     {
-        public static IConsulClient CreateClient(ConsulOptions options)
+        Check.NotNull(options, nameof(options));
+
+        var client = new ConsulClient(s =>
         {
-            Check.NotNull(options, nameof(options));
+            s.Address = new Uri($"{options.Scheme}://{options.Host}:{options.Port}");
+            s.Token = options.Token;
+            s.Datacenter = options.Datacenter;
+            if (!string.IsNullOrEmpty(options.WaitTime)) s.WaitTime = TimeSpanUtility.ToTimeSpan(options.WaitTime);
+        });
 
-            var client = new ConsulClient(s =>
-            {
-                s.Address = new Uri($"{options.Scheme}://{options.Host}:{options.Port}");
-                s.Token = options.Token;
-                s.Datacenter = options.Datacenter;
-                if (!string.IsNullOrEmpty(options.WaitTime)) s.WaitTime = TimeSpanUtility.ToTimeSpan(options.WaitTime);
-            });
-
-            return client;
-        }
+        return client;
     }
 }

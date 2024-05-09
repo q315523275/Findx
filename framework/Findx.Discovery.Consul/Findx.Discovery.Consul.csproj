@@ -5,13 +5,14 @@
         <Description>服务发现-Consul实现</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>2023.12.25.1</PackageVersion>
+        <PackageVersion>2024.05.08.1</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Consul" Version="1.6.10.9" />
+        <PackageReference Include="Consul" Version="1.7.14.3" />
     </ItemGroup>
 
     <ItemGroup>

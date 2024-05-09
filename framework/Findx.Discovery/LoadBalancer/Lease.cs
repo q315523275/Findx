@@ -1,29 +1,30 @@
-﻿namespace Findx.Discovery.LoadBalancer
+﻿using Findx.Discovery.Abstractions;
+
+namespace Findx.Discovery.LoadBalancer;
+
+/// <summary>
+/// 服务负载计算-连接少优先
+/// </summary>
+public class Lease
 {
     /// <summary>
-    /// 服务负载计算-连接少优先
+    /// Ctor
     /// </summary>
-    public class Lease
+    /// <param name="serviceEndPoint"></param>
+    /// <param name="connections"></param>
+    public Lease(IServiceEndPoint serviceEndPoint, int connections)
     {
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="serviceInstance"></param>
-        /// <param name="connections"></param>
-        public Lease(IServiceInstance serviceInstance, int connections)
-        {
-            ServiceInstance = serviceInstance;
-            Connections = connections;
-        }
-
-        /// <summary>
-        /// 服务实例
-        /// </summary>
-        public IServiceInstance ServiceInstance { get; private set; }
-        
-        /// <summary>
-        /// 连接数
-        /// </summary>
-        public int Connections { get; private set; }
+        ServiceEndPoint = serviceEndPoint;
+        Connections = connections;
     }
+
+    /// <summary>
+    /// 服务实例
+    /// </summary>
+    public IServiceEndPoint ServiceEndPoint { get; private set; }
+        
+    /// <summary>
+    /// 连接数
+    /// </summary>
+    public int Connections { get; private set; }
 }

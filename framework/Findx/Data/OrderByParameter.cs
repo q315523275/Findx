@@ -10,14 +10,14 @@ namespace Findx.Data;
 public class OrderByParameter<TEntity>
 {
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     public OrderByParameter()
     {
     }
     
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="field"></param>
     /// <param name="sortDirection"></param>

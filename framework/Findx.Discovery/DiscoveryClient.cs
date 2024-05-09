@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Caching;
+using Findx.DependencyInjection;
+using Findx.Discovery.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Discovery;
 
 /// <summary>
-/// 服务发现客户端
+///     服务发现客户端
 /// </summary>
 public class DiscoveryClient : IDiscoveryClient
 {
@@ -16,48 +18,48 @@ public class DiscoveryClient : IDiscoveryClient
 
     private readonly IOptionsMonitor<DiscoveryOptions> _options;
 
-    private readonly IServiceInstanceProvider _serviceInstanceProvider;
+    private readonly IServiceEndPointProvider _serviceEndPointProvider;
 
-    private const string ServiceInstancesKeyPrefix = "ServiceInstances:";
+    private const string ServiceEndPointsKeyPrefix = "ServiceEndPoints:";
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
-    /// <param name="serviceInstanceProvider"></param>
+    /// <param name="serviceEndPointProvider"></param>
     /// <param name="options"></param>
     /// <param name="cacheFactory"></param>
-    public DiscoveryClient(IServiceInstanceProvider serviceInstanceProvider, IOptionsMonitor<DiscoveryOptions> options, ICacheFactory cacheFactory)
+    public DiscoveryClient(IServiceEndPointProvider serviceEndPointProvider, IOptionsMonitor<DiscoveryOptions> options, ICacheFactory cacheFactory)
     {
-        _serviceInstanceProvider = serviceInstanceProvider;
+        _serviceEndPointProvider = serviceEndPointProvider;
         _options = options;
         _cacheFactory = cacheFactory;
-        ProviderName = _serviceInstanceProvider.ProviderName;
+        ProviderName = (_serviceEndPointProvider as IServiceNameAware)?.Name;
     }
 
     /// <summary>
-    /// 配置
+    ///     配置
     /// </summary>
     private DiscoveryOptions Options => _options?.CurrentValue;
 
     /// <summary>
-    /// 服务名称
+    ///     服务名称
     /// </summary>
     public string ProviderName { get; }
 
     /// <summary>
-    /// 获取所有实例
+    ///     获取所有实例
     /// </summary>
     /// <param name="group"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IList<IServiceInstance>> GetAllInstancesAsync(string group = null, CancellationToken cancellationToken = default)
+    public async Task<IList<IServiceEndPoint>> GetAllEndPointsAsync(string group = null, CancellationToken cancellationToken = default)
     {
-        var allInstances = new List<IServiceInstance>();
+        var allInstances = new List<IServiceEndPoint>();
         var serviceNames = await GetServicesAsync(group, cancellationToken);
 
         foreach (var serviceName in serviceNames)
         {
-            var instances = await GetInstancesAsync(serviceName, group, cancellationToken: cancellationToken);
+            var instances = await GetServiceEndPointsAsync(serviceName, group, cancellationToken: cancellationToken);
 
             allInstances.AddRange(instances);
         }
@@ -66,7 +68,7 @@ public class DiscoveryClient : IDiscoveryClient
     }
 
     /// <summary>
-    /// 获取服务实例
+    ///     获取服务实例
     /// </summary>
     /// <param name="serviceName"></param>
     /// <param name="group"></param>
@@ -74,43 +76,36 @@ public class DiscoveryClient : IDiscoveryClient
     /// <param name="tag"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IList<IServiceInstance>> GetInstancesAsync(string serviceName, string group = null, bool passingOnly = true, string tag = null, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<IServiceEndPoint>> GetServiceEndPointsAsync(string serviceName, string group = null, bool passingOnly = true, string tag = null, CancellationToken cancellationToken = default)
     {
         if (Options.Cache)
         {
             var cache = _cacheFactory.Create(Options.CacheStrategy);
 
-            var instanceData = await cache
-                .GetAsync<IList<IServiceInstance>>($"{ServiceInstancesKeyPrefix}{serviceName}", cancellationToken)
-                .ConfigureAwait(false);
+            var instanceData = await cache.GetAsync<IReadOnlyList<IServiceEndPoint>>($"{ServiceEndPointsKeyPrefix}{serviceName}", cancellationToken).ConfigureAwait(false);
             if (instanceData is { Count: > 0 }) 
                 return instanceData;
         }
 
-        var instances =
-            await _serviceInstanceProvider.GetInstancesAsync(serviceName, group, passingOnly, tag,
-                cancellationToken);
+        var instances = await _serviceEndPointProvider.GetServiceEndPointsAsync(serviceName, group, passingOnly, tag, cancellationToken);
 
         if (!Options.Cache) return instances;
         {
             var cache = _cacheFactory.Create(Options.CacheStrategy);
-
-            await cache.AddAsync($"{ServiceInstancesKeyPrefix}{serviceName}", instances,
-                TimeSpan.FromSeconds(Options.CacheTtl), cancellationToken);
+            await cache.AddAsync($"{ServiceEndPointsKeyPrefix}{serviceName}", instances, TimeSpan.FromSeconds(Options.CacheTtl), cancellationToken);
         }
 
         return instances;
     }
 
     /// <summary>
-    /// 获取服务实例
+    ///     获取服务实例
     /// </summary>
     /// <param name="group"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<IEnumerable<string>> GetServicesAsync(string group = null,
-        CancellationToken cancellationToken = default)
+    public Task<IEnumerable<string>> GetServicesAsync(string group = null, CancellationToken cancellationToken = default)
     {
-        return _serviceInstanceProvider.GetServicesAsync(group, cancellationToken);
+        return _serviceEndPointProvider.GetServicesAsync(group, cancellationToken);
     }
 }

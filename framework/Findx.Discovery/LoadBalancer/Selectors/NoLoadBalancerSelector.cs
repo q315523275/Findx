@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Findx.Discovery.Abstractions;
 
 namespace Findx.Discovery.LoadBalancer.Selectors;
 
@@ -10,13 +11,13 @@ namespace Findx.Discovery.LoadBalancer.Selectors;
 /// </summary>
 public class NoLoadBalancerSelector : ILoadBalancer
 {
-    private readonly IList<IServiceInstance> _services;
+    private readonly IReadOnlyList<IServiceEndPoint> _services;
 
     /// <summary>
     /// Ctor
     /// </summary>
     /// <param name="services"></param>
-    public NoLoadBalancerSelector(IList<IServiceInstance> services)
+    public NoLoadBalancerSelector(IReadOnlyList<IServiceEndPoint> services)
     {
         _services = services;
     }
@@ -30,7 +31,7 @@ public class NoLoadBalancerSelector : ILoadBalancer
     /// 获取服务
     /// </summary>
     /// <returns></returns>
-    public Task<IServiceInstance> ResolveServiceInstanceAsync()
+    public Task<IServiceEndPoint> ResolveServiceEndPointAsync()
     {
         return Task.FromResult(_services.FirstOrDefault());
     }
@@ -38,10 +39,10 @@ public class NoLoadBalancerSelector : ILoadBalancer
     /// <summary>
     /// 更新服务统计
     /// </summary>
-    /// <param name="serviceInstance"></param>
+    /// <param name="serviceEndPoint"></param>
     /// <param name="responseTime"></param>
     /// <returns></returns>
-    public Task UpdateStatsAsync(IServiceInstance serviceInstance, TimeSpan responseTime)
+    public Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime)
     {
         return Task.CompletedTask;
     }

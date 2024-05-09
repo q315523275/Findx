@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.WebSockets;
 using WebApplication1;
 
 var builder = WebApplication.CreateBuilder(args);
-// builder.Configuration.AddFindxConfig();
+builder.Configuration.AddFindxConfig();
 
 // Add services to the container.
 builder.Services.AddFindx().AddModules();

@@ -82,7 +82,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
             // ReSharper disable once PossibleNullReferenceException
             // ReSharper disable once SuspiciousTypeConversion.Global
-            fInsert.AsTable(x => (entity as ITableSharding).GetShardingTableName());
+            fInsert.AsTable(_ => (entity as ITableSharding).GetShardingTableName());
         else
             fInsert.AsTable(AsTableValueInternal);
 
@@ -109,7 +109,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
             // ReSharper disable once PossibleNullReferenceException
             // ReSharper disable once SuspiciousTypeConversion.Global
-            fInsert.AsTable(x => (entity as ITableSharding).GetShardingTableName());
+            fInsert.AsTable(_ => (entity as ITableSharding).GetShardingTableName());
         else
             fInsert.AsTable(AsTableValueInternal);
 
@@ -214,7 +214,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
             // ReSharper disable once PossibleNullReferenceException
             // ReSharper disable once SuspiciousTypeConversion.Global
-            update.AsTable(x => (entity as ITableSharding).GetShardingTableName());
+            update.AsTable(_ => (entity as ITableSharding).GetShardingTableName());
         else
             update.AsTable(AsTableValueInternal);
 
@@ -245,7 +245,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
             // ReSharper disable once PossibleNullReferenceException
             // ReSharper disable once SuspiciousTypeConversion.Global
-            update.AsTable(x => (entity as ITableSharding).GetShardingTableName());
+            update.AsTable(_ => (entity as ITableSharding).GetShardingTableName());
         else
             update.AsTable(AsTableValueInternal);
 

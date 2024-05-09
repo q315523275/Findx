@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Security.Cryptography;
+using System.Text;
 using ConsoleApp1;
 using Findx;
 using Findx.Configuration;
@@ -17,23 +18,23 @@ Console.Title = "Findx 控制台测试";
 Console.WriteLine("Hello, World!");
 
 // 一致哈希
-var nodes = new ConsistentHash<string>();
-nodes.Add("192.168.1.101");
-nodes.Add("192.168.1.102");
-nodes.Add("192.168.1.103");
-nodes.Add("192.168.1.104");
-nodes.Add("192.168.1.105");
-nodes.Add("192.168.1.106");
-var dict = new ConcurrentDictionary<string, int>();
-for (int i = 0; i < 100000; i++)
-{
-    var node = nodes.GetItemNode("172.1.0.12"); // 指定固定内容
-    dict.AddOrUpdate(node, 1, (_, value) => value + 1);
-}
-foreach (var item in dict)
-{
-    Console.WriteLine($"{item.Key}:{item.Value}");
-}
+// var nodes = new ConsistentHash<string>();
+// nodes.Add("192.168.1.101");
+// nodes.Add("192.168.1.102");
+// nodes.Add("192.168.1.103");
+// nodes.Add("192.168.1.104");
+// nodes.Add("192.168.1.105");
+// nodes.Add("192.168.1.106");
+// var dict = new ConcurrentDictionary<string, int>();
+// for (var i = 0; i < 100000; i++)
+// {
+//     var node = nodes.GetItemNode("127.0.0.1"); // 指定固定内容
+//     dict.AddOrUpdate(node, 1, (_, value) => value + 1);
+// }
+// foreach (var item in dict)
+// {
+//     Console.WriteLine($"{item.Key}:{item.Value}");
+// }
 
 // 正则
 // var a = Findx.Utils.RegexUtil.GetValue("abc4d5e6hh5654", @"\d+");
@@ -129,10 +130,7 @@ foreach (var item in dict)
 // Console.WriteLine($"GetProperty:{user.GetProperty<string>("name")}");
 // Console.WriteLine($"GetProperty:{user.GetProperty<Test>("obj")?.Title}");
 // Console.WriteLine($"GetProperty:{user.GetProperty<decimal>("number")}");
-//
-//
-// Console.ReadLine();
-//
+
 // internal class User : IExtraObject
 // {
 //     public string ExtraProperties { get; set; }
@@ -143,8 +141,15 @@ foreach (var item in dict)
 //     public string Title { get; set; }
 // }
 
-// Json
-Console.WriteLine(new { Name = "测试员", Title = "Json测试" }.ToJson());
+// Console.WriteLine(new User { Name = "测试员", Title = "Json测试" }.ToJson());
+// var str = CsvUtility.ExportCsv(new List<User> { new User { Name = "测试员", Title = "Json测试" }, new User { Name = "罗伯特" }, new User { Title = "特罗伯" } });
+// Console.WriteLine(str);
+// // Json
+// class User
+// {
+//     public string Name { set; get; }
+//     public string Title { set; get; }
+// }
 
 // Rsa + Aes
 // var privateKeyStr = XC.RSAUtil.RsaKeyConvert.PrivateKeyPkcs8ToXml("MIICdgIBADANBgkqhkiG9w0BAQEFAASCAmAwggJcAgEAAoGBAI0NF4GBZ07BejfYZAmhTk0rofIoQqgRf63erVeHRAKfnEPHtTZ/MMfRupgc1uo6/e7DZ0BqOp58SLeXfcYEzWzzos0ThR797eiSA0AY8tB5L8WOy5tOxfhCiAfM87CpNvqyEyYtFwihVYrIHJdPO/Ll0ugoPVhP/MwIEwVHMFA5AgMBAAECgYAUXDNsajVzVNJDhWTLTxFyaj3yKoWUpRH9EwuKeugCSO/RiN5Lg4iTD18T3fXX0bQd5u7ciXj0r5P/jEqHbuIIBB69+xykWSdD/9O8/s2wX43u5+C7UqkhS0N+SEOYAn6j24l/Wd0RRNTMXMrWudHdZ+FI1Yn2gB8Zf/rZTJ6CUQJBAOf6nlHpGJ9m01BbISUzCKmDZMHrvbQgVoLUzi8zPNpld3n+4vyuN5vy3w/aiWp6uYmGOgfnuVaaBEh5WvkUncMCQQCbqCAzhU7YUGNTaoHRy7WzW+KlRDsJQunUWofGniGX3cnz2RUYCv3IfuP22GuCBOX26MAgeapkSfK/KGf3FY5TAkEAyooimNmvydz5OvuV4OjB817pJfcx1oc1gV1T+BoAU56rxjQo8v0ZSGuxHiJsQC+Otuge2rATPe2TN8PdDgRWCQJAAtQoWadXinjThUWPPGfOUocd9FDsHbv4keJfS02+YIsoS2Uri/dPK2Ca9fZy5bb/EuCh9TUg0pfBcJXkZcoffwJALjLX9RAK4UEYz+YDEaGO7dhSLd1QJbBT8H2ekhxEItTwCSp70JmDx8xltjGfgdzhGQjAWY8iEkp2wrOg8WFu6g==");
@@ -153,16 +158,15 @@ Console.WriteLine(new { Name = "测试员", Title = "Json测试" }.ToJson());
 // Console.WriteLine($"privateKeyStr:{privateKeyStr}");
 // Console.WriteLine($"publicKeyStr:{publicKeyStr}");
 //
-//
 // var ci = "EoXxXstYtcpCUTr8BxKBqZlQD+hHg7q8diBCElz/iCRe4u8jZD8vN9T0lapknNHPEG7WUXZpgavN2qU4RgKxb1xfjWxe3cdRXzGH4O9cJmIQxOy6PZX5F6Tv0qgr9dKZ7UncCIwh127S+6UgFpGcbt71KOwE5Scc1wbo8VFjlBI=";
 // var sa = "hK0b1fIiuFX8jxE3FNitAANZ0K0lxDUjnhQucsVpi6cyF13SdpvdhNvTHrS05WS/YFTh5JP4cAwAUnKyz5MEVAvizhb51UGe44x0ieJHfBJ6z+NWLLdDR8gvoUuED7/gLn5ejDdjFqZUuW07EUcZGmj5hvcQGMxliWAoMY3DmF8=";
 // var sign = "";
 // var data = "RUWevIIJ+HC4uLq5HfDb7yRMuaXw2RIvVfyYgy92hyxxJAReVEQynlBT0CDF4AfIz3F6F5LbwP0Uke5LNdoUvTmRhjcv4Rcd3YL6D0wxzmmTu7VLXka9hu6n9notC7Sgk2yARle5ZvIxR78lMU+o6u7cV/YqeW1dkts9/f51gw0=";
 //
-// var aesKey = Findx.Utils.Encrypt.RsaDecrypt(ci, privateKeyStr);
+// var aesKey = EncryptUtility.RsaDecrypt(ci, privateKeyStr);
 // Console.WriteLine(aesKey);
 //
-// var aesIv = Findx.Utils.Encrypt.RsaDecrypt(sa, privateKeyStr);
+// var aesIv = EncryptUtility.RsaDecrypt(sa, privateKeyStr);
 // Console.WriteLine(aesIv);
 //
 // var toEncryptArray = Convert.FromBase64String(data);
@@ -171,58 +175,57 @@ Console.WriteLine(new { Name = "测试员", Title = "Json测试" }.ToJson());
 // des.Key = Encoding.UTF8.GetBytes(aesKey);
 // des.Mode = CipherMode.CBC;
 // des.IV = Encoding.UTF8.GetBytes(aesIv);
-// // des.Padding = PaddingMode.;
 //
 // var cTransform = des.CreateDecryptor();
 // var resultArray = cTransform.TransformFinalBlock(toEncryptArray, 0, toEncryptArray.Length);
 // Console.WriteLine(Encoding.Default.GetString(resultArray));
 
 // 有序Id
-SequentialGuidUtility.Next(SequentialGuidType.AsString);
-Guid.NewGuid();
-SnowflakeIdUtility.Default().NextId();
-SequentialGuidUtility.Next(SequentialGuidType.AsString);
-Console.WriteLine("Guid生成预热结束");
-
-var watch = new Stopwatch();  
-watch.Start();
-for (int i = 0; i < 1000000; i++)
-{
-    Guid.NewGuid();
-}
-watch.Stop();
-Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (int i = 0; i < 1000000; i++)
-{
-    NewId.NextSequentialGuid();
-}
-watch.Stop();
-Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (int i = 0; i < 1000000; i++)
-{
-    SequentialGuidUtility.Next(SequentialGuidType.AsString);
-}
-watch.Stop();
-Console.WriteLine($"Abp有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (int i = 0; i < 1000000; i++)
-{
-    SnowflakeIdUtility.Default().NextId();
-}
-watch.Stop();
-Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-var sequentialGuidList = new HashSet<string>();
-for (int i = 0; i < 1000000; i++)
-{
-    sequentialGuidList.Add(NewId.NextSequentialGuid().ToString());
-}
-Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 1000000}");
+// SequentialGuidUtility.Next(SequentialGuidType.AsString);
+// Guid.NewGuid();
+// SnowflakeIdUtility.Default().NextId();
+// SequentialGuidUtility.Next(SequentialGuidType.AsString);
+// Console.WriteLine("Guid生成预热结束");
+//
+// var watch = new Stopwatch();  
+// watch.Start();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     Guid.NewGuid();
+// }
+// watch.Stop();
+// Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     NewId.NextSequentialGuid();
+// }
+// watch.Stop();
+// Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     SequentialGuidUtility.Next(SequentialGuidType.AsString);
+// }
+// watch.Stop();
+// Console.WriteLine($"Abp有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     SnowflakeIdUtility.Default().NextId();
+// }
+// watch.Stop();
+// Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// var sequentialGuidList = new HashSet<string>();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     sequentialGuidList.Add(NewId.NextSequentialGuid().ToString());
+// }
+// Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 1000000}");
 
 // var sequentialGuidList = new List<Guid>();
 // for (int i = 0; i < 100; i++)
@@ -275,9 +278,7 @@ Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 10000
 // }
 //
 // var s = entities.Where(filter.Compile()).OrderBy(dataSort.First().Conditions.Compile());  //.OrderConditions(orderConditions);
-//
 // Console.WriteLine($"{entities.Count}---{s.Count()}");
-
 // Console.ReadLine();
 
 // var moveFile = "/Users/tianliang/Downloads/生产流程图.jpg";
@@ -299,27 +300,36 @@ Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 10000
 // Console.WriteLine(DirectoryUtility.EnumerateFiles(movePath, "*").ToJson());
 // Console.WriteLine(DirectoryUtility.GetDirectories(movePath, "*").ToJson());
 
-Console.WriteLine(GenerateWorkerIdBaseOnMac());
+// Console.WriteLine(GenerateWorkerIdBaseOnMac());
+//
+// static long GenerateWorkerIdBaseOnMac()
+// {
+//     var nice = NetworkInterface.GetAllNetworkInterfaces();
+//     // exclude virtual and Loopback
+//     var firstUpInterface = nice.OrderByDescending(x => x.Speed).FirstOrDefault(x => !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up);
+//     if (firstUpInterface == null) throw new Exception("no available mac found");
+//     var address = firstUpInterface.GetPhysicalAddress();
+//     var mac = address.GetAddressBytes();
+//
+//     return ((mac[4] & 0B11) << 8) | (mac[5] & 0xFF);
+// }
+// Console.WriteLine($"11111");
+//
+// Console.WriteLine(EncryptUtility.Md5By32("123456"));
+// Console.WriteLine(EncryptUtility.Sha256("123456"));
+//
+// EncryptUtility.ToHexString("kjsdhfgkljsgljyhaueghbfsdjghulr昆明的风俗");
+// var begin = DateTime.Now;
+// for (int i = 0; i < 100000; i++)
+// {
+//     EncryptUtility.ToHexString("kjsdhfgkljsgljyhaueghbfsdjghulr昆明的风俗");
+// }
+// Console.WriteLine($"{(DateTime.Now - begin).TotalMilliseconds}");
 
-static long GenerateWorkerIdBaseOnMac()
-{
-    var nice = NetworkInterface.GetAllNetworkInterfaces();
-    // exclude virtual and Loopback
-    var firstUpInterface = nice.OrderByDescending(x => x.Speed).FirstOrDefault(x => !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up);
-    if (firstUpInterface == null) throw new Exception("no available mac found");
-    var address = firstUpInterface.GetPhysicalAddress();
-    var mac = address.GetAddressBytes();
-
-    return ((mac[4] & 0B11) << 8) | (mac[5] & 0xFF);
-}
-Console.WriteLine($"11111");
-
-
-
-
-
-
-
-
+var one = await CompressionUtility.CompressByBrotliAsync("123456789".ToBytes());
+Console.WriteLine(one.Length);
+var two = await CompressionUtility.DecompressByBrotliAsync(one);
+Console.WriteLine(two.Length);
+Console.WriteLine(Encoding.Default.GetString(two));
 
 

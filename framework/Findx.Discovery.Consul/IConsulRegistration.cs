@@ -1,10 +1,10 @@
 ﻿using Consul;
+using Findx.Discovery.Abstractions;
 
-namespace Findx.Discovery.Consul
+namespace Findx.Discovery.Consul;
+
+public interface IConsulRegistration : IServiceEndPoint
 {
-    public interface IConsulRegistration : IServiceInstance
-    {
-        string InstanceId { get; }
-        AgentServiceRegistration Service { get; }
-    }
+    string InstanceId { get; }
+    AgentServiceRegistration Service { get; }
 }

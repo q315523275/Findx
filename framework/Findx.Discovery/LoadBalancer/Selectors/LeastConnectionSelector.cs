@@ -2,42 +2,43 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Findx.Discovery.Abstractions;
 
 namespace Findx.Discovery.LoadBalancer.Selectors;
 
 /// <summary>
-/// 最小连接选择器
+///     最小连接选择器
 /// </summary>
 public class LeastConnectionSelector : ILoadBalancer
 {
     private static readonly object SyncLock = new();
     private readonly List<Lease> _leases;
     private readonly string _serviceName;
-    private readonly Func<Task<IList<IServiceInstance>>> _services;
+    private readonly Func<Task<IReadOnlyList<IServiceEndPoint>>> _services;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="services"></param>
     /// <param name="serviceName"></param>
-    public LeastConnectionSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
+    public LeastConnectionSelector(Func<Task<IReadOnlyList<IServiceEndPoint>>> services, string serviceName)
     {
         _services = services;
         _serviceName = serviceName;
-        _leases = new List<Lease>();
+        _leases = [];
     }
 
     /// <summary>
-    /// 选择器名称
+    ///     选择器名称
     /// </summary>
     public LoadBalancerType Name => LoadBalancerType.LeastConnection;
 
     /// <summary>
-    /// 获取服务
+    ///     获取服务
     /// </summary>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public async Task<IServiceInstance> ResolveServiceInstanceAsync()
+    public async Task<IServiceEndPoint> ResolveServiceEndPointAsync()
     {
         var services = await _services.Invoke();
 
@@ -59,26 +60,26 @@ public class LeastConnectionSelector : ILoadBalancer
 
             _leases.Add(leaseWithLeastConnections);
 
-            return leaseWithLeastConnections.ServiceInstance;
+            return leaseWithLeastConnections.ServiceEndPoint;
         }
     }
 
     /// <summary>
-    /// 更新统计
+    ///     更新统计
     /// </summary>
-    /// <param name="serviceInstance"></param>
+    /// <param name="serviceEndPoint"></param>
     /// <param name="responseTime"></param>
     /// <returns></returns>
-    public Task UpdateStatsAsync(IServiceInstance serviceInstance, TimeSpan responseTime)
+    public Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime)
     {
         lock (SyncLock)
         {
-            var matchingLease = _leases.FirstOrDefault(l => l.ServiceInstance.Host == serviceInstance.Host
-                                                            && l.ServiceInstance.Port == serviceInstance.Port);
+            var matchingLease = _leases.FirstOrDefault(l => l.ServiceEndPoint.Host == serviceEndPoint.Host
+                                                            && l.ServiceEndPoint.Port == serviceEndPoint.Port);
 
             if (matchingLease != null)
             {
-                var replacementLease = new Lease(serviceInstance, matchingLease.Connections - 1);
+                var replacementLease = new Lease(serviceEndPoint, matchingLease.Connections - 1);
 
                 _leases.Remove(matchingLease);
 
@@ -91,7 +92,7 @@ public class LeastConnectionSelector : ILoadBalancer
 
     private Lease AddConnection(Lease lease)
     {
-        return new Lease(lease.ServiceInstance, lease.Connections + 1);
+        return new Lease(lease.ServiceEndPoint, lease.Connections + 1);
     }
 
     private Lease GetLeaseWithLeastConnections()
@@ -114,7 +115,7 @@ public class LeastConnectionSelector : ILoadBalancer
         return leaseWithLeastConnections;
     }
 
-    private bool UpdateServices(IList<IServiceInstance> services)
+    private bool UpdateServices(IReadOnlyList<IServiceEndPoint> services)
     {
         if (_leases.Count > 0)
         {
@@ -122,8 +123,7 @@ public class LeastConnectionSelector : ILoadBalancer
 
             foreach (var lease in _leases)
             {
-                var match = services.FirstOrDefault(s => s.Host == lease.ServiceInstance.Host
-                                                         && s.Port == lease.ServiceInstance.Port);
+                var match = services.FirstOrDefault(s => s.Host == lease.ServiceEndPoint.Host && s.Port == lease.ServiceEndPoint.Port);
 
                 if (match == null) leasesToRemove.Add(lease);
             }
@@ -132,8 +132,7 @@ public class LeastConnectionSelector : ILoadBalancer
 
             foreach (var service in services)
             {
-                var exists = _leases.FirstOrDefault(l =>
-                    l.ServiceInstance.Host == service.Host && l.ServiceInstance.Port == service.Port);
+                var exists = _leases.FirstOrDefault(l => l.ServiceEndPoint.Host == service.Host && l.ServiceEndPoint.Port == service.Port);
 
                 if (exists == null) _leases.Add(new Lease(service, 0));
             }

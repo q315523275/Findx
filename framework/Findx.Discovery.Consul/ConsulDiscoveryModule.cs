@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using Findx.Discovery.Abstractions;
+using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +14,8 @@ namespace Findx.Discovery.Consul;
 ///     Findx-Consul服务发现模块
 /// </summary>
 [Description("Findx-Consul服务发现模块")]
-public class ConsulDiscoveryModule : DiscoveryModuleBase
+[DependsOnModules([typeof(DiscoveryCoreModule)])]
+public class ConsulDiscoveryModule : StartupModule
 {
     /// <summary>
     ///     模块等级
@@ -22,7 +25,7 @@ public class ConsulDiscoveryModule : DiscoveryModuleBase
     /// <summary>
     ///     模块排序
     /// </summary>
-    public override int Order => 40;
+    public override int Order => 100;
 
     /// <summary>
     ///     模块配置服务
@@ -31,20 +34,17 @@ public class ConsulDiscoveryModule : DiscoveryModuleBase
     /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
-        base.ConfigureServices(services);
-        
-        if (!Configuration.GetValue<bool>("Findx:Discovery:Enabled")) 
+        var configuration = services.GetConfiguration();
+        if (!configuration.GetValue<bool>("Findx:Discovery:Enabled")) 
             return services;
 
-        var section = Configuration.GetSection("Findx:Consul");
+        var section = configuration.GetSection("Findx:Consul");
         services.Configure<ConsulOptions>(section);
 
         services.TryAddSingleton<IConsulServiceRegistry, ConsulServiceRegistry>();
         services.TryAddSingleton<IConsulRegistration, ConsulRegistration>();
-        var descriptor = new ServiceDescriptor(typeof(IServiceInstanceProvider), typeof(ConsulServiceInstanceProvider), ServiceLifetime.Singleton);
-        services.Replace(descriptor);
-        services.TryAddSingleton(sp =>
-            ConsulClientFactory.CreateClient(sp.GetRequiredService<IOptionsMonitor<ConsulOptions>>().CurrentValue));
+        services.TryAddSingleton<IServiceEndPointProvider, ConsulServiceEndPointProvider>();
+        services.TryAddSingleton(sp => ConsulClientFactory.CreateClient(sp.GetRequiredService<IOptionsMonitor<ConsulOptions>>().CurrentValue));
 
         // 自动注册服务发现
         services.AddHostedService<ConsulDiscoveryAutoRegistryWorker>();

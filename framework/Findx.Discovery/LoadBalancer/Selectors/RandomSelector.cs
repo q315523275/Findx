@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Findx.Discovery.Abstractions;
 using Findx.Utilities;
 
 namespace Findx.Discovery.LoadBalancer.Selectors;
@@ -13,14 +14,14 @@ public class RandomSelector : ILoadBalancer
 {
     private readonly Func<int, int, int> _generate;
     private readonly string _serviceName;
-    private readonly Func<Task<IList<IServiceInstance>>> _services;
+    private readonly Func<Task<IReadOnlyList<IServiceEndPoint>>> _services;
 
     /// <summary>
     /// Ctor
     /// </summary>
     /// <param name="services"></param>
     /// <param name="serviceName"></param>
-    public RandomSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
+    public RandomSelector(Func<Task<IReadOnlyList<IServiceEndPoint>>> services, string serviceName)
     {
         _services = services;
         _serviceName = serviceName;
@@ -36,7 +37,7 @@ public class RandomSelector : ILoadBalancer
     /// 获取服务
     /// </summary>
     /// <returns></returns>
-    public async Task<IServiceInstance> ResolveServiceInstanceAsync()
+    public async Task<IServiceEndPoint> ResolveServiceEndPointAsync()
     {
         var services = await _services.Invoke();
 
@@ -54,10 +55,10 @@ public class RandomSelector : ILoadBalancer
     /// <summary>
     /// 更新服务统计
     /// </summary>
-    /// <param name="serviceInstance"></param>
+    /// <param name="serviceEndPoint"></param>
     /// <param name="responseTime"></param>
     /// <returns></returns>
-    public Task UpdateStatsAsync(IServiceInstance serviceInstance, TimeSpan responseTime)
+    public Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime)
     {
         return Task.CompletedTask;
     }

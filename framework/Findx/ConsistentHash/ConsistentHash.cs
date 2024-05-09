@@ -31,8 +31,7 @@ public class ConsistentHash<T>
     /// </summary>
     /// <param name="hashAlgorithm">哈希算法</param>
     /// <param name="virtualNodeReplicationFactor">虚拟节点复制因子数</param>
-    public ConsistentHash(IHashAlgorithm hashAlgorithm, int virtualNodeReplicationFactor)
-        : this(hashAlgorithm)
+    public ConsistentHash(IHashAlgorithm hashAlgorithm, int virtualNodeReplicationFactor) : this(hashAlgorithm)
     {
         VirtualNodeReplicationFactor = virtualNodeReplicationFactor;
     }
@@ -49,7 +48,6 @@ public class ConsistentHash<T>
     public void Initialize(IEnumerable<T> nodes)
     {
         foreach (var node in nodes) AddNode(node);
-
         _nodeKeysInRing = _ring.Keys.ToArray();
     }
 

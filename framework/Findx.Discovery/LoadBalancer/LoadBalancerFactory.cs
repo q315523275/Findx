@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Findx.Discovery.Abstractions;
 using Findx.Discovery.LoadBalancer.Selectors;
 
 namespace Findx.Discovery.LoadBalancer;
@@ -20,18 +21,15 @@ public class LoadBalancerFactory : ILoadBalancerFactory
         switch (loadBalancer)
         {
             case LoadBalancerType.Random:
-                return new RandomSelector(async () => await discoveryClient.GetInstancesAsync(serviceName),
-                    serviceName);
+                return new RandomSelector(async () => await discoveryClient.GetServiceEndPointsAsync(serviceName), serviceName);
             case LoadBalancerType.RoundRobin:
-                return new RoundRobinSelector(async () => await discoveryClient.GetInstancesAsync(serviceName),
-                    serviceName);
+                return new RoundRobinSelector(async () => await discoveryClient.GetServiceEndPointsAsync(serviceName), serviceName);
             case LoadBalancerType.LeastConnection:
-                return new LeastConnectionSelector(async () => await discoveryClient.GetInstancesAsync(serviceName),
-                    serviceName);
+                return new LeastConnectionSelector(async () => await discoveryClient.GetServiceEndPointsAsync(serviceName), serviceName);
             case LoadBalancerType.IpHash:
-                return new IpHashSelector(async () => await discoveryClient.GetInstancesAsync(serviceName), serviceName);
+                return new IpHashSelector(async () => await discoveryClient.GetServiceEndPointsAsync(serviceName), serviceName);
             default:
-                return new NoLoadBalancerSelector(await discoveryClient.GetInstancesAsync(serviceName));
+                return new NoLoadBalancerSelector(await discoveryClient.GetServiceEndPointsAsync(serviceName));
         }
     }
 }

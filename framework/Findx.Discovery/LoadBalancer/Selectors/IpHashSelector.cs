@@ -3,41 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Findx.DependencyInjection;
+using Findx.Discovery.Abstractions;
 using Findx.Threading;
 using Findx.Utilities;
 
 namespace Findx.Discovery.LoadBalancer.Selectors;
 
 /// <summary>
-/// 客户端Ip Hash选择器
+///     客户端Ip Hash选择器
 /// </summary>
 public class IpHashSelector : ILoadBalancer
 {
-    private readonly ConsistentHash<IServiceInstance> _serviceInstanceNodes = new();
-    private readonly Func<Task<IList<IServiceInstance>>> _services;
+    private readonly ConsistentHash<IServiceEndPoint> _serviceInstanceNodes = new();
+    private readonly Func<Task<IReadOnlyList<IServiceEndPoint>>> _services;
     private readonly string _serviceName;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="services"></param>
     /// <param name="serviceName"></param>
-    public IpHashSelector(Func<Task<IList<IServiceInstance>>> services, string serviceName)
+    public IpHashSelector(Func<Task<IReadOnlyList<IServiceEndPoint>>> services, string serviceName)
     {
         _services = services;
         _serviceName = serviceName;
     }
 
     /// <summary>
-    /// 选择器名
+    ///     选择器名
     /// </summary>
     public LoadBalancerType Name => LoadBalancerType.IpHash;
 
     /// <summary>
-    /// 获取服务
+    ///     获取服务
     /// </summary>
     /// <returns></returns>
-    public async Task<IServiceInstance> ResolveServiceInstanceAsync()
+    public async Task<IServiceEndPoint> ResolveServiceEndPointAsync()
     {
         var services = await _services.Invoke();
 
@@ -57,7 +58,7 @@ public class IpHashSelector : ILoadBalancer
         // 客户端Ip,不存在客户端Ip时使用本地Ip
         var clientIp = ServiceLocator.GetService<IThreadCurrentClientIpAccessor>()?.GetClientIp()?? HostUtility.ResolveHostAddress(HostUtility.ResolveHostName());
         
-        var currentService = (IServiceInstance) null;
+        var currentService = (IServiceEndPoint) null;
         while (currentService == null || !services.Contains(currentService))
         {
             // 移除hash环节点
@@ -70,12 +71,12 @@ public class IpHashSelector : ILoadBalancer
     }
 
     /// <summary>
-    /// 更新服务统计
+    ///     更新服务统计
     /// </summary>
-    /// <param name="serviceInstance"></param>
+    /// <param name="serviceEndPoint"></param>
     /// <param name="responseTime"></param>
     /// <returns></returns>
-    public Task UpdateStatsAsync(IServiceInstance serviceInstance, TimeSpan responseTime)
+    public Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime)
     {
         return Task.CompletedTask;
     }
