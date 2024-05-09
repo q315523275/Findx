@@ -1,19 +1,12 @@
-﻿using System;
-using Findx.Common;
-using Findx.Discovery;
 using Findx.Discovery.LoadBalancer;
-using WebApiClientCore.Attributes;
 
 namespace Findx.WebApiClient;
 
-[AttributeUsage(AttributeTargets.Interface)]
-public class WebApiClientAttribute : HttpHostAttribute
+/// <summary>
+///     接口服务配置
+/// </summary>
+public class WebApiClientOptions
 {
-    public WebApiClientAttribute(string host) : base(host)
-    {
-        Check.NotNullOrWhiteSpace(host, nameof(host));
-    }
-
     /// <summary>
     ///     名称
     /// </summary>
@@ -22,27 +15,27 @@ public class WebApiClientAttribute : HttpHostAttribute
     /// <summary>
     ///     超时时间
     /// </summary>
-    public int Timeout { set; get; }
+    public int? Timeout { set; get; }
 
     /// <summary>
     ///     重试次数
     /// </summary>
-    public int Retry { set; get; }
+    public int? Retry { set; get; }
 
     /// <summary>
     ///     降级状态
     /// </summary>
-    public int FallbackStatus { set; get; }
+    public int? FallbackStatus { set; get; }
 
     /// <summary>
     ///     降级描述
     /// </summary>
-    public object FallbackMessage { set; get; }
+    public string FallbackMessage { set; get; }
 
     /// <summary>
     ///     熔断前连续错误次数
     /// </summary>
-    public int ExceptionsAllowedBeforeBreaking { set; get; }
+    public int? ExceptionsAllowedBeforeBreaking { set; get; }
 
     /// <summary>
     ///     熔断时长,如:30s
@@ -52,7 +45,7 @@ public class WebApiClientAttribute : HttpHostAttribute
     /// <summary>
     ///     使用服务发现
     /// </summary>
-    public bool UseDiscovery { set; get; }
+    public bool? UseDiscovery { set; get; }
 
     /// <summary>
     ///     负载均衡器名称
