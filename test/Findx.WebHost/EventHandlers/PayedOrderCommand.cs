@@ -1,8 +1,9 @@
-﻿using Findx.Messaging;
+﻿using Findx.Common;
+using Findx.Messaging;
 
 namespace Findx.WebHost.EventHandlers;
 
-public class PayedOrderCommand : IApplicationEvent
+public class PayedOrderCommand : IApplicationEvent, IAsync
 {
     public PayedOrderCommand()
     {

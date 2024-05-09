@@ -45,7 +45,6 @@ public class CommonController : ApiControllerBase
         return $"{CreditCodeUtility.IsCreditCode(creditCode)}|{CreditCodeUtility.RandomCreditCode()}";
     }
 
-
     /// <summary>
     ///     文本转PDF示例接口
     /// </summary>
@@ -78,14 +77,12 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("/exception")]
-    public async Task<string> Exception([FromServices] ILogger<CommonController> logger)
+    public string Exception([FromServices] ILogger<CommonController> logger)
     {
-        await Task.Delay(50);
-        //return "1";
+        // await Task.Delay(50);
+        // return "1";
         var exp = new Exception("自定义异常");
-
-        logger.LogError(exp, string.Empty);
-
+        //logger.LogError(exp, string.Empty);
         throw exp;
     }
 
@@ -151,7 +148,7 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("/rateLimit")]
-    [RateLimiter(Period = "10s", Limit = 10)]
+    [RateLimiter(Period = "10s", Limit = 5)]
     public object RateLimiter()
     {
         var rng = new Random();
@@ -167,13 +164,11 @@ public class CommonController : ApiControllerBase
     ///     命令执行
     /// </summary>
     /// <param name="command"></param>
-    /// <param name="arguments"></param>
-    /// <param name="workingDirectory"></param>
     /// <returns></returns>
     [HttpGet("/cmd")]
-    public async Task<string> Cmd([Required] string command, string arguments, string workingDirectory)
+    public async Task<object> Cmd([Required] string command)
     {
-        return await ProcessX.StartAsync(command, workingDirectory: workingDirectory).FirstAsync();
+        return await ProcessX.StartAsync(command).ToTask();
     }
 
     /// <summary>

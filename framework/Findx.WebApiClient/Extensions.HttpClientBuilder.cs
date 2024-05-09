@@ -67,8 +67,7 @@ internal static class Extensions
     /// <param name="exceptionsAllowedBeforeBreaking">熔断前连续错误次数</param>
     /// <param name="durationOfBreak">熔断时长,如:30s</param>
     /// <returns></returns>
-    internal static IHttpClientBuilder AddCircuitBreakerPolicy(this IHttpClientBuilder httpClientBuilder,
-        int exceptionsAllowedBeforeBreaking, string durationOfBreak)
+    internal static IHttpClientBuilder AddCircuitBreakerPolicy(this IHttpClientBuilder httpClientBuilder, int exceptionsAllowedBeforeBreaking, string durationOfBreak)
     {
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         if (exceptionsAllowedBeforeBreaking < 1 || durationOfBreak.IsNullOrWhiteSpace()) return httpClientBuilder;
@@ -90,20 +89,19 @@ internal static class Extensions
                     {
                         var logger = ServiceLocator.GetService<ILoggerFactory>()
                             ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation(
-                            $"{DateTime.Now}-断路器即将熔断{ts.TotalSeconds}秒,原因:{res?.Exception?.Message}");
+                        logger?.LogInformation("{Now}-断路器即将熔断{Arg2TotalSeconds}秒,原因:{ExceptionMessage}", DateTime.Now, ts.TotalSeconds, res?.Exception?.Message);
                     },
                     () =>
                     {
                         var logger = ServiceLocator.GetService<ILoggerFactory>()
                             ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation($"{DateTime.Now}-断路器熔断重置");
+                        logger?.LogInformation("{Now}-断路器熔断重置", DateTime.Now);
                     },
                     () =>
                     {
                         var logger = ServiceLocator.GetService<ILoggerFactory>()
                             ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation($"{DateTime.Now}-断路器半开启");
+                        logger?.LogInformation("{Now}-断路器半开启", DateTime.Now);
                     });
         });
 
@@ -117,8 +115,7 @@ internal static class Extensions
     /// <param name="fallbackRspObj"></param>
     /// <param name="fallbackRspStatus"></param>
     /// <returns></returns>
-    internal static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder,
-        object fallbackRspObj, int fallbackRspStatus)
+    internal static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder, object fallbackRspObj, int fallbackRspStatus)
     {
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         Check.NotNull(fallbackRspObj, nameof(fallbackRspObj));
@@ -137,20 +134,17 @@ internal static class Extensions
                     rsp.StatusCode == HttpStatusCode.InternalServerError ||
                     rsp.StatusCode == HttpStatusCode.RequestTimeout)
                 .FallbackAsync(
-                    cancellationToken =>
+                    _ => Task.FromResult(new HttpResponseMessage
                     {
-                        return Task.FromResult(new HttpResponseMessage
-                        {
-                            Content = new StringContent(fallbackRspResult),
-                            StatusCode = (HttpStatusCode)fallbackRspStatus
-                        });
-                    },
+                        Content = new StringContent(fallbackRspResult),
+                        StatusCode = (HttpStatusCode)fallbackRspStatus
+                    }),
                     res =>
                     {
                         var logger = ServiceLocator.GetService<ILoggerFactory>()
                             ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
-                        logger?.LogInformation($"{DateTime.Now}-服务降级内容响应：{fallbackRspResult}");
+                        logger?.LogInformation("{Now}-服务开始降级,异常消息：{ExceptionMessage}", DateTime.Now, res?.Exception?.Message);
+                        logger?.LogInformation("{Now}-服务降级内容响应：{FallbackRspResult}", DateTime.Now, fallbackRspResult);
                         return Task.CompletedTask;
                     });
         });
@@ -164,8 +158,7 @@ internal static class Extensions
     /// <param name="httpClientBuilder"></param>
     /// <param name="fallbackAction"></param>
     /// <returns></returns>
-    internal static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder,
-        Func<CancellationToken, Task<HttpResponseMessage>> fallbackAction)
+    internal static IHttpClientBuilder AddFallbackPolicy(this IHttpClientBuilder httpClientBuilder, Func<CancellationToken, Task<HttpResponseMessage>> fallbackAction)
     {
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         Check.NotNull(fallbackAction, nameof(fallbackAction));
@@ -180,14 +173,13 @@ internal static class Extensions
                     rsp.StatusCode == HttpStatusCode.InternalServerError ||
                     rsp.StatusCode == HttpStatusCode.RequestTimeout)
                 .FallbackAsync(
-                    async cancellationToken => { return await fallbackAction.Invoke(cancellationToken); },
+                    async cancellationToken => await fallbackAction.Invoke(cancellationToken),
                     async res =>
                     {
                         var logger = ServiceLocator.GetService<ILoggerFactory>()
                             ?.CreateLogger("Findx.AspNetCore.Extensions");
-                        logger?.LogInformation($"{DateTime.Now}-服务开始降级,异常消息：{res?.Exception?.Message}");
-                        logger?.LogInformation(
-                            $"{DateTime.Now}-服务降级内容响应：{await res?.Result?.Content?.ReadAsStringAsync()}");
+                        logger?.LogInformation("{Now}-服务开始降级,异常消息：{ExceptionMessage}", DateTime.Now, res?.Exception?.Message);
+                        logger?.LogInformation("{Now}-服务降级内容响应：{ReadAsStringAsync}", DateTime.Now, await res?.Result?.Content?.ReadAsStringAsync());
                     });
         });
 

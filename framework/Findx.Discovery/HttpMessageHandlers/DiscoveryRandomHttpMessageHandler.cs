@@ -34,9 +34,9 @@ public class DiscoveryRandomHttpMessageHandler : DelegatingHandler
     {
         var current = request.RequestUri;
         current.ThrowIfNull();
-
+        
         // ReSharper disable once PossibleNullReferenceException
-        var loadBalancer = await _loadBalancerManager.GetAsync(current.Host, LoadBalancerType.Random).ConfigureAwait(false);
+        var loadBalancer = await _loadBalancerManager.GetAsync(current.Host).ConfigureAwait(false);
         var serviceInfo = await loadBalancer.ResolveServiceEndPointAsync().ConfigureAwait(false);
         request.RequestUri = serviceInfo.ToUri(current.Scheme, current.PathAndQuery);
 
