@@ -6,7 +6,7 @@
         <Company>Findx</Company>
         <LangVersion>default</LangVersion>
         <Version>1.9.5.1</Version>
-        <PackageVersion>2023.12.25.1</PackageVersion>
+        <PackageVersion>2024.05.08.1</PackageVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
     
@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.0" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.3" />
     </ItemGroup>
     
 </Project>
