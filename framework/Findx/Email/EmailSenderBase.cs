@@ -22,8 +22,7 @@ public abstract class EmailSenderBase : IEmailSender
     /// <param name="body"></param>
     /// <param name="isBodyHtml"></param>
     /// <param name="token"></param>
-    public virtual async Task SendAsync(string to, string subject, string body, bool isBodyHtml = true,
-        CancellationToken token = default)
+    public virtual async Task SendAsync(string to, string subject, string body, bool isBodyHtml = true, CancellationToken token = default)
     {
         await SendAsync(new MailMessage { To = { to }, Subject = subject, Body = body, IsBodyHtml = isBodyHtml },
             token: token);

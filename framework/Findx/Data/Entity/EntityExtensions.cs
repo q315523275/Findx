@@ -51,8 +51,7 @@ public static class EntityExtensions
     /// <param name="entity"></param>
     /// <typeparam name="TEntity"></typeparam>
     /// <returns></returns>
-    public static EntityExtensionAttribute GetEntityExtensionAttribute<TEntity>(this TEntity entity)
-        where TEntity : IEntity
+    public static EntityExtensionAttribute GetEntityExtensionAttribute<TEntity>(this TEntity entity) where TEntity : IEntity
     {
         return entity.GetType().GetEntityExtensionAttribute();
     }
@@ -66,8 +65,7 @@ public static class EntityExtensions
     {
         Check.NotNull(entity, nameof(entity));
         var now = DateTime.Now;
-        return (entity.BeginTime != null && entity.BeginTime.Value > now) ||
-               (entity.EndTime != null && entity.EndTime.Value < now);
+        return (entity.BeginTime != null && entity.BeginTime.Value > now) || (entity.EndTime != null && entity.EndTime.Value < now);
     }
 
     /// <summary>
@@ -96,9 +94,7 @@ public static class EntityExtensions
     /// <param name="entity"></param>
     /// <param name="user"></param>
     /// <returns></returns>
-    public static TEntity CheckCreationAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user)
-        where TEntity : IEntity
-        where TUserKey : struct
+    public static TEntity CheckCreationAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user) where TEntity : IEntity where TUserKey : struct
     {
         if (entity is ICreationAudited<TUserKey> entity1)
         {
@@ -137,14 +133,12 @@ public static class EntityExtensions
     /// <param name="entity"></param>
     /// <param name="user"></param>
     /// <returns></returns>
-    public static TEntity CheckUpdateAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user)
-        where TEntity : IEntity
-        where TUserKey : struct
+    public static TEntity CheckUpdateAudited<TEntity, TUserKey>(this TEntity entity, IPrincipal user) where TEntity : IEntity where TUserKey : struct
     {
         if (entity is IUpdateAudited<TUserKey> entity1)
         {
             entity1.LastUpdaterId = user?.Identity.GetUserId<TUserKey>() ?? default;
-            if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime == default(DateTime))
+            if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime == default(DateTime)) 
                 entity1.LastUpdatedTime = DateTime.Now;
             return (TEntity)entity1;
         }
@@ -162,8 +156,7 @@ public static class EntityExtensions
     /// <returns></returns>
     public static TEntity CheckTenant<TEntity>(this TEntity entity, IPrincipal user) where TEntity : IEntity
     {
-        if (user.Identity != null && entity is ITenant entity1 && user.Identity.IsAuthenticated &&
-            !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
+        if (user.Identity != null && entity is ITenant entity1 && user.Identity.IsAuthenticated && !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
         {
             entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<Guid>();
             return (TEntity)entity1;
@@ -180,15 +173,12 @@ public static class EntityExtensions
     /// <param name="entity"></param>
     /// <param name="user"></param>
     /// <returns></returns>
-    public static TEntity CheckTenant<TEntity, TTenantKey>(this TEntity entity, IPrincipal user)
-        where TEntity : IEntity
-        where TTenantKey : struct
+    public static TEntity CheckTenant<TEntity, TTenantKey>(this TEntity entity, IPrincipal user) where TEntity : IEntity where TTenantKey : struct
     {
         // ReSharper disable once SuspiciousTypeConversion.Global
         if (entity is ITenant<TTenantKey> entity1)
         {
-            entity1.TenantId = user?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<TTenantKey>() ??
-                               default;
+            entity1.TenantId = user?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<TTenantKey>() ?? default;
             return (TEntity)entity1;
         }
 

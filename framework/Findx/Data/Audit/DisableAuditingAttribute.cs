@@ -5,6 +5,4 @@
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 // ReSharper disable once ClassNeverInstantiated.Global
-public sealed class DisableAuditingAttribute : Attribute
-{
-}
+public sealed class DisableAuditingAttribute : Attribute;

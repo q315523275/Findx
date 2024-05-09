@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 namespace Findx.Events;
 
 /// <summary>
-/// 分布式事件执行器
+///     分布式事件执行器
 /// </summary>
 public interface IDistributedEventHandler<in TEvent>: IEventHandler where TEvent: IIntegrationEvent
 {

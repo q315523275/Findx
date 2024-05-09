@@ -3,6 +3,7 @@
 /// <summary>
 ///     定义模块依赖
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 public class DependsOnModulesAttribute : Attribute
 {
     /// <summary>

@@ -1,6 +1,6 @@
 namespace Findx.Events;
 
 /// <summary>
-/// 事件执行器
+///     事件执行器
 /// </summary>
-public interface IEventHandler { }
+public interface IEventHandler;

@@ -143,11 +143,12 @@ public static class RandomUtility
     {
         var type = typeof(T);
         if (!type.IsEnum)
-        {
             throw new InvalidOperationException();
-        }
+        
         var array = Enum.GetValues(type);
         var index = Random.Next(array.GetLowerBound(0), array.GetUpperBound(0) + 1);
+        
+        // ReSharper disable once PossibleNullReferenceException
         return (T)array.GetValue(index);
     }
 }

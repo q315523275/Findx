@@ -22,7 +22,7 @@ public class FindxBuilder : IFindxBuilder
         Configuration = services.GetConfiguration();
         Check.NotNull(Configuration, nameof(Configuration));
         _sourceModules = GetAllModules(services);
-        _modules = new List<StartupModule>();
+        _modules = [];
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public class FindxBuilder : IFindxBuilder
 
         if (_modules.Any(m => m.GetType() == type)) return this;
 
-        var tmpModules = new StartupModule[_modules.Count()];
+        var tmpModules = new StartupModule[_modules.Count];
         _modules.CopyTo(tmpModules);
         var module = _sourceModules.FirstOrDefault(m => m.GetType() == type);
         if (module == null) throw new Exception($"类型为“{type.FullName}”的模块实例无法找到");

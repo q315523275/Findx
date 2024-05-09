@@ -71,6 +71,10 @@ public sealed class AsyncLock : IDisposable
     {
         private readonly SemaphoreSlim _semaphoreSlim;
 
+        /// <summary>
+        ///     Ctor
+        /// </summary>
+        /// <param name="semaphoreSlim"></param>
         public AsyncLockReleaser(SemaphoreSlim semaphoreSlim)
         {
             _semaphoreSlim = semaphoreSlim;

@@ -4,6 +4,4 @@
 ///     忽略映射
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public class IgnoreMappingAttribute : Attribute
-{
-}
+public class IgnoreMappingAttribute : Attribute;

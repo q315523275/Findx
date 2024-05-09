@@ -4,6 +4,4 @@
 ///     瞬时实例注入标记
 /// </summary>
 [IgnoreDependency]
-public interface ITransientDependency
-{
-}
+public interface ITransientDependency;

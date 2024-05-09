@@ -28,8 +28,7 @@ public class RLock : IAsyncDisposable
     /// <param name="timeUntilExpires"></param>
     /// <param name="autoRenew"></param>
     /// <param name="period"></param>
-    public RLock(string resource, string lockId, ILock @lock, TimeSpan timeUntilExpires, bool autoRenew = false,
-        int period = 10000)
+    public RLock(string resource, string lockId, ILock @lock, TimeSpan timeUntilExpires, bool autoRenew = false, int period = 10000)
     {
         _lock = @lock;
         _period = period;

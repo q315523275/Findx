@@ -25,7 +25,7 @@ public static class ValidateUtility
             if (!isValid)
             {
                 result.IsVaild = false;
-                result.ErrorMembers = new List<ErrorMember>();
+                result.ErrorMembers = [];
                 foreach (var item in results)
                     result.ErrorMembers.Add(new ErrorMember
                     {
@@ -41,14 +41,7 @@ public static class ValidateUtility
         catch (Exception ex)
         {
             result.IsVaild = false;
-            result.ErrorMembers = new List<ErrorMember>
-            {
-                new()
-                {
-                    ErrorMessage = ex.Message,
-                    ErrorMemberName = "Internal error"
-                }
-            };
+            result.ErrorMembers = [new ErrorMember { ErrorMessage = ex.Message, ErrorMemberName = "Internal error" }];
         }
 
         return result;

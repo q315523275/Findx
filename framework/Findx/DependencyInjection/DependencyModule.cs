@@ -9,7 +9,7 @@ namespace Findx.DependencyInjection;
 ///     Findx-自动注入模块
 /// </summary>
 [Description("Findx-自动注入模块")]
-public class DependencyModule : StartupModule
+public sealed class DependencyModule : StartupModule
 {
     /// <summary>
     ///     等级
@@ -29,12 +29,11 @@ public class DependencyModule : StartupModule
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
         // 查找所有自动注册的服务实现类型
-        var dependencyTypeFinder =
-            services.GetOrAddTypeFinder<IDependencyTypeFinder>(assemblyFinder =>
-                new DependencyTypeFinder(assemblyFinder));
+        var dependencyTypeFinder = services.GetOrAddTypeFinder<IDependencyTypeFinder>(assemblyFinder => new DependencyTypeFinder(assemblyFinder));
 
         var dependencyTypes = dependencyTypeFinder.FindAll();
-        foreach (var dependencyType in dependencyTypes) ConfigureServices(services, dependencyType);
+        foreach (var dependencyType in dependencyTypes) 
+            ConfigureServices(services, dependencyType);
 
         return services;
     }
@@ -55,7 +54,7 @@ public class DependencyModule : StartupModule
     /// </summary>
     /// <param name="services"></param>
     /// <param name="implementationType"></param>
-    protected virtual void ConfigureServices(IServiceCollection services, Type implementationType)
+    private void ConfigureServices(IServiceCollection services, Type implementationType)
     {
         if (implementationType.IsAbstract || implementationType.IsInterface) return;
         var lifetime = GetLifetimeOrNull(implementationType);
@@ -116,7 +115,7 @@ public class DependencyModule : StartupModule
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    protected virtual ServiceLifetime? GetLifetimeOrNull(Type type)
+    private ServiceLifetime? GetLifetimeOrNull(Type type)
     {
         var attribute = type.GetAttribute<DependencyAttribute>();
         if (attribute != null) return attribute.Lifetime;
@@ -135,11 +134,10 @@ public class DependencyModule : StartupModule
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    protected virtual Type[] GetImplementedInterfaces(Type type)
+    private Type[] GetImplementedInterfaces(Type type)
     {
         Type[] exceptInterfaces = { typeof(IDisposable) };
-        var interfaceTypes = type.GetInterfaces()
-            .Where(t => !exceptInterfaces.Contains(t) && !t.HasAttribute<IgnoreDependencyAttribute>()).ToArray();
+        var interfaceTypes = type.GetInterfaces().Where(t => !exceptInterfaces.Contains(t) && !t.HasAttribute<IgnoreDependencyAttribute>()).ToArray();
         for (var index = 0; index < interfaceTypes.Length; index++)
         {
             var interfaceType = interfaceTypes[index];
@@ -156,8 +154,7 @@ public class DependencyModule : StartupModule
     /// <param name="services"></param>
     /// <param name="descriptor"></param>
     /// <param name="dependencyAttribute"></param>
-    private static void AddSingleService(IServiceCollection services, ServiceDescriptor descriptor,
-        DependencyAttribute dependencyAttribute)
+    private static void AddSingleService(IServiceCollection services, ServiceDescriptor descriptor, DependencyAttribute dependencyAttribute)
     {
         if (dependencyAttribute?.ReplaceServices == true)
             services.Replace(descriptor);

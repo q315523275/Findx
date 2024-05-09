@@ -51,8 +51,7 @@ public static class Extensions
     /// <param name="executeAction">要执行的方法</param>
     /// <param name="defaultValue">默认返回</param>
     /// <returns></returns>
-    public static async Task<T> ExecuteWithLockAsync<T>(this ILock @lock, string key, TimeSpan span,
-        Func<Task<T>> executeAction, T defaultValue = default)
+    public static async Task<T> ExecuteWithLockAsync<T>(this ILock @lock, string key, TimeSpan span, Func<Task<T>> executeAction, T defaultValue = default)
     {
         if (executeAction == null)
             return defaultValue;

@@ -5,7 +5,4 @@ namespace Findx.Caching;
 /// <summary>
 /// 缓存服务工厂
 /// </summary>
-public interface ICacheFactory: IServiceFactory<ICache>
-{
-    
-}
+public interface ICacheFactory: IServiceFactory<ICache>;

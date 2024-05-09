@@ -4,6 +4,4 @@
 ///     审计全量字段
 /// </summary>
 /// <typeparam name="TUser"></typeparam>
-public interface IFullAudited<TUser> : ICreationAudited<TUser>, IUpdateAudited<TUser> where TUser : struct
-{
-}
+public interface IFullAudited<TUser> : ICreationAudited<TUser>, IUpdateAudited<TUser> where TUser : struct;

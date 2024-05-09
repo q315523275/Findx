@@ -4,16 +4,14 @@
 ///     原子对象
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class AtomicReference<T>
-    where T : class
+public class AtomicReference<T> where T : class
 {
     private volatile T _value;
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    public AtomicReference()
-        : this(default)
+    public AtomicReference() : this(default)
     {
     }
 
@@ -32,7 +30,6 @@ public class AtomicReference<T>
     public T Value
     {
         get => _value;
-
         set => _value = value;
     }
 

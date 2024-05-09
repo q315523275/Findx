@@ -5,6 +5,4 @@ namespace Findx.Data;
 /// <summary>
 ///     实体查找器
 /// </summary>
-public interface IEntityFinder : ITypeFinder
-{
-}
+public interface IEntityFinder : ITypeFinder;

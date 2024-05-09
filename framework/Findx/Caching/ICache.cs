@@ -1,9 +1,11 @@
-﻿namespace Findx.Caching;
+﻿using Findx.DependencyInjection;
+
+namespace Findx.Caching;
 
 /// <summary>
 ///     缓存
 /// </summary>
-public partial interface ICache
+public partial interface ICache: IServiceNameAware
 {
     /// <summary>
     ///     是否存在指定键的缓存

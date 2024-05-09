@@ -10,8 +10,7 @@ public class AtomicLong
     /// <summary>
     ///     Ctor
     /// </summary>
-    public AtomicLong()
-        : this(0)
+    public AtomicLong() : this(0)
     {
     }
 
@@ -30,7 +29,6 @@ public class AtomicLong
     public long Value
     {
         get => Interlocked.Read(ref _value);
-
         set => Interlocked.Exchange(ref _value, value);
     }
 

@@ -4,6 +4,7 @@
 ///     依赖注入注解
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
+// ReSharper disable once ClassNeverInstantiated.Global
 public class DependencyAttribute : Attribute
 {
     /// <summary>

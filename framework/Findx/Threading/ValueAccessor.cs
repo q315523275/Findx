@@ -16,7 +16,6 @@ public class ValueAccessor<T> : IValueAccessor<T>
         set
         {
             AsyncLocal.Value ??= new ValueHolder<T>();
-
             AsyncLocal.Value.Value = value;
         }
     }

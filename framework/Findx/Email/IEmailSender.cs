@@ -27,8 +27,7 @@ public interface IEmailSender
     /// <param name="body">正文</param>
     /// <param name="isBodyHtml">是否html内容</param>
     /// <param name="token"></param>
-    Task SendAsync(string from, string to, string subject, string body, bool isBodyHtml = true,
-        CancellationToken token = default);
+    Task SendAsync(string from, string to, string subject, string body, bool isBodyHtml = true, CancellationToken token = default);
 
     /// <summary>
     ///     发送邮件

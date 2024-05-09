@@ -35,13 +35,11 @@ public class DefaultEmailSender : EmailSenderBase
     /// <param name="token"></param>
     protected override async Task SendEmailAsync(MailMessage mail, CancellationToken token = default)
     {
-        using var client = new SmtpClient(EmailSenderOptions.Host, EmailSenderOptions.Port)
-        {
-            EnableSsl = EmailSenderOptions.EnableSsl,
-            UseDefaultCredentials = false,
-            Credentials = new NetworkCredential(EmailSenderOptions.UserName, EmailSenderOptions.Password)
-        };
-        await client.SendMailAsync(mail);
+        using var client = new SmtpClient(EmailSenderOptions.Host, EmailSenderOptions.Port);
+        client.EnableSsl = EmailSenderOptions.EnableSsl;
+        client.UseDefaultCredentials = false;
+        client.Credentials = new NetworkCredential(EmailSenderOptions.UserName, EmailSenderOptions.Password);
+        await client.SendMailAsync(mail, token);
         _logger.LogDebug("发送邮件到“{JoinAsString}”，标题：{MailSubject}", mail.To.JoinAsString(","), mail.Subject);
     }
 }

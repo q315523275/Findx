@@ -26,7 +26,7 @@ public class DependencyTypeFinder : FinderBase<Type>, IDependencyTypeFinder
     /// <returns></returns>
     protected override IEnumerable<Type> FindAllItems()
     {
-        Type[] baseTypes = { typeof(ISingletonDependency), typeof(IScopeDependency), typeof(ITransientDependency) };
+        Type[] baseTypes = [typeof(ISingletonDependency), typeof(IScopeDependency), typeof(ITransientDependency)];
         var assemblies = _appDomainAssemblyFinder.FindAll(true);
         return assemblies.SelectMany(x => x.GetTypes())
             .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface &&

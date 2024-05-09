@@ -10,8 +10,7 @@ public class AtomicBoolean
     /// <summary>
     ///     Ctor
     /// </summary>
-    public AtomicBoolean()
-        : this(false)
+    public AtomicBoolean() : this(false)
     {
     }
 
@@ -30,8 +29,7 @@ public class AtomicBoolean
     public bool Value
     {
         get => _value != 0;
-
-        set => _value = value ? 1 : 0;
+        private init => _value = value ? 1 : 0;
     }
 
     /// <summary>

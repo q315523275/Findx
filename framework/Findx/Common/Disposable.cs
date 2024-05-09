@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Findx.Common;
 
 /// <summary>
-/// Disposable 基类
+///     Disposable 基类
 /// </summary>
 public abstract class Disposable : IDisposable, IAsyncDisposable
 {
@@ -12,7 +12,7 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     private int _isDisposed;
 
     /// <summary>
-    /// 释放资源
+    ///     释放资源
     /// </summary>
     [DebuggerStepThrough]
     public void Dispose()
@@ -67,6 +67,7 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     /// <summary>
     /// 当前实例是否已被释放。
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     protected internal bool IsDisposed
     {
         get
@@ -136,7 +137,7 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// 释放字典资源
+    ///     释放字典资源
     /// </summary>
     /// <param name="dictionary"></param>
     protected static void DisposeDictionary(IDictionary dictionary)
@@ -152,9 +153,10 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// 释放成员资源
+    ///     释放成员资源
     /// </summary>
     /// <param name="member"></param>
+    // ReSharper disable once MemberCanBePrivate.Global
     protected static void DisposeMember(object member)
     {
         if (member is IDisposable disposable)

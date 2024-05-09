@@ -8,7 +8,7 @@ namespace Findx.AspNetCore.Mvc;
 /// </summary>
 public class MvcFunctionStore : IFunctionStore<MvcFunction>
 {
-    private readonly List<MvcFunction> _functions = new();
+    private readonly List<MvcFunction> _functions = [];
 
     /// <summary>
     ///     保存

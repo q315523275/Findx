@@ -4,6 +4,4 @@
 ///     单例注入标记
 /// </summary>
 [IgnoreDependency]
-public interface ISingletonDependency
-{
-}
+public interface ISingletonDependency;

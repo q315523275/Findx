@@ -3,6 +3,4 @@
 /// <summary>
 ///     返回接口标记
 /// </summary>
-public interface IResponse
-{
-}
+public interface IResponse;

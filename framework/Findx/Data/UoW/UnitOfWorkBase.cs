@@ -7,7 +7,7 @@ using Findx.Exceptions;
 namespace Findx.Data;
 
 /// <summary>
-/// 工作单元基类
+///     工作单元基类
 /// </summary>
 public abstract class UnitOfWorkBase: IUnitOfWork
 {
@@ -15,7 +15,7 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     private readonly Stack<string> _transactionStack = new();
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="serviceProvider"></param>
     protected UnitOfWorkBase(IServiceProvider serviceProvider)
@@ -27,47 +27,49 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     }
 
     /// <summary>
-    /// 事物事件调度者
+    ///     事物事件调度者
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     protected IUnitOfWorkEventDispatcher UnitOfWorkEventDispatcher { get; set; }
 
     /// <summary>
-    /// 日志
+    ///     日志
     /// </summary>
+    // ReSharper disable once MemberCanBePrivate.Global
     protected ILogger Logger { get; }
     
     /// <summary>
-    /// 工作单元编号
+    ///     工作单元编号
     /// </summary>
     public Guid Id { get; }
 
     /// <summary>
-    /// 服务提供器
+    ///     服务提供器
     /// </summary>
     public IServiceProvider ServiceProvider { get; }
     
     /// <summary>
-    /// 事物是否已提交
+    ///     事物是否已提交
     /// </summary>
     public bool HasCommitted { get; private set; }
     
     /// <summary>
-    /// 是否已启用事务
+    ///     是否已启用事务
     /// </summary>
     public bool IsEnabledTransaction => _transactionStack.Count > 0;
 
     /// <summary>
-    /// 连接信息
+    ///     连接信息
     /// </summary>
     public DbConnection Connection => Transaction?.Connection;
     
     /// <summary>
-    /// 事物信息
+    ///     事物信息
     /// </summary>
     public DbTransaction Transaction { get; set; }
     
     /// <summary>
-    /// 允许事物操作
+    ///     允许事物操作
     /// </summary>
     public void EnableTransaction()
     {
@@ -77,7 +79,7 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     }
 
     /// <summary>
-    /// 开启或使用事物
+    ///     开启或使用事物
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -91,14 +93,14 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     }
 
     /// <summary>
-    /// 开启具体事物
+    ///     开启具体事物
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected abstract Task BeginTransactionAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 保存变更数据
+    ///     保存变更数据
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -108,14 +110,14 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     }
     
     /// <summary>
-    /// 内部保存变更数据
+    ///     内部保存变更数据
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected abstract Task InternalSaveChangesAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 提交事物
+    ///     提交事物
     /// </summary>
     /// <param name="cancellationToken"></param>
     public async Task CommitAsync(CancellationToken cancellationToken = default)
@@ -148,14 +150,14 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     }
 
     /// <summary>
-    /// 内部事物提交
+    ///     内部事物提交
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected abstract Task InternalCommitAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 事物回滚
+    ///     事物回滚
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -168,14 +170,14 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     }
 
     /// <summary>
-    /// 事物回滚
+    ///     事物回滚
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected abstract Task InternalRollbackAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// 添加事件缓冲
+    ///     添加事件缓冲
     /// </summary>
     /// <param name="eventData"></param>
     /// <typeparam name="T"></typeparam>
@@ -187,7 +189,7 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     private readonly AtomicInteger _disposeCounter = new();
 
     /// <summary>
-    /// 资源释放
+    ///     资源释放
     /// </summary>
     /// <returns></returns>
     public async ValueTask DisposeAsync()

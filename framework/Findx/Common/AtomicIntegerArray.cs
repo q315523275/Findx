@@ -9,8 +9,7 @@ public class AtomicIntegerArray : AtomicReferenceArray<int>
     ///     Ctor
     /// </summary>
     /// <param name="length"></param>
-    public AtomicIntegerArray(int length)
-        : base(length)
+    public AtomicIntegerArray(int length) : base(length)
     {
     }
 }

@@ -15,7 +15,7 @@ public interface ITreeNode<out TKey> where TKey : struct
     ///     获取节点父id
     /// </summary>
     /// <returns></returns>
-    TKey GetPid();
+    TKey GetPId();
 
     /// <summary>
     ///     设置Children

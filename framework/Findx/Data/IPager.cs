@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace Findx.Data;
+﻿namespace Findx.Data;
 
 /// <summary>
 ///     分页器

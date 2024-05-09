@@ -13,8 +13,7 @@ public class AtomicInteger
     /// <summary>
     ///     Ctor
     /// </summary>
-    public AtomicInteger()
-        : this(0)
+    public AtomicInteger() : this(0)
     {
     }
 
@@ -33,7 +32,6 @@ public class AtomicInteger
     public int Value
     {
         get => _value;
-
         set => Interlocked.Exchange(ref _value, value);
     }
 
@@ -67,7 +65,7 @@ public class AtomicInteger
     }
 
     /// <summary>
-    ///     获取原有值并递增
+    ///     获取原有值后并递增
     /// </summary>
     /// <returns></returns>
     public int GetAndIncrement()

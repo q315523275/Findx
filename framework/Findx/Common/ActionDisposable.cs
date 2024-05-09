@@ -1,19 +1,21 @@
 namespace Findx.Common;
 
+// 一般使用于方法返回,如using释放等等
+
 /// <summary>
-/// 允许在处置时执行操作
+///     允许在释放时执行操作
 /// </summary>
-public struct ActionDisposable : IDisposable
+public readonly struct ActionDisposable : IDisposable
 {
     private readonly Action _action;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     public static readonly ActionDisposable Empty = new(() => { });
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="action"></param>
     public ActionDisposable(Action action)
@@ -24,7 +26,7 @@ public struct ActionDisposable : IDisposable
     }
 
     /// <summary>
-    /// 释放
+    ///     释放
     /// </summary>
     public void Dispose()
     {

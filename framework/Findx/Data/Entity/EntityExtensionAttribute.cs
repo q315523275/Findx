@@ -7,7 +7,7 @@
 public class EntityExtensionAttribute : Attribute
 {
     /// <summary>
-    ///     数据源
+    ///     数据源标识
     /// </summary>
     public string DataSource { get; set; }
 

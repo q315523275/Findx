@@ -19,7 +19,7 @@ namespace Findx.Configuration;
 /// </summary>
 public class ConfigClient : IConfigClient, IDisposable
 {
-    private readonly ConcurrentBag<Func<IEnumerable<ConfigItemDto>, Task>> _configDataChangeCallbacks;
+    private readonly ConcurrentBag<Func<IEnumerable<ConfigItemDto>, Task>> _changeCallbacks;
     private readonly CancellationTokenSource _cts;
     private readonly AtomicInteger _nodeIndex;
     private readonly AtomicBoolean _polling;
@@ -49,7 +49,7 @@ public class ConfigClient : IConfigClient, IDisposable
 
         _nodeIndex = new AtomicInteger(0);
         _polling = new AtomicBoolean(false);
-        _configDataChangeCallbacks = new ConcurrentBag<Func<IEnumerable<ConfigItemDto>, Task>>();
+        _changeCallbacks = [];
         _cts = new CancellationTokenSource();
 
         CurrentDataVersion = 0;
@@ -74,37 +74,19 @@ public class ConfigClient : IConfigClient, IDisposable
 
         _nodeIndex = new AtomicInteger(0);
         _polling = new AtomicBoolean(false);
-        _configDataChangeCallbacks = new ConcurrentBag<Func<IEnumerable<ConfigItemDto>, Task>>();
+        _changeCallbacks = [];
         _cts = new CancellationTokenSource();
 
         CurrentDataVersion = 0;
         ClientId = Guid.NewGuid().ToString();
     }
 
-    #region Dispose
-
-    /// <summary>
-    ///     释放资源
-    /// </summary>
-    public void Dispose()
-    {
-        _cts?.Cancel();
-        _pollingTask?.Dispose();
-        _cts?.Dispose();
-
-        _data.Clear();
-        _configDataChangeCallbacks?.Clear();
-    }
-
-    #endregion
-
     #region 属性
 
     /// <summary>
     ///     配置字典
     /// </summary>
-    private readonly Dictionary<string, ConfigItemDto> _data =
-        new Dictionary<string, ConfigItemDto>(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ConfigItemDto> _data = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     应用编号
@@ -180,7 +162,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <param name="callback"></param>
     public void OnConfigDataChange(Func<IEnumerable<ConfigItemDto>, Task> callback)
     {
-        _configDataChangeCallbacks.Add(callback);
+        _changeCallbacks.Add(callback);
     }
 
     #endregion
@@ -191,7 +173,6 @@ public class ConfigClient : IConfigClient, IDisposable
     ///     生成http地址
     /// </summary>
     /// <returns></returns>
-    [Obsolete("Obsolete")]
     private string GenerateApiUrl()
     {
         var reqId = Guid.NewGuid().ToString();
@@ -221,7 +202,6 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <summary>
     ///     加载配置
     /// </summary>
-    [Obsolete("Obsolete")]
     public async Task LoadAsync()
     {
         try
@@ -241,11 +221,11 @@ public class ConfigClient : IConfigClient, IDisposable
                     await AddOrUpdateConfigAsync(configItem);
                     // 保存备份配置
                     if (IsRecover)
-                        await SaveObjectFileAsync("appsettings.ConfigClientCache.json", _data.Values);
+                        await SaveObjectFileAsync("appsettings.configClientCache.json", _data.Values);
                 }
 
                 // 监听更新
-                StartListenConfigChange();
+                ConfigureUpdateListening();
             }
         }
         catch (Exception ex)
@@ -254,9 +234,9 @@ public class ConfigClient : IConfigClient, IDisposable
             if (!_polling.Value && IsRecover)
             {
                 // 容灾恢复
-                var rows = await GetFileObjectAsync<List<ConfigItemDto>>("appsettings.ConfigClientCache.json");
+                var rows = await GetFileObjectAsync<List<ConfigItemDto>>("appsettings.configClientCache.json");
                 await AddOrUpdateConfigAsync(rows);
-                StartListenConfigChange();
+                ConfigureUpdateListening();
             }
             // 首次请求异常
             else if (!_polling.Value)
@@ -281,8 +261,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <summary>
     ///     执行循环
     /// </summary>
-    [Obsolete("Obsolete")]
-    private void StartListenConfigChange()
+    private void ConfigureUpdateListening()
     {
         // 开启polling
         if (!_polling.Value && CurrentDataVersion > 0)
@@ -308,7 +287,7 @@ public class ConfigClient : IConfigClient, IDisposable
         foreach (var item in rows) _data[item.DataId] = item;
         // 有配置更新
         // ReSharper disable once PossibleMultipleEnumeration
-        foreach (var callback in _configDataChangeCallbacks) await callback(rows);
+        foreach (var callback in _changeCallbacks) await callback(rows);
         // 刷新配置版本号
         // ReSharper disable once PossibleMultipleEnumeration
         CurrentDataVersion = rows.Max(x => x.Version);
@@ -341,7 +320,7 @@ public class ConfigClient : IConfigClient, IDisposable
         try
         {
             var content = await File.ReadAllBytesAsync(file, cancellationToken);
-            return JsonSerializer.Deserialize<T>(content, SystemTextUtf8ByteSerializer.Options);
+            return JsonSerializer.Deserialize<T>(content.AsSpan(), SystemTextUtf8ByteSerializer.Options);
         }
         catch (Exception)
         {
@@ -356,8 +335,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <param name="obj"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private static async Task SaveObjectFileAsync(string path, object obj,
-        CancellationToken cancellationToken = default)
+    private static async Task SaveObjectFileAsync(string path, object obj, CancellationToken cancellationToken = default)
     {
         Check.NotNull(path, nameof(path));
         Check.NotNull(obj, nameof(obj));
@@ -374,7 +352,7 @@ public class ConfigClient : IConfigClient, IDisposable
         }
         catch (Exception)
         {
-            throw new Exception($"Error trying to save file: {path}");
+            throw new Exception($"error trying to save file: {path}");
         }
     }
 
@@ -385,18 +363,10 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <returns></returns>
     private static Stream CreateFileStream(string filePath)
     {
-        try
-        {
-            return File.Create(filePath);
-        }
-        catch (DirectoryNotFoundException)
-        {
-        }
-
         var directory = Path.GetDirectoryName(filePath);
         if (directory != null)
             DirectoryUtility.CreateIfNotExists(directory);
-
+        FileUtility.DeleteIfExists(filePath);
         return File.Create(filePath);
     }
 
@@ -404,12 +374,13 @@ public class ConfigClient : IConfigClient, IDisposable
     ///     转换变更数据为字典 Json内容也变为字典数据
     /// </summary>
     /// <param name="list"></param>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <returns></returns>
-    public static IDictionary<string, string> ConvertChangeDataToJsonConfigDictionary(
-        IEnumerable<ConfigItemDto> list)
+    public static IDictionary<string, string> ConvertChangeDataToJsonConfigDictionary(IEnumerable<ConfigItemDto> list)
     {
         var dict = new Dictionary<string, string>();
         foreach (var item in list)
+        {
             switch (item.DataType)
             {
                 case DataType.Text:
@@ -421,8 +392,25 @@ public class ConfigClient : IConfigClient, IDisposable
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-
+        }
         return dict;
+    }
+
+    #endregion
+    
+    #region Dispose
+
+    /// <summary>
+    ///     释放资源
+    /// </summary>
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _pollingTask?.Dispose();
+        _cts?.Dispose();
+
+        _data.Clear();
+        _changeCallbacks?.Clear();
     }
 
     #endregion

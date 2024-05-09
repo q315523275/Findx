@@ -5,7 +5,7 @@ using Findx.Messaging;
 namespace Findx.Events;
 
 /// <summary>
-/// 事件总线
+///     事件总线
 /// </summary>
 public class EventBus: IEventBus
 {
@@ -14,7 +14,7 @@ public class EventBus: IEventBus
     private readonly IDistributedEventBus _distributedEventBus;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="eventPublisher"></param>
     /// <param name="messageDispatcher"></param>
@@ -27,7 +27,7 @@ public class EventBus: IEventBus
     }
 
     /// <summary>
-    /// 推送事件
+    ///     推送事件
     /// </summary>
     /// <param name="event"></param>
     /// <param name="cancellationToken"></param>
@@ -37,9 +37,10 @@ public class EventBus: IEventBus
     {
         if (@event == null)
             throw new ArgumentNullException(nameof(@event));
-
+        
         // net7
         // ArgumentNullException.ThrowIfNull(@event, nameof(@event));
+        // 分发
         
         return @event switch
         {

@@ -4,8 +4,7 @@
 ///     可过期实体基类
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
-public abstract class ExpirableBase<TKey> : EntityBase<TKey>, IExpirable
-    where TKey : IEquatable<TKey>
+public abstract class ExpirableBase<TKey> : EntityBase<TKey>, IExpirable where TKey : IEquatable<TKey>
 {
     /// <summary>
     ///     获取或设置 生效时间

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -19,7 +18,6 @@ internal static class HttpUtil
     /// <param name="headers"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
-    [Obsolete("Obsolete")]
     public static HttpWebResponse Get(string url, IDictionary<string, string> headers, int? timeout)
     {
         var request = (HttpWebRequest)WebRequest.Create(url);
@@ -43,7 +41,6 @@ internal static class HttpUtil
     /// <param name="headers"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
-    [Obsolete("Obsolete")]
     public static async Task<HttpWebResponse> GetAsync(string url, Dictionary<string, string> headers, int? timeout)
     {
         var request = (HttpWebRequest)WebRequest.Create(url);
@@ -67,7 +64,7 @@ internal static class HttpUtil
     public static async Task<string> ReadAsStringAsync(this HttpWebResponse response)
     {
         await using var responseStream = response.GetResponseStream();
-        if (responseStream?.Length == 0) return string.Empty;
+        if (responseStream.Length == 0) return string.Empty;
         using var reader = new StreamReader(responseStream, Encoding.UTF8);
         return await reader.ReadToEndAsync();
 
@@ -81,7 +78,7 @@ internal static class HttpUtil
     public static string ReadAsString(this HttpWebResponse response)
     {
         using var responseStream = response.GetResponseStream();
-        if (responseStream?.Length == 0) return string.Empty;
+        if (responseStream.Length == 0) return string.Empty;
         using var reader = new StreamReader(responseStream, Encoding.UTF8);
         return reader.ReadToEnd();
     }

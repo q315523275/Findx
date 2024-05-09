@@ -2,10 +2,12 @@ using System.Threading.Tasks;
 
 namespace Findx.Common;
 
+// 一般使用于方法返回,如using释放等等
+
 /// <summary>
-///     允许在处置时执行操作
+///     允许在释放时执行操作
 /// </summary>
-public struct AsyncActionDisposable : IAsyncDisposable
+public readonly struct AsyncActionDisposable : IAsyncDisposable
 {
     readonly Func<ValueTask> _action;
 

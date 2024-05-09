@@ -6,7 +6,7 @@ using Findx.Messaging;
 namespace Findx.Data;
 
 /// <summary>
-/// 工作单元事件调度器
+///     工作单元事件调度器
 /// </summary>
 public class UnitOfWorkEventDispatcher: IUnitOfWorkEventDispatcher
 {
@@ -18,7 +18,7 @@ public class UnitOfWorkEventDispatcher: IUnitOfWorkEventDispatcher
     private readonly IDistributedEventBus _distributedEventBus;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="serviceProvider"></param>
     public UnitOfWorkEventDispatcher(IServiceProvider serviceProvider)
@@ -30,7 +30,7 @@ public class UnitOfWorkEventDispatcher: IUnitOfWorkEventDispatcher
     
     
     /// <summary>
-    /// 添加事件至缓冲区
+    ///     添加事件至缓冲区
     /// </summary>
     /// <param name="eventData"></param>
     /// <typeparam name="TEvent"></typeparam>
@@ -52,9 +52,9 @@ public class UnitOfWorkEventDispatcher: IUnitOfWorkEventDispatcher
     }
 
     /// <summary>
-    /// 推送事件
+    ///     推送事件
     /// <para />
-    /// 同步执行
+    ///     同步执行
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -66,9 +66,9 @@ public class UnitOfWorkEventDispatcher: IUnitOfWorkEventDispatcher
     }
 
     /// <summary>
-    /// 推送异步事件
+    ///     推送异步事件
     ///  <para />
-    /// 异步线程执行
+    ///     异步线程执行
     /// </summary>
     /// <param name="cancellationToken"></param>
     public async Task PublishAsyncEventsAsync(CancellationToken cancellationToken)
@@ -88,7 +88,7 @@ public class UnitOfWorkEventDispatcher: IUnitOfWorkEventDispatcher
     }
 
     /// <summary>
-    /// 清除
+    ///     清除
     /// </summary>
     public void ClearAllEvents()
     {

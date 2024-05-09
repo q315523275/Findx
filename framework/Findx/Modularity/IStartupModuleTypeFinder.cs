@@ -5,6 +5,4 @@ namespace Findx.Modularity;
 /// <summary>
 ///     模块查找器
 /// </summary>
-public interface IStartupModuleTypeFinder : ITypeFinder
-{
-}
+public interface IStartupModuleTypeFinder : ITypeFinder;

@@ -3,6 +3,7 @@ namespace Findx.Linq;
 /// <summary>
 ///     动态筛选规则
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 public class DynamicFilterInfo
 {
     /// <summary>
@@ -13,5 +14,6 @@ public class DynamicFilterInfo
     /// <summary>
     ///     筛选器集合
     /// </summary>
-    public List<FilterConditions> Filters { get; set; } = new();
+    // ReSharper disable once CollectionNeverUpdated.Global
+    public List<FilterConditions> Filters { get; set; } = [];
 }

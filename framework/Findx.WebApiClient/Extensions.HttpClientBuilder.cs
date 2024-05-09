@@ -31,8 +31,7 @@ internal static class Extensions
         Check.NotNull(httpClientBuilder, nameof(httpClientBuilder));
         if (seconds < 1) return httpClientBuilder;
 
-        return httpClientBuilder.AddPolicyHandler(
-            Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(seconds)));
+        return httpClientBuilder.AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(seconds)));
     }
 
     /// <summary>
@@ -50,12 +49,12 @@ internal static class Extensions
         httpClientBuilder.AddTransientHttpErrorPolicy(builder =>
         {
             return builder.Or<TaskCanceledException>()
-                .Or<OperationCanceledException>()
-                .Or<HttpRequestException>()
-                .Or<TimeoutException>()
-                .Or<TimeoutRejectedException>()
-                .OrResult(res => res.StatusCode == HttpStatusCode.TooManyRequests)
-                .RetryAsync(retryCount);
+                          .Or<OperationCanceledException>()
+                          .Or<HttpRequestException>()
+                          .Or<TimeoutException>()
+                          .Or<TimeoutRejectedException>()
+                          .OrResult(res => res.StatusCode == HttpStatusCode.TooManyRequests)
+                          .RetryAsync(retryCount);
         });
 
         return httpClientBuilder;

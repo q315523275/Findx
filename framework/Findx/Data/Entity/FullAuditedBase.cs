@@ -32,9 +32,7 @@ public abstract class FullAuditedBase<TUserKey> : IFullAudited<TUserKey> where T
 /// </summary>
 /// <typeparam name="TKey"></typeparam>
 /// <typeparam name="TUserKey"></typeparam>
-public abstract class FullAuditedBase<TKey, TUserKey> : EntityBase<TKey>, IFullAudited<TUserKey>
-    where TUserKey : struct
-    where TKey : IEquatable<TKey>
+public abstract class FullAuditedBase<TKey, TUserKey> : EntityBase<TKey>, IFullAudited<TUserKey> where TUserKey : struct where TKey : IEquatable<TKey>
 {
     /// <summary>
     ///     创建人编号
