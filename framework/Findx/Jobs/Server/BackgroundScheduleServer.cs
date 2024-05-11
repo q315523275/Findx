@@ -44,16 +44,25 @@ public class BackgroundScheduleServer : BackgroundService, IBackgroundScheduleSe
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _parallelOptions.CancellationToken = stoppingToken;
+        await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromSeconds(_options.Value.ScheduleDelay), stoppingToken);
+            var startTime = DateTime.Now;
             try
             {
+                // Master 选举确认
                 await ExecuteOnceAsync(stoppingToken);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "调度任务对应内存调度器执行失败");
+            }
+            // 计算精准的休眠时间,而不是设定固定值，因为执行业务需要耗时
+            var costTimeSpan = DateTime.Now - startTime;
+            var delayMilliseconds = _options.Value.ScheduleDelay * 1000 - costTimeSpan.TotalMilliseconds;
+            if (delayMilliseconds > 0)
+            {
+                await Task.Delay(Convert.ToInt32(delayMilliseconds), stoppingToken); 
             }
         }
     }
@@ -88,12 +97,12 @@ public class BackgroundScheduleServer : BackgroundService, IBackgroundScheduleSe
             {
                 await _backgroundJobTriggerServer.TriggerAsync(_jobConverter.ToExecuteInfo(jobInfo), cancellationToken);
             }
-            jobInfo.Increment(DateTimeOffset.Now);
+            jobInfo.Increment(nowTime);
         }
         else if (nowTime > jobInfo.NextRunTime)
         {
             await _backgroundJobTriggerServer.TriggerAsync(_jobConverter.ToExecuteInfo(jobInfo), cancellationToken);
-            jobInfo.Increment(DateTimeOffset.Now);
+            jobInfo.Increment(nowTime);
         }
         else 
         {

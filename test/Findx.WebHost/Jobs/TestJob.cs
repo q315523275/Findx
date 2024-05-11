@@ -10,7 +10,7 @@ namespace Findx.WebHost.Jobs;
 /// <summary>
 ///     test job
 /// </summary>
-[Job(Cron = "*/5 * * * * ?", Name = "演示自动任务")]
+[Job(Cron = "*/3 * * * * ?", Name = "演示自动任务")]
 public class TestJob: IJob
 {
     public Task<JobResult> RunAsync(JobExecuteContext context, CancellationToken cancellationToken = default)
