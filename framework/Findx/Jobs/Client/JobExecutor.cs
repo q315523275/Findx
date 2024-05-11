@@ -33,7 +33,7 @@ public class JobExecutor: IJobExecutor
         if (!_jobWorkSet.TryGetValue(context.JobExecuteInfo.FullName, out var jobType))
             return;
         var job = context.ServiceProvider.GetRequiredService(jobType) as IJob;
-        Console.WriteLine($"作业 {context.JobExecuteInfo.Name} 记录 {context.JobExecuteInfo.Id} 规定 {context.JobExecuteInfo.RunTime} 实际 {DateTimeOffset.Now}");
+        _logger.LogDebug("作业 {Name} 记录 {Id} 规定 {RunTime} 实际 {Now}", context.JobExecuteInfo.Name, context.JobExecuteInfo.Id, context.JobExecuteInfo.RunTime, DateTimeOffset.Now);
         try
         {
             if (job != null) 
