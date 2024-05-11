@@ -1,7 +1,10 @@
 ﻿using System.ComponentModel;
 using Findx.Extensions;
-using Findx.Jobs.Internal;
-using Findx.Messaging;
+using Findx.Jobs.Client;
+using Findx.Jobs.Common;
+using Findx.Jobs.InMemory;
+using Findx.Jobs.Server;
+using Findx.Jobs.Storage;
 using Findx.Modularity;
 
 namespace Findx.Jobs;
@@ -38,20 +41,24 @@ public class JobModule : StartupModule
         var section = configuration.GetSection("Findx:Jobs");
         _options = new JobOptions();
         section.Bind(_options);
-        if (_options is not { Enabled: true })
+        if (_options is not { Enabled: true, ScheduleType: ScheduleType.Simple })
             return services;
 
         services.Configure<JobOptions>(section);
 
         // 任务调度
-        services.AddSingleton<IJobListener, InMemoryJobListener>();
-        services.AddSingleton<IJobScheduler, SimpleJobScheduler>();
+        services.AddSingleton<IBackgroundScheduleServer, BackgroundScheduleServer>();
+        services.AddSingleton<IBackgroundTimeWheelServer, BackgroundTimeWheelServer>();
+        services.AddSingleton<IBackgroundJobTriggerServer, BackgroundJobTriggerServer>();
+        services.AddSingleton<IBackgroundJobExecuteNotifyServer, InMemoryExecuteNotify>();
+        services.AddSingleton<IJobExecuteDispatcher, JobExecuteDispatcher>();
         services.AddSingleton<IJobStorage, InMemoryJobStorage>();
-        services.AddSingleton<ITriggerListener, InMemoryTriggerListener>();
-        services.AddScoped<IApplicationEventHandler<JobInfo>, SimpleJobHandler>();
-
+        services.AddSingleton<IJobConverter, JobConverter>();
+        services.AddSingleton<IJobScheduler, SimpleJobScheduler>();
+        services.AddScoped<IJobExecutor, JobExecutor>();
+        
         // 自动注册作业
-        var dict = new JobTypeDictionary();
+        var dict = new JobWorkSet();
         var jobFinder = services.GetOrAddTypeFinder<IJobFinder>(assemblyFinder => new JobFinder(assemblyFinder));
         var jobTypes = jobFinder.FindAll(true);
         foreach (var jobType in jobTypes)
@@ -62,11 +69,9 @@ public class JobModule : StartupModule
         }
 
         services.AddSingleton(dict);
-
-        // 调度工作者
-        services.AddHostedService<InMemorySchedulerWorker>();
-
-        // 自动载入任务
+        
+        services.AddHostedService<BackgroundScheduleServer>();
+        services.AddHostedService<BackgroundTimeWheelServer>();
         services.AddHostedService<JobAutoBuildWorker>();
 
         return services;

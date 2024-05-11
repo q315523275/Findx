@@ -326,10 +326,10 @@ Console.WriteLine("Hello, World!");
 // }
 // Console.WriteLine($"{(DateTime.Now - begin).TotalMilliseconds}");
 
-var one = await CompressionUtility.CompressByBrotliAsync("123456789".ToBytes());
-Console.WriteLine(one.Length);
-var two = await CompressionUtility.DecompressByBrotliAsync(one);
-Console.WriteLine(two.Length);
-Console.WriteLine(Encoding.Default.GetString(two));
+// var one = await CompressionUtility.CompressByBrotliAsync("123456789".ToBytes());
+// Console.WriteLine(one.Length);
+// var two = await CompressionUtility.DecompressByBrotliAsync(one);
+// Console.WriteLine(two.Length);
+// Console.WriteLine(Encoding.Default.GetString(two));
 
-
+Console.WriteLine(DateTimeOffset.Now.ToString("yyyy-M-d HH:mm:ss"));

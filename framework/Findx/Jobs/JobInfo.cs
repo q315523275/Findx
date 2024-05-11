@@ -1,5 +1,4 @@
-﻿using Findx.Common;
-using Findx.Messaging;
+﻿using Findx.Data;
 using Findx.Utilities;
 
 namespace Findx.Jobs;
@@ -7,12 +6,12 @@ namespace Findx.Jobs;
 /// <summary>
 ///     定义一个工作详细信息
 /// </summary>
-public class JobInfo : IApplicationEvent, IAsync
+public class JobInfo : EntityBase<long>
 {
     /// <summary>
     ///     作业编号
     /// </summary>
-    public long Id { get; set; }
+    public override long Id { get; set; }
 
     /// <summary>
     ///     作业名
@@ -22,7 +21,7 @@ public class JobInfo : IApplicationEvent, IAsync
     /// <summary>
     ///     作业Json参数
     /// </summary>
-    public string JsonParam { get; set; }
+    public string Parameter { get; set; }
 
     /// <summary>
     ///     作业类全名
@@ -66,46 +65,42 @@ public class JobInfo : IApplicationEvent, IAsync
     /// <summary>
     ///     最后一次执行时间
     /// </summary>
-    public DateTime? LastRunTime { get; set; }
+    public DateTimeOffset? LastRunTime { get; set; }
 
     /// <summary>
     ///     下次执行时间
     /// </summary>
-    public DateTime? NextRunTime { get; set; }
+    public DateTimeOffset? NextRunTime { get; set; }
 
     /// <summary>
     ///     备注
     /// </summary>
-    public string Remark { get; set; }
+    public string Comments { get; set; }
 
     /// <summary>
     ///     任务创建时间
     /// </summary>
-    public DateTime CreateTime { get; set; }
+    public DateTimeOffset CreatedTime { get; set; }
 
     /// <summary>
     ///     任务计数
     /// </summary>
-    public void Increment()
+    public void Increment(DateTimeOffset dateTimeOffset)
     {
         TryCount++;
         IsRunning = false;
         LastRunTime = NextRunTime;
         if (IsSingle)
+        {
             NextRunTime = null;
+        }
         else if (FixedDelay > 0)
-            NextRunTime = DateTimeOffset.UtcNow.LocalDateTime.Add(TimeSpan.FromSeconds(FixedDelay));
-        else if (!string.IsNullOrWhiteSpace(CronExpress)) NextRunTime = CronUtility.GetNextOccurrence(CronExpress);
-    }
-
-    /// <summary>
-    ///     判断是否可以执行
-    /// </summary>
-    /// <param name="currentTime"></param>
-    /// <returns></returns>
-    public bool ShouldRun(DateTime currentTime)
-    {
-        return IsEnable && !IsRunning && NextRunTime.HasValue && NextRunTime <= currentTime &&
-               LastRunTime != NextRunTime;
+        {
+            NextRunTime = dateTimeOffset.AddSeconds(FixedDelay);
+        }
+        else if (!string.IsNullOrWhiteSpace(CronExpress))
+        {
+            NextRunTime = CronUtility.GetNextOccurrence(CronExpress, dateTimeOffset);
+        }
     }
 }

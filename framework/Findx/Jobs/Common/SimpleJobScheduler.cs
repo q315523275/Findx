@@ -2,10 +2,12 @@
 using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
+using Findx.Jobs.Client;
+using Findx.Jobs.Storage;
 using Findx.Serialization;
 using Findx.Utilities;
 
-namespace Findx.Jobs.Internal;
+namespace Findx.Jobs.Common;
 
 /// <summary>
 ///     默认工作调度
@@ -194,11 +196,11 @@ public class SimpleJobScheduler : IJobScheduler
     {
         var detail = new JobInfo
         {
-            CreateTime = DateTimeOffset.UtcNow.LocalDateTime,
+            CreatedTime = DateTimeOffset.UtcNow.LocalDateTime,
             IsEnable = true,
             NextRunTime = DateTimeOffset.UtcNow.LocalDateTime,
             Id = SnowflakeIdUtility.Default().NextId(),
-            JsonParam = _serializer.Serialize(parameter ?? new Dictionary<string, string>()),
+            Parameter = _serializer.Serialize(parameter ?? new Dictionary<string, string>()),
             Name = jobType.Name,
             FullName = jobType.FullName,
             TryCount = 0
@@ -208,7 +210,7 @@ public class SimpleJobScheduler : IJobScheduler
         if (attribute != null)
         {
             detail.Name = attribute.Name;
-            detail.Remark = attribute.Description;
+            detail.Comments = attribute.Description;
         }
 
         return detail;

@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Findx.Extensions;
 
-namespace Findx.Jobs;
+namespace Findx.Jobs.Client;
 
 /// <summary>
 ///     任务自动构建工作器
@@ -34,7 +34,7 @@ public class JobAutoBuildWorker : BackgroundService
         foreach (var jobType in jobTypes)
             // 需要自动载入执行的任务
             if (jobType.HasAttribute<JobAttribute>())
-                _scheduler.ScheduleAsync(jobType);
+                _scheduler.ScheduleAsync(jobType, stoppingToken);
 
         return Task.CompletedTask;
     }

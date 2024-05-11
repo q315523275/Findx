@@ -46,8 +46,6 @@ public class CacheController: ApiControllerBase
     [HttpGet("get")]
     public async Task<CommonResult> GetAsync(string cacheKey)
     {
-        
-        
         return CommonResult.Success(await _cacheFactory.Create(CacheType.DefaultMemory).GetAsync<object>(cacheKey));
     }
 }

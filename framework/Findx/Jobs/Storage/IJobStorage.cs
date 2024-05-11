@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Findx.Jobs;
+namespace Findx.Jobs.Storage;
 
 /// <summary>
 ///     定义一个工作存储器
@@ -30,6 +30,14 @@ public interface IJobStorage
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task UpdateAsync(JobInfo detail, CancellationToken cancellationToken = default);
+    
+    /// <summary>
+    ///     批量更新任务信息
+    /// </summary>
+    /// <param name="jobs"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task UpdatesAsync(IEnumerable<JobInfo> jobs, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     查询任务信息
@@ -38,15 +46,16 @@ public interface IJobStorage
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<JobInfo> FindAsync(long jobId, CancellationToken cancellationToken = default);
+    
 
     /// <summary>
     ///     查询可以执行任务列表
     /// </summary>
-    /// <param name="maxResultCount"></param>
-    /// <param name="runTime">执行时间</param>
+    /// <param name="maxCount"></param>
+    /// <param name="nextRunTime">下次执行时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IEnumerable<JobInfo>> GetShouldRunJobsAsync(int maxResultCount, DateTime runTime, CancellationToken cancellationToken = default);
+    Task<IEnumerable<JobInfo>> FetchShouldRunJobsAsync(DateTimeOffset nextRunTime, int maxCount, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     查询所有任务

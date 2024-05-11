@@ -1,7 +1,7 @@
 ﻿using Findx.Finders;
 using Findx.Reflection;
 
-namespace Findx.Jobs;
+namespace Findx.Jobs.Client;
 
 /// <summary>
 ///     循环调度任务(IScheduledTask)查询器
@@ -27,8 +27,8 @@ public class JobFinder : FinderBase<Type>, IJobFinder
     {
         var baseTypes = typeof(IJob);
         var assemblies = _appDomainAssemblyFinder.FindAll(true);
-        return assemblies.SelectMany(assemblie => assemblie.GetTypes())
-            .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && baseTypes.IsAssignableFrom(type))
-            .Distinct();
+        return assemblies.SelectMany(assembly => assembly.GetTypes())
+                         .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && baseTypes.IsAssignableFrom(type))
+                         .Distinct();
     }
 }

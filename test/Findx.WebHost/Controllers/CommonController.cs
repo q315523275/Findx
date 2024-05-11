@@ -8,6 +8,7 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Jobs;
+using Findx.Jobs.Storage;
 using Findx.Pdf;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;

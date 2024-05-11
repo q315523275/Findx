@@ -9,12 +9,13 @@ namespace Findx.AspNetCore.Mvc.Filters;
 /// <summary>
 ///     自动提交工作单元事务
 /// </summary>
-public class UnitOfWorkAttribute : ActionFilterAttribute
+public class TransactionalAttribute : ActionFilterAttribute
 {
 	/// <summary>
 	///     数据连接标识,不传默认使用主连接
 	/// </summary>
-	public string DbKey { get; set; } = null;
+	// ReSharper disable once MemberCanBePrivate.Global
+	public string DataSource { get; set; } = null;
 	
 	/// <summary>
 	/// 
@@ -28,7 +29,7 @@ public class UnitOfWorkAttribute : ActionFilterAttribute
 		
 		// 初始化工作单元
 		// ReSharper disable once PossibleNullReferenceException
-		var uow = await	provider.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWorkAsync(true, true, DbKey, cancellationToken);
+		var uow = await	provider.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWorkAsync(true, true, DataSource, cancellationToken);
 
 		// 执行业务
 		var actionContext = await next();
@@ -43,14 +44,32 @@ public class UnitOfWorkAttribute : ActionFilterAttribute
 		{
 			case JsonResult result1:
 			{
-				if (result1.Value is CommonResult ajax && ajax.IsSuccess()) 
-					await uow.CommitAsync(cancellationToken);
+				if (result1.Value is CommonResult ajax)
+				{
+					if (ajax.IsSuccess())
+						await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+					else
+						await uow.RollbackAsync(cancellationToken).ConfigureAwait(false);
+				}
+				else
+				{
+					await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+				}
 				break;
 			}
 			case ObjectResult result2:
 			{
-				if (result2.Value is CommonResult ajax && ajax.IsSuccess()) 
-					await uow.CommitAsync(cancellationToken);
+				if (result2.Value is CommonResult ajax)
+				{
+					if (ajax.IsSuccess())
+						await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+					else
+						await uow.RollbackAsync(cancellationToken).ConfigureAwait(false);
+				}
+				else
+				{
+					await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+				}
 				break;
 			}
 			default:
@@ -59,7 +78,10 @@ public class UnitOfWorkAttribute : ActionFilterAttribute
 				{
 					await uow.CommitAsync(cancellationToken);
 				}
-
+				else
+				{
+					await uow.RollbackAsync(cancellationToken).ConfigureAwait(false);
+				}
 				break;
 			}
 		}

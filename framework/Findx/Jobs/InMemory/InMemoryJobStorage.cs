@@ -1,8 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Findx.Extensions;
+using Findx.Jobs.Storage;
 using Findx.Locks;
 
-namespace Findx.Jobs.Internal;
+namespace Findx.Jobs.InMemory;
 
 /// <summary>
 ///     工作内存存储器
@@ -35,6 +36,17 @@ public class InMemoryJobStorage : IJobStorage
     }
 
     /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="jobs"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task UpdatesAsync(IEnumerable<JobInfo> jobs, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     ///     查询单个工作信息
     /// </summary>
     /// <param name="jobId"></param>
@@ -57,17 +69,17 @@ public class InMemoryJobStorage : IJobStorage
     /// <summary>
     ///     获取指定数量的待执行工作
     /// </summary>
-    /// <param name="maxResultCount"></param>
-    /// <param name="runTime"></param>
+    /// <param name="maxCount"></param>
+    /// <param name="nextRunTime"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IEnumerable<JobInfo>> GetShouldRunJobsAsync(int maxResultCount, DateTime runTime, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<JobInfo>> FetchShouldRunJobsAsync(DateTimeOffset nextRunTime, int maxCount, CancellationToken cancellationToken = default)
     {
         using var asyncLock = await _lock.LockAsync(cancellationToken);
-        var tasksThatShouldRun = _jobs.Where(t => t != null && t.ShouldRun(runTime))
+        var tasksThatShouldRun = _jobs.Where(x => x.IsEnable && x.NextRunTime.HasValue && x.NextRunTime < nextRunTime)
                                       .OrderBy(t => t.TryCount)
                                       .ThenBy(t => t.NextRunTime)
-                                      .Take(maxResultCount);
+                                      .Take(maxCount);
         return tasksThatShouldRun;
     }
 

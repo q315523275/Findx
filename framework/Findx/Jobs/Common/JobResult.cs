@@ -1,4 +1,4 @@
-﻿namespace Findx.Jobs;
+﻿namespace Findx.Jobs.Common;
 
 /// <summary>
 ///     定义一个作业结果

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Findx.Jobs;
+namespace Findx.Jobs.Client;
 
 /// <summary>
 ///     定义一个作业执行器
@@ -13,5 +13,5 @@ public interface IJobExecutor
 	/// <param name="context"></param>
 	/// <param name="cancellationToken"></param>
 	/// <returns></returns>
-	Task RunAsync(IJobExecutionContext context, CancellationToken cancellationToken = default);
+	Task ExecuteAsync(JobExecuteContext context, CancellationToken cancellationToken = default);
 }

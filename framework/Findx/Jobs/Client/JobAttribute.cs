@@ -1,4 +1,4 @@
-﻿namespace Findx.Jobs;
+﻿namespace Findx.Jobs.Client;
 
 /// <summary>
 ///     定义一个作业属性
@@ -35,9 +35,4 @@ public class JobAttribute : Attribute
 	///     最大并行数量
 	/// </summary>
 	public int IterationLimit { get; set; } = -1;
-
-	/// <summary>
-	///     实例数量
-	/// </summary>
-	public int InstanceCount { get; set; } = 1;
 }

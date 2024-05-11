@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Findx.Jobs.Client;
 
 namespace Findx.Jobs;
 

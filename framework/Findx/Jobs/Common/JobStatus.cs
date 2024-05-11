@@ -1,4 +1,4 @@
-﻿namespace Findx.Jobs;
+﻿namespace Findx.Jobs.Common;
 
 /// <summary>
 ///     任务状态枚举

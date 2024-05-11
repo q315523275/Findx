@@ -83,7 +83,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
         var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
         foreach (var item in res.Rows)
             item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
-
+        
         return CommonResult.Success(res);
     }
 
