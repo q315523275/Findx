@@ -65,9 +65,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Test", "test\Findx.Te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "components", "components", "{24F330DB-6EDF-491F-8CAB-E4EA548482EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Component.DistributedConfigurationCenter", "components\Findx.Component.DistributedConfigurationCenter\Findx.Component.DistributedConfigurationCenter.csproj", "{CEC17CCC-2218-4B5C-B6DA-41E2A58A4F6C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Extensions.ConfigurationServer", "components\Findx.Extensions.ConfigurationServer\Findx.Extensions.ConfigurationServer.csproj", "{CEC17CCC-2218-4B5C-B6DA-41E2A58A4F6C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Component.DistributedScheduler", "components\Findx.Component.DistributedScheduler\Findx.Component.DistributedScheduler.csproj", "{3D4B709F-5080-4528-B636-30CB66D2A4D6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Extensions.Scheduler", "components\Findx.Extensions.Scheduler\Findx.Extensions.Scheduler.csproj", "{3D4B709F-5080-4528-B636-30CB66D2A4D6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.DistributedEventBus", "framework\Findx.DistributedEventBus\Findx.DistributedEventBus.csproj", "{A091C821-62AD-4B26-A83A-AD846B5F9D67}"
 EndProject
