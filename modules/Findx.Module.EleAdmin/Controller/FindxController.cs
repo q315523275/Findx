@@ -15,16 +15,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     Findx框架
 /// </summary>
 [Area("system")]
 [Route("api/[area]/findx")]
-[Description("Findx框架")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("Findx框架")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("Findx框架"), Description("Findx框架")]
 public class FindxController : AreaApiControllerBase
 {
     /// <summary>

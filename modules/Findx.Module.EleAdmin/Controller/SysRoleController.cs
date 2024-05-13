@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     角色服务
@@ -18,9 +18,7 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Area("system")]
 [Route("api/[area]/role")]
 [Authorize]
-[Description("系统-角色")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-角色")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-角色"), Description("系统-角色")]
 public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest, QueryRoleRequest, Guid, Guid>
 {
     /// <summary>

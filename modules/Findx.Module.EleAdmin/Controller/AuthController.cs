@@ -17,15 +17,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     系统-账户
 /// </summary>
 [Area("system")]
 [Route("api/[area]/auth")]
-[Description("系统-账户")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-账户")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-账户"), Description("系统-账户")]
 public class AuthController : AreaApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;
@@ -87,7 +86,7 @@ public class AuthController : AreaApiControllerBase
             return CommonResult.Fail("50509", "密码错误次数超出限制");
 
         var accountInfo = await _repo.FirstAsync(it => it.UserName == req.UserName && it.TenantId == req.TenantId);
-        // 验证帐号是否存在
+        // 验证账号是否存在
         if (accountInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
@@ -110,7 +109,7 @@ public class AuthController : AreaApiControllerBase
 
         CommonResult fail = null;
 
-        // 验证帐号密码是否正确
+        // 验证账号密码是否正确
         if (accountInfo.Password != EncryptUtility.Md5By32(req.Password))
         {
             // 增加错误次数

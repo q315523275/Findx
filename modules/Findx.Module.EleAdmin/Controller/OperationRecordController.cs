@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     操作日志
@@ -17,11 +17,8 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Area("system")]
 [Route("api/[area]/operation-record")]
 [Authorize]
-[Description("系统-操作日志")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-操作日志")]
-public class OperationRecordController : QueryControllerBase<SysOperationRecordInfo, SysOperationRecordInfo,
-    QueryOperationRecordRequest, Guid>
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-操作日志"), Description("系统-操作日志")]
+public class OperationRecordController : QueryControllerBase<SysOperationRecordInfo, SysOperationRecordInfo, QueryOperationRecordRequest, Guid>
 {
     /// <summary>
     ///     构建查询条件

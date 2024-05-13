@@ -1,7 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
@@ -9,16 +7,14 @@ using Findx.Imaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     验证码服务
 /// </summary>
-[Description("系统-验证码")]
 [Area("system")]
 [Route("api/[area]/captcha")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-验证码")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-验证码"), Description("系统-验证码")]
 public class CaptchaController : AreaApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     菜单服务
@@ -18,9 +18,7 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Area("system")]
 [Route("api/[area]/menu")]
 [Authorize]
-[Description("系统-菜单")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-菜单")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-菜单"), Description("系统-菜单")]
 public class SysMenuController : CrudControllerBase<SysMenuInfo, SetMenuRequest, QueryMenuRequest, Guid, Guid>
 {
     /// <summary>
@@ -44,10 +42,11 @@ public class SysMenuController : CrudControllerBase<SysMenuInfo, SetMenuRequest,
     ///     列表查询
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override Task<CommonResult<List<SysMenuInfo>>> ListAsync(QueryMenuRequest request)
+    public override Task<CommonResult<List<SysMenuInfo>>> ListAsync(QueryMenuRequest request, CancellationToken cancellationToken = default)
     {
         request.PageSize = 9999;
-        return base.ListAsync(request);
+        return base.ListAsync(request, cancellationToken);
     }
 }

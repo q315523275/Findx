@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     用户服务
@@ -20,8 +20,7 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Area("system")]
 [Route("api/[area]/user")]
 [Authorize]
-[Description("系统-用户")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户"), Description("系统-用户")]
 public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
 {
     private readonly IKeyGenerator<Guid> _keyGenerator;
@@ -69,8 +68,9 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     ///     分页查询
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<PageResult<List<UserDto>>>> PageAsync(QueryUserRequest request)
+    public override async Task<CommonResult<PageResult<List<UserDto>>>> PageAsync(QueryUserRequest request, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysUserInfo>();
         var roleRepo = GetRepository<SysUserRoleInfo>();
@@ -78,9 +78,9 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression);
+        var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
         var ids = res.Rows.Select(x => x.Id).Distinct();
-        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId));
+        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
         foreach (var item in res.Rows)
             item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
 

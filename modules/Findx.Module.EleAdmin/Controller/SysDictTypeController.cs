@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     字典类型服务
@@ -15,11 +15,8 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Area("system")]
 [Route("api/[area]/dictType")]
 [Authorize]
-[Description("系统-字典")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-字典")]
-public class
-    SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SetDictTypeRequest, QueryDictTypeRequest, Guid, Guid>
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-字典"), Description("系统-字典")]
+public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SetDictTypeRequest, QueryDictTypeRequest, Guid, Guid>
 {
     /// <summary>
     ///     删除前校验

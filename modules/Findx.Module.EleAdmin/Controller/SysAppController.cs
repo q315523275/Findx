@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     系统-应用服务
@@ -18,9 +18,7 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Area("system")]
 [Route("api/[area]/app")]
 [Authorize]
-[Description("系统-应用")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-应用")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-应用"), Description("系统-应用")]
 public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, QueryAppRequest, Guid, Guid>
 {
     /// <summary>
@@ -68,8 +66,9 @@ public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, Qu
     ///     删除记录
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult> DeleteAsync([FromBody] List<Guid> request)
+    public override async Task<CommonResult> DeleteAsync([FromBody] List<Guid> request, CancellationToken cancellationToken = default)
     {
         Check.NotNull(request, nameof(request));
         if (request.Count == 0)
@@ -85,12 +84,12 @@ public class SysAppController : CrudControllerBase<SysAppInfo, SetAppRequest, Qu
         var total = 0;
         foreach (var item in request)
         {
-            var info = await repo.GetAsync(item);
+            var info = await repo.GetAsync(item, cancellationToken);
 
-            if (await repoMenu.ExistAsync(u => u.ApplicationCode == info.Code))
+            if (await repoMenu.ExistAsync(u => u.ApplicationCode == info.Code, cancellationToken))
                 return CommonResult.Fail("delete.not.count", "该应用下有菜单禁止删除");
 
-            if (await repo.DeleteAsync(item) > 0)
+            if (await repo.DeleteAsync(item, cancellationToken) > 0)
                 total++;
         }
 

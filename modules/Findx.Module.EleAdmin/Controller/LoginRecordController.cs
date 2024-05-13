@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     登录日志
@@ -17,9 +17,7 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Area("system")]
 [Route("api/[area]/login-record")]
 [Authorize]
-[Description("系统-登录日志")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-登录日志")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-登录日志"), Description("系统-登录日志")]
 public class LoginRecordController : QueryControllerBase<SysLoginRecordInfo, SysLoginRecordInfo, QueryLoginRecordRequest, Guid>
 {
     /// <summary>

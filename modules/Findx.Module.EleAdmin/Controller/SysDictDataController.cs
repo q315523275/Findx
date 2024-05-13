@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
+namespace Findx.Module.EleAdmin.Controller;
 
 /// <summary>
 ///     字典值服务
@@ -18,11 +18,8 @@ namespace Findx.Module.EleAdmin.Areas.Sys.Controller;
 [Area("system")]
 [Route("api/[area]/dictData")]
 [Authorize]
-[Description("系统-字典值")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-字典值")]
-public class
-    SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest, Guid, Guid>
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-字典值"), Description("系统-字典值")]
+public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest, Guid, Guid>
 {
     /// <summary>
     ///     构建查询条件
@@ -51,10 +48,11 @@ public class
     ///      列表查询
     /// </summary>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<List<SysDictDataInfo>>> ListAsync([FromQuery] QueryDictDataRequest request)
+    public override async Task<CommonResult<List<SysDictDataInfo>>> ListAsync([FromQuery] QueryDictDataRequest request, CancellationToken cancellationToken = default)
     {
         request.PageSize = 9999;
-        return await base.ListAsync(request);
+        return await base.ListAsync(request, cancellationToken);
     }
 }
