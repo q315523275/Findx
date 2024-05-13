@@ -221,7 +221,7 @@ public class ConfigClient : IConfigClient, IDisposable
                     await AddOrUpdateConfigAsync(configItem);
                     // 保存备份配置
                     if (IsRecover)
-                        await SaveObjectFileAsync("appsettings.configClientCache.json", _data.Values);
+                        await SaveObjectFileAsync("appsettings.ConfigCache.json", _data.Values);
                 }
 
                 // 监听更新
@@ -234,7 +234,7 @@ public class ConfigClient : IConfigClient, IDisposable
             if (!_polling.Value && IsRecover)
             {
                 // 容灾恢复
-                var rows = await GetFileObjectAsync<List<ConfigItemDto>>("appsettings.configClientCache.json");
+                var rows = await GetFileObjectAsync<List<ConfigItemDto>>("appsettings.ConfigCache.json");
                 await AddOrUpdateConfigAsync(rows);
                 ConfigureUpdateListening();
             }
@@ -317,6 +317,8 @@ public class ConfigClient : IConfigClient, IDisposable
 
         var file = Path.Combine(System.Environment.CurrentDirectory, path);
 
+        if (!FileUtility.Exists(file)) return default;
+        
         try
         {
             var content = await File.ReadAllBytesAsync(file, cancellationToken);

@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Description>远端配置中心客户端</Description>
-        <PackageVersion>2024.05.08.1</PackageVersion>
+        <PackageVersion>2024.05.08.2</PackageVersion>
         <LangVersion>default</LangVersion>
         <Authors>Findx</Authors>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>

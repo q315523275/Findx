@@ -48,11 +48,6 @@ public class ConfigHistoryInfo : FullAuditedBase<long, long>
     public long Version { get; set; }
 
     /// <summary>
-    ///     Md5
-    /// </summary>
-    public string Md5 { get; set; }
-
-    /// <summary>
     ///     描述
     /// </summary>
     public string Comments { get; set; }

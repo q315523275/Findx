@@ -64,7 +64,6 @@ internal static class HttpUtil
     public static async Task<string> ReadAsStringAsync(this HttpWebResponse response)
     {
         await using var responseStream = response.GetResponseStream();
-        if (responseStream.Length == 0) return string.Empty;
         using var reader = new StreamReader(responseStream, Encoding.UTF8);
         return await reader.ReadToEndAsync();
 
@@ -78,7 +77,6 @@ internal static class HttpUtil
     public static string ReadAsString(this HttpWebResponse response)
     {
         using var responseStream = response.GetResponseStream();
-        if (responseStream.Length == 0) return string.Empty;
         using var reader = new StreamReader(responseStream, Encoding.UTF8);
         return reader.ReadToEnd();
     }
