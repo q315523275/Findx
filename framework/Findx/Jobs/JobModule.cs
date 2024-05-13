@@ -51,6 +51,7 @@ public class JobModule : StartupModule
         services.AddSingleton<IBackgroundTimeWheelServer, BackgroundTimeWheelServer>();
         services.AddSingleton<IBackgroundJobTriggerServer, BackgroundJobTriggerServer>();
         services.AddSingleton<IBackgroundJobExecuteNotifyServer, InMemoryExecuteNotify>();
+        services.AddSingleton<IBackgroundScheduleElector, BackgroundScheduleElector>();
         services.AddSingleton<IJobExecuteDispatcher, JobExecuteDispatcher>();
         services.AddSingleton<IJobStorage, InMemoryJobStorage>();
         services.AddSingleton<IJobConverter, JobConverter>();

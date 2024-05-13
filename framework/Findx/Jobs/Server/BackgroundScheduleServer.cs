@@ -14,6 +14,7 @@ public class BackgroundScheduleServer : BackgroundService, IBackgroundScheduleSe
     private readonly IJobStorage _storage;
     private readonly IBackgroundTimeWheelServer _backgroundTimeWheelServer;
     private readonly IBackgroundJobTriggerServer _backgroundJobTriggerServer;
+    private readonly IBackgroundScheduleElector _backgroundScheduleElector;
     private readonly IJobConverter _jobConverter;
     private readonly ParallelOptions _parallelOptions;
 
@@ -26,7 +27,8 @@ public class BackgroundScheduleServer : BackgroundService, IBackgroundScheduleSe
     /// <param name="backgroundTimeWheelServer"></param>
     /// <param name="backgroundJobTriggerServer"></param>
     /// <param name="jobConverter"></param>
-    public BackgroundScheduleServer(IOptions<JobOptions> options, IJobStorage storage, ILogger<BackgroundScheduleServer> logger, IBackgroundTimeWheelServer backgroundTimeWheelServer, IBackgroundJobTriggerServer backgroundJobTriggerServer, IJobConverter jobConverter)
+    /// <param name="backgroundScheduleElector"></param>
+    public BackgroundScheduleServer(IOptions<JobOptions> options, IJobStorage storage, ILogger<BackgroundScheduleServer> logger, IBackgroundTimeWheelServer backgroundTimeWheelServer, IBackgroundJobTriggerServer backgroundJobTriggerServer, IJobConverter jobConverter, IBackgroundScheduleElector backgroundScheduleElector)
     {
         _options = options;
         _storage = storage;
@@ -34,6 +36,7 @@ public class BackgroundScheduleServer : BackgroundService, IBackgroundScheduleSe
         _backgroundTimeWheelServer = backgroundTimeWheelServer;
         _backgroundJobTriggerServer = backgroundJobTriggerServer;
         _jobConverter = jobConverter;
+        _backgroundScheduleElector = backgroundScheduleElector;
         _parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
     }
 
@@ -51,6 +54,9 @@ public class BackgroundScheduleServer : BackgroundService, IBackgroundScheduleSe
             try
             {
                 // Master 选举确认
+                var isMaster = await _backgroundScheduleElector.PutScheduleLeaderAsync(stoppingToken);
+                if (!isMaster) return;
+                
                 await ExecuteOnceAsync(stoppingToken);
             }
             catch (Exception ex)
