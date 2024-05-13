@@ -1,6 +1,6 @@
 using Findx.Data;
 
-namespace Findx.Component.DistributedConfigurationCenter.Dtos;
+namespace Findx.Extensions.ConfigurationServer.Dtos;
 
 /// <summary>
 ///     查询App Dto

@@ -14,8 +14,7 @@ namespace Findx.Extensions.ConfigurationServer.Controller;
 [Area("findx")]
 [Route("api/config/metrics")]
 [Authorize]
-[Description("配置服务-度量信息")]
-[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-度量信息")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-度量信息"), Description("配置服务-度量信息")]
 public class MetricsController: AreaApiControllerBase
 {
     private readonly IClientCallBack _clientCallBack;

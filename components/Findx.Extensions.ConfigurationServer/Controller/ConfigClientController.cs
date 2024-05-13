@@ -3,7 +3,6 @@ using System.Net;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
 using Findx.Common;
-using Findx.Component.DistributedConfigurationCenter.Dtos;
 using Findx.Data;
 using Findx.Extensions.ConfigurationServer.Client;
 using Findx.Extensions.ConfigurationServer.Dtos;
@@ -20,8 +19,7 @@ namespace Findx.Extensions.ConfigurationServer.Controller;
 /// </summary>
 [Area("findx")]
 [Route("api/config")]
-[Description("配置服务-客户端服务")]
-[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-客户端服务")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-客户端服务"), Description("配置服务-客户端服务")]
 public class ConfigClientController : AreaApiControllerBase
 {
     private readonly IRepository<AppInfo, long> _appRepo;

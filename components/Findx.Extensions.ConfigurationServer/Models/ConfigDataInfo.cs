@@ -8,7 +8,7 @@ namespace Findx.Extensions.ConfigurationServer.Models;
 /// </summary>
 [Table("config_info")]
 [EntityExtension(DataSource = "config")]
-public class ConfigDataInfo : FullAuditedBase<long, long>, ISoftDeletable, IResponse
+public class ConfigDataInfo : FullAuditedBase<long, long>
 {
     /// <summary>
     ///     记录编号
@@ -56,14 +56,4 @@ public class ConfigDataInfo : FullAuditedBase<long, long>, ISoftDeletable, IResp
     ///     描述
     /// </summary>
     public string Comments { get; set; }
-
-    /// <summary>
-    ///     是否删除
-    /// </summary>
-    public bool IsDeleted { get; set; }
-
-    /// <summary>
-    ///     删除时间
-    /// </summary>
-    public DateTime? DeletionTime { get; set; }
 }

@@ -1,6 +1,4 @@
-using Findx.Extensions.ConfigurationServer.Dtos;
-
-namespace Findx.Component.DistributedConfigurationCenter.Dtos;
+namespace Findx.Extensions.ConfigurationServer.Dtos;
 
 /// <summary>
 /// 更新App Dto

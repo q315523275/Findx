@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
-using Findx.Component.DistributedConfigurationCenter.Dtos;
 using Findx.Data;
 using Findx.Extensions.ConfigurationServer.Dtos;
 using Findx.Extensions.ConfigurationServer.Models;
@@ -18,8 +17,7 @@ namespace Findx.Extensions.ConfigurationServer.Controller;
 [Area("findx")]
 [Route("api/config/app")]
 [Authorize]
-[Description("配置服务App")]
-[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-App")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-App"), Description("配置服务App")]
 public class AppController: CrudControllerBase<AppInfo, AppInfo, CreateAppDto, UpdateAppDto, QueryAppDto, long, long>
 {
     /// <summary>

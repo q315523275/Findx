@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Security.Principal;
 using Findx.AspNetCore.Mvc;
-using Findx.Component.DistributedConfigurationCenter.Dtos;
 using Findx.Data;
 using Findx.Events;
 using Findx.Extensions.ConfigurationServer.Dtos;
@@ -22,8 +21,7 @@ namespace Findx.Extensions.ConfigurationServer.Controller;
 [Area("findx")]
 [Route("api/config/mgr")]
 [Authorize]
-[Description("配置服务-管理")]
-[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-管理")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-管理"), Description("配置服务-管理")]
 public class ConfigMgrController : AreaApiControllerBase
 {
     private readonly IUnitOfWorkManager _unitOfWorkManager;

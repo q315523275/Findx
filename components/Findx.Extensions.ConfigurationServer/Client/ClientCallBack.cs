@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Findx.Component.DistributedConfigurationCenter.Dtos;
 using Findx.Extensions.ConfigurationServer.Dtos;
 
 namespace Findx.Extensions.ConfigurationServer.Client;
