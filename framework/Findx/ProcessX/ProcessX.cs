@@ -56,7 +56,7 @@ public static class ProcessX
         processStartInfo.RedirectStandardOutput = true;
         processStartInfo.RedirectStandardInput = redirectStandardInput;
 
-        var process = new Process()
+        var process = new Process
         {
             StartInfo = processStartInfo,
             EnableRaisingEvents = true,
@@ -90,7 +90,7 @@ public static class ProcessX
     /// <returns></returns>
     public static ProcessAsyncEnumerable StartAsync(string fileName, string? arguments, string? workingDirectory = null, IDictionary<string, string>? environmentVariable = null, Encoding? encoding = null)
     {
-        var pi = new ProcessStartInfo()
+        var pi = new ProcessStartInfo
         {
             FileName = fileName,
             Arguments = arguments,

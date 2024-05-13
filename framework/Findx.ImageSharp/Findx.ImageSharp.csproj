@@ -5,8 +5,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <LangVersion>default</LangVersion>
-        <Version>1.9.5.1</Version>
-        <PackageVersion>2024.05.08.1</PackageVersion>
+        <PackageVersion>2024.05.08.2</PackageVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
     

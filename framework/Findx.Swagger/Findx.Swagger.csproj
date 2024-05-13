@@ -1,11 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.9.5.2</Version>
+        <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
+        <Nullable>disable</Nullable>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Swagger在线文档组件,优化中文展示</Description>
-        <PackageVersion>2023.12.25.1</PackageVersion>
+        <PackageVersion>2024.05.08.1</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
@@ -14,9 +15,16 @@
         <ProjectReference Include="..\Findx.AspNetCore\Findx.AspNetCore.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
     </ItemGroup>
-    
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
     
 </Project>

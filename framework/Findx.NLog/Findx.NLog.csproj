@@ -3,9 +3,8 @@
     <PropertyGroup>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <Version>1.9.5.2</Version>
         <Description>NLog日志组件包</Description>
-        <PackageVersion>2024.05.08.1</PackageVersion>
+        <PackageVersion>2024.05.08.2</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>

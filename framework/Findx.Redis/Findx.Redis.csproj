@@ -1,11 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>1.9.5.2</Version>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Redis通用功能、分布式锁等(StackExchangeRedis)</Description>
-        <PackageVersion>2024.05.08.1</PackageVersion>
+        <PackageVersion>2024.05.08.2</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>

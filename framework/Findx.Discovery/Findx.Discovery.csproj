@@ -2,11 +2,10 @@
 
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>1.9.5.2</Version>
         <Description>服务发现、本地发现、Http请求、负载算法(最少请求、轮询、随机、Hash)</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>2024.05.08.1</PackageVersion>
+        <PackageVersion>2024.05.08.2</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>

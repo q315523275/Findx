@@ -3,10 +3,9 @@
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Nullable>disable</Nullable>
-        <Version>1.9.5.2</Version>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>2024.04.10.1</PackageVersion>
+        <PackageVersion>2024.05.08.1</PackageVersion>
         <Description>基于System.Net.WebSockets的服务端与客户端,可扩展为分布式WebSockets服务</Description>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
