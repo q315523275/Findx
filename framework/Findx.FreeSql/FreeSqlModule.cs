@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Text;
 using Findx.Common;
 using Findx.Data;
 using Findx.DependencyInjection;
@@ -69,11 +68,11 @@ public class FreeSqlModule : StartupModule
             // 开启租户隔离
             if (item.Value.MultiTenant)
                 freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current != Guid.Empty, it => it.TenantId == TenantManager.Current);
-
+            
             // AOP
-            freeSql.Aop.CurdAfter += (_, e) => Aop_CurdAfter(item.Value, _, e);
+            freeSql.Aop.CurdAfter += (o, e) => Aop_CurdAfter(item.Value, o, e);
 
-            freeSql.Aop.AuditValue += (_, e) => Aop_AuditValue(item.Value, _, e);
+            freeSql.Aop.AuditValue += (o, e) => Aop_AuditValue(item.Value, o, e);
 
             // 注入
             freeSqlClient.TryAdd(item.Key, freeSql);

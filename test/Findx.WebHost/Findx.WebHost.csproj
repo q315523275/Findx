@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <LangVersion>default</LangVersion>
+        <TargetFrameworks>net8.0;net6.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>

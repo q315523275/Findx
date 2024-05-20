@@ -12,8 +12,7 @@ namespace Findx.WebHost.EventHandlers;
 /// </summary>
 public class LogMessagePipeline : IMessagePipeline<CancelOrderCommand, string>, IScopeDependency
 {
-    public async Task<string> HandleAsync(CancelOrderCommand request, MessageHandlerDelegate<string> next,
-        CancellationToken cancellationToken)
+    public async Task<string> HandleAsync(CancelOrderCommand request, MessageHandlerDelegate<string> next, CancellationToken cancellationToken)
     {
         Console.WriteLine($"RequestAOPLog请求:{request.ToJson()}");
         var result = await next().ConfigureAwait(false);

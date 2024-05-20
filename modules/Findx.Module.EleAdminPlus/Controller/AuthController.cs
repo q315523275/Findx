@@ -108,7 +108,7 @@ public class AuthController : AreaApiControllerBase
 
         CommonResult fail = null;
         // 验证帐号密码是否正确
-        if (accountInfo.Password != EncryptUtility.Md5By32(req.Password))
+        if (!accountInfo.Password.Equals(EncryptUtility.Md5By32(req.Password), StringComparison.OrdinalIgnoreCase))
         {
             // 增加错误次数
             errorCount++;
@@ -187,9 +187,7 @@ public class AuthController : AreaApiControllerBase
         // ReSharper disable once PossibleMultipleEnumeration
         var menus = roleIds.Any() ?
                 // ReSharper disable once PossibleMultipleEnumeration
-                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuDto { MenuId = x.MenuId }) :
-                [
-                ];
+                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuDto { MenuId = x.MenuId }) : [];
         
         var result = userInfo.MapTo<UserAuthDto>();
         // ReSharper disable once PossibleMultipleEnumeration
@@ -212,7 +210,7 @@ public class AuthController : AreaApiControllerBase
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
-        if (userInfo.Password != EncryptUtility.Md5By32(req.OldPassword))
+        if (!userInfo.Password.Equals(EncryptUtility.Md5By32(req.OldPassword), StringComparison.OrdinalIgnoreCase))
             return CommonResult.Fail("D1000", "旧密码错误");
 
         var pwd = EncryptUtility.Md5By32(req.Password);

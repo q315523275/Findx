@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
-using System.Globalization;
+using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Builders;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Jobs;
+using Findx.Machine;
+using Findx.Machine.Cpu;
+using Findx.Machine.Memory;
+using Findx.Machine.Network;
+using Findx.Machine.System;
 using Findx.Security;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;
@@ -86,68 +88,84 @@ public class ApplicationController : Controller
     [Description("系统指标")]
     public async Task<CommonResult> Metrics([FromServices] IApplicationContext app)
     {
-        ThreadPool.GetAvailableThreads(out var availableWorkerThreads, out var availableCompletionPortThreads);
-        ThreadPool.GetMaxThreads(out var maxWorkerThreads, out var maxCompletionPortThreads);
-        var runtimeInfo = new Dictionary<string, object>
+        var dict = new Dictionary<string, object>
         {
-            { "cpu", (await RuntimeUtility.GetCpuUsage()).ToString("0.000") },
             {
-                "memory",
-                (RuntimeUtility.GetMemoryUsage() / 1024).ToString("0.000") + "/" +
-                (GC.GetTotalMemory(false) / 1024.0 / 1024.0).ToString("0.000")
-            },
-            { "pid", RuntimeUtility.GetPid().ToString() },
-            { "processorCount", RuntimeUtility.GetProcessorCount().ToString() },
-            { "runTime", RuntimeUtility.GetRunTime().TotalMinutes.ToString("0.00") },
-            {
-                "virtualMemory",
-                (RuntimeUtility.GetVirtualMemory() / 1024.0).ToString(CultureInfo.InvariantCulture)
-            },
-            { "threadCount", RuntimeUtility.GetThreadCount().ToString() },
-            { "handleCount", RuntimeUtility.GetHandleCount().ToString() },
-            { "applicationName", app.ApplicationName },
-            { "applicationPort", app.Port.ToString() },
-            { "uris", string.Join(",", app.Uris) },
-            { "rootPath", app.RootPath },
-            { "instanceIP", app.InstanceIp },
-            {
-                "threadStats", new
+                "System", new
                 {
-                    maxCompletionPortThreads,
-                    maxWorkerThreads,
-                    availableCompletionPortThreads,
-                    availableWorkerThreads
+                    SystemPlatformInfo.MachineName,
+                    SystemPlatformInfo.SystemDirectory,
+                    SystemPlatformInfo.FrameworkDescription,
+                    SystemPlatformInfo.FrameworkVersion,
+                    SystemPlatformInfo.UserName,
+                    SystemPlatformInfo.UserDomainName,
+                    SystemPlatformInfo.OsArchitecture,
+                    SystemPlatformInfo.OsDescription,
+                    SystemPlatformInfo.OsVersion,
+                    SystemPlatformInfo.OsPlatformId,
+                    SystemPlatformInfo.ProcessorCount,
+                    SystemPlatformInfo.ProcessArchitecture,
+                    SystemPlatformInfo.GetLogicalDrives,
+                    SystemPlatformInfo.IsUserInteractive
                 }
             }
         };
+        var network = NetworkInfo.TryGetRealNetworkInfo();
+        var oldRate = network.IpvSpeed();
+        var oldRateLength = oldRate.ReceivedLength + oldRate.SendLength;
+        var networkSpeed = SizeInfo.Get(network.Speed);
+        var v1 = CpuHelper.GetCpuTime();
 
-        var sysOsInfo = new Dictionary<string, string>
+        await Task.Delay(1000);
+
+        var cpuValue = CpuHelper.CalculateCpuLoad(v1, CpuHelper.GetCpuTime());
+        dict.Add("Cpu", $"{(int)(cpuValue * 100)} %");
+
+        var memory = MemoryHelper.GetMemoryValue();
+        dict.Add("Memory", new
         {
-            { "osArchitecture", RuntimeInformation.OSArchitecture.ToString() },
-            { "osDescription", RuntimeInformation.OSDescription },
-            { "processArchitecture", RuntimeInformation.ProcessArchitecture.ToString() },
-            { "frameworkDescription", RuntimeInformation.FrameworkDescription },
-            { "is64BitOperatingSystem", Environment.Is64BitOperatingSystem.ToString() },
-            { "instanceIP", app.InstanceIp },
-            { "machineName", Environment.MachineName },
-            { "osVersion", Environment.OSVersion.ToString() },
-            { "systemPageSize", Environment.SystemPageSize.ToString() },
-            { "version", Environment.Version.ToString() },
-            { "userDomainName", Environment.UserDomainName },
-            { "userInteractive", Environment.UserInteractive.ToString() },
-            { "userName", Environment.UserName },
-            { "drives", string.Join(";", Environment.GetLogicalDrives()) },
-            { "osName", CommonUtility.System },
-            { "tickCount", $"{Environment.TickCount / 1000 / 60}" }
-        };
+            AvailablePhysicalMemory = SizeInfo.Get((long)memory.AvailablePhysicalMemory).ToString(),
+            AvailableVirtualMemory = SizeInfo.Get((long)memory.AvailableVirtualMemory).ToString(),
+            TotalPhysicalMemory = SizeInfo.Get((long)memory.TotalPhysicalMemory).ToString(),
+            TotalVirtualMemory = SizeInfo.Get((long)memory.TotalVirtualMemory).ToString(),
+            memory.UsedPercentage,
+            UsedPhysicalMemory = SizeInfo.Get((long)memory.UsedPhysicalMemory).ToString(),
+            UsedVirtualMemory = SizeInfo.Get((long)memory.UsedVirtualMemory).ToString()
+        });
 
-        // var sysDict = Findx.Utils.SystemUtil.GetMachineInfo();
-        // foreach (var item in sysDict)
-        // {
-        //     sysOsInfo.TryAdd(item.Key, item.Value.SafeString());
-        // }
+        var newRate = network.IpvSpeed();
+        var nodeRate = SizeInfo.Get(newRate.ReceivedLength + newRate.SendLength - oldRateLength);
+        var speed = NetworkInfo.GetSpeed(oldRate, newRate);
 
-        return CommonResult.Success(new { sysOsInfo, runtimeInfo });
+        dict.Add("NetworkInfo", new
+        {
+            网卡信息 = new { network.Name, network.Mac, RealIpv4 = NetworkInfo.TryGetRealIpv4().ToString() },
+            网卡连接速度 = $"{networkSpeed.Size} {networkSpeed.SizeType}/s",
+            监测流量 = $"{nodeRate.Size} {nodeRate.SizeType}",
+            总流量 = $"{SizeInfo.Get(oldRateLength).Size} {SizeInfo.Get(oldRateLength).SizeType}",
+            上传速率 = $"{speed.Sent.Size} {speed.Sent.SizeType}/s",
+            下载速率 = $"{speed.Received.Size} {speed.Received.SizeType}/s"
+        });
+
+        dict.Add("RuntimeInfo", new
+        {
+            Ip = app.InstanceIp,
+            Cpu = (await RuntimeUtility.GetCpuUsage()).ToString("0.000"),
+            Memory = SizeInfo.Get(Process.GetCurrentProcess().WorkingSet64).ToString(),
+            ThreadCount = RuntimeUtility.GetThreadCount(),
+            HandleCount = RuntimeUtility.GetHandleCount()
+        });
+
+        var gcInfo = RuntimeUtility.GetGcInfo();
+        dict.Add("GcInfo", new
+        {
+            gen0 = SizeInfo.Get(gcInfo.gen0).ToString(),
+            gen1 = SizeInfo.Get(gcInfo.gen1).ToString(),
+            gen2 = SizeInfo.Get(gcInfo.gen2).ToString(),
+            totalMemory = SizeInfo.Get(gcInfo.totalMemory).ToString()
+        });
+
+        return CommonResult.Success(dict);
     }
 
     /// <summary>
