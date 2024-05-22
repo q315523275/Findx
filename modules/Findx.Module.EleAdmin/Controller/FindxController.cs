@@ -144,9 +144,9 @@ public class FindxController : AreaApiControllerBase
     /// <returns></returns>
     [HttpGet("functions")]
     [DisableAuditing]
-    public CommonResult Functions([FromServices] IFunctionStore<MvcFunction> store)
+    public async Task<CommonResult> Functions([FromServices] IFunctionStore<MvcFunction> store)
     {
-        return CommonResult.Success(store.GetFromDatabase());
+        return CommonResult.Success(await store.QueryFromDatabaseAsync());
     }
 
     /// <summary>

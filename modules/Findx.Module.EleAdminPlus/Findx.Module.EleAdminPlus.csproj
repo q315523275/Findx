@@ -10,9 +10,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="2024.5.8.1" />
+      <PackageReference Include="Findx.AspNetCore" Version="2024.5.22.1" />
       <PackageReference Include="Findx.FreeSql" Version="2024.5.8.2" />
-      <PackageReference Include="Findx.Security" Version="2024.5.8.2" />
+      <PackageReference Include="Findx.Security" Version="2024.5.22.1" />
     </ItemGroup>
 
 </Project>

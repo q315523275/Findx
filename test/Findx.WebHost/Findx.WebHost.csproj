@@ -44,6 +44,6 @@
         <Folder Include="EventHandlers\" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.808" />
+        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.825" />
     </ItemGroup>
 </Project>

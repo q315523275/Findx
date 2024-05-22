@@ -5,7 +5,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>自定义认证授权、Token自动续期、自定义权限控制、可配置到接口级别权限等</Description>
-        <PackageVersion>2024.05.08.2</PackageVersion>
+        <PackageVersion>2024.05.22.1</PackageVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
