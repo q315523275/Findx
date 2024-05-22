@@ -42,7 +42,7 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     /// <returns>通过的角色</returns>
     public virtual IEnumerable<string> GetOkRoles(IFunction function, IPrincipal principal)
     {
-        if (!principal.Identity.IsAuthenticated) return Array.Empty<string>();
+        if (principal.Identity is { IsAuthenticated: false }) return Array.Empty<string>();
 
         var userRoles = principal.Identity.GetRoles();
         if (function.AccessType != FunctionAccessType.RoleLimit)
@@ -61,20 +61,26 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     /// <returns>功能权限验证结果</returns>
     protected virtual AuthorizationStatus AuthorizeCore(IFunction function, IPrincipal principal)
     {
-        if (function == null) return AuthorizationStatus.NoFound;
+        if (function == null) 
+            return AuthorizationStatus.NoFound;
 
-        if (function.IsLocked) return AuthorizationStatus.Locked;
+        if (function.IsLocked) 
+            return AuthorizationStatus.Locked;
 
-        if (function.AccessType == FunctionAccessType.Anonymous) return AuthorizationStatus.Ok;
+        if (function.AccessType == FunctionAccessType.Anonymous) 
+            return AuthorizationStatus.Ok;
 
         // 未登录
-        if (principal == null || !principal.Identity.IsAuthenticated) return AuthorizationStatus.Unauthorized;
+        if (principal.Identity is { IsAuthenticated: false }) 
+            return AuthorizationStatus.Unauthorized;
 
         // 已登录，无角色限制
-        if (function.AccessType == FunctionAccessType.Login) return AuthorizationStatus.Ok;
+        if (function.AccessType == FunctionAccessType.Login) 
+            return AuthorizationStatus.Ok;
 
         // 已登录，验证角色
-        if (function.AccessType == FunctionAccessType.RoleLimit) return AuthorizeRoleLimit(function, principal);
+        if (function.AccessType == FunctionAccessType.RoleLimit) 
+            return AuthorizeRoleLimit(function, principal);
 
         // 已登录，验证权限
         if (function.AccessType == FunctionAccessType.AuthorityLimit)
@@ -97,9 +103,7 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     {
         // 角色限制
         // 检查角色-功能的权限
-        return principal.Identity is not ClaimsIdentity identity
-            ? AuthorizationStatus.Error
-            : AuthorizeRoleNames(function, identity.GetRoles());
+        return principal.Identity is not ClaimsIdentity identity ? AuthorizationStatus.Error : AuthorizeRoleNames(function, identity.GetRoles());
     }
 
     /// <summary>
@@ -134,6 +138,8 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     /// <returns>功能权限验证结果</returns>
     protected virtual AuthorizationStatus AuthorizeAuthorityLimit(IFunction function, IPrincipal principal)
     {
+        // Todo 自行实现资源的验证,如Vue按钮权限
+        
         // 拥有权限资源限制
         return AuthorizationStatus.Ok;
     }
@@ -147,9 +153,10 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     protected virtual AuthorizationStatus AuthorizeRoleAuthorityLimit(IFunction function, IPrincipal principal)
     {
         // 角色限制
+        
         // 检查角色-功能的权限
         var roleLimitAuthorizeStatus = AuthorizeRoleLimit(function, principal);
-        if (AuthorizeRoleLimit(function, principal) != AuthorizationStatus.Ok)
+        if (roleLimitAuthorizeStatus != AuthorizationStatus.Ok)
             return roleLimitAuthorizeStatus;
 
         // 权限资源限制

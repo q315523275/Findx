@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Module.EleAdminPlus",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp2", "test\ConsoleApp2\ConsoleApp2.csproj", "{D82FDCA5-15C7-46D5-A2CB-FF42759E9005}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Extensions.WorkflowCore", "components\Findx.Extensions.WorkflowCore\Findx.Extensions.WorkflowCore.csproj", "{C614D440-D19C-4FE7-BEAB-3B0A01BECE38}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -221,6 +223,10 @@ Global
 		{D82FDCA5-15C7-46D5-A2CB-FF42759E9005}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D82FDCA5-15C7-46D5-A2CB-FF42759E9005}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D82FDCA5-15C7-46D5-A2CB-FF42759E9005}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C614D440-D19C-4FE7-BEAB-3B0A01BECE38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C614D440-D19C-4FE7-BEAB-3B0A01BECE38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C614D440-D19C-4FE7-BEAB-3B0A01BECE38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C614D440-D19C-4FE7-BEAB-3B0A01BECE38}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -260,6 +266,7 @@ Global
 		{576035D4-836E-4F8D-B1AA-C3DAEC99BD4D} = {B66E551E-1813-4080-BC15-E2D9888B8308}
 		{1EFB2413-A096-4EA7-A731-9C5FDBD72AC6} = {7F3FEAA2-C11E-437D-8D98-CCFECE28E891}
 		{D82FDCA5-15C7-46D5-A2CB-FF42759E9005} = {298F30E3-70D0-4D99-938C-C776C9FF488D}
+		{C614D440-D19C-4FE7-BEAB-3B0A01BECE38} = {24F330DB-6EDF-491F-8CAB-E4EA548482EB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7630DAB2-2CEC-407B-81D8-220E7EF09F33}

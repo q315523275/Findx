@@ -7,7 +7,7 @@ namespace Findx.Security;
 /// <summary>
 ///     功能信息基类
 /// </summary>
-public abstract class FunctionBase : EntityBase<Guid>, IFunction
+public abstract class FunctionBase : EntityBase<long>, IFunction
 {
     /// <summary>
     ///     获取或设置 功能名称
@@ -36,6 +36,13 @@ public abstract class FunctionBase : EntityBase<Guid>, IFunction
     [DisplayName("功能")]
     [StringLength(200)]
     public virtual string Action { get; set; }
+    
+    /// <summary>
+    ///     获取或设置 控制器功能的请求方法
+    /// </summary>
+    [DisplayName("请求方法")]
+    [StringLength(10)]
+    public virtual string HttpMethod { get; set; }
 
     /// <summary>
     ///     获取或设置 是否是控制器
@@ -79,6 +86,6 @@ public abstract class FunctionBase : EntityBase<Guid>, IFunction
     /// <returns>表示当前对象的字符串。</returns>
     public override string ToString()
     {
-        return $"{Name}[{Area}/{Controller}/{Action}]";
+        return $"{Name}[{Area}/{Controller}/{Action}/{HttpMethod}]";
     }
 }

@@ -16,9 +16,4 @@ public class MvcFunction : FunctionBase
     ///     获取或设置 路由访问模版
     /// </summary>
     public string RouteTemplate { get; set; }
-
-    /// <summary>
-    ///     获取或设置 Http访问方式
-    /// </summary>
-    public string HttpMethod { get; set; }
 }

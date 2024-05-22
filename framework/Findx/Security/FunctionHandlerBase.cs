@@ -1,4 +1,5 @@
-﻿using Findx.Data;
+﻿using System.Threading.Tasks;
+using Findx.Data;
 using Findx.Logging;
 
 namespace Findx.Security;
@@ -6,10 +7,9 @@ namespace Findx.Security;
 /// <summary>
 ///     功能信息处理基类
 /// </summary>
-public abstract class FunctionHandlerBase<TFunction> : IFunctionHandler
-    where TFunction : class, IEntity<Guid>, IFunction, new()
+public abstract class FunctionHandlerBase<TFunction> : IFunctionHandler where TFunction : class, IEntity<long>, IFunction, new()
 {
-    private readonly List<TFunction> _functions = new();
+    private readonly Dictionary<string, TFunction> _functionDict = new(StringComparer.OrdinalIgnoreCase);
     private readonly StartupLogger _startupLogger;
     private readonly IFunctionStore<TFunction> _store;
 
@@ -27,11 +27,34 @@ public abstract class FunctionHandlerBase<TFunction> : IFunctionHandler
     /// <summary>
     ///     从程序集中获取功能信息（如MVC的Controller-Action）
     /// </summary>
-    public void Initialize()
+    public async Task InitializeAsync(CancellationToken cancellationToken = default)
     {
         var functions = GetFunctions();
-        _store.SyncToDatabase(functions);
-        RefreshCache();
+        await _store.SyncToDatabaseAsync(functions, cancellationToken);
+        await RefreshCacheAsync(cancellationToken);
+    }
+
+    /// <summary>
+    ///     刷新功能信息缓存
+    /// </summary>
+    public async Task RefreshCacheAsync(CancellationToken cancellationToken = default)
+    {
+        _functionDict.Clear();
+        var rows = await _store.QueryFromDatabaseAsync(cancellationToken);
+        foreach (var item in rows)
+        {
+            _functionDict[$"{item.Area}_{item.Controller}_{item.Action}_{item.HttpMethod}"] = item;
+        }
+        _startupLogger.LogInformation($"刷新功能信息缓存，从数据库获取到 {_functionDict.Count} 个功能信息", GetType().Name);
+    }
+
+    /// <summary>
+    ///     清空功能信息缓存
+    /// </summary>
+    public Task ClearCacheAsync(CancellationToken cancellationToken = default)
+    {
+        _functionDict.Clear();
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -40,33 +63,11 @@ public abstract class FunctionHandlerBase<TFunction> : IFunctionHandler
     /// <param name="area">区域</param>
     /// <param name="controller">控制器</param>
     /// <param name="action">功能方法</param>
+    /// <param name="method">方法</param>
     /// <returns>功能信息</returns>
-    public IFunction GetFunction(string area, string controller, string action)
+    public IFunction GetFunction(string area, string controller, string action, string method)
     {
-        if (_functions.Count == 0) RefreshCache();
-
-        return _functions.FirstOrDefault(m =>
-            string.Equals(m.Area, area, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(m.Controller, controller, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(m.Action, action, StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
-    ///     刷新功能信息缓存
-    /// </summary>
-    public void RefreshCache()
-    {
-        _functions.Clear();
-        _functions.AddRange(_store.GetFromDatabase());
-        _startupLogger.LogInformation($"刷新功能信息缓存，从数据库获取到 {_functions.Count} 个功能信息", GetType().Name);
-    }
-
-    /// <summary>
-    ///     清空功能信息缓存
-    /// </summary>
-    public void ClearCache()
-    {
-        _functions.Clear();
+        return _functionDict.GetValueOrDefault($"{area}_{controller}_{action}_{method}");
     }
 
     /// <summary>

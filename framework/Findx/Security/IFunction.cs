@@ -5,7 +5,7 @@ namespace Findx.Security;
 /// <summary>
 ///     定义功能信息
 /// </summary>
-public interface IFunction : IEntity<Guid>
+public interface IFunction : IEntity<long>
 {
 	/// <summary>
 	///     获取或设置 功能名称
@@ -28,6 +28,11 @@ public interface IFunction : IEntity<Guid>
 	string Action { get; set; }
 
 	/// <summary>
+	///     获取或设置 控制器功能的请求类型
+	/// </summary>
+	string HttpMethod { get; set; }
+
+	/// <summary>
 	///     获取或设置 是否是控制器
 	/// </summary>
 	bool IsController { get; set; }
@@ -48,7 +53,7 @@ public interface IFunction : IEntity<Guid>
 	string Roles { get; set; }
 
 	/// <summary>
-	///     获取或设置 限定权限
+	///     获取或设置 限定权限资源
 	/// </summary>
 	string Authority { get; set; }
 

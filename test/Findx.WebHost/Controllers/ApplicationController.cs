@@ -173,8 +173,8 @@ public class ApplicationController : Controller
     /// </summary>
     /// <returns></returns>
     [HttpGet("functions")]
-    public CommonResult Functions([FromServices] IFunctionStore<MvcFunction> store)
+    public async Task<CommonResult> Functions([FromServices] IFunctionStore<MvcFunction> store)
     {
-        return CommonResult.Success(store.GetFromDatabase());
+        return CommonResult.Success(await store.QueryFromDatabaseAsync());
     }
 }

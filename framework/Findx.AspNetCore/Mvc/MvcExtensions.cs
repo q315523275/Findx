@@ -2,7 +2,6 @@
 using System.Reflection;
 using Findx.Common;
 using Findx.Data;
-using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Security;
 using Microsoft.AspNetCore.Mvc;
@@ -47,13 +46,18 @@ public static class MvcExtensions
         var provider = context.HttpContext.RequestServices;
         var dict = provider.GetRequiredService<ScopedDictionary>();
         if (dict.Function != null) return dict.Function;
+        
         var area = context.GetAreaName();
         var controller = context.GetControllerName();
         var action = context.GetActionName();
+        var method = context.HttpContext.Request.Method;
+        
         var functionHandler = provider.GetService<IFunctionHandler>();
         if (functionHandler == null) return null;
-        var function = functionHandler.GetFunction(area, controller, action);
+        
+        var function = functionHandler.GetFunction(area, controller, action, method);
         if (function != null) dict.Function = function;
+        
         return function;
     }
 

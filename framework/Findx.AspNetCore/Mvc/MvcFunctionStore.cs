@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Findx.Security;
 
 namespace Findx.AspNetCore.Mvc;
@@ -27,5 +29,28 @@ public class MvcFunctionStore : IFunctionStore<MvcFunction>
     public IEnumerable<MvcFunction> GetFromDatabase()
     {
         return _functions;
+    }
+
+    /// <summary>
+    ///     保存
+    /// </summary>
+    /// <param name="functions"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task SyncToDatabaseAsync(IEnumerable<MvcFunction> functions, CancellationToken cancellationToken = default)
+    {
+        _functions.Clear();
+        _functions.AddRange(functions);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     查询
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<List<MvcFunction>> QueryFromDatabaseAsync(CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(_functions);
     }
 }

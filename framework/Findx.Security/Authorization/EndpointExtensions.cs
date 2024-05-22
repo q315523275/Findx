@@ -1,5 +1,4 @@
 ﻿using Findx.Data;
-using Findx.DependencyInjection;
 using Findx.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -21,13 +20,15 @@ public static class EndpointExtensions
         var dict = provider.GetRequiredService<ScopedDictionary>();
         if (dict.Function != null) return dict.Function;
 
-        string area = endpoint.GetAreaName(),
-            controller = endpoint.GetControllerName(),
-            action = endpoint.GetActionName();
+        var area = endpoint.GetAreaName();
+        var controller = endpoint.GetControllerName();
+        var action = endpoint.GetActionName();
+        var method = context.Request.Method;
+            
         var functionHandler = provider.GetService<IFunctionHandler>();
         if (functionHandler == null) return null;
 
-        var function = functionHandler.GetFunction(area, controller, action);
+        var function = functionHandler.GetFunction(area, controller, action, method);
         if (function != null) dict.Function = function;
 
         return function;

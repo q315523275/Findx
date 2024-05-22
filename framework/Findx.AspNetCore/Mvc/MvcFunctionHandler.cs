@@ -20,7 +20,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly ICacheFactory _cacheFactory;
-    private readonly IGuidGenerator _guidGenerator;
+    private readonly IKeyGenerator<long> _keyGenerator;
 
     /// <summary>
     ///     Ctor
@@ -29,12 +29,12 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
     /// <param name="store"></param>
     /// <param name="actionDescriptorCollectionProvider"></param>
     /// <param name="cacheFactory"></param>
-    /// <param name="guidGenerator"></param>
-    public MvcFunctionHandler(StartupLogger logger, IFunctionStore<MvcFunction> store, IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, ICacheFactory cacheFactory, IGuidGenerator guidGenerator) : base(store, logger)
+    /// <param name="keyGenerator"></param>
+    public MvcFunctionHandler(StartupLogger logger, IFunctionStore<MvcFunction> store, IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, ICacheFactory cacheFactory, IKeyGenerator<long> keyGenerator) : base(store, logger)
     {
         _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
         _cacheFactory = cacheFactory;
-        _guidGenerator = guidGenerator;
+        _keyGenerator = keyGenerator;
     }
 
     /// <summary>
@@ -52,20 +52,17 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
 
         // 耗时大致20毫秒左右
         var result = new List<MvcFunction>();
-        var controllerActionList =
-            _actionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>();
+        var controllerActionList = _actionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>();
         // Controller循环
         foreach (var item in controllerActionList)
         {
             var routeValues = item.RouteValues;
             var area = routeValues.TryGetValue("area", out var value) ? value : null;
-            var controller =
-                result.FirstOrDefault(x => x.IsController && x.Area == area && x.Controller == item.ControllerName);
+            var controller = result.FirstOrDefault(x => x.IsController && x.Area == area && x.Controller == item.ControllerName);
             if (controller == null)
             {
                 var typeInfo = item.ControllerTypeInfo;
-                var authorize = typeInfo.GetAttribute<PreAuthorizeAttribute>() ??
-                                typeInfo.GetAttribute<AuthorizeAttribute>();
+                var authorize = typeInfo.GetAttribute<PreAuthorizeAttribute>() ?? typeInfo.GetAttribute<AuthorizeAttribute>();
                 var typeAccessType = GetFunctionAccessType(authorize);
                 string authority = null;
                 if (typeAccessType is FunctionAccessType.AuthorityLimit or FunctionAccessType.RoleAuthorityLimit)
@@ -81,7 +78,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
                     Roles = authorize?.Roles,
                     Authority = authority,
                     AuditOperationEnabled = !typeInfo.HasAttribute<DisableAuditingAttribute>(),
-                    Id = _guidGenerator.Create()
+                    Id = _keyGenerator.Create()
                 };
                 result.Add(controller);
             }
@@ -127,7 +124,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
                     Roles = actionRoles,
                     Authority = actionAuthority,
                     AuditOperationEnabled = auditOperationEnabled,
-                    Id = _guidGenerator.Create()
+                    Id = _keyGenerator.Create()
                 };
 
                 result.Add(function);
@@ -159,28 +156,22 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
         else if (authorizeAttribute is PreAuthorizeAttribute preAuthorizeAttribute)
         {
             // 限定登陆访问
-            if (preAuthorizeAttribute.Roles.IsNullOrWhiteSpace() &&
-                preAuthorizeAttribute.Authority.IsNullOrWhiteSpace())
+            if (preAuthorizeAttribute.Roles.IsNullOrWhiteSpace() && preAuthorizeAttribute.Authority.IsNullOrWhiteSpace())
                 typeAccessType = FunctionAccessType.Login;
             // 限定角色、权限资源访问
-            if (!preAuthorizeAttribute.Authority.IsNullOrWhiteSpace() &&
-                !preAuthorizeAttribute.Roles.IsNullOrWhiteSpace())
+            else if (preAuthorizeAttribute.Authority.IsNotNullOrWhiteSpace() && preAuthorizeAttribute.Roles.IsNotNullOrWhiteSpace())
                 typeAccessType = FunctionAccessType.RoleAuthorityLimit;
             // 限定权限资源访问
-            else if (!preAuthorizeAttribute.Authority.IsNullOrWhiteSpace())
+            else if (preAuthorizeAttribute.Authority.IsNotNullOrWhiteSpace())
                 typeAccessType = FunctionAccessType.AuthorityLimit;
             // 限定角色访问
-            else if (!preAuthorizeAttribute.Roles.IsNullOrWhiteSpace())
+            else if (preAuthorizeAttribute.Roles.IsNotNullOrWhiteSpace())
                 typeAccessType = FunctionAccessType.RoleLimit;
         }
         else
         {
-            // 限定登陆访问
-            if (authorizeAttribute.Roles.IsNullOrWhiteSpace())
-                typeAccessType = FunctionAccessType.Login;
-            // 限定角色访问
-            if (!authorizeAttribute.Roles.IsNullOrWhiteSpace())
-                typeAccessType = FunctionAccessType.RoleLimit;
+            // 限定登陆访问、限定角色访问
+            typeAccessType = authorizeAttribute.Roles.IsNullOrWhiteSpace() ? FunctionAccessType.Login : FunctionAccessType.RoleLimit; 
         }
 
         return typeAccessType;

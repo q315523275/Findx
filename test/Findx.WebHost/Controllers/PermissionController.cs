@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
@@ -22,9 +23,9 @@ public class PermissionController : PermissionControllerBase
     /// <param name="store"></param>
     /// <returns></returns>
     [HttpGet("/permission/list")]
-    public CommonResult PermissionList([FromServices] IFunctionStore<MvcFunction> store)
+    public async Task<CommonResult> PermissionList([FromServices] IFunctionStore<MvcFunction> store)
     {
-        return CommonResult.Success(store.GetFromDatabase());
+        return CommonResult.Success(await store.QueryFromDatabaseAsync());
     }
 
     /// <summary>
@@ -61,8 +62,8 @@ public class PermissionController : PermissionControllerBase
     /// <returns></returns>
     [HttpGet("verify")]
     [Authorize(Policy = FunctionRequirement.Policy, Roles = "admin")]
-    public CommonResult VerifyPermission([FromServices] IFunctionStore<MvcFunction> store)
+    public async Task<CommonResult> VerifyPermission([FromServices] IFunctionStore<MvcFunction> store)
     {
-        return CommonResult.Success(store.GetFromDatabase());
+        return CommonResult.Success(await store.QueryFromDatabaseAsync());
     }
 }

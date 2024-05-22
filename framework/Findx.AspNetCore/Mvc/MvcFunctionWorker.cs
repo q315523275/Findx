@@ -29,10 +29,8 @@ public class MvcFunctionWorker : BackgroundService
     /// </summary>
     /// <param name="stoppingToken"></param>
     /// <returns></returns>
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _functionHandler.Initialize();
-
-        return Task.CompletedTask;
+        await _functionHandler.InitializeAsync(stoppingToken);
     }
 }
