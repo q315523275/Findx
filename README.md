@@ -1,8 +1,6 @@
 <h2 align="center"> Findx 快速开发框架</h2>
-<h4 align="center">基于.Net6、Net8的快速通用开发框架</h4>
 
-
-<div style="text-align:center">
+<div align="center" style="text-align:center">
 
 [![GitHub license](https://img.shields.io/github/license/q315523275/Findx)](https://github.com/q315523275/Findx/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/q315523275/Findx?style=social)](https://github.com/q315523275/Findx/stargazers)
