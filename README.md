@@ -16,7 +16,7 @@
 如果对您有帮助，您可以点右上角 “Star” 收藏一下 ，谢谢！~
 ```
 
-## 🍟 框架组件组织
+## 🍖 框架组件组织
 
 ![image](https://raw.githubusercontent.com/q315523275/Findx/main/images/20240524-101559.png)
 
@@ -47,7 +47,7 @@
 -   WebApplication1：配置中心 客户端 使用示例。
 
 
-## 🍟 Nuget Packages
+## 🎁 Nuget Packages
 
 | 包名称                                                       |版本|下载数|
 |-----------------------------------------------------------|----|----|
@@ -78,6 +78,45 @@
 
 -   Findx.Module.EleAdminPlu Swagger 在线地址：http://106.54.160.19:10020/swagger/index.html
 
+## 📙 启动
+
+```
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddFindx().AddModules();
+builder.Services.AddControllers()
+    .AddMvcFilter<FindxGlobalAttribute>()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new LongStringJsonConverter());
+    });
+builder.Services.AddWebSockets(x => { x.KeepAliveInterval = TimeSpan.FromMinutes(2); });
+builder.Services.AddCorsAccessor();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+app.UseJsonExceptionHandler();
+app.UseCorsAccessor().UseRouting();
+app.UseStaticFiles(new StaticFileOptions
+{
+    RequestPath = "/storage",
+    FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "storage"))
+});
+app.UseWebSockets().MapWebSocketManager("/ws", app.Services.GetRequiredService<WebSocketHandler>());
+app.UseFindx();
+app.MapControllersWithAreaRoute();
+// app.UseWelcomePage();
+
+// Run Server
+app.UseFindxHosting();
+```
 
 ## 💐 特别鸣谢
 
