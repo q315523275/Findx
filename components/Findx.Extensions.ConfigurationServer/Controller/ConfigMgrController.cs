@@ -52,7 +52,7 @@ public class ConfigMgrController : AreaApiControllerBase
     /// </summary>
     /// <param name="req">查询条件信息</param>
     /// <returns></returns>
-    [HttpGet("page")]
+    [HttpGet("page"), Description("分页")]
     public async Task<CommonResult> PageAsync([FromQuery] QueryConfigDataDto req)
     {
         var whereExp = PredicateBuilder.New<ConfigDataInfo>()
@@ -71,7 +71,7 @@ public class ConfigMgrController : AreaApiControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("getConfig")]
+    [HttpGet("getConfig"), Description("详情")]
     public async Task<CommonResult> GetConfigAsync(long id)
     {
         var model = await _configDataRepo.GetAsync(id);
@@ -83,7 +83,7 @@ public class ConfigMgrController : AreaApiControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpDelete("delete")]
+    [HttpDelete("delete"), Description("删除")]
     public async Task<CommonResult> DeleteAsync(long id)
     {
         await _configDataRepo.DeleteAsync(id);
@@ -95,7 +95,7 @@ public class ConfigMgrController : AreaApiControllerBase
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
-    [HttpGet("history")]
+    [HttpGet("history"), Description("历史")]
     public async Task<CommonResult> HistoryAsync(long id)
     {
         var model = await _configDataRepo.GetAsync(id);
@@ -120,7 +120,7 @@ public class ConfigMgrController : AreaApiControllerBase
     /// <param name="req">配置信息</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpPost("publishConfig")]
+    [HttpPost("publishConfig"), Description("发布")]
     public async Task<CommonResult> PublishConfigAsync([FromBody] PublishConfigDto req, CancellationToken cancellationToken)
     {
         var dbConfig = await _configDataRepo.FirstAsync(x => x.DataId == req.DataId, cancellationToken);

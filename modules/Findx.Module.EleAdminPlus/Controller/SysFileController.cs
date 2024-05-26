@@ -41,7 +41,7 @@ public class SysFileController: AreaApiControllerBase
     /// <param name="uploadFileDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpPost("uploadFile")]
+    [HttpPost("uploadFile"), Description("上传")]
     [DisableAuditing]
     public async Task<CommonResult> UploadFileAsync([FromForm] UploadFileDto uploadFileDto, CancellationToken cancellationToken)
     {

@@ -34,7 +34,7 @@ public class ClusterController : AreaApiControllerBase
     /// <param name="req"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpPost("configChangeNotify")]
+    [HttpPost("configChangeNotify"), Description("变更通知接收")]
     [InternalNetworkLimiter]
     public async Task<CommonResult> ClusterConfigChangeNotifyAsync([FromBody] ConfigDataChangeDto req, CancellationToken cancellationToken)
     {

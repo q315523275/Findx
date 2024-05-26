@@ -32,7 +32,7 @@ public class MetricsController: AreaApiControllerBase
     ///     客户端连接信息
     /// </summary>
     /// <returns></returns>
-    [HttpGet("clients")]
+    [HttpGet("clients"), Description("客户端清单")]
     public CommonResult Clients()
     {
         return CommonResult.Success(_clientCallBack.Metrics());

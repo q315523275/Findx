@@ -51,7 +51,7 @@ public class ConfigClientController : AreaApiControllerBase
     /// <param name="environment">环境变量</param>
     /// <param name="version">版本号</param>
     /// <param name="load"></param>
-    [HttpGet]
+    [HttpGet, Description("获取配置")]
     public async Task GetAsync([Required] string appId, [Required] string sign, [Required] string environment, [Required] string reqId, [Required] long version = 0, bool load = false)
     {
         var model = await _appRepo.FirstAsync(x => x.AppId == appId);
