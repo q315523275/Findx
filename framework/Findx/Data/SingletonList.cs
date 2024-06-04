@@ -8,7 +8,7 @@ public class SingletonList<T> : Singleton<ConcurrentBag<T>>
 {
     static SingletonList()
     {
-        Singleton<ConcurrentBag<T>>.Instance = new ConcurrentBag<T>();
+        Singleton<ConcurrentBag<T>>.Instance = [];
     }
 
     /// <summary>

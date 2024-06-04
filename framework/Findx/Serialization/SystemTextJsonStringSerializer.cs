@@ -1,5 +1,6 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Findx.Serialization;
 
@@ -52,7 +53,11 @@ public class SystemTextJsonStringSerializer : IJsonSerializer
         // 允许在反序列化的时候原本应为数字的字符串（带引号的数字）转为数字
         NumberHandling = JsonNumberHandling.AllowReadingFromString,
         // 处理循环引用类型，比如Book类里面有一个属性也是Book类
-        ReferenceHandler = ReferenceHandler.IgnoreCycles
+        ReferenceHandler = ReferenceHandler.IgnoreCycles,
+        #if NET8_0_OR_GREATER
+            // 类型信息解析程序
+            TypeInfoResolver = new DefaultJsonTypeInfoResolver()
+        #endif
     };
 
     /// <summary>

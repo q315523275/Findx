@@ -1,4 +1,5 @@
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 using Findx.Common;
 using Findx.Extensions;
 using Findx.Serialization;
@@ -66,6 +67,7 @@ public static class ExtraObjectExtensions
         }
         else if (value.GetType().IsPrimitiveExtendedIncludingNullable(true))
         {
+            JsonValue.Create(value);
             // ReSharper disable once PossibleNullReferenceException
             jsonObject[name] = JsonValue.Create(value);
         }

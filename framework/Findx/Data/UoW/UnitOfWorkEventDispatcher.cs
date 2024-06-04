@@ -10,9 +10,9 @@ namespace Findx.Data;
 /// </summary>
 public class UnitOfWorkEventDispatcher: IUnitOfWorkEventDispatcher
 {
-    private readonly List<IApplicationEvent> _applicationEvents = new();
-    private readonly List<IApplicationEvent> _applicationAsyncEvents = new();
-    private readonly List<IIntegrationEvent> _distributedEvents = new();
+    private readonly List<IApplicationEvent> _applicationEvents = [];
+    private readonly List<IApplicationEvent> _applicationAsyncEvents = [];
+    private readonly List<IIntegrationEvent> _distributedEvents = [];
     private readonly IMessageDispatcher _messageDispatcher;
     private readonly IApplicationEventPublisher _applicationEventPublisher;
     private readonly IDistributedEventBus _distributedEventBus;

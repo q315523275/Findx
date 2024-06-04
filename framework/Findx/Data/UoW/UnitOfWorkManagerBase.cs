@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Findx.DependencyInjection;
 
 namespace Findx.Data;
 

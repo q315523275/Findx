@@ -15,7 +15,7 @@ public class TreeBuilder<TNode, TKey> where TNode : ITreeNode<TKey> where TKey :
     /// <returns></returns>
     public List<TNode> Build(List<TNode> nodes, TKey rootParentId)
     {
-        nodes.ForEach(u => BuildChildNodes(nodes, u, new List<TNode>()));
+        nodes.ForEach(u => BuildChildNodes(nodes, u, []));
 
         var result = new List<TNode>();
         nodes.ForEach(u =>
