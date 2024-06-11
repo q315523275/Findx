@@ -6,7 +6,6 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Extensions;
 using Findx.Data;
-using Findx.DependencyInjection;
 using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Security;
@@ -51,9 +50,9 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
         var operation = new AuditOperationEntry
         {
             FunctionName = function.Name,
-            Ip = httpContext.GetClientIp(),
+            ClientIpAddress = httpContext.GetClientIp(),
             UserAgent = httpContext.Request.Headers.GetOrDefault("User-Agent"),
-            CreatedTime = DateTime.Now
+            ExecutionTime = DateTime.Now
         };
 
         // 认证参数
@@ -66,10 +65,10 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
         }
 
         dict.AuditOperation = operation;
-
+        
         // 执行业务
         var actionContext = await next();
-
+        
         // 审计执行判断
         if (!options.Value.Enabled || !function.AuditOperationEnabled) return;
         

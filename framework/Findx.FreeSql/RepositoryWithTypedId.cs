@@ -15,6 +15,11 @@ using Microsoft.Extensions.Options;
 
 namespace Findx.FreeSql;
 
+/// <summary>
+///     自定义主键类型仓储实现服务
+/// </summary>
+/// <typeparam name="TEntity"></typeparam>
+/// <typeparam name="TKey"></typeparam>
 public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class, IEntity<TKey>
 {
     private readonly EntityExtensionAttribute _entityExtensionAttribute;

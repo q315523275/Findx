@@ -64,13 +64,13 @@ namespace Findx.FreeSql
         /// <summary>
         ///     数据源共享
         /// </summary>
-        public List<string> DataSourceSharing { set; get; } = new();
+        public List<string> DataSourceSharing { set; get; } = [];
 
         /// <summary>
         ///     字段名称转换类型
         /// </summary>
         public NameConvertType NameConvertType { set; get; } = NameConvertType.None;
-
+        
         /// <summary>
         ///     是否打印SQL日志调试
         /// </summary>
@@ -105,5 +105,15 @@ namespace Findx.FreeSql
         ///     自动同步实体结构【开发环境必备】，FreeSql不会扫描程序集，只有CRUD时才会生成表。
         /// </summary>
         public bool UseAutoSyncStructure { set; get; }
+        
+        /// <summary>
+        ///     实体审计
+        /// </summary>
+        public bool AuditEntity { set; get; }
+        
+        /// <summary>
+        ///     Sql审计
+        /// </summary>
+        public bool AuditSqlRaw { set; get; }
     }
 }

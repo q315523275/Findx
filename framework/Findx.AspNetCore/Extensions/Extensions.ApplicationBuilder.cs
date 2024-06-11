@@ -124,6 +124,16 @@ public static partial class Extensions
     {
         return builder.UseMiddleware<JsonExceptionHandlerMiddleware>();
     }
+    
+    /// <summary>
+    ///     添加跟踪标识中间件
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <returns></returns>
+    public static IApplicationBuilder UseCorrelationId(this IApplicationBuilder builder)
+    {
+        return builder.UseMiddleware<CorrelationIdMiddleware>();
+    }
 
     /// <summary>
     ///     使用跨域请求

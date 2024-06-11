@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Security.Principal;
 using Findx.AspNetCore.Upload;
 using Findx.DependencyInjection;
@@ -39,8 +40,7 @@ public class AspNetCoreModule : StartupModule
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
-        services.TryAddTransient<IPrincipal>(provider =>
-            provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
+        services.TryAddTransient<IPrincipal>(provider => provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
         services.TryAddSingleton<ICurrentUser, CurrentUser>();
         services.TryAddSingleton<IThreadCurrentClientIpAccessor, HttpContextClientIpAccessor>();
 

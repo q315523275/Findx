@@ -2,7 +2,6 @@
 using Findx.Caching;
 using Findx.Caching.InMemory;
 using Findx.Data;
-using Findx.DependencyInjection;
 using Findx.Email;
 using Findx.Events;
 using Findx.ExceptionHandling;
@@ -19,6 +18,7 @@ using Findx.Setting;
 using Findx.Sms;
 using Findx.Storage;
 using Findx.Threading;
+using Findx.Tracing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SequentialGuidGenerator = Findx.Guids.SequentialGuidGenerator;
 
@@ -111,6 +111,10 @@ public class FindxCoreModule : StartupModule
         // 线程取消通知
         services.AddSingleton<ICancellationTokenProvider, NullCancellationTokenProvider>();
 
+        // 默认跟踪标识提供程序
+        services.Configure<CorrelationIdOptions>(configuration.GetSection("Findx:CorrelationId"));
+        services.AddSingleton<ICorrelationIdProvider, DefaultCorrelationIdProvider>();
+        
         // 应用上下文
         services.AddSingleton<IApplicationContext, ApplicationContext>();
 
@@ -127,6 +131,8 @@ public class FindxCoreModule : StartupModule
 
         // 审计配置
         services.Configure<AuditingOptions>(configuration.GetSection("Findx:Auditing"));
+        services.AddScoped<IApplicationEventHandler<AuditEntityEvent>, AuditEntityEventHandler>();
+        services.AddSingleton<IAuditEntityReport, DefaultAuditEntityReport>();
 
         return services;
     }

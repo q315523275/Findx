@@ -1,23 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
         <PackageVersion>2023.11.3.1</PackageVersion>
-        <UserSecretsId>d8300641-e05e-4c99-a4a7-81271fcd8d0f</UserSecretsId>
+        <LangVersion>default</LangVersion>
     </PropertyGroup>
-    <ItemGroup>
-        <None Remove="Areas\" />
-        <None Remove="Const\" />
-        <None Remove="DTO\" />
-        <None Remove="Enum\" />
-        <None Remove="Models\" />
-    </ItemGroup>
-    <ItemGroup>
-        <Folder Include="Enum\" />
-        <Folder Include="Models\" />
-    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Findx.AspNetCore" Version="2024.5.22.1" />

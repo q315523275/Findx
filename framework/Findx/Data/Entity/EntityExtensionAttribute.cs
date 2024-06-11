@@ -20,4 +20,9 @@ public class EntityExtensionAttribute : Attribute
     ///     是否包含分表
     /// </summary>
     public bool? HasTableSharding { get; set; }
+    
+    /// <summary>
+    ///     是否禁用审计
+    /// </summary>
+    public bool DisableAuditing { get; set; }
 }

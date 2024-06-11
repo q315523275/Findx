@@ -7,6 +7,7 @@ using Findx.Extensions;
 using Findx.Modularity;
 using FreeSql;
 using FreeSql.Aop;
+using FreeSql.Extensions.EntityUtil;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -55,36 +56,36 @@ public class FreeSqlModule : StartupModule
         var freeSqlClient = services.GetOrAddSingletonInstance(() => new FreeSqlClient(FreeSqlOptions));
         foreach (var item in FreeSqlOptions.DataSource)
         {
-            // FreeSQL构建开始
-            var freeSql = new FreeSqlBuilder().UseConnectionString(item.Value.DbType, item.Value.ConnectionString)
-                .UseAutoSyncStructure(item.Value.UseAutoSyncStructure)
-                .UseNameConvert(item.Value.NameConvertType)
-                .Build();
+            // FreeSql构建开始
+            var fsql = new FreeSqlBuilder().UseConnectionString(item.Value.DbType, item.Value.ConnectionString)
+                                           .UseAutoSyncStructure(item.Value.UseAutoSyncStructure)
+                                           .UseNameConvert(item.Value.NameConvertType)
+                                           .Build();
 
             // 开启逻辑删除
             if (item.Value.SoftDeletable)
-                freeSql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
+                fsql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
 
             // 开启租户隔离
             if (item.Value.MultiTenant)
-                freeSql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current != Guid.Empty, it => it.TenantId == TenantManager.Current);
+                fsql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current != Guid.Empty, it => it.TenantId == TenantManager.Current);
             
             // AOP
-            freeSql.Aop.CurdAfter += (o, e) => Aop_CurdAfter(item.Value, o, e);
-
-            freeSql.Aop.AuditValue += (o, e) => Aop_AuditValue(item.Value, o, e);
+            fsql.Aop.CurdBefore += (_, e) => Aop_CurdBefore(e, item.Value);
+            fsql.Aop.CurdAfter += (_, e) => Aop_CurdAfter(e, item.Value);
+            fsql.Aop.AuditValue += (_, e) => Aop_AuditValue(e, item.Value, fsql);
 
             // 注入
-            freeSqlClient.TryAdd(item.Key, freeSql);
+            freeSqlClient.TryAdd(item.Key, fsql);
 
             // 数据源共享
             if (item.Value.DataSourceSharing is { Count: > 0 }) 
                 foreach (var sourceKey in item.Value.DataSourceSharing) 
-                    freeSqlClient.TryAdd(sourceKey, freeSql);
+                    freeSqlClient.TryAdd(sourceKey, fsql);
 
             // 注册单独主IFreeSql
             if (item.Key == FreeSqlOptions.Primary)
-                services.AddSingleton(freeSql);
+                services.AddSingleton(fsql);
         }
 
         // 添加仓储实现
@@ -97,59 +98,199 @@ public class FreeSqlModule : StartupModule
         var unitOfWorkManager = new ServiceDescriptor(typeof(IUnitOfWorkManager), typeof(UnitOfWorkManager), ServiceLifetime.Scoped);
         services.Replace(unitOfWorkManager);
 
+        var auditEntityReport = new ServiceDescriptor(typeof(IAuditEntityReport), typeof(FreeSqlAuditEntityReport), ServiceLifetime.Singleton);
+        services.Replace(auditEntityReport);
+        
         // Entity属性字典初始化
         SingletonDictionary<Type, EntityExtensionAttribute>.Instance.ThrowIfNull();
 
         return services;
     }
-
+    
     /// <summary>
-    /// Aop_CurdAfter
+    ///     Aop_CurdBefore
     /// </summary>
-    private void Aop_CurdAfter(FreeSqlConnectionConfig config, object sender, CurdAfterEventArgs e)
+    private void Aop_CurdBefore(CurdBeforeEventArgs e, FreeSqlConnectionConfig option)
+    {
+        // 实体审计
+        Aop_CurdBefore_AuditEntity(e, option);
+    }
+    
+    /// <summary>
+    ///     Aop_CurdAfter
+    /// </summary>
+    private void Aop_CurdAfter(CurdAfterEventArgs e, FreeSqlConnectionConfig option)
     {
         // 开启SQL打印
-        if (config.PrintSql)
+        Aop_CurdAfter_PrintSql(e, option);
+        
+        // 耗时检测
+        Aop_CurdAfter_Outage_Detection(e, option);
+        
+        // Sql审计
+        Aop_CurdAfter_AuditSqlRaw(e, option);
+    }
+
+    /// <summary>
+    ///     AOP打印执行sql
+    /// </summary>
+    /// <param name="option"></param>
+    /// <param name="e"></param>
+    private static void Aop_CurdAfter_PrintSql(CurdAfterEventArgs e, FreeSqlConnectionConfig option)
+    {
+        if (!option.PrintSql) return;
+        
+        // 开启SQL打印
+        using var psb = Pool.StringBuilder.Get(out var sb);
+        sb.AppendLine("Creating a new SqlSession");
+        sb.AppendLine("==>  Preparing:" + e.Sql);
+        if (e.DbParms.Length > 0)
         {
-            using var psb = Pool.StringBuilder.Get(out var sb);
-            sb.AppendLine("Creating a new SqlSession");
-            sb.AppendLine("==>  Preparing:" + e.Sql);
-            if (e.DbParms.Length > 0)
+            sb.AppendLine("==>  Parameters:" + e.DbParms?.Length);
+            if (e.DbParms != null)
             {
-                sb.AppendLine("==>  Parameters:" + e.DbParms?.Length);
-                if (e.DbParms != null)
-                    foreach (var pa in e.DbParms)
-                        sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value);
+                foreach (var pa in e.DbParms)
+                {
+                    sb.AppendLine("==>  Column:" + pa?.ParameterName + "  Row:" + pa?.Value);
+                }
             }
-
-            sb.Append($"==>  ExecuteTime:{e.ElapsedMilliseconds:0.000}ms");
-            var logger = ServiceLocator.GetService<ILogger<FreeSqlModule>>();
-            // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
-            logger?.LogInformation(sb.ToString());
         }
+        sb.Append($"==>  ExecuteTime:{e.ElapsedMilliseconds:0.000}ms");
+        var logger = ServiceLocator.GetService<ILogger<FreeSqlModule>>();
+        // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+        logger?.LogInformation(sb.ToString());
+    }
 
+    /// <summary>
+    ///     AOP耗时检测
+    /// </summary>
+    /// <param name="option"></param>
+    /// <param name="e"></param>
+    private static void Aop_CurdAfter_Outage_Detection(CurdAfterEventArgs e, FreeSqlConnectionConfig option)
+    {
         // 开启慢SQL记录
-        if (config.OutageDetection && e.ElapsedMilliseconds > config.OutageDetectionInterval * 1000)
+        if (!option.OutageDetection || e.ElapsedMilliseconds <= option.OutageDetectionInterval * 1000) return;
+        // 推送慢sql事件
+        var eventbus = ServiceLocator.GetService<IApplicationContext>();
+        eventbus?.PublishEvent(new SqlExecutionSlowEvent { ElapsedMilliseconds = e.ElapsedMilliseconds, SqlRaw = e.Sql });
+    }
+
+    /// <summary>
+    ///     AOP实体审计
+    /// </summary>
+    /// <param name="option"></param>
+    /// <param name="e"></param>
+    private static void Aop_CurdBefore_AuditEntity(CurdBeforeEventArgs e, FreeSqlConnectionConfig option)
+    {
+        if ((!option.AuditEntity && !option.AuditSqlRaw) || e.EntityType.GetEntityExtensionAttribute().DisableAuditing || e.CurdType == CurdType.Select) return;
+
+        var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
+        if (auditEntityReport != null && option.AuditEntity)
         {
-            // 推送慢sql事件
-            ServiceLocator.GetService<IApplicationContext>()?.PublishEvent(new SqlExecutionSlowEvent { ElapsedMilliseconds = e.ElapsedMilliseconds, SqlRaw = e.Sql });
+            var auditEntity = new AuditEntityEntry
+            {
+                EntityTypeName = e.EntityType.Name,
+                EntityTypeFullName = e.EntityType.FullName,
+                ExecutionTime = DateTime.Now,
+            };
+            auditEntityReport.AuditEntity(auditEntity);
+        }
+    }
+    
+    
+    /// <summary>
+    ///     AOP实体审计
+    /// </summary>
+    /// <param name="option"></param>
+    /// <param name="e"></param>
+    private static void Aop_CurdAfter_AuditSqlRaw(CurdAfterEventArgs e, FreeSqlConnectionConfig option)
+    {
+        if ((!option.AuditEntity && !option.AuditSqlRaw) || e.EntityType.GetEntityExtensionAttribute().DisableAuditing || e.CurdType == CurdType.Select) return;
+
+        var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
+        if (auditEntityReport != null && option.AuditSqlRaw)
+        {
+            var auditSqlRawEntry = new AuditSqlRawEntry
+            {
+                EntityTypeFullName = e.EntityType.FullName,
+                DbTableName = e.Table.DbName,
+                SqlRaw = e.Sql,
+                ExecutionTime = DateTime.Now,
+                ExecutionDuration = e.ElapsedMilliseconds,
+                ExecutionResult = e.ExecuteResult?.ToString()
+            };
+            if (e.DbParms?.Length > 0)
+            {
+                foreach (var pa in e.DbParms)
+                {
+                    auditSqlRawEntry.DbParameters.Add(new AuditSqlRawParameterEntry
+                    {
+                        DbType = pa.DbType.ToString(),
+                        SourceColumn = pa.SourceColumn,
+                        ParameterName = pa.ParameterName,
+                        Value = pa.Value?.ToString()
+                    });
+                }
+            }
+            auditEntityReport.AuditSqlRaw(auditSqlRawEntry);
         }
     }
     
     /// <summary>
-    /// Aop_AuditValue
+    ///     Aop_AuditValue
     /// </summary>
-    private void Aop_AuditValue(FreeSqlConnectionConfig config, object sender, AuditValueEventArgs e)
+    private void Aop_AuditValue(AuditValueEventArgs e, FreeSqlConnectionConfig option, IFreeSql fsql)
     {
         // 租户自动赋值
-        if (config.MultiTenant && TenantManager.Current != Guid.Empty && e.Property.PropertyType == typeof(Guid?) && e.Property.Name == config.MultiTenantFieldName)
+        Aop_AuditValue_Tenant(e, option);
+        
+        // 审计值
+        Aop_AuditValue_AuditProperty(e, option, fsql);
+    }
+
+    /// <summary>
+    ///     AOP租户自动赋值
+    /// </summary>
+    /// <param name="option"></param>
+    /// <param name="e"></param>
+    private static void Aop_AuditValue_Tenant(AuditValueEventArgs e, FreeSqlConnectionConfig option)
+    {
+        // 租户自动赋值
+        if (option.MultiTenant && TenantManager.Current != Guid.Empty && e.Property.Name == option.MultiTenantFieldName && e.Property.PropertyType == typeof(Guid?))
         {
             e.Value = TenantManager.Current;
         }
     }
+
+    /// <summary>
+    ///     AOP审计值
+    /// </summary>
+    /// <param name="option"></param>
+    /// <param name="e"></param>
+    /// <param name="fsql"></param>
+    private static void Aop_AuditValue_AuditProperty(AuditValueEventArgs e, FreeSqlConnectionConfig option, IFreeSql fsql)
+    {
+        if (!option.AuditEntity) return;
+        
+        var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
+        if (auditEntityReport != null)
+        {
+            // 实体值审计
+            var auditEntityPropertyEntry = new AuditEntityPropertyEntry
+            {
+                EntityId = fsql.GetEntityKeyString(e.Object.GetType(), e.Object, false),
+                EntityTypeName = e.Column.Table.CsName,
+                DisplayName = e.Column.Comment,
+                PropertyName = e.Property.Name,
+                PropertyTypeFullName = e.Property.PropertyType.FullName,
+                NewValue = e.Value?.ToString()
+            };
+            auditEntityReport.AuditEntityProperty(auditEntityPropertyEntry);
+        }
+    }
         
     /// <summary>
-    /// 启用模块
+    ///     启用模块
     /// </summary>
     /// <param name="app"></param>
     public override void UseModule(IServiceProvider app)

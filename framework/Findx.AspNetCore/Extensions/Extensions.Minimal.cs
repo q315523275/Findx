@@ -40,6 +40,7 @@ public partial class Extensions
         foreach (var uri in appInfo.Uris.Split(";"))
             app.Urls.Add(uri);
 
+        
         app.Run();
     }
 
@@ -122,6 +123,17 @@ public partial class Extensions
         return app;
     }
 
+    /// <summary>
+    ///     添加跟踪标识中间件
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    public static WebApplication UseCorrelationId(this WebApplication app)
+    {
+        app.UseMiddleware<CorrelationIdMiddleware>();
+        return app;
+    }
+    
     /// <summary>
     ///     使用跨域请求
     /// </summary>

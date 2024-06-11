@@ -6,101 +6,117 @@ using Findx.Data;
 using Findx.Extensions;
 using FreeSql.Internal.ObjectPool;
 
-namespace Findx.FreeSql
+namespace Findx.FreeSql;
+
+/// <summary>
+///     FreeSql工作单元
+/// </summary>
+public class UnitOfWork : UnitOfWorkBase
 {
+    private readonly IFreeSql _fsql;
+    private Object<DbConnection> _conn;
+        
     /// <summary>
-    ///     FreeSql工作单元
+    ///     Ctor
     /// </summary>
-    public class UnitOfWork : UnitOfWorkBase
+    /// <param name="serviceProvider"></param>
+    /// <param name="fsql"></param>
+    public UnitOfWork(IServiceProvider serviceProvider, IFreeSql fsql) : base(serviceProvider)
     {
-        private readonly IFreeSql _fsql;
-        private Object<DbConnection> _conn;
+        _fsql = fsql;
+    }
         
-        public UnitOfWork(IServiceProvider serviceProvider, IFreeSql fsql) : base(serviceProvider)
+    /// <summary>
+    ///     归还数据库连接
+    /// </summary>
+    private void ReturnObject()
+    {
+        if (_conn != null)
         {
-            _fsql = fsql;
+            _fsql.Ado.MasterPool.Return(_conn);
+            _conn = null;
         }
         
-        /// <summary>
-        ///     归还数据库连接
-        /// </summary>
-        private void ReturnObject()
-        {
-            if (_conn != null)
-            {
-                _fsql.Ado.MasterPool.Return(_conn);
-                _conn = null;
-            }
-        
-            if (Transaction != null) Transaction = null;
-        }
+        if (Transaction != null) Transaction = null;
+    }
 
-        /// <summary>
-        /// 真实开启事物
-        /// </summary>
-        /// <param name="cancellationToken"></param>
-        protected override async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
-        {
-            // 如果已获取数据库连接，先归还再获取
-            if (_conn != null)
-                _fsql.Ado.MasterPool.Return(_conn);
+    /// <summary>
+    ///     真实开启事物
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    protected override async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        // 如果已获取数据库连接，先归还再获取
+        if (_conn != null)
+            _fsql.Ado.MasterPool.Return(_conn);
             
-            // 数据库连接池获取连接
-            _conn = _fsql.Ado.MasterPool.Get();
-            try
+        // 数据库连接池获取连接
+        _conn = _fsql.Ado.MasterPool.Get();
+        try
+        {
+            Transaction = await _conn.Value.BeginTransactionAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            ReturnObject();
+            ex.ReThrow();
+        }
+    }
+
+    /// <summary>
+    ///     保存变更数据
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected override Task InternalSaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        // 当前不支持
+        return Task.CompletedTask;
+    }
+    
+    /// <summary>
+    ///     事物提交
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    protected override async Task InternalCommitAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (Transaction?.Connection != null)
             {
-                Transaction = await _conn.Value.BeginTransactionAsync(cancellationToken);
-            }
-            catch (Exception exception)
-            {
-                ReturnObject();
-                // 抛出原始异常
-                exception.ReThrow();
+                await Transaction.CommitAsync(cancellationToken);
             }
         }
-
-        protected override Task InternalSaveChangesAsync(CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            // 当前不支持
-            return Task.CompletedTask;
+            ex.ReThrow();
         }
-
-        protected override async Task InternalCommitAsync(CancellationToken cancellationToken = default)
+        finally
         {
-            try
+            ReturnObject();
+        }
+    }
+
+    /// <summary>
+    ///     事物回滚
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    protected override async Task InternalRollbackAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            if (Transaction?.Connection != null)
             {
-                if (Transaction?.Connection != null)
-                {
-                    await Transaction.CommitAsync(cancellationToken);
-                }
-            }
-            catch (Exception ex)
-            {
-                ex.ReThrow();
-            }
-            finally
-            {
-                ReturnObject();
+                await Transaction.RollbackAsync(cancellationToken);
             }
         }
-
-        protected override async Task InternalRollbackAsync(CancellationToken cancellationToken = default)
+        catch (Exception ex)
         {
-            try
-            {
-                if (Transaction?.Connection != null)
-                {
-                    await Transaction.RollbackAsync(cancellationToken);
-                }
-            }
-            catch (Exception ex)
-            {
-                ex.ReThrow();
-            }
-            finally
-            {
-                ReturnObject();
-            }
+            ex.ReThrow();
+        }
+        finally
+        {
+            ReturnObject();
         }
     }
 }

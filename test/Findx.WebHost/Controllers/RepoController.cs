@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.WebHost.Model;
@@ -14,7 +15,7 @@ namespace Findx.WebHost.Controllers;
 public class RepoController : Controller
 {
     /// <summary>
-    /// repo
+    ///     repo
     /// </summary>
     /// <param name="uowManager"></param>
     /// <param name="keyGenerator"></param>
@@ -36,15 +37,13 @@ public class RepoController : Controller
             var y = await repo2.DeleteAsync();
 
             // a1.Rows.First().GetProperty<string>("title");
-
-
             await uow.CommitAsync();
         }
         return keyGenerator.Create();
     }
     
     /// <summary>
-    /// repo
+    ///     repo
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <returns></returns>
@@ -68,8 +67,40 @@ public class RepoController : Controller
                 var y = await repo2.DeleteAsync();
 
                 // a1.Rows.First().GetProperty<string>("title");
+                await uow.CommitAsync();
+            }
+        }
+        return keyGenerator.Create();
+    }
+    
+    
+    /// <summary>
+    ///     repo
+    /// </summary>
+    /// <param name="keyGenerator"></param>
+    /// <returns></returns>
+    [HttpGet("/repo/update")]
+    [AuditOperation]
+    public async Task<Guid> UpdateAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
+    {
+        await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
+        {
+            var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
+            await using (var uow = await unitOfWorkManager.GetConnUnitOfWorkAsync(true, true))
+            {
+                var repo = uow.GetRepository<TestNewsInfo, int>();
 
-
+                var id = Utilities.RandomUtility.RandomInt();
+                var model = new TestNewsInfo { Id = id };
+                Console.WriteLine($"实体初始化:{model.GetHashCode()}");
+                
+                model.SetProperty("key1", "test");
+                await repo.InsertAsync(model);
+                
+                model.SetProperty("key1", "test2222");
+                await repo.UpdateAsync(model, updateColumns: x => new { x.ExtraProperties });
+                
+                await repo.DeleteAsync();
                 await uow.CommitAsync();
             }
         }

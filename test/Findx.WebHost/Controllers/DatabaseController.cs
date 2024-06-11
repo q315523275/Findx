@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Findx.Data;
 using Findx.FreeSql;
@@ -13,14 +15,15 @@ namespace Findx.WebHost.Controllers;
 public class DatabaseController: Controller
 {
     [HttpGet("/database/tables")]
-    public object Tables([FromServices] IFreeSql fsql)
+    public object Tables([FromServices] IFreeSql fsql, string name)
     {
-        return fsql.Ado.Query<dynamic>("SHOW TABLES");
+        return fsql.DbFirst.GetTablesByDatabase(name).Select(x => new { x.Id, x.Name, x.Comment, x.Schema });
     }
     
     [HttpGet("/database/columns")]
-    public object Columns([FromServices] IFreeSql fsql)
+    public object Columns([FromServices] IFreeSql fsql, string name)
     {
-        return fsql.Ado.Query<dynamic>("DESC sys_user");
+        var table = fsql.DbFirst.GetTableByName(name);
+        return table.Columns.Select(x => new { x.Comment, x.Name, x.DbTypeText, x.IsPrimary, x.IsNullable, x.DefaultValue, x.Position }).OrderBy(x => x.Position);
     }
 }
