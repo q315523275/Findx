@@ -51,20 +51,6 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     }
 
     /// <summary>
-    ///     构建排序
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    protected override List<OrderByParameter<SysUserInfo>> CreatePageOrderExpression(QueryUserRequest request)
-    {
-        var orderExp = DataSortBuilder.New<SysUserInfo>();
-        if (!request.SortField.IsNullOrWhiteSpace())
-            orderExp.Order(request.SortField, request.SortDirection);
-        orderExp.OrderByDescending(it => it.Id);
-        return orderExp.Build();
-    }
-
-    /// <summary>
     ///     分页查询
     /// </summary>
     /// <param name="request"></param>

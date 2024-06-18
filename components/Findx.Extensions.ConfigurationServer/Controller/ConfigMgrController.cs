@@ -107,7 +107,7 @@ public class ConfigMgrController : AreaApiControllerBase
                                        .And(x => x.Environment == model.Environment)
                                        .And(x => x.DataId == model.DataId)
                                        .Build();
-        var orderExp = DataSortBuilder.New<ConfigHistoryInfo>().OrderByDescending(x => x.Version).Build();
+        var orderExp = SortConditionBuilder.New<ConfigHistoryInfo>().OrderByDescending(x => x.Version).Build();
         
         var rows = await _historyRepo.SelectAsync(whereExpression: whereExp, orderParameters: orderExp);
         

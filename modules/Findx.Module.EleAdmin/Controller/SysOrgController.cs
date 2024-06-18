@@ -34,14 +34,4 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, SetOrgRequest, Qu
                                        .Build();
         return whereExp;
     }
-
-    /// <summary>
-    ///     构建排序
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    protected override List<OrderByParameter<SysOrgInfo>> CreatePageOrderExpression(QueryOrgRequest request)
-    {
-        return DataSortBuilder.New<SysOrgInfo>().OrderBy(x => x.Sort).Build();
-    }
 }
