@@ -6,8 +6,8 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Castle;
 using Findx.Data;
 using Findx.Extensions;
+using Findx.Extensions.AuditLogs.Services;
 using Findx.WebHost.Aspect;
-using Findx.WebHost.Auditing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -38,13 +38,14 @@ builder.Services.AddTransient(typeof(IMachine), provider =>
         return proxyGeneratorInstance.CreateInterfaceProxyWithoutTarget(typeof(IMachine), (IInterceptor)provider.GetRequiredService(rpcInterceptorAdapterType));
     });
 
-builder.Services.AddScoped<IAuditStore, AuditStore>();
+builder.Services.AddScoped<IAuditStore, AuditStoreServices>();
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseCorrelationId();
 app.UseJsonExceptionHandler();
+app.UseRouting();
 app.UseFindx();
 app.MapControllersWithAreaRoute();
 

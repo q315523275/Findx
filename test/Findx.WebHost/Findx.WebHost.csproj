@@ -7,6 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\components\Findx.Extensions.AuditLogs\Findx.Extensions.AuditLogs.csproj" />
         <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj" />
         <ProjectReference Include="..\..\framework\Findx.Castle\Findx.Castle.csproj" />
         <ProjectReference Include="..\..\framework\Findx.DinkToPdf\Findx.DinkToPdf.csproj" />

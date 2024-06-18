@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
 namespace Findx.Extensions.AuditLogs.Models;
@@ -5,37 +7,48 @@ namespace Findx.Extensions.AuditLogs.Models;
 /// <summary>
 ///     审计日志实体属性变更信息
 /// </summary>
+[Table("FindxEntityPropertyChanges")]
+[EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
+[Description("审计操作信息")]
 public class AuditEntityPropertyInfo: EntityBase<Guid>
 {
     /// <summary>
-    ///     租户Id
+    ///     获取或设置 实体主键值
     /// </summary>
-    public string TenantId { set; get; }
+    public Guid EntityChangeId { get; set; }
+ 
+    /// <summary>
+    ///     获取或设置 实体主键值
+    /// </summary>
+    public string EntityId { get; set; }
     
     /// <summary>
-    ///     实体变更Id
+    ///     获取或设置 实体名称
     /// </summary>
-    public Guid? EntityChangeId { set; get; }
-   
+    public string EntityTypeName { get; set; }
     
     /// <summary>
-    ///     变更值
+    ///     获取或设置 名称
     /// </summary>
-    public string NewValue { set; get; }
-    
-    /// <summary>
-    ///     变更前原始值
-    /// </summary>
-    public string OriginalValue { set; get; }
+    public string DisplayName { get; set; }
 
+    /// <summary>
+    ///     获取或设置 属性名
+    /// </summary>
+    public string PropertyName { get; set; }
     
     /// <summary>
-    ///     属性名称
+    ///     获取或设置 数据类型
     /// </summary>
-    public string PropertyName { set; get; }
-    
+    public string PropertyTypeFullName { get; set; }
+
     /// <summary>
-    ///     属性命名空间
+    ///     获取或设置 新值
     /// </summary>
-    public string PropertyTypeFullName { set; get; }
+    public string NewValue { get; set; }
+
+    /// <summary>
+    ///     获取或设置 旧值
+    /// </summary>
+    public string OriginalValue { get; set; }
 }

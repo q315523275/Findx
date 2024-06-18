@@ -273,7 +273,7 @@ public class FreeSqlModule : StartupModule
         if (!option.AuditEntity) return;
         
         var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
-        if (auditEntityReport != null)
+        if (auditEntityReport != null && e.Value != null)
         {
             // 实体值审计
             var auditEntityPropertyEntry = new AuditEntityPropertyEntry

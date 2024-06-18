@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
+using Findx.Extensions;
 using Findx.Linq;
 using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
@@ -24,9 +28,7 @@ public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> :
     where TModel : EntityBase<TKey>, new()
     where TDto : IResponse, new()
     where TQueryParameter : PageBase, new()
-    where TKey : IEquatable<TKey>
-{
-}
+    where TKey : IEquatable<TKey>;
 
 /// <summary>
 ///     通用查询控制器基类
@@ -43,6 +45,9 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
 {
+    // ReSharper disable once StaticMemberInGenericType
+    private static readonly ConcurrentDictionary<Type, Dictionary<PropertyInfo, QueryFieldAttribute>> QueryFieldDict = new();
+    
     /// <summary>
     ///     构建分页查询条件
     /// </summary>
@@ -50,7 +55,30 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// <returns></returns>
     protected virtual Expression<Func<TModel, bool>> CreatePageWhereExpression(TQueryParameter request)
     {
-        return null;
+        var filters = new List<FilterCondition>();
+        var reqType = request.GetType();
+        
+        // 属性标记查询字段
+        var queryFields = QueryFieldDict.GetOrAdd(reqType, () =>
+        {
+            var fieldDict = new Dictionary<PropertyInfo, QueryFieldAttribute>();
+            var queryFieldProperties = reqType.GetProperties().Where(x => x.HasAttribute<QueryFieldAttribute>());
+            foreach (var propertyInfo in queryFieldProperties)
+            {
+                fieldDict[propertyInfo] = propertyInfo.GetAttribute<QueryFieldAttribute>();
+            }
+            return fieldDict;
+        });
+        
+        // 标记字段计算
+        foreach (var fieldInfo in queryFields)
+        {
+            var value = PropertyValueGetter<TQueryParameter>.GetPropertyValue<string>(request, fieldInfo.Key.Name);
+            if (value.IsNotNullOrWhiteSpace())
+                filters.Add(new FilterCondition { Field = fieldInfo.Value?.Name?? fieldInfo.Key.Name, Operator = fieldInfo.Value?.FilterOperate?? FilterOperate.Equal, Value = value });
+        }
+        
+        return filters.Any() ? LinqExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And }) : null;
     }
 
     /// <summary>
@@ -60,7 +88,10 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// <returns></returns>
     protected virtual IEnumerable<OrderByParameter<TModel>> CreatePageOrderExpression(TQueryParameter request)
     {
-        var orderExp = DataSortBuilder.New<TModel>();
+        var orderExp = SortConditionBuilder.New<TModel>();
+
+        if (request is PageBase pageBase && pageBase.SortField.IsNotNullOrWhiteSpace())
+            orderExp.Order(request.SortField, request.SortDirection);
         
         if (typeof(TModel).IsAssignableTo(typeof(ISort)))
             orderExp.OrderBy(it => (it as ISort).Sort);

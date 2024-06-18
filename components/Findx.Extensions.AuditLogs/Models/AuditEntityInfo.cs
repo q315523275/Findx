@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
 namespace Findx.Extensions.AuditLogs.Models;
@@ -5,47 +7,48 @@ namespace Findx.Extensions.AuditLogs.Models;
 /// <summary>
 ///     审计日志实体变更信息
 /// </summary>
+[Table("FindxEntityChanges")]
+[EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
+[Description("审计操作信息")]
 public class AuditEntityInfo: EntityBase<Guid>
 {
     /// <summary>
-    ///     审计Id
+    ///     日志编号
     /// </summary>
-    public Guid? AuditLogId { set; get; }
+    public Guid AuditLogId { get; set; }
     
     /// <summary>
-    ///     租户Id
+    ///     获取或设置 数据编号
     /// </summary>
-    public string TenantId { set; get; }
-    
-    
-    /// <summary>
-    ///     变更时间
-    /// </summary>
-    public DateTime ChangeTime { set; get; }
+    public virtual string EntityId { get; set; }
     
     /// <summary>
-    ///     变更类型
+    ///     获取或设置 实体名称
     /// </summary>
-    public int ChangeType { set; get; }
+    public virtual string EntityTypeName { get; set; }
+    
+    /// <summary>
+    ///     获取或设置 实体全称
+    /// </summary>
+    public virtual string EntityTypeFullName { get; set; }
 
+    /// <summary>
+    ///     获取或设置 执行时间
+    /// </summary>
+    public virtual DateTime ExecutionTime { get; set; }
     
     /// <summary>
-    ///     实体记录Id
+    ///     获取或设置 执行耗时(毫秒)
     /// </summary>
-    public string EntityId { set; get; }
+    public virtual long ExecutionDuration { set; get; }
     
     /// <summary>
-    ///     实体命名空间
+    ///     获取或设置 执行结果
     /// </summary>
-    public string EntityTypeFullName { set; get; }
-    
+    public virtual string ExecutionResult { set; get; }
+
     /// <summary>
-    ///     执行命令
+    ///     获取或设置 操作实体属性集合
     /// </summary>
-    public string CommandText { set; get; }
-    
-    /// <summary>
-    /// 获取或设置 审计实体属性集合
-    /// </summary>
-    public virtual ICollection<AuditEntityPropertyInfo> Properties { get; set; } = new List<AuditEntityPropertyInfo>();
+    public virtual ICollection<AuditEntityPropertyInfo> PropertyEntries { get; set; } = [];
 }

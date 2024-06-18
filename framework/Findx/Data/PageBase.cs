@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using Findx.Linq;
 
 namespace Findx.Data;
 
 /// <summary>
 ///     查询请求分页基类
 /// </summary>
-public abstract class PageBase : IPager
+public abstract class PageBase : SortCondition, IPager
 {
     /// <summary>
     ///     当前分页数
@@ -22,15 +23,4 @@ public abstract class PageBase : IPager
     /// </summary>
     [Range(1, 9999)]
     public virtual int PageSize { get; set; } = 20;
-    
-    /// <summary>
-    ///     排序字段
-    /// </summary>
-    public string SortField { get; set; } = "id";
-
-    /// <summary>
-    ///     排序方向
-    /// </summary>
-    [JsonConverter(typeof(JsonStringEnumConverter))]
-    public ListSortDirection SortDirection { get; set; } = ListSortDirection.Descending;
 }

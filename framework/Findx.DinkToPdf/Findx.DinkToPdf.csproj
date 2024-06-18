@@ -4,14 +4,11 @@
         <Description>Html生成pdf</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>2024.05.08.1</PackageVersion>
+        <PackageVersion>2024.06.03</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="DinkToPdf" Version="1.0.8" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Findx\Findx.csproj" />
@@ -19,8 +16,20 @@
 
     <ItemGroup>
         <None Update="libwkhtmltox.so">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="libwkhtmltox.so">
+            <Pack>true</Pack>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="content\" />
     </ItemGroup>
 
 </Project>

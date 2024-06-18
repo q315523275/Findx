@@ -3,7 +3,7 @@ namespace Findx.Linq;
 /// <summary>
 ///     数据排序构建器
 /// </summary>
-public static class DataSortBuilder
+public static class SortConditionBuilder
 {
     /// <summary>
     ///     创建排序表达式

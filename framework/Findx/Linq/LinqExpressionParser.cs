@@ -12,14 +12,14 @@ public static class LinqExpressionParser
     ///     解析条件
     /// </summary>
     /// <returns></returns>
-    public static Expression<Func<T, bool>> ParseConditions<T>(DynamicFilterInfo dynamicFilterInfo)
+    public static Expression<Func<T, bool>> ParseConditions<T>(FilterGroup filterGroup)
     {
         var parameter = Expression.Parameter(typeof(T), "x");
         
         var bodies = new List<Expression>();
-        bodies.AddRange(dynamicFilterInfo.Filters.Select(x => ParseExpressionBody(parameter, x)));
+        bodies.AddRange(filterGroup.Filters.Select(x => ParseExpressionBody(parameter, x)));
 
-        var body = dynamicFilterInfo.Logic switch
+        var body = filterGroup.Logic switch
         {
             FilterOperate.And => bodies.Aggregate(Expression.AndAlso),
             FilterOperate.Or => bodies.Aggregate(Expression.OrElse),
@@ -28,14 +28,25 @@ public static class LinqExpressionParser
 
         return Expression.Lambda<Func<T, bool>>(body, parameter);
     }
-
+    
+    /// <summary>
+    ///     解析条件
+    /// </summary>
+    /// <returns></returns>
+    public static Expression<Func<T, bool>> ParseConditions<T>(FilterCondition filterCondition)
+    {
+        var parameter = Expression.Parameter(typeof(T), "x");
+        var body = ParseExpressionBody(parameter, filterCondition);
+        return Expression.Lambda<Func<T, bool>>(body, parameter);
+    }
+    
     /// <summary>
     ///     解析条件
     /// </summary>
     /// <param name="parameter"></param>
     /// <param name="condition"></param>
     /// <returns></returns>
-    private static Expression ParseExpressionBody(ParameterExpression parameter, FilterConditions condition)
+    private static Expression ParseExpressionBody(ParameterExpression parameter, FilterCondition condition)
     {
         if (condition == null) 
             return Expression.Constant(true);
@@ -50,7 +61,7 @@ public static class LinqExpressionParser
             case FilterOperate.NotContains:
                 if (left.Type != typeof(string))
                     throw new NotSupportedException("“NotContains”比较方式只支持字符串类型的数据");
-                var methodInfo = typeof(string).GetMethod("Contains", new[] { typeof(string) }) ?? throw new InvalidOperationException($"名称为“Contains”的方法不存在");
+                var methodInfo = typeof(string).GetMethod("Contains", [typeof(string)]) ?? throw new InvalidOperationException($"名称为“Contains”的方法不存在");
                 var exp = Expression.Call(left, methodInfo, ChangeTypeToExpression(condition.Value, left.Type));
                 if (condition.Operator == FilterOperate.NotContains)
                     return Expression.Not(exp);
@@ -59,13 +70,13 @@ public static class LinqExpressionParser
             case FilterOperate.StartsWith:
                 if (left.Type != typeof(string))
                     throw new NotSupportedException("“StartsWith”比较方式只支持字符串类型的数据");
-                var methodInfoStartsWith = typeof(string).GetMethod("StartsWith", new[] { typeof(string) }) ?? throw new InvalidOperationException($"名称为“StartsWith”的方法不存在");
+                var methodInfoStartsWith = typeof(string).GetMethod("StartsWith", [typeof(string)]) ?? throw new InvalidOperationException($"名称为“StartsWith”的方法不存在");
                 return Expression.Call(left, methodInfoStartsWith, ChangeTypeToExpression(condition.Value, left.Type));
             
             case FilterOperate.EndsWith:
                 if (left.Type != typeof(string))
                     throw new NotSupportedException("“EndsWith”比较方式只支持字符串类型的数据");
-                var methodInfoEndsWith = typeof(string).GetMethod("EndsWith", new[] { typeof(string) }) ?? throw new InvalidOperationException($"名称为“EndsWith”的方法不存在");
+                var methodInfoEndsWith = typeof(string).GetMethod("EndsWith", [typeof(string)]) ?? throw new InvalidOperationException($"名称为“EndsWith”的方法不存在");
                 return Expression.Call(left, methodInfoEndsWith, ChangeTypeToExpression(condition.Value, left.Type));
             
             case FilterOperate.Equal:
@@ -104,12 +115,12 @@ public static class LinqExpressionParser
     ///     创建Between解析表达式
     /// </summary>
     /// <param name="left">Expression.Property</param>
-    /// <param name="conditions"></param>
+    /// <param name="condition"></param>
     /// <returns></returns>
     /// <exception cref="InvalidDataException"></exception>
-    private static Expression CreateExpressionBetween(Expression left, FilterConditions conditions)
+    private static Expression CreateExpressionBetween(Expression left, FilterCondition condition)
     {
-        var valueArr = conditions.Value.Split(',');
+        var valueArr = condition.Value.Split(',');
         if (valueArr.Length != 2)
             throw new InvalidDataException("ParseBetween参数错误");
         
@@ -123,11 +134,11 @@ public static class LinqExpressionParser
     ///     创建In解析表达式
     /// </summary>
     /// <param name="left"></param>
-    /// <param name="conditions"></param>
+    /// <param name="condition"></param>
     /// <returns></returns>
-    private static Expression CreateExpressionIn(Expression left, FilterConditions conditions)
+    private static Expression CreateExpressionIn(Expression left, FilterCondition condition)
     {
-        var values = conditions.Value.Split(',');
+        var values = condition.Value.Split(',');
         
         object objectValue;
         if (left.Type == typeof(string))
@@ -161,13 +172,14 @@ public static class LinqExpressionParser
     ///     获取属性表达式
     /// </summary>
     /// <param name="parameter"></param>
-    /// <param name="conditions"></param>
+    /// <param name="condition"></param>
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
-    public static Expression GetPropertyExpression(ParameterExpression parameter, FilterConditions conditions)
+    private static Expression GetPropertyExpression(ParameterExpression parameter, FilterCondition condition)
     {
+        // Todo 缓存
         // 嵌套字段名，如：User.Name
-        var propertyNames = conditions.Field.Split('.');
+        var propertyNames = condition.Field.Split('.');
         Expression propertyAccess = parameter;
         var type = parameter.Type;
         for (var index = 0; index < propertyNames.Length; index++)
@@ -175,22 +187,19 @@ public static class LinqExpressionParser
             var propertyName = propertyNames[index];
             var property = type.GetProperty(propertyName);
             if (property == null)
-            {
-                throw new InvalidOperationException($"指定的属性“{conditions.Field}”在类型“{type.FullName}”中不存在。");
-            }
+                throw new InvalidOperationException($"指定的属性“{condition.Field}”在类型“{type.FullName}”中不存在。");
 
             // 子对象类型
             type = property.PropertyType;
             // 验证最后一个属性与属性值是否匹配
             if (index == propertyNames.Length - 1)
             {
-                var flag = CheckFilterConditions(type, conditions);
+                var flag = CheckFilterConditions(type, condition);
                 if (!flag)
                 {
                     return null;
                 }
             }
-
             propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
         }
         return propertyAccess;
@@ -200,23 +209,21 @@ public static class LinqExpressionParser
     ///     验证最后一个属性与属性值是否匹配 
     /// </summary>
     /// <param name="type">最后一个属性</param>
-    /// <param name="conditions">条件信息</param>
+    /// <param name="condition">条件信息</param>
     /// <returns></returns>
-    private static bool CheckFilterConditions(Type type, FilterConditions conditions)
+    private static bool CheckFilterConditions(Type type, FilterCondition condition)
     { 
-        if (conditions.Value.IsNullOrWhiteSpace() && (type == typeof(string) || type.IsNullableType()))
+        if (condition.Value.IsNullOrWhiteSpace() && (type == typeof(string) || type.IsNullableType()))
         {
-            return conditions.Operator is FilterOperate.Equal or FilterOperate.NotEqual;
+            return condition.Operator is FilterOperate.Equal or FilterOperate.NotEqual;
         }
-
-        if (conditions.Value.IsNullOrWhiteSpace())
+        if (condition.Value.IsNullOrWhiteSpace())
         {
             return !type.IsValueType;
         }
-        
         return true;
     }
-    
+
     /// <summary>
     ///     将指定类型值更改为值表达式
     /// </summary>
@@ -226,7 +233,6 @@ public static class LinqExpressionParser
     private static Expression ChangeTypeToExpression(object fieldValue, Type conversionType)
     {
         var targetValue = fieldValue.CastTo(conversionType);
-        
         return Expression.Constant(targetValue, conversionType);
     }
 }

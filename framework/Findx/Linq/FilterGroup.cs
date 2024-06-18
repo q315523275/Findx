@@ -4,7 +4,7 @@ namespace Findx.Linq;
 ///     动态筛选规则
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
-public class DynamicFilterInfo
+public class FilterGroup
 {
     /// <summary>
     ///     筛选集合组合方式
@@ -15,5 +15,5 @@ public class DynamicFilterInfo
     ///     筛选器集合
     /// </summary>
     // ReSharper disable once CollectionNeverUpdated.Global
-    public List<FilterConditions> Filters { get; set; } = [];
+    public List<FilterCondition> Filters { get; set; } = [];
 }

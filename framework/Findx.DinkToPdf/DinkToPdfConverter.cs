@@ -1,41 +1,42 @@
 ﻿using System.Threading.Tasks;
-using DinkToPdf;
-using DinkToPdf.Contracts;
+using Findx.DinkToPdf.Contracts;
+using Findx.DinkToPdf.Documents;
+using Findx.DinkToPdf.Settings;
+using Findx.DinkToPdf.Utils;
 using Findx.Pdf;
 
-namespace Findx.DinkToPdf
+namespace Findx.DinkToPdf;
+
+public class DinkToPdfConverter : IPdfConverter
 {
-    public class DinkToPdfConverter : IPdfConverter
+    private readonly IConverter _converter;
+
+    public DinkToPdfConverter(IConverter converter)
     {
-        private readonly IConverter _converter;
+        _converter = converter;
+    }
 
-        public DinkToPdfConverter(IConverter converter)
+    public Task<byte[]> ConvertAsync(string htmlString)
+    {
+        var doc = new HtmlToPdfDocument
         {
-            _converter = converter;
-        }
-
-        public Task<byte[]> ConvertAsync(string htmlString)
-        {
-            var doc = new HtmlToPdfDocument
+            GlobalSettings =
             {
-                GlobalSettings =
+                ColorMode = ColorMode.Color,
+                Orientation = Orientation.Portrait,
+                PaperSize = PaperKind.A4
+            },
+            Objects =
+            {
+                new ObjectSettings
                 {
-                    ColorMode = ColorMode.Color,
-                    Orientation = Orientation.Portrait,
-                    PaperSize = PaperKind.A4
-                },
-                Objects =
-                {
-                    new ObjectSettings
-                    {
-                        HtmlContent = htmlString,
-                        WebSettings = { DefaultEncoding = "utf-8" }
-                    }
+                    HtmlContent = htmlString,
+                    WebSettings = { DefaultEncoding = "utf-8" }
                 }
-            };
+            }
+        };
 
-            var pdf = _converter.Convert(doc);
-            return Task.FromResult(pdf);
-        }
+        var pdf = _converter.Convert(doc);
+        return Task.FromResult(pdf);
     }
 }

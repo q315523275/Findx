@@ -5,35 +5,33 @@ using System.IO;
 using Findx.Extensions;
 using Microsoft.Extensions.Logging;
 using NLog;
-using NLog.Config;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
-namespace Findx.NLog
+namespace Findx.NLog;
+
+public class NLogLoggerProvider : ILoggerProvider
 {
-    public class NLogLoggerProvider : ILoggerProvider
+    private const string DefaultNLogFileName = "nlog.config";
+    private readonly IDictionary<string, NLogLogger> _loggers = new ConcurrentDictionary<string, NLogLogger>();
+
+    public NLogLoggerProvider(string nlogConfigFile)
     {
-        private const string DefaultNLogFileName = "nlog.config";
-        private readonly IDictionary<string, NLogLogger> _loggers = new ConcurrentDictionary<string, NLogLogger>();
+        var file = nlogConfigFile ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName);
+        if (!File.Exists(file)) throw new FileNotFoundException("未发现“nlog.config”位置文件");
+        LogManager.Setup().LoadConfigurationFromFile(file);
+    }
 
-        public NLogLoggerProvider(string nlogConfigFile)
-        {
-            var file = nlogConfigFile ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName);
-            if (!File.Exists(file)) throw new FileNotFoundException("未发现“nlog.config”位置文件");
-            LogManager.Setup().LoadConfigurationFromFile(file);
-        }
+    public NLogLoggerProvider() : this(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName))
+    {
+    }
 
-        public NLogLoggerProvider() : this(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName))
-        {
-        }
+    public ILogger CreateLogger(string categoryName)
+    {
+        return _loggers.GetOrAdd(categoryName, key => new NLogLogger(key));
+    }
 
-        public ILogger CreateLogger(string categoryName)
-        {
-            return _loggers.GetOrAdd(categoryName, key => new NLogLogger(key));
-        }
-
-        public void Dispose()
-        {
-            _loggers?.Clear();
-        }
+    public void Dispose()
+    {
+        _loggers?.Clear();
     }
 }

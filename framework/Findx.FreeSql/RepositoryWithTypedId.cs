@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
+using Findx.Linq;
 using Findx.Security;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;

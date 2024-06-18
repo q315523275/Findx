@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Linq.Expressions;
+using Findx.Linq;
 
 namespace Findx.Data;
 
@@ -23,29 +24,8 @@ public class OrderByParameter<TEntity>
     /// <param name="sortDirection"></param>
     public OrderByParameter(string field, ListSortDirection sortDirection = ListSortDirection.Descending)
     {
-        // Todo 增加TypeName_Field:Expression<Func<TEntity, object>>的缓存
-        var parameter = Expression.Parameter(typeof(TEntity), "x");
-        Expression propertyAccess = parameter;
-        var propertyNames = field.Split('.');
-        if (propertyNames.Length > 1)
-        {
-            var type = parameter.Type;
-            foreach (var propertyName in propertyNames)
-            {
-                var property = type.GetProperty(propertyName);
-                if (property == null)
-                    throw new InvalidOperationException($"指定的属性“{propertyName}”在类型“{type.FullName}”中不存在。");
-                // 子对象类型
-                type = property.PropertyType;
-                propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
-            }
-        }
-        else
-        {
-            propertyAccess = Expression.Property(parameter, field);
-        }
-        Expression conversion = Expression.Convert(propertyAccess, typeof(object));
-        Conditions = Expression.Lambda<Func<TEntity, object>>(conversion, parameter);
+        dynamic keySelector = CollectionPropertySorter<TEntity>.GetKeySelector(field);
+        Conditions = keySelector;
         SortDirection = sortDirection;
     }
     

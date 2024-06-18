@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Findx.Data;
 using Findx.FreeSql;
 using Findx.WebHost.Model;
+using FreeSql.Extensions.EntityUtil;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.WebHost.Controllers;

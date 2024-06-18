@@ -3,10 +3,16 @@ using FreeSql.DataAnnotations;
 
 namespace Findx.WebHost.Model;
 
-public class TestNewsInfo : IEntity<int>, IExtraObject
+public class TestNewsInfo : EntityBase<int>, IExtraObject, IRequest, IResponse
 {
     [Column(IsIdentity = true, IsPrimary = true)]
-    public int Id { get; set; }
+    public override int Id { get; set; }
 
+    public string Title { get; set; }
+    
+    public string Author { get; set; }
+    
+    public string Content { get; set; }
+    
     public string ExtraProperties { get; set; }
 }

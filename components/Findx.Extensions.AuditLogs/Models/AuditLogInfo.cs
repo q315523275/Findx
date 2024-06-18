@@ -8,7 +8,7 @@ namespace Findx.Extensions.AuditLogs.Models;
 ///     审计日志信息
 /// </summary>
 [Table("FindxAuditLogs")]
-[EntityExtension(DataSource = "AuditLog")]
+[EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
 [Description("审计操作信息")]
 public class AuditLogInfo: EntityBase<Guid>
 {
@@ -117,5 +117,10 @@ public class AuditLogInfo: EntityBase<Guid>
     /// <summary>
     ///     获取或设置 审计实体信息集合
     /// </summary>
-    public virtual ICollection<AuditEntityInfo> AuditEntities { get; set; } = new List<AuditEntityInfo>();
+    public virtual ICollection<AuditEntityInfo> EntityEntries { get; set; } = [];
+    
+    /// <summary>
+    ///     获取或设置 审计Sql数据信息集合
+    /// </summary>
+    public virtual ICollection<AuditSqlRawInfo> SqlRawEntries { get; set; } = [];
 }

@@ -12,7 +12,7 @@ public class ExpressionSorter<T>
     /// <summary>
     ///     排序集合
     /// </summary>
-    private readonly List<OrderByParameter<T>> _orderList = new();
+    private readonly List<OrderByParameter<T>> _orderList = [];
 
     /// <summary>
     ///     正序

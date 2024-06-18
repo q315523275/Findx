@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
 namespace Findx.Extensions.AuditLogs.Models;
@@ -5,6 +7,9 @@ namespace Findx.Extensions.AuditLogs.Models;
 /// <summary>
 ///     审计日志方法信息
 /// </summary>
+[Table("FindxAuditLogActions")]
+[EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
+[Description("审计操作方法信息")]
 public class AuditLogActionInfo: EntityBase<Guid>
 {
     /// <summary>
@@ -16,7 +21,6 @@ public class AuditLogActionInfo: EntityBase<Guid>
     ///     租户Id
     /// </summary>
     public string TenantId { set; get; }
-    
     
     /// <summary>
     ///     服务名称
