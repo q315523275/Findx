@@ -66,10 +66,10 @@ public class ConsulServiceRegistry : IConsulServiceRegistry
         Check.NotNull(registration, nameof(registration));
 
         if (OUT_OF_SERVICE.Equals(status, StringComparison.OrdinalIgnoreCase))
-            await _client.Agent.EnableServiceMaintenance(registration.InstanceId, OUT_OF_SERVICE)
+            await _client.Agent.EnableServiceMaintenance(registration.InstanceId, OUT_OF_SERVICE, cancellationToken)
                 .ConfigureAwait(false);
         else if (UP.Equals(status, StringComparison.OrdinalIgnoreCase))
-            await _client.Agent.DisableServiceMaintenance(registration.InstanceId).ConfigureAwait(false);
+            await _client.Agent.DisableServiceMaintenance(registration.InstanceId, cancellationToken).ConfigureAwait(false);
         else
             throw new ArgumentException($"Unknown status: {status}");
     }

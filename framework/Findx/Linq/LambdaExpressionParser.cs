@@ -6,7 +6,7 @@ namespace Findx.Linq;
 /// <summary>
 ///    Linq表达式解析器
 /// </summary>
-public static class LinqExpressionParser
+public static class LambdaExpressionParser
 {
     /// <summary>
     ///     解析条件
@@ -107,7 +107,7 @@ public static class LinqExpressionParser
             case FilterOperate.And:
             case FilterOperate.Or:
             default:
-                throw new NotImplementedException("不支持此操作");
+                throw new NotImplementedException($"不支持此({condition.Operator})操作");
         }
     }
     
@@ -129,6 +129,30 @@ public static class LinqExpressionParser
         
         return Expression.AndAlso(start, end);
     }
+
+    /// <summary>
+    ///     字符串集合转换器字典
+    /// </summary>
+    private static readonly Dictionary<Type, Func<string[], object>> TypeConverters = new()
+    {
+        {typeof(string), values => values},
+        {typeof(int), values => values.Select(int.Parse) },
+        {typeof(int?), values => values.Select(s => int.TryParse(s, out var intValue) ? (int?)intValue : null) },
+        {typeof(long), values => values.Select(long.Parse) },
+        {typeof(long?), values => values.Select(s => long.TryParse(s, out var intValue) ? (long?)intValue : null) },
+        {typeof(decimal), values => values.Select(decimal.Parse) },
+        {typeof(decimal?), values => values.Select(s => decimal.TryParse(s, out var intValue) ? (decimal?)intValue : null) },
+        {typeof(double), values => values.Select(double.Parse) },
+        {typeof(double?), values => values.Select(s => double.TryParse(s, out var intValue) ? (double?)intValue : null) },
+        {typeof(float), values => values.Select(float.Parse) },
+        {typeof(float?), values => values.Select(s => float.TryParse(s, out var intValue) ? (float?)intValue : null) },
+        {typeof(bool), values => values.Select(bool.Parse) },
+        {typeof(bool?), values => values.Select(s => bool.TryParse(s, out var intValue) ? (bool?)intValue : null) },
+        {typeof(Guid), values => values.Select(Guid.Parse) },
+        {typeof(Guid?), values => values.Select(s => Guid.TryParse(s, out var intValue) ? (Guid?)intValue : null) },
+        {typeof(DateTime), values => values.Select(DateTime.Parse) },
+        {typeof(DateTime?), values => values.Select(s => DateTime.TryParse(s, out var intValue) ? (DateTime?)intValue : null) },
+    };
     
     /// <summary>
     ///     创建In解析表达式
@@ -140,31 +164,13 @@ public static class LinqExpressionParser
     {
         var values = condition.Value.Split(',');
         
-        object objectValue;
-        if (left.Type == typeof(string))
-            objectValue = values.Select(x => x.CastTo<string>());
-        else if (left.Type == typeof(int))
-            objectValue = values.Select(x => x.CastTo<int>());
-        else if (left.Type == typeof(long))
-            objectValue = values.Select(x => x.CastTo<long>());
-        else if  (left.Type == typeof(decimal))
-            objectValue = values.Select(x => x.CastTo<decimal>());
-        else if (left.Type == typeof(double))
-            objectValue = values.Select(x => x.CastTo<double>());
-        else if (left.Type == typeof(float))
-            objectValue = values.Select(x => x.CastTo<float>());
-        else if (left.Type == typeof(bool))
-            objectValue = values.Select(x => x.CastTo<bool>());
-        else if (left.Type == typeof(Guid))
-            objectValue = values.Select(x => x.CastTo<Guid>());
-        else if (left.Type == typeof(DateTime))
-            objectValue = values.Select(x => x.CastTo<DateTime>());
-        else
+        if (!TypeConverters.TryGetValue(left.Type, out var converter))
             throw new NotSupportedException($"“ParseIn”不支持此类型{left.Type.Name}的数据");
         
+        var objectValues = converter(values);
         var method = typeof(Enumerable).GetMethods().First(a => a.Name == "Contains").MakeGenericMethod(left.Type);
-        var constantCollection = Expression.Constant(objectValue);
-        
+        var constantCollection = Expression.Constant(objectValues);
+
         return Expression.Call(method, constantCollection, left);
     }
     

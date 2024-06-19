@@ -23,9 +23,7 @@ public static class PropertyValueGetter<TEntity> where TEntity : class
         Check.NotNullOrWhiteSpace(propertyName, nameof(propertyName));
         
         var key = $"{typeof(TEntity).FullName}.{propertyName}";
-        
         var emitGetter = ReadPropertyValueDictionary.GetOrAdd(key, _ => PropertyUtility.EmitGetter<TEntity>(propertyName));
-        
         return emitGetter(entity).CastTo<TReturn>();
     }
 }

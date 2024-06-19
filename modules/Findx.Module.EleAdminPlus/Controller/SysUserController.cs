@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
@@ -20,7 +19,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Area("system")]
 [Route("api/[area]/user")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户"), Description("系统-用户")]
+[ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-用户"), Description("系统-用户")]
 public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, long, long>
 {
     private readonly IKeyGenerator<long> _keyGenerator;
@@ -32,22 +31,6 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     public SysUserController(IKeyGenerator<long> keyGenerator)
     {
         _keyGenerator = keyGenerator;
-    }
-
-    /// <summary>
-    ///     构建查询条件
-    /// </summary>
-    /// <param name="req"></param>
-    /// <returns></returns>
-    protected override Expression<Func<SysUserInfo, bool>> CreatePageWhereExpression(QueryUserRequest req)
-    {
-        var whereExp = PredicateBuilder.New<SysUserInfo>()
-                                       .AndIf(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
-                                       .AndIf(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-                                       .AndIf(req.Sex.HasValue, x => x.Sex == req.Sex)
-                                       .AndIf(req.OrgId.HasValue, x => x.OrgId == req.OrgId)
-                                       .Build();
-        return whereExp;
     }
 
     /// <summary>
@@ -68,6 +51,29 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
         var ids = res.Rows.Select(x => x.Id).Distinct();
         var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
         foreach (var item in res.Rows)
+            item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
+        
+        return CommonResult.Success(res);
+    }
+
+    /// <summary>
+    ///     用户列表
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public override async Task<CommonResult<List<UserDto>>> ListAsync(QueryUserRequest request, CancellationToken cancellationToken = new CancellationToken())
+    {
+        var repo = GetRepository<SysUserInfo, long>();
+        var roleRepo = GetRepository<SysUserRoleInfo, long>();
+
+        var whereExpression = CreatePageWhereExpression(request);
+        var orderByExpression = CreatePageOrderExpression(request);
+
+        var res = await repo.TopAsync<UserDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var ids = res.Select(x => x.Id).Distinct();
+        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
+        foreach (var item in res)
             item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
         
         return CommonResult.Success(res);

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.Serialization.Formatters.Binary;
+using Findx.Linq;
 using Findx.Utilities;
 
 namespace Findx.Extensions;
@@ -51,6 +52,8 @@ public static partial class Extensions
         if (obj == null) return default;
 
         var conversionType = typeof(T);
+        
+        if (obj.GetType() == conversionType) return (T)obj;
 
         if (conversionType.IsNullableType()) conversionType = conversionType.GetUnNullableType();
 
@@ -72,6 +75,9 @@ public static partial class Extensions
     {
         if (value == null) 
             return null;
+
+        if (value.GetType() == conversionType)
+            return value;
         
         if (conversionType.IsNullableType()) 
             conversionType = conversionType.GetUnNullableType();
@@ -95,9 +101,6 @@ public static partial class Extensions
     {
         if (value == null) 
             return default;
-        
-        if (value.GetType() == typeof(T)) 
-            return (T)value;
         
         var result = CastTo(value, typeof(T));
         
@@ -180,17 +183,17 @@ public static partial class Extensions
         ms.Seek(0L, SeekOrigin.Begin);
         return (T)formatter.Deserialize(ms);
     }
-    
+
     /// <summary>
     ///     根据属性名获取属性值
     /// </summary>
     /// <typeparam name="T">对象类型</typeparam>
+    /// <typeparam name="TReturn">返回值类型</typeparam>
     /// <param name="t">对象</param>
     /// <param name="name">属性名</param>
     /// <returns>属性的值</returns>
-    public static object GetPropertyValue<T>(this T t, string name)
+    public static TReturn GetPropertyValue<T, TReturn>(this T t, string name) where T : class
     {
-        var getValue = PropertyUtility.EmitGetter<T>(name);
-        return getValue(t);
+        return PropertyValueGetter<T>.GetPropertyValue<TReturn>(t, name);
     }
 }

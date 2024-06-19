@@ -13,7 +13,6 @@ using Findx.Security;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Findx.Module.EleAdminPlus.Controller;
 
@@ -22,7 +21,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/findx")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("Findx框架"), Description("Findx框架")]
+[ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("Findx框架"), Description("Findx框架")]
 public class FindxController : AreaApiControllerBase
 {
     /// <summary>

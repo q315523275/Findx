@@ -261,7 +261,7 @@ var filterGroup = new FilterGroup()
 };
 var dataSort = SortConditionBuilder.New<SysAppInfo>().OrderBy("Status").OrderBy(x => new { x.CreatedTime, x.Id}).Build();
 
-var filter = LinqExpressionParser.ParseConditions<SysAppInfo>(filterGroup);
+var filter = LambdaExpressionParser.ParseConditions<SysAppInfo>(filterGroup);
 
 var entities = new List<SysAppInfo>();
 for (var i = 0; i < 1000; i++)

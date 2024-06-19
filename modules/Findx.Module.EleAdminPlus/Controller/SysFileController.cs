@@ -15,7 +15,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/file")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-文件"), Description("系统-文件")]
+[ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-文件"), Description("系统-文件")]
 public class SysFileController: AreaApiControllerBase
 {
     private readonly IApplicationContext _applicationContext;

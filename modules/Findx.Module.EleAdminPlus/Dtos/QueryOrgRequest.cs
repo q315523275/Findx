@@ -1,4 +1,6 @@
-﻿using Findx.Data;
+﻿using Findx.AspNetCore.Mvc;
+using Findx.Data;
+using Findx.Linq;
 
 namespace Findx.Module.EleAdminPlus.Dtos;
 
@@ -8,12 +10,14 @@ namespace Findx.Module.EleAdminPlus.Dtos;
 public class QueryOrgRequest : PageBase
 {
     /// <summary>
-    ///     父级组织Id
+    ///     类型
     /// </summary>
-    public long? Pid { set; get; }
+    [QueryField(FilterOperate = FilterOperate.Equal)]
+    public string Type { set; get; }
 
     /// <summary>
     ///     关键词
     /// </summary>
-    public string Keywords { set; get; }
+    [QueryField(FilterOperate = FilterOperate.Contains)]
+    public string Name { set; get; }
 }

@@ -24,7 +24,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/auth")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-账户"), Description("系统-账户")]
+[ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-账户"), Description("系统-账户")]
 public class AuthController : AreaApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;

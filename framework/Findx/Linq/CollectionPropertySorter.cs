@@ -48,8 +48,7 @@ public static class CollectionPropertySorter<TEntity>
         
         // var keySelector = Expression.Lambda(propertyAccess, parameter);
         // 适配Orm，多一层转换
-        Expression conversion = Expression.Convert(propertyAccess, typeof(object));
-        var keySelector = Expression.Lambda<Func<TEntity, object>>(conversion, parameter);
+        var keySelector = Expression.Lambda<Func<TEntity, object>>(Expression.Convert(propertyAccess, typeof(object)), parameter);
         
         PropertyAccessDict[key] = keySelector;
         

@@ -1,10 +1,7 @@
 ﻿using System.ComponentModel;
-using System.Linq.Expressions;
 using System.Security.Principal;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
-using Findx.Extensions;
-using Findx.Linq;
 using Findx.Mapping;
 using Findx.Module.EleAdminPlus.Dtos;
 using Findx.Module.EleAdminPlus.Models;
@@ -20,24 +17,9 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Area("system")]
 [Route("api/[area]/role")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-角色"), Description("系统-角色")]
+[ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-角色"), Description("系统-角色")]
 public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest, QueryRoleRequest, long, long>
 {
-    /// <summary>
-    ///     构建查询条件
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    protected override Expression<Func<SysRoleInfo, bool>> CreatePageWhereExpression(QueryRoleRequest request)
-    {
-        var whereExp = PredicateBuilder.New<SysRoleInfo>()
-                                       .AndIf(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
-                                       .AndIf(!request.Code.IsNullOrWhiteSpace(), x => x.Code.Contains(request.Code))
-                                       .AndIf(!request.Comments.IsNullOrWhiteSpace(), x => x.Comments.Contains(request.Comments))
-                                       .Build();
-        return whereExp;
-    }
-
     /// <summary>
     ///     查询角色对应菜单
     /// </summary>

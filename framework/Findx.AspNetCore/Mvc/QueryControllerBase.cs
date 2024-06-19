@@ -78,7 +78,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
                 filters.Add(new FilterCondition { Field = fieldInfo.Value?.Name?? fieldInfo.Key.Name, Operator = fieldInfo.Value?.FilterOperate?? FilterOperate.Equal, Value = value });
         }
         
-        return filters.Any() ? LinqExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And }) : null;
+        return filters.Any() ? LambdaExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And }) : null;
     }
 
     /// <summary>

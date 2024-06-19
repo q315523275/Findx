@@ -15,7 +15,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Area("system")]
 [Route("api/[area]/dictType")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-字典"), Description("系统-字典")]
+[ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-字典"), Description("系统-字典")]
 public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SetDictTypeRequest, QueryDictTypeRequest, long, long>
 {
     /// <summary>

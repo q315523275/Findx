@@ -84,7 +84,7 @@ namespace Findx.RabbitMQ
                             var parameter = ConvertToParameter(parameterType, message);
                             var handler = MethodHandlers.GetOrAdd(typeInfo.MethodInfo, _ => FastInvokeHandler.Create(typeInfo.MethodInfo));
 
-                            var result = handler.Invoke(instance, new[] { parameter, eventArgs, channel });
+                            var result = handler.Invoke(instance, [parameter, eventArgs, channel]);
                             if (typeInfo.MethodInfo.IsAsync()) await (Task)result;
                         }
                     }

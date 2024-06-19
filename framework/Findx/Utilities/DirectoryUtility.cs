@@ -143,7 +143,7 @@ public class DirectoryUtility
     public static FileInfo[] GetFiles(string directoryPath, string searchPattern, bool topDirectoryOnly = true)
     {
         if (!Directory.Exists(directoryPath)) 
-            throw new DirectoryNotFoundException("源目录不存在。");
+            throw new DirectoryNotFoundException("获取文件清单时源目录不存在。");
 
         var dir = new DirectoryInfo(directoryPath);
         return dir.GetFiles(searchPattern, topDirectoryOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories);
@@ -159,7 +159,7 @@ public class DirectoryUtility
     public static IEnumerable<string> EnumerateFiles(string directoryPath, string searchPattern, bool topDirectoryOnly = true)
     {
         if (!Directory.Exists(directoryPath)) 
-            throw new DirectoryNotFoundException("源目录不存在。");
+            throw new DirectoryNotFoundException("获取文件清单时源目录不存在。");
         
         return Directory.EnumerateFiles(directoryPath, searchPattern, topDirectoryOnly ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories);
     }

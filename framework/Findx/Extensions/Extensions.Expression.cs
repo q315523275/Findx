@@ -86,7 +86,7 @@ public static partial class Extensions
     }
 
     /// <summary>
-    /// RebindParameterVisitor
+    ///     RebindParameterVisitor
     /// </summary>
     private class RebindParameterVisitor : ExpressionVisitor
     {

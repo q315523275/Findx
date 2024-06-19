@@ -14,7 +14,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/captcha")]
-[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-验证码"), Description("系统-验证码")]
+[ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-验证码"), Description("系统-验证码")]
 public class CaptchaController : AreaApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;
