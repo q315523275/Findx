@@ -1,12 +1,18 @@
 ﻿using System.ComponentModel;
+using Findx.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 //using Findx.EventBus;
 //using Findx.WebHost.EventBus;
 
 namespace Findx.WebHost.Controllers;
 
-[Description("事件总线")]
-public class EventBusController : Controller
+/// <summary>
+///     事件总线
+/// </summary>
+[Route("api/eventbus")]
+[Description("事件总线"), Tags("事件总线")]
+public class EventBusController : ApiControllerBase
 {
     // /// <summary>
     // /// RabbitMQ消息推送示例接口

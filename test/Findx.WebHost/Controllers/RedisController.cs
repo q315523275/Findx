@@ -1,47 +1,71 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Mvc;
 using Findx.Locks;
 using Findx.Redis;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.WebHost.Controllers;
 
-public class RedisController : Controller
+/// <summary>
+///     Redis服务
+/// </summary>
+[Route("api/redis")]
+[Description("Redis服务"), Tags("Redis服务")]
+public class RedisController : ApiControllerBase
 {
-    [HttpGet("/redis/geo")]
+    /// <summary>
+    ///     Geo
+    /// </summary>
+    /// <param name="redisClientProvider"></param>
+    /// <returns></returns>
+    [HttpGet("geo")]
     public async Task<string> Geo([FromServices] IRedisClientProvider redisClientProvider)
     {
         var redisClient = redisClientProvider.CreateClient();
 
-        await redisClient.GeoAddAsync("cin.oms_geo",
-            new List<(double longitude, double latitude, string member)> { (118.763709, 32.106839, "1") });
+        await redisClient.GeoAddAsync("cin.oms_geo", new List<(double longitude, double latitude, string member)> { (118.763709, 32.106839, "1") });
 
         await redisClient.SortedSetRemoveAsync("cin.oms_geo", new List<string> { "1" });
 
-        return DateTime.Now.ToString();
+        return DateTime.Now.ToString(CultureInfo.InvariantCulture);
     }
 
-    [HttpGet("/redis/lock_verify_value")]
+    /// <summary>
+    ///     锁
+    /// </summary>
+    /// <param name="redisClientProvider"></param>
+    /// <returns></returns>
+    [HttpGet("lock_verify_value")]
     public async Task<string> LockVerifyValue([FromServices] IRedisClientProvider redisClientProvider)
     {
         var redisClient = redisClientProvider.CreateClient();
 
-        var lock_result = await redisClient.LockTakeAsync("lock_verify_value", 1, TimeSpan.FromSeconds(30));
-        var unlock_result = await redisClient.LockReleaseAsync("lock_verify_value", 2);
+        var lockResult = await redisClient.LockTakeAsync("lock_verify_value", 1, TimeSpan.FromSeconds(30));
+        var unlockResult = await redisClient.LockReleaseAsync("lock_verify_value", 2);
 
-        return $"{lock_result}|{unlock_result}";
+        return $"{lockResult}|{unlockResult}";
     }
 
-    [HttpGet("/redis/renewLock")]
+    /// <summary>
+    ///     续期锁
+    /// </summary>
+    /// <param name="provider"></param>
+    /// <param name="lockType"></param>
+    /// <returns></returns>
+    [HttpGet("renewLock")]
     public async Task<string> AutoLiveLock([FromServices] ILockFactory provider, [Required] string lockType)
     {
         var @lock = provider.Create(lockType);
 
-        var getlock = await @lock.AcquireAsync("test_renew_lock", renew: true);
+        var fetlock = await @lock.AcquireAsync("test_renew_lock", renew: true);
 
-        if (!getlock.IsLocked())
+        if (!fetlock.IsLocked())
             return "未拿到锁";
 
         try
@@ -50,19 +74,24 @@ public class RedisController : Controller
         }
         finally
         {
-            await getlock.ReleaseAsync();
+            await fetlock.ReleaseAsync();
         }
 
-        return DateTime.Now.ToString();
+        return DateTime.Now.ToString(CultureInfo.InvariantCulture);
     }
 
-    [HttpGet("/redis/exist")]
+    /// <summary>
+    ///     Key是否存在
+    /// </summary>
+    /// <param name="redisClientProvider"></param>
+    /// <returns></returns>
+    [HttpGet("exist")]
     public async Task<string> KeyExist([FromServices] IRedisClientProvider redisClientProvider)
     {
         var redisClient = redisClientProvider.CreateClient();
 
-        await redisClient.ExpireAsync("noexist", TimeSpan.FromSeconds(60));
+        await redisClient.ExpireAsync("exist", TimeSpan.FromSeconds(60));
 
-        return (await redisClient.ExistsAsync("noexist")).ToString();
+        return (await redisClient.ExistsAsync("exist")).ToString();
     }
 }

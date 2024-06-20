@@ -1,16 +1,19 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Mvc;
 using Findx.Imaging;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.WebHost.Controllers;
 
 /// <summary>
-///     图片
+///     图片处理
 /// </summary>
-[Description("图片处理")]
-public class ImageController : Controller
+[Route("api/image")]
+[Description("图片处理"), Tags("图片处理")]
+public class ImageController : ApiControllerBase
 {
     private readonly IImageProcessor _processor;
     private readonly IApplicationContext _app;
@@ -39,7 +42,7 @@ public class ImageController : Controller
     /// <param name="height"></param>
     /// <param name="mode"></param>
     /// <returns></returns>
-    [HttpGet("/image/resize")]
+    [HttpGet("resize")]
     public async Task<IActionResult> ResizeAsync(string filePath, int width, int height, ImageResizeMode mode = ImageResizeMode.Crop)
     {
         var imageByte = await _processor.ResizeAsync(await ReadAllBytesAsync(filePath), new ImageResizeDto(width, height, mode));
@@ -55,7 +58,7 @@ public class ImageController : Controller
     /// <param name="height"></param>
     /// <param name="x"></param>
     /// <returns></returns>
-    [HttpGet("/image/crop")]
+    [HttpGet("crop")]
     public async Task<IActionResult> CropAsync(string filePath, int x, int y, int width, int height)
     {
         var imageByte = await _processor.CropAsync(await ReadAllBytesAsync(filePath), new ImageCropDto(x, y, width, height));
@@ -68,7 +71,7 @@ public class ImageController : Controller
     /// <param name="filePath"></param>
     /// <param name="quality"></param>
     /// <returns></returns>
-    [HttpGet("/image/compress")]
+    [HttpGet("compress")]
     public async Task<IActionResult> CompressAsync(string filePath, int quality = 75)
     {
         var imageByte = await _processor.CompressAsync(await ReadAllBytesAsync(filePath), quality);
@@ -80,7 +83,7 @@ public class ImageController : Controller
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
-    [HttpGet("/image/gray")]
+    [HttpGet("gray")]
     public async Task<IActionResult> Gray(string filePath)
     {
         var imageByte = await _processor.GrayAsync(await ReadAllBytesAsync(filePath));
@@ -93,7 +96,7 @@ public class ImageController : Controller
     /// <param name="filePath"></param>
     /// <param name="degrees"></param>
     /// <returns></returns>
-    [HttpGet("/image/rotate")]
+    [HttpGet("rotate")]
     public async Task<IActionResult> Rotate(string filePath, float degrees)
     {
         var imageByte = await _processor.RotateAsync(await ReadAllBytesAsync(filePath), degrees);
@@ -106,7 +109,7 @@ public class ImageController : Controller
     /// <param name="filePath"></param>
     /// <param name="mode"></param>
     /// <returns></returns>
-    [HttpGet("/image/flip")]
+    [HttpGet("flip")]
     public async Task<IActionResult> Flip(string filePath, ImageFlipMode mode = ImageFlipMode.Horizontal)
     {
         var imageByte = await _processor.FlipAsync(await ReadAllBytesAsync(filePath), mode);
@@ -125,7 +128,7 @@ public class ImageController : Controller
     /// <param name="width"></param>
     /// <param name="height"></param>
     /// <returns></returns>
-    [HttpGet("/image/mergeImage")]
+    [HttpGet("mergeImage")]
     public async Task<IActionResult> MergeImageAsync(string filePath, string filePath2, int x, int y, int width, int height, ImageResizeMode mode, float opacity = 0.75f)
     {
         var imageByte = await _processor.MergeImageAsync(await ReadAllBytesAsync(filePath), await ReadAllBytesAsync(filePath2), new MergeImageDto(x, y, width, height,resizeMode: mode, opacity: opacity));
@@ -139,7 +142,7 @@ public class ImageController : Controller
     /// <param name="text"></param>
     /// <param name="dto"></param>
     /// <returns></returns>
-    [HttpPost("/image/pressText")]
+    [HttpPost("pressText")]
     public async Task<IActionResult> PressText([Required] string filePath, [Required] string text, [FromBody] DrawTextDto dto)
     {
         var imageByte = await _processor.DrawTextAsync(await ReadAllBytesAsync(filePath), text, dto);
@@ -153,7 +156,7 @@ public class ImageController : Controller
     /// <param name="width"></param>
     /// <param name="height"></param>
     /// <returns></returns>
-    [HttpGet("/verifyCode")]
+    [HttpGet("verifyCode")]
     public async Task<IActionResult> VerifyCode([FromServices] IVerifyCoder verifyCoder, int width = 150,
         int height = 50)
     {

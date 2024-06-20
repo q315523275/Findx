@@ -13,11 +13,19 @@ public class TestProxyInterceptor : InterceptorBase
 {
     private readonly IKeyGenerator<Guid> _keyGenerator;
 
+    /// <summary>
+    ///     Ctor
+    /// </summary>
+    /// <param name="keyGenerator"></param>
     public TestProxyInterceptor(IKeyGenerator<Guid> keyGenerator)
     {
         _keyGenerator = keyGenerator;
     }
 
+    /// <summary>
+    ///     InterceptAsync
+    /// </summary>
+    /// <param name="invocation"></param>
     public override async Task InterceptAsync(IMethodInvocation invocation)
     {
         Console.WriteLine($"befor:{_keyGenerator.Create()},:{invocation.Arguments.ToJson()}");

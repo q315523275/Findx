@@ -1,27 +1,32 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.WebHost.Model;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.WebHost.Controllers;
 
 /// <summary>
-/// 数据仓储
+///     数据仓储
 /// </summary>
-public class RepoController : Controller
+[Route("api/repo")]
+[Description("数据仓储"), Tags("数据仓储")]
+public class RepoController : ApiControllerBase
 {
     /// <summary>
-    ///     repo
+    ///     异步仓储工作单元
     /// </summary>
     /// <param name="uowManager"></param>
     /// <param name="keyGenerator"></param>
     /// <returns></returns>
-    [HttpGet("/repo/test")]
-    public async Task<Guid> RepoTest([FromServices] IUnitOfWorkManager uowManager, [FromServices] IKeyGenerator<Guid> keyGenerator)
+    [HttpGet("test")]
+    public async Task<Guid> Repo([FromServices] IUnitOfWorkManager uowManager, [FromServices] IKeyGenerator<Guid> keyGenerator)
     {
         await using (var uow = await uowManager.GetConnUnitOfWorkAsync(true, true))
         {
@@ -43,11 +48,11 @@ public class RepoController : Controller
     }
     
     /// <summary>
-    ///     repo
+    ///     异步线程仓储工作单元
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <returns></returns>
-    [HttpGet("/repo/async")]
+    [HttpGet("async")]
     public async Task<Guid> RepoAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
     {
         await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
@@ -75,11 +80,11 @@ public class RepoController : Controller
     
     
     /// <summary>
-    ///     repo
+    ///     异步线程仓储工作单元+审计
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <returns></returns>
-    [HttpGet("/repo/update")]
+    [HttpGet("update")]
     [AuditOperation]
     public async Task<Guid> UpdateAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
     {

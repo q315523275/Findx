@@ -15,6 +15,7 @@ using Findx.Machine.Network;
 using Findx.Machine.System;
 using Findx.Security;
 using Findx.Utilities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -23,25 +24,26 @@ namespace Findx.WebHost.Controllers;
 /// <summary>
 ///     应用信息
 /// </summary>
-[Description("应用信息")]
-public class ApplicationController : Controller
+[Route("api/app")]
+[Tags("应用信息"), Description("应用信息")]
+public class ApplicationController : ApiControllerBase
 {
     /// <summary>
-    ///     健康检查地址
+    ///     健康检查
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/health")]
+    [HttpGet("health")]
     public JsonResult Health()
     {
         return new JsonResult(new { status = "UP" });
     }
 
     /// <summary>
-    ///     应用基础信息
+    ///     基础信息
     /// </summary>
     /// <param name="instance"></param>
     /// <returns></returns>
-    [HttpGet("/applicationInfo")]
+    [HttpGet("info")]
     public CommonResult ApplicationInfo([FromServices] IApplicationContext instance)
     {
         return CommonResult.Success(instance);
@@ -51,7 +53,7 @@ public class ApplicationController : Controller
     ///     配置信息热更新
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/configuration")]
+    [HttpGet("configuration")]
     public CommonResult Configuration([FromServices] IOptionsMonitor<JobOptions> optionsMonitor)
     {
         return CommonResult.Success<object>(optionsMonitor.CurrentValue.MaxFetchJobCount);

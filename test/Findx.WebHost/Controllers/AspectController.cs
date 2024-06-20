@@ -1,19 +1,25 @@
 using System.ComponentModel;
+using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.WebHost.Aspect;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.WebHost.Controllers;
 
-[Description("应用信息")]
-public class AspectController : Controller
+/// <summary>
+///     动态代理
+/// </summary>
+[Route("api/dynamicproxy")]
+[Tags("动态代理"), Description("动态代理")]
+public class AspectController : AreaApiControllerBase
 {
     /// <summary>
-    ///     应用基础信息
+    ///     接口动态代理
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/aspect")]
+    [HttpGet("aspect")]
     public CommonResult ApplicationInfo()
     {
         var test = (IMachine)ServiceLocator.GetService(typeof(IMachine));

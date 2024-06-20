@@ -7,10 +7,10 @@ using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions;
-using Findx.Jobs;
 using Findx.Jobs.Storage;
 using Findx.Pdf;
 using Findx.Utilities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -19,17 +19,17 @@ namespace Findx.WebHost.Controllers;
 /// <summary>
 ///     通用控制器
 /// </summary>
-[Description("通用")]
+[Route("api/common")]
+[Description("公共服务"), Tags("公共服务")]
 public class CommonController : ApiControllerBase
 {
-    private static readonly string[] Summaries =
-        { "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching" };
+    private static readonly string[] Summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
     /// <summary>
     ///     雪花ID，Json返回需转换为string
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/snowflakeId")]
+    [HttpGet("snowflakeId")]
     public string SnowflakeId()
     {
         return SnowflakeIdUtility.Default().NextId().ToString();
@@ -40,7 +40,7 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <param name="creditCode"></param>
     /// <returns></returns>
-    [HttpGet("/verifyCreditCode")]
+    [HttpGet("verifyCreditCode")]
     public string VerifyCreditCode([Required] string creditCode)
     {
         return $"{CreditCodeUtility.IsCreditCode(creditCode)}|{CreditCodeUtility.RandomCreditCode()}";
@@ -52,7 +52,7 @@ public class CommonController : ApiControllerBase
     /// <param name="converter"></param>
     /// <param name="text"></param>
     /// <returns></returns>
-    [HttpGet("/textToPdf")]
+    [HttpGet("textToPdf")]
     public async Task<IActionResult> TextToPdf([FromServices] IPdfConverter converter, [Required] string text)
     {
         var res = await converter.ConvertAsync(text);
@@ -64,12 +64,11 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <param name="logger"></param>
     /// <returns></returns>
-    [HttpGet("/log4Net")]
+    [HttpGet("log4Net")]
     public CommonResult Log4Net([FromServices] ILogger<CommonController> logger)
     {
-        logger.LogInformation($"这是一条Log4Net正常日志信息{0}", DateTime.Now);
-        logger.LogError($"这是一条Log4Net异常日志信息{0}", DateTime.Now);
-
+        logger.LogInformation("这是一条Log4Net正常日志信息");
+        logger.LogError("这是一条Log4Net异常日志信息");
         return CommonResult.Success();
     }
 
@@ -77,7 +76,7 @@ public class CommonController : ApiControllerBase
     ///     异常
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/exception")]
+    [HttpGet("exception")]
     public string Exception([FromServices] ILogger<CommonController> logger)
     {
         // await Task.Delay(50);
@@ -91,7 +90,7 @@ public class CommonController : ApiControllerBase
     ///     异常
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/exception/timeout")]
+    [HttpGet("exception/timeout")]
     public async Task<string> Exception_Timeout()
     {
         Console.WriteLine($"{DateTime.Now} - 耗时接口");
@@ -104,7 +103,7 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <param name="storage"></param>
     /// <returns></returns>
-    [HttpGet("/jobs")]
+    [HttpGet("jobs")]
     public async Task<object> QueryJobs([FromServices] IJobStorage storage)
     {
         return await storage.GetJobsAsync();
@@ -114,7 +113,7 @@ public class CommonController : ApiControllerBase
     ///     防重复请求
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/antiDuplicateRequest")]
+    [HttpGet("antiDuplicateRequest")]
     [AntiDuplicateRequest(Interval = "10s", Type = LockType.Ip)]
     public object AntiDuplicateRequest()
     {
@@ -131,7 +130,7 @@ public class CommonController : ApiControllerBase
     ///     公网访问限定
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/privateNetworkLimiter")]
+    [HttpGet("privateNetworkLimiter")]
     [InternalNetworkLimiter]
     public object PrivateNetworkLimiter()
     {
@@ -148,7 +147,7 @@ public class CommonController : ApiControllerBase
     ///     请求速率限定
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/rateLimit")]
+    [HttpGet("rateLimit")]
     [RateLimiter(Period = "10s", Limit = 5)]
     public object RateLimiter()
     {
@@ -166,7 +165,7 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <param name="command"></param>
     /// <returns></returns>
-    [HttpGet("/cmd")]
+    [HttpGet("cmd")]
     public async Task<object> Cmd([Required] string command)
     {
         return await ProcessX.StartAsync(command).ToTask();
@@ -176,7 +175,7 @@ public class CommonController : ApiControllerBase
     ///     进程销毁
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/kill")]
+    [HttpGet("kill")]
     public object Kill()
     {
         RuntimeUtility.Destroy();
@@ -188,7 +187,7 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <param name="ors"></param>
     /// <returns></returns>
-    [HttpGet("/ToSnakeCase")]
+    [HttpGet("toSnakeCase")]
     public string ToSnakeCase([Required] string ors)
     {
         return ors.ToSnakeCase();
@@ -198,9 +197,9 @@ public class CommonController : ApiControllerBase
     /// <summary>
     ///     网络Ping
     /// </summary>
-    /// <param name="ors"></param>
+    /// <param name="ip"></param>
     /// <returns></returns>
-    [HttpGet("/Ping")]
+    [HttpGet("ping")]
     public bool Ping([Required] string ip)
     {
         return NetUtility.Ping(ip);

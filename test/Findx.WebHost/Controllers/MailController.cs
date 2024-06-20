@@ -1,13 +1,19 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Mvc;
 using Findx.Email;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.WebHost.Controllers;
 
-[Description("邮件")]
-public class MailController : Controller
+/// <summary>
+///     邮件服务
+/// </summary>
+[Route("api/mail")]
+[Description("邮件服务"), Tags("邮件服务")]
+public class MailController : ApiControllerBase
 {
     /// <summary>
     ///     邮件发送示例接口
@@ -18,7 +24,7 @@ public class MailController : Controller
     /// <param name="body"></param>
     /// <returns></returns>
     [Description("发送示例邮件")]
-    [HttpGet("/email/send")]
+    [HttpGet("send")]
     public async Task<string> EmailSend([FromServices] IEmailSender sender, [Required] string mailAddress,
         [Required] string subject, [Required] string body)
     {

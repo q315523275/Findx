@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
@@ -6,23 +7,26 @@ using Findx.Extensions;
 using Findx.Security;
 using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Findx.WebHost.Controllers;
 
-[Area("app")]
-[Route("[area]/auth")]
-//[Authorize(Roles = "admin")]
-public class PermissionController : PermissionControllerBase
+/// <summary>
+///     认证授权
+/// </summary>
+[Route("api/authorize")]
+[Description("认证授权"), Tags("认证授权")]
+public class PermissionController : ApiControllerBase
 {
     /// <summary>
     ///     权限数据查询示例接口
     /// </summary>
     /// <param name="store"></param>
     /// <returns></returns>
-    [HttpGet("/permission/list")]
+    [HttpGet("list")]
     public async Task<CommonResult> PermissionList([FromServices] IFunctionStore<MvcFunction> store)
     {
         return CommonResult.Success(await store.QueryFromDatabaseAsync());
@@ -33,7 +37,7 @@ public class PermissionController : PermissionControllerBase
     /// </summary>
     /// <param name="actionProvider"></param>
     /// <returns></returns>
-    [HttpGet("/permission/action")]
+    [HttpGet("actions")]
     public CommonResult ActionList([FromServices] IActionDescriptorCollectionProvider actionProvider)
     {
         var actionDesc = actionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>().Select(x => new
@@ -60,9 +64,21 @@ public class PermissionController : PermissionControllerBase
     /// </summary>
     /// <param name="store"></param>
     /// <returns></returns>
-    [HttpGet("verify")]
+    [HttpGet("authorize")]
     [Authorize(Policy = FunctionRequirement.Policy, Roles = "admin")]
-    public async Task<CommonResult> VerifyPermission([FromServices] IFunctionStore<MvcFunction> store)
+    public async Task<CommonResult> AuthorizePermission([FromServices] IFunctionStore<MvcFunction> store)
+    {
+        return CommonResult.Success(await store.QueryFromDatabaseAsync());
+    }
+    
+    /// <summary>
+    ///     接口权限资源校验接口
+    /// </summary>
+    /// <param name="store"></param>
+    /// <returns></returns>
+    [HttpGet("preAuthorize")]
+    [PreAuthorize(Policy = FunctionRequirement.Policy, Authority = "Sys:Actions")]
+    public async Task<CommonResult> PreAuthorizePermission([FromServices] IFunctionStore<MvcFunction> store)
     {
         return CommonResult.Success(await store.QueryFromDatabaseAsync());
     }

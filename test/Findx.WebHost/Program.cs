@@ -1,4 +1,6 @@
 using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.Unicode;
 using Castle.DynamicProxy;
 using Findx.AspNetCore.Extensions;
@@ -7,6 +9,7 @@ using Findx.Castle;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Extensions.AuditLogs.Services;
+using Findx.Serialization;
 using Findx.WebHost.Aspect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +20,7 @@ builder.Configuration.ReplacePlaceholders();
 
 // Add services to the container.
 builder.Services.AddFindx().AddModules();
+builder.Services.AddCorsAccessor();
 
 builder.Services.AddHttpClient("policy")
                 .AddFallbackPolicy(CommonResult.Fail(), 200)
@@ -25,18 +29,28 @@ builder.Services.AddHttpClient("policy")
                 .AddTimeoutPolicy(1);
 
 builder.Services.AddControllers()
-                .AddMvcFilter<FindxGlobalAttribute>()
-                .AddJsonOptions(options => { options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All); });
+    .AddMvcFilter<FindxGlobalAttribute>()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        options.JsonSerializerOptions.Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping;
+        options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+        options.JsonSerializerOptions.Converters.Add(new DateTimeJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new DateTimeNullableJsonConverter());
+        options.JsonSerializerOptions.Converters.Add(new LongStringJsonConverter());
+    });
 
+#region ProxyGenerator
 var rpcProxyInterceptorType = typeof(TestProxyInterceptor);
 var rpcInterceptorAdapterType = typeof(CastleAsyncDeterminationInterceptor<>).MakeGenericType(rpcProxyInterceptorType);
 builder.Services.AddSingleton(new ProxyGenerator());
 builder.Services.AddTransient(rpcProxyInterceptorType);
 builder.Services.AddTransient(typeof(IMachine), provider =>
-    {
-        var proxyGeneratorInstance = provider.GetRequiredService<ProxyGenerator>();
-        return proxyGeneratorInstance.CreateInterfaceProxyWithoutTarget(typeof(IMachine), (IInterceptor)provider.GetRequiredService(rpcInterceptorAdapterType));
-    });
+{
+    var proxyGeneratorInstance = provider.GetRequiredService<ProxyGenerator>();
+    return proxyGeneratorInstance.CreateInterfaceProxyWithoutTarget(typeof(IMachine), (IInterceptor)provider.GetRequiredService(rpcInterceptorAdapterType));
+});
+#endregion
 
 builder.Services.AddScoped<IAuditStore, AuditStoreServices>();
 
@@ -45,7 +59,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 app.UseCorrelationId();
 app.UseJsonExceptionHandler();
-app.UseRouting();
+app.UseCorsAccessor().UseRouting();
 app.UseFindx();
 app.MapControllersWithAreaRoute();
 

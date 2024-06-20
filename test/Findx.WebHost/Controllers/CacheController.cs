@@ -13,13 +13,14 @@ namespace Findx.WebHost.Controllers;
 /// <summary>
 /// 缓存服务
 /// </summary>
+[Route("api/cache")]
 [Description("缓存服务"), Tags("缓存服务")]
 public class CacheController: ApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="cacheFactory"></param>
     public CacheController(ICacheFactory cacheFactory)
@@ -28,7 +29,7 @@ public class CacheController: ApiControllerBase
     }
 
     /// <summary>
-    ///     缓存信息
+    ///     本地缓存服务信息
     /// </summary>
     /// <returns></returns>
     [HttpGet("info")]
@@ -39,7 +40,7 @@ public class CacheController: ApiControllerBase
     }
     
     /// <summary>
-    ///     应用基础信息
+    ///     本地缓存获取
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <returns></returns>

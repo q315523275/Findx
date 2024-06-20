@@ -1,27 +1,37 @@
-using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
-using Findx.Data;
-using Findx.FreeSql;
-using Findx.WebHost.Model;
-using FreeSql.Extensions.EntityUtil;
+using Findx.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.WebHost.Controllers;
 
 /// <summary>
-///     Database
+///     库表服务
 /// </summary>
-public class DatabaseController: Controller
+[Route("api/database")]
+[Description("库表服务"), Tags("库表服务")]
+public class DatabaseController: ApiControllerBase
 {
-    [HttpGet("/database/tables")]
+    /// <summary>
+    ///     表信息
+    /// </summary>
+    /// <param name="fsql"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    [HttpGet("tables")]
     public object Tables([FromServices] IFreeSql fsql, string name)
     {
         return fsql.DbFirst.GetTablesByDatabase(name).Select(x => new { x.Id, x.Name, x.Comment, x.Schema });
     }
     
-    [HttpGet("/database/columns")]
+    /// <summary>
+    ///     字段信息
+    /// </summary>
+    /// <param name="fsql"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    [HttpGet("columns")]
     public object Columns([FromServices] IFreeSql fsql, string name)
     {
         var table = fsql.DbFirst.GetTableByName(name);
