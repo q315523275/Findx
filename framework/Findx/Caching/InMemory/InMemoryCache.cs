@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using Findx.Common;
-using Findx.DependencyInjection;
 using Findx.Threading;
 
 namespace Findx.Caching.InMemory;
@@ -8,7 +7,7 @@ namespace Findx.Caching.InMemory;
 /// <summary>
 ///     内存缓存
 /// </summary>
-public class InMemoryCache : ICache, IServiceNameAware, IDisposable
+public class InMemoryCache : ICache, IDisposable
 {
     /// <summary>
     ///     存储字典
@@ -89,13 +88,32 @@ public class InMemoryCache : ICache, IServiceNameAware, IDisposable
     ///     判断缓存是否存在
     /// </summary>
     /// <param name="key"></param>
+    /// <returns></returns>
+    public bool Exists(string key)
+    {
+        Check.NotNull(key, nameof(key));
+
+        if (!_cache.TryGetValue(key, out var item)) return false;
+
+        // 存在未过期
+        if (!item.Expired) return true;
+        
+        // 存在且过期,删除缓存
+        _cache.Remove(key, out _);
+        return false;
+    }
+    
+    /// <summary>
+    ///     判断缓存是否存在
+    /// </summary>
+    /// <param name="key"></param>
     /// <param name="token"></param>
     /// <returns></returns>
     public Task<bool> ExistsAsync(string key, CancellationToken token = default)
     {
         Check.NotNull(key, nameof(key));
 
-        if (!_cache.TryGetValue(key, out var item)) 
+        if (!_cache.TryGetValue(key, out var item))
             return Task.FromResult(false);
 
         // 未过期
@@ -108,13 +126,12 @@ public class InMemoryCache : ICache, IServiceNameAware, IDisposable
     }
 
     /// <summary>
-    ///     获取缓存值
+    ///     获取缓存
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="key"></param>
-    /// <param name="token"></param>
     /// <returns></returns>
-    public async Task<T> GetAsync<T>(string key, CancellationToken token = default)
+    public T Get<T>(string key)
     {
         Check.NotNull(key, nameof(key));
 
@@ -134,7 +151,7 @@ public class InMemoryCache : ICache, IServiceNameAware, IDisposable
 
         Interlocked.Increment(ref _hits);
 
-        return await Task.FromResult((T)item.Visit());
+        return (T)item.Visit();
     }
     
     /// <summary>
@@ -142,75 +159,372 @@ public class InMemoryCache : ICache, IServiceNameAware, IDisposable
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="key"></param>
-    /// <param name="func"></param>
-    /// <param name="expire"></param>
     /// <param name="token"></param>
     /// <returns></returns>
-    public async Task<T> GetAsync<T>(string key, Func<Task<T>> func, TimeSpan? expire = null, CancellationToken token = default)
+    public Task<T> GetAsync<T>(string key, CancellationToken token = default)
     {
         Check.NotNull(key, nameof(key));
 
-        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+        if (!_cache.TryGetValue(key, out var item))
         {
-            Interlocked.Increment(ref _hits);
-            return (T)item.Visit();
+            Interlocked.Increment(ref _misses);
+            return default;
         }
 
-        Interlocked.Increment(ref _misses);
+        // 存在且过期,删除缓存
+        if (item.Expired)
+        {
+            Interlocked.Increment(ref _misses);
+            _cache.Remove(key, out _);
+            return default;
+        }
 
-        var value = await func.Invoke();
-        await AddAsync(key, value, expire, token);
-        return value;
+        Interlocked.Increment(ref _hits);
+        
+        return Task.FromResult((T)item.Visit());
     }
     
     /// <summary>
-    ///     添加缓存
+    ///     当缓存健不存在时则添加缓存信息
     /// </summary>
-    /// <typeparam name="T"></typeparam>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="expire"></param>
-    /// <param name="token"></param>
+    /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public Task AddAsync<T>(string key, T value, TimeSpan? expire = null, CancellationToken token = default)
+    public bool TryAdd<T>(string key, T value)
+    {
+        Check.NotNull(key, nameof(key));
+        
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
+
+        _cache.AddOrUpdate(key, new CacheItem(value), (_, oldItem) => { oldItem.Set(value); return oldItem; });
+        
+        Interlocked.Increment(ref _writes);
+
+        return true;
+    }
+
+    /// <summary>
+    ///     当缓存健不存在时则添加缓存信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="absoluteExpiration"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public bool TryAdd<T>(string key, T value, TimeSpan absoluteExpiration)
+    {
+        Check.NotNull(key, nameof(key));
+        
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
+
+        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        
+        Interlocked.Increment(ref _writes);
+
+        return true;
+    }
+
+    /// <summary>
+    ///     当缓存健不存在时则添加缓存信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="absoluteExpiration"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public bool TryAdd<T>(string key, T value, DateTime absoluteExpiration)
+    {
+        Check.NotNull(key, nameof(key));
+        
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
+
+        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        
+        Interlocked.Increment(ref _writes);
+
+        return true;
+    }
+
+    /// <summary>
+    ///     当缓存健不存在时则添加缓存信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="slidingExpirationOptions"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public bool TryAdd<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions)
+    {
+        Check.NotNull(key, nameof(key));
+        
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
+
+        _cache.AddOrUpdate(key, new CacheItem(value, slidingExpirationOptions), (_, oldItem) => { oldItem.Set(value, slidingExpirationOptions); return oldItem; });
+        
+        Interlocked.Increment(ref _writes);
+
+        return true;
+    }
+    
+    /// <summary>
+    ///     当缓存健不存在时则添加缓存信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public Task<bool> TryAddAsync<T>(string key, T value, CancellationToken cancellationToken = default)
+    {
+        Check.NotNull(key, nameof(key));
+        
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return Task.FromResult(false);
+
+        _cache.AddOrUpdate(key, new CacheItem(value), (_, oldItem) => { oldItem.Set(value); return oldItem; });
+        
+        Interlocked.Increment(ref _writes);
+
+        return Task.FromResult(true);
+    }
+
+    /// <summary>
+    ///     当缓存健不存在时则添加缓存信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="absoluteExpiration"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public Task<bool> TryAddAsync<T>(string key, T value, TimeSpan absoluteExpiration, CancellationToken cancellationToken = default)
+    {
+        Check.NotNull(key, nameof(key));
+        
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return Task.FromResult(false);
+
+        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        
+        Interlocked.Increment(ref _writes);
+
+        return Task.FromResult(true);
+    }
+
+    /// <summary>
+    ///     当缓存健不存在时则添加缓存信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="absoluteExpiration"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public Task<bool> TryAddAsync<T>(string key, T value, DateTime absoluteExpiration, CancellationToken cancellationToken = default)
+    {
+        Check.NotNull(key, nameof(key));
+        
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return Task.FromResult(false);
+
+        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        
+        Interlocked.Increment(ref _writes);
+
+        return Task.FromResult(true);
+    }
+
+    /// <summary>
+    ///     当缓存健不存在时则添加缓存信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="slidingExpirationOptions"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public Task<bool> TryAddAsync<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions, CancellationToken cancellationToken = default)
+    {
+        Check.NotNull(key, nameof(key));
+        
+        if (_cache.TryGetValue(key, out var item) && !item.Expired) return Task.FromResult(false);
+
+        _cache.AddOrUpdate(key, new CacheItem(value, slidingExpirationOptions), (_, oldItem) => { oldItem.Set(value, slidingExpirationOptions); return oldItem; });
+        
+        Interlocked.Increment(ref _writes);
+
+        return Task.FromResult(true);
+    }
+
+        
+    /// <summary>
+    ///     添加缓存键和缓存值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <typeparam name="T"></typeparam>
+    public void Add<T>(string key, T value)
     {
         Check.NotNull(key, nameof(key));
 
         Interlocked.Increment(ref _writes);
 
-        _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) =>
-        {
-            oldItem.Set(value, expire);
-            return oldItem;
-        });
+        _cache.AddOrUpdate(key, new CacheItem(value), (_, oldItem) => { oldItem.Set(value); return oldItem; });
+    }
 
+    /// <summary>
+    ///     添加缓存键和缓存值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="absoluteExpiration"></param>
+    /// <typeparam name="T"></typeparam>
+    public void Add<T>(string key, T value, TimeSpan absoluteExpiration)
+    {
+        Check.NotNull(key, nameof(key));
+
+        Interlocked.Increment(ref _writes);
+
+        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+    }
+
+    /// <summary>
+    ///     添加缓存键和缓存值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="absoluteExpiration"></param>
+    /// <typeparam name="T"></typeparam>
+    public void Add<T>(string key, T value, DateTime absoluteExpiration)
+    {
+        Check.NotNull(key, nameof(key));
+
+        Interlocked.Increment(ref _writes);
+
+        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+    }
+
+    /// <summary>
+    ///     添加缓存键和缓存值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="slidingExpirationOptions"></param>
+    /// <typeparam name="T"></typeparam>
+    public void Add<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions)
+    {
+        Check.NotNull(key, nameof(key));
+
+        Interlocked.Increment(ref _writes);
+
+        _cache.AddOrUpdate(key, new CacheItem(value, slidingExpirationOptions), (_, oldItem) => { oldItem.Set(value, slidingExpirationOptions); return oldItem; });
+    }
+    
+    /// <summary>
+    ///     添加缓存键和缓存值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public Task AddAsync<T>(string key, T value, CancellationToken cancellationToken = default)
+    {
+        Check.NotNull(key, nameof(key));
+
+        Interlocked.Increment(ref _writes);
+
+        _cache.AddOrUpdate(key, new CacheItem(value), (_, oldItem) => { oldItem.Set(value); return oldItem; });
+        
         return Task.CompletedTask;
     }
 
     /// <summary>
-    ///     添加缓存,已存在则添加失败
+    ///     添加缓存键和缓存值
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>—
+    /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="expire"></param>
-    /// <param name="token"></param>
+    /// <param name="absoluteExpiration"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public Task<bool> TryAddAsync<T>(string key, T value, TimeSpan? expire = null, CancellationToken token = default)
+    public Task AddAsync<T>(string key, T value, TimeSpan absoluteExpiration, CancellationToken cancellationToken = default)
     {
         Check.NotNull(key, nameof(key));
 
-        // 存在且未过期
-        if (_cache.TryGetValue(key, out var item) && !item.Expired)
-            return Task.FromResult(false);
+        Interlocked.Increment(ref _writes);
+
+        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     添加缓存键和缓存值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="absoluteExpiration"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public Task AddAsync<T>(string key, T value, DateTime absoluteExpiration, CancellationToken cancellationToken = default)
+    {
+        Check.NotNull(key, nameof(key));
 
         Interlocked.Increment(ref _writes);
 
-        var res = _cache.TryAdd(key, new CacheItem(value, expire));
+        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
         
-        return Task.FromResult(res);
+        return Task.CompletedTask;
     }
 
+    /// <summary>
+    ///     添加缓存键和缓存值
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="slidingExpirationOptions"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public Task AddAsync<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions, CancellationToken cancellationToken = default)
+    {
+        Check.NotNull(key, nameof(key));
+
+        Interlocked.Increment(ref _writes);
+
+        _cache.AddOrUpdate(key, new CacheItem(value, slidingExpirationOptions), (_, oldItem) => { oldItem.Set(value, slidingExpirationOptions); return oldItem; });
+        
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     移除缓存
+    /// </summary>
+    /// <param name="key"></param>
+    public void Remove(string key)
+    {
+        _cache.TryRemove(key, out _);
+    }
+
+    /// <summary>
+    ///     根据缓存前缀移除缓存
+    /// </summary>
+    /// <param name="prefix"></param>
+    public void RemoveByPrefix(string prefix)
+    {
+        foreach (var item in _cache)
+            if (item.Key.StartsWith(prefix))
+                Remove(item.Key);
+    }
+
+    /// <summary>
+    ///     清空缓存
+    /// </summary>
+    public void Clear()
+    {
+        _cache.Clear();
+    }
+    
     /// <summary>
     ///     移除缓存
     /// </summary>
@@ -251,149 +565,7 @@ public class InMemoryCache : ICache, IServiceNameAware, IDisposable
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    ///     判断缓存是否存在
-    /// </summary>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public bool Exists(string key)
-    {
-        Check.NotNull(key, nameof(key));
 
-        if (!_cache.TryGetValue(key, out var item)) return false;
-
-        // 存在未过期
-        if (!item.Expired) return true;
-        
-        // 存在且过期,删除缓存
-        _cache.Remove(key, out _);
-        
-        return false;
-
-    }
-    
-    /// <summary>
-    ///     获取缓存
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>
-    /// <returns></returns>
-    public T Get<T>(string key)
-    {
-        Check.NotNull(key, nameof(key));
-
-        if (!_cache.TryGetValue(key, out var item))
-        {
-            Interlocked.Increment(ref _misses);
-            return default;
-        }
-
-        // 存在且过期,删除缓存
-        if (item.Expired)
-        {
-            Interlocked.Increment(ref _misses);
-            _cache.Remove(key, out _);
-            return default;
-        }
-
-        Interlocked.Increment(ref _hits);
-
-        return (T)item.Visit();
-    }
-
-    /// <summary>
-    ///     获取缓存值
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>
-    /// <param name="func"></param>
-    /// <param name="expire"></param>
-    /// <returns></returns>
-    public T Get<T>(string key, Func<T> func, TimeSpan? expire = null)
-    {
-        Check.NotNull(key, nameof(key));
-
-        if (_cache.TryGetValue(key, out var item) && !item.Expired)
-        {
-            Interlocked.Increment(ref _hits);
-            return (T)item.Visit();
-        }
-
-        Interlocked.Increment(ref _misses);
-
-        var value = func.Invoke();
-        
-        Add(key, value, expire);
-        
-        return value;
-    }
-
-    /// <summary>
-    ///     添加缓存
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <param name="expire"></param>
-    public void Add<T>(string key, T value, TimeSpan? expire = null)
-    {
-        Check.NotNull(key, nameof(key));
-
-        Interlocked.Increment(ref _writes);
-
-        _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) =>
-        {
-            oldItem.Set(value, expire);
-            return oldItem;
-        });
-    }
-    
-    /// <summary>
-    ///     添加缓存,已存在则添加失败
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="key"></param>
-    /// <param name="value"></param>
-    /// <param name="expire"></param>
-    /// <returns></returns>
-    public bool TryAdd<T>(string key, T value, TimeSpan? expire = null)
-    {
-        Check.NotNull(key, nameof(key));
-
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
-
-        Interlocked.Increment(ref _writes);
-        
-        return _cache.TryAdd(key, new CacheItem(value, expire));
-    }
-
-    /// <summary>
-    ///     移除缓存
-    /// </summary>
-    /// <param name="key"></param>
-    public void Remove(string key)
-    {
-        _cache.TryRemove(key, out _);
-    }
-
-    /// <summary>
-    ///     根据缓存前缀移除缓存
-    /// </summary>
-    /// <param name="prefix"></param>
-    public void RemoveByPrefix(string prefix)
-    {
-        foreach (var item in _cache)
-            if (item.Key.StartsWith(prefix))
-                Remove(item.Key);
-    }
-
-    /// <summary>
-    ///     清空缓存
-    /// </summary>
-    public void Clear()
-    {
-        _cache.Clear();
-    }
 
     /// <summary>
     ///     释放
@@ -401,7 +573,6 @@ public class InMemoryCache : ICache, IServiceNameAware, IDisposable
     public void Dispose()
     {
         _cache?.Clear();
-
         Timer.Stop();
     }
 
@@ -443,10 +614,39 @@ internal class CacheItem
     ///     构造缓存项
     /// </summary>
     /// <param name="value"></param>
+    public CacheItem(object value)
+    {
+        Set(value);
+    }
+    
+    /// <summary>
+    ///     构造缓存项
+    /// </summary>
+    /// <param name="value"></param>
     /// <param name="expire"></param>
-    public CacheItem(object value, TimeSpan? expire = null)
+    public CacheItem(object value, TimeSpan expire)
     {
         Set(value, expire);
+    }
+    
+    /// <summary>
+    ///     构造缓存项
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
+    public CacheItem(object value, DateTime expire)
+    {
+        Set(value, expire);
+    }
+    
+    /// <summary>
+    ///     构造缓存项
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="slidingExpirationOptions"></param>
+    public CacheItem(object value, SlidingExpirationOptions slidingExpirationOptions)
+    {
+        Set(value, slidingExpirationOptions);
     }
 
     /// <summary>
@@ -455,9 +655,9 @@ internal class CacheItem
     private object Value { get; set; }
 
     /// <summary>
-    ///     过期时间
+    ///     滑动过期时间间隔
     /// </summary>
-    private TimeSpan? ExpiredTimeSpan { get; set; }
+    private TimeSpan? SlidingExpiration { get; set; }
 
     /// <summary>
     ///     过期时间
@@ -470,27 +670,13 @@ internal class CacheItem
     public bool Expired => ExpiredTime <= DateTime.Now;
 
     /// <summary>
-    ///     设置数值和过期时间
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="expire"></param>
-    public void Set(object value, TimeSpan? expire = null)
-    {
-        Value = value;
-        ExpiredTimeSpan = expire;
-        
-        var now = DateTime.Now;
-        ExpiredTime = expire == null ? DateTime.MaxValue : now.AddSeconds(expire.Value.TotalSeconds);
-    }
-
-    /// <summary>
     ///     刷新滑动过期时间
     /// </summary>
     public void RefreshSlidingTtl()
     {
-        if (ExpiredTimeSpan.HasValue)
+        if (SlidingExpiration.HasValue)
         {
-            ExpiredTime = DateTime.Now.AddSeconds(ExpiredTimeSpan.Value.TotalSeconds);
+            ExpiredTime = DateTime.Now.AddSeconds(SlidingExpiration.Value.TotalSeconds);
         }
     }
 
@@ -500,6 +686,51 @@ internal class CacheItem
     /// <returns></returns>
     public object Visit()
     {
+        if (!Expired) RefreshSlidingTtl();
         return Value;
+    }
+    
+    /// <summary>
+    ///     设置数值和过期时间
+    /// </summary>
+    /// <param name="value"></param>
+    public void Set(object value)
+    {
+        Value = value;
+        ExpiredTime = DateTime.MaxValue;
+    }
+    
+    /// <summary>
+    ///     设置数值和过期时间
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
+    public void Set(object value, TimeSpan expire)
+    {
+        Value = value;
+        ExpiredTime = DateTime.Now.AddSeconds(expire.TotalSeconds);
+    }
+    
+    /// <summary>
+    ///     设置数值和过期时间
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
+    public void Set(object value, DateTime expire)
+    {
+        Value = value;
+        ExpiredTime = expire;
+    }
+    
+    /// <summary>
+    ///     设置数值和过期时间
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="slidingExpirationOptions"></param>
+    public void Set(object value, SlidingExpirationOptions slidingExpirationOptions)
+    {
+        Value = value;
+        ExpiredTime = DateTime.Now.AddSeconds(slidingExpirationOptions.SlidingExpiration.TotalSeconds);
+        SlidingExpiration = slidingExpirationOptions.SlidingExpiration;
     }
 }
