@@ -11,7 +11,6 @@ namespace Findx.Data;
 /// </summary>
 public abstract class UnitOfWorkBase: IUnitOfWork
 {
-    
     private readonly Stack<string> _transactionStack = new();
 
     /// <summary>
@@ -138,11 +137,11 @@ public abstract class UnitOfWorkBase: IUnitOfWork
         token = _transactionStack.Pop();
         var transactionCode = Transaction.GetHashCode();
 
-        await UnitOfWorkEventDispatcher.PublishEventsAsync(cancellationToken);
+        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.BeforeCommit, cancellationToken);
 
         await InternalCommitAsync(cancellationToken);
 
-        await UnitOfWorkEventDispatcher.PublishAsyncEventsAsync(cancellationToken);
+        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterCommit, cancellationToken);
         
         Logger.LogDebug("提交事务，标识：{Token}，事务标识：{TransactionCode}", token, transactionCode);
   
@@ -163,9 +162,16 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     /// <returns></returns>
     public async Task RollbackAsync(CancellationToken cancellationToken = default)
     {
+        if (HasCommitted || Transaction?.Connection == null) return;
+        
         var transactionCode = Transaction?.GetHashCode();
-        await InternalRollbackAsync(cancellationToken); 
+        
+        await InternalRollbackAsync(cancellationToken);
+        
+        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterRollback, cancellationToken);
+        
         Logger.LogDebug("回滚事务，事务标识：{TransactionCode}", transactionCode);
+        
         HasCommitted = true;
     }
 
@@ -180,10 +186,11 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     ///     添加事件缓冲
     /// </summary>
     /// <param name="eventData"></param>
+    /// <param name="transactionPhase"></param>
     /// <typeparam name="T"></typeparam>
-    public void AddEventToBuffer<T>(T eventData) where T : IEvent
+    public void AddEventToBuffer<T>(T eventData, TransactionPhase transactionPhase = TransactionPhase.AfterCommit) where T : IEvent
     {
-        UnitOfWorkEventDispatcher.AddEventToBuffer(eventData);
+        UnitOfWorkEventDispatcher.AddEventToBuffer(eventData, transactionPhase);
     }
     
     private readonly AtomicInteger _disposeCounter = new();
@@ -198,16 +205,19 @@ public abstract class UnitOfWorkBase: IUnitOfWork
         
         try
         {
-            await InternalRollbackAsync();
-
-            _transactionStack.Clear();
-            UnitOfWorkEventDispatcher.ClearAllEvents();
-            UnitOfWorkEventDispatcher = null;
+            if (IsEnabledTransaction && !HasCommitted) await RollbackAsync();
+            
+            if (IsEnabledTransaction && HasCommitted)
+                await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterCompletion);
 
             Logger.LogDebug("工作单元生命周期结束，单元标识：{Id}，释放计量：{DisposeCounter}", Id, _disposeCounter.Value);
         }
         finally
         {
+            _transactionStack.Clear();
+            UnitOfWorkEventDispatcher.ClearAllEvents();
+            UnitOfWorkEventDispatcher = null;
+            
             GC.SuppressFinalize(this);
         }
     }
