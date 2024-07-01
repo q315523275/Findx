@@ -78,8 +78,7 @@ public static partial class Extensions
     /// <param name="key"></param>
     /// <param name="factory"></param>
     /// <returns></returns>
-    public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
-        Func<TKey, TValue> factory)
+    public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TKey, TValue> factory)
     {
         if (dictionary.TryGetValue(key, out var obj)) return obj;
 
@@ -95,8 +94,7 @@ public static partial class Extensions
     /// <param name="key"></param>
     /// <param name="factory">如果在字典中找不到值，则用于创建值的工厂方法</param>
     /// <returns></returns>
-    public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key,
-        Func<TValue> factory)
+    public static TValue GetOrAdd<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, Func<TValue> factory)
     {
         return dictionary.GetOrAdd(key, _ => factory());
     }

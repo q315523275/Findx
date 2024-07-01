@@ -2,115 +2,154 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Caching;
-using Findx.DependencyInjection;
 
-namespace Findx.Redis
+namespace Findx.Redis;
+
+public class RedisCacheProvider : ICache
 {
-    public class RedisCacheProvider : ICache, IServiceNameAware
+    private readonly IRedisClient _redisClient;
+
+    /// <summary>
+    ///     Ctor
+    /// </summary>
+    /// <param name="redisClientProvider"></param>
+    public RedisCacheProvider(IRedisClientProvider redisClientProvider)
     {
-        private readonly IRedisClient _redisClient;
+        _redisClient = redisClientProvider.CreateClient();
+        Name = CacheType.DefaultRedis;
+    }
 
-        public RedisCacheProvider(IRedisClientProvider redisClientProvider)
-        {
-            _redisClient = redisClientProvider.CreateClient();
-            Name = CacheType.DefaultRedis;
-        }
+    public string Name { get; }
 
-        public string Name { get; }
+    public void Clear()
+    {
+        _redisClient.Clear();
+    }
 
-        public void Add<T>(string key, T value, TimeSpan? expiration = null)
-        {
-            _redisClient.StringSet(key, value, expiration ?? TimeSpan.FromDays(365));
-        }
+    public Task ClearAsync(CancellationToken token = default)
+    {
+        return _redisClient.ClearAsync();
+    }
 
-        public Task AddAsync<T>(string key, T value, TimeSpan? expiration = null, CancellationToken token = default)
-        {
-            return _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365), cancellationToken: token);
-        }
+    public bool Exists(string key)
+    {
+        return _redisClient.Exists(key);
+    }
 
-        public void Clear()
-        {
-            _redisClient.Clear();
-        }
+    public Task<bool> ExistsAsync(string key, CancellationToken token = default)
+    {
+        return _redisClient.ExistsAsync(key);
+    }
 
-        public Task ClearAsync(CancellationToken token = default)
-        {
-            return _redisClient.ClearAsync();
-        }
+    public T Get<T>(string key)
+    {
+        return _redisClient.StringGet<T>(key);
+    }
+        
+    public bool TryAdd<T>(string key, T value)
+    {
+        return _redisClient.StringSet(key, value, TimeSpan.MaxValue, whenNotExists: true);
+    }
 
-        public bool Exists(string key)
-        {
-            return _redisClient.Exists(key);
-        }
+    public bool TryAdd<T>(string key, T value, TimeSpan absoluteExpiration)
+    {
+        return _redisClient.StringSet(key, value, absoluteExpiration, whenNotExists: true);
+    }
 
-        public Task<bool> ExistsAsync(string key, CancellationToken token = default)
-        {
-            return _redisClient.ExistsAsync(key);
-        }
+    public bool TryAdd<T>(string key, T value, DateTime absoluteExpiration)
+    {
+        return _redisClient.StringSet(key, value, absoluteExpiration, whenNotExists: true);
+    }
 
-        public T Get<T>(string key, Func<T> func, TimeSpan? expiration = null)
-        {
-            if (_redisClient.Exists(key)) return _redisClient.StringGet<T>(key);
+    public bool TryAdd<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions)
+    {
+        throw new NotImplementedException();
+    }
 
-            var value = func.Invoke();
-            _redisClient.StringSet(key, value, expiration ?? TimeSpan.FromDays(365));
+    public void Add<T>(string key, T value)
+    {
+        _redisClient.StringSet(key, value, TimeSpan.MaxValue);
+    }
 
-            return value;
-        }
+    public void Add<T>(string key, T value, TimeSpan absoluteExpiration)
+    {
+        _redisClient.StringSet(key, value, absoluteExpiration);
+    }
 
-        public T Get<T>(string key)
-        {
-            return _redisClient.StringGet<T>(key);
-        }
+    public void Add<T>(string key, T value, DateTime absoluteExpiration)
+    {
+        _redisClient.StringSet(key, value, absoluteExpiration);
+    }
 
-        public async Task<T> GetAsync<T>(string key, Func<Task<T>> func, TimeSpan? expiration = null,
-            CancellationToken token = default)
-        {
-            if (await _redisClient.ExistsAsync(key)) 
-                return await _redisClient.StringGetAsync<T>(key, token);
+    public void Add<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions)
+    {
+        throw new NotImplementedException();
+    }
 
-            var value = await func.Invoke();
-            await _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365), cancellationToken: token);
+    public Task<T> GetAsync<T>(string key, CancellationToken token = default)
+    {
+        return _redisClient.StringGetAsync<T>(key, token);
+    }
 
-            return value;
-        }
+    public Task<bool> TryAddAsync<T>(string key, T value, CancellationToken cancellationToken = default)
+    {
+        return _redisClient.StringSetAsync(key, value, TimeSpan.MaxValue, whenNotExists: true, cancellationToken: cancellationToken);
+    }
 
-        public Task<T> GetAsync<T>(string key, CancellationToken token = default)
-        {
-            return _redisClient.StringGetAsync<T>(key, token);
-        }
+    public Task<bool> TryAddAsync<T>(string key, T value, TimeSpan absoluteExpiration, CancellationToken cancellationToken = default)
+    {
+        return _redisClient.StringSetAsync(key, value, absoluteExpiration, whenNotExists: true, cancellationToken: cancellationToken);
+    }
 
-        public void Remove(string key)
-        {
-            _redisClient.Remove(key);
-        }
+    public Task<bool> TryAddAsync<T>(string key, T value, DateTime absoluteExpiration, CancellationToken cancellationToken = default)
+    {
+        return _redisClient.StringSetAsync(key, value, absoluteExpiration, whenNotExists: true, cancellationToken: cancellationToken);
+    }
 
-        public Task RemoveAsync(string key, CancellationToken token = default)
-        {
-            return _redisClient.RemoveAsync(key);
-        }
+    public Task<bool> TryAddAsync<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
 
-        public void RemoveByPrefix(string prefix)
-        {
-            var keys = _redisClient.SearchKeys($"{prefix}*");
-            _redisClient.RemoveAll(keys);
-        }
+    public Task AddAsync<T>(string key, T value, CancellationToken cancellationToken = default)
+    {
+        return _redisClient.StringSetAsync(key, value, TimeSpan.MaxValue, cancellationToken: cancellationToken);
+    }
 
-        public Task RemoveByPrefixAsync(string prefix, CancellationToken token = default)
-        {
-            var keys = _redisClient.SearchKeys($"{prefix}*");
-            return _redisClient.RemoveAllAsync(keys);
-        }
+    public Task AddAsync<T>(string key, T value, TimeSpan absoluteExpiration, CancellationToken cancellationToken = default)
+    {
+        return _redisClient.StringSetAsync(key, value, absoluteExpiration, cancellationToken: cancellationToken);
+    }
 
-        public bool TryAdd<T>(string key, T value, TimeSpan? expiration = null)
-        {
-            return _redisClient.StringSet(key, value, expiration ?? TimeSpan.FromDays(365), whenNotExists: true);
-        }
+    public Task AddAsync<T>(string key, T value, DateTime absoluteExpiration, CancellationToken cancellationToken = default)
+    {
+        return _redisClient.StringSetAsync(key, value, absoluteExpiration, cancellationToken: cancellationToken);
+    }
 
-        public async Task<bool> TryAddAsync<T>(string key, T value, TimeSpan? expiration = null,
-            CancellationToken token = default)
-        {
-            return await _redisClient.StringSetAsync(key, value, expiration ?? TimeSpan.FromDays(365), true, token);
-        }
+    public Task AddAsync<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Remove(string key)
+    {
+        _redisClient.Remove(key);
+    }
+
+    public Task RemoveAsync(string key, CancellationToken token = default)
+    {
+        return _redisClient.RemoveAsync(key);
+    }
+
+    public void RemoveByPrefix(string prefix)
+    {
+        var keys = _redisClient.SearchKeys($"{prefix}*");
+        _redisClient.RemoveAll(keys);
+    }
+
+    public Task RemoveByPrefixAsync(string prefix, CancellationToken token = default)
+    {
+        var keys = _redisClient.SearchKeys($"{prefix}*");
+        return _redisClient.RemoveAllAsync(keys);
     }
 }

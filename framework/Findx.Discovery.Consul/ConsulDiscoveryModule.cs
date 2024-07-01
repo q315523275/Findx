@@ -75,7 +75,6 @@ public class ConsulDiscoveryModule : StartupModule
             var consulRegistration = provider.GetRequiredService<IConsulRegistration>();
             consulServiceRegistry.DeregisterAsync(consulRegistration).ConfigureAwait(false).GetAwaiter();
         }
-
         base.OnShutdown(provider);
     }
 }

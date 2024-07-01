@@ -19,7 +19,8 @@ public static class CsvUtility
     public static IList<T> ReadCsvStream<T>(Stream stream, bool skipFirstLine = true, string csvDelimiter = ",") where T : new()
     {
         // 可以增加映射实现自动匹配属性名,无需现在必须顺序一致
-        // 当前处理模式性能一般
+        // Todo 使用Emit或者ExpressionTree进行性能优化
+        
         var records = new List<T>();
         var item = new T();
         var properties = item.GetType().GetProperties();
@@ -57,6 +58,8 @@ public static class CsvUtility
     /// <returns></returns>
     public static string ExportCsv<T>(IList<T> data, bool includeHeader = true, string csvDelimiter = ",")
     {
+        // Todo 使用Emit或者ExpressionTree进行性能优化
+        
         var type = data.GetType();
         Type itemType;
 

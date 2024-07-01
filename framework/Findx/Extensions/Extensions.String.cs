@@ -335,8 +335,7 @@ public static partial class Extensions
     /// <param name="replace"></param>
     /// <param name="comparisonType"></param>
     /// <returns></returns>
-    public static string ReplaceFirst(this string str, string search, string replace,
-        StringComparison comparisonType = StringComparison.Ordinal)
+    public static string ReplaceFirst(this string str, string search, string replace, StringComparison comparisonType = StringComparison.Ordinal)
     {
         Check.NotNull(str, nameof(str));
 
@@ -351,7 +350,7 @@ public static partial class Extensions
     /// </summary>
     public static string[] Split(this string str, string separator)
     {
-        return str.Split(new[] { separator }, StringSplitOptions.None);
+        return str.Split([separator], StringSplitOptions.None);
     }
 
     /// <summary>
@@ -359,7 +358,7 @@ public static partial class Extensions
     /// </summary>
     public static string[] Split(this string str, string separator, StringSplitOptions options)
     {
-        return str.Split(new[] { separator }, options);
+        return str.Split([separator], options);
     }
 
     /// <summary>
@@ -385,8 +384,7 @@ public static partial class Extensions
     /// <param name="c"></param>
     /// <param name="comparisonType"></param>
     /// <returns></returns>
-    public static string EnsureEndsWith(this string str, char c,
-        StringComparison comparisonType = StringComparison.Ordinal)
+    public static string EnsureEndsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)
     {
         Check.NotNull(str, nameof(str));
 
@@ -402,8 +400,7 @@ public static partial class Extensions
     /// <param name="c"></param>
     /// <param name="comparisonType"></param>
     /// <returns></returns>
-    public static string EnsureStartsWith(this string str, char c,
-        StringComparison comparisonType = StringComparison.Ordinal)
+    public static string EnsureStartsWith(this string str, char c, StringComparison comparisonType = StringComparison.Ordinal)
     {
         Check.NotNull(str, nameof(str));
 
@@ -532,8 +529,7 @@ public static partial class Extensions
     /// <typeparam name="T">Type of enum</typeparam>
     /// <param name="value">String value to convert</param>
     /// <returns>Returns enum object</returns>
-    public static T ToEnum<T>(this string value)
-        where T : struct
+    public static T ToEnum<T>(this string value) where T : struct
     {
         Check.NotNull(value, nameof(value));
         return (T)Enum.Parse(typeof(T), value);
@@ -546,8 +542,7 @@ public static partial class Extensions
     /// <param name="value">String value to convert</param>
     /// <param name="ignoreCase">Ignore case</param>
     /// <returns>Returns enum object</returns>
-    public static T ToEnum<T>(this string value, bool ignoreCase)
-        where T : struct
+    public static T ToEnum<T>(this string value, bool ignoreCase) where T : struct
     {
         Check.NotNull(value, nameof(value));
         return (T)Enum.Parse(typeof(T), value, ignoreCase);
@@ -558,7 +553,6 @@ public static partial class Extensions
     /// </summary>
     /// <param name="str"></param>
     /// <returns></returns>
-    [Obsolete("Obsolete")]
     public static string ToMd5(this string str)
     {
         return EncryptUtility.Md5By32(str);

@@ -37,17 +37,12 @@ public static partial class Extensions
     /// <summary>
     ///     添加Endpoint并Area路由支持
     /// </summary>
-    public static IEndpointRouteBuilder MapControllersWithAreaRoute(this IEndpointRouteBuilder endpoints,
-        bool area = true)
+    public static IEndpointRouteBuilder MapControllersWithAreaRoute(this IEndpointRouteBuilder endpoints, bool area = true)
     {
         if (area)
-            endpoints.MapControllerRoute(
-                "areas-router",
-                "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+            endpoints.MapControllerRoute("areas-router", "{area:exists}/{controller=Home}/{action=Index}/{id?}");
 
-        endpoints.MapControllerRoute(
-            "default",
-            "{controller=Home}/{action=Index}/{id?}");
+        endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
 
         return endpoints;
     }

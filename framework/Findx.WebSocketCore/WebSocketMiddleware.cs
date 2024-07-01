@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Utilities;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.WebSocketCore;
@@ -46,13 +47,13 @@ public class WebSocketMiddleware
         }
 
         // 开放认证
-        if (!await _webSocketAuthorization.AuthorizeAsync(context.Request))
+        if (!await _webSocketAuthorization.AuthorizeAsync(context))
         {
             context.Response.StatusCode = 401;
             await context.Response.WriteAsync("basic auth failed .");
             return;
         }
-
+        
         // 控制连接
         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
         var webSocketClient = new WebSocketClient

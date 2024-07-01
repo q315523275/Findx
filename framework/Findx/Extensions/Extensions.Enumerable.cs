@@ -111,15 +111,18 @@ public static partial class Extensions
     /// <returns> 为空返回True，不为空返回False </returns>
     public static bool IsEmpty<T>(this IEnumerable<T> source)
     {
-        // source = source as IList<T> ?? source.ToList();
         return !source.Any();
     }
 
     /// <summary>
     ///     将字符串集合按指定前缀排序
     /// </summary>
-    public static IEnumerable<T> OrderByPrefixes<T>(this IEnumerable<T> source, Func<T, string> keySelector,
-        params string[] prefixes)
+    /// <param name="source">源数据集</param>
+    /// <param name="keySelector">字段选择委托</param>
+    /// <param name="prefixes">前缀</param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static IEnumerable<T> OrderByPrefixes<T>(this IEnumerable<T> source, Func<T, string> keySelector, params string[] prefixes)
     {
         var all = source.OrderBy(keySelector).AsEnumerable();
         var result = new List<T>();
@@ -144,10 +147,9 @@ public static partial class Extensions
     /// <returns>不重复元素的集合</returns>
     public static IEnumerable<T> DistinctBy2<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
     {
+        Check.NotNull(source, nameof(source));
         Check.NotNull(keySelector, nameof(keySelector));
-
-        // source = source as IList<T> ?? source.ToList();
-
+        
         return source.GroupBy(keySelector).Select(group => group.First());
     }
 
@@ -169,8 +171,7 @@ public static partial class Extensions
     /// </param>
     /// <returns>A Task representing an async operation</returns>
     /// <exception cref="ArgumentOutOfRangeException">If the maxActionsToRunInParallel is less than 1</exception>
-    public static async Task ForEachAsyncConcurrent<T>(this IEnumerable<T> enumerable, Func<T, Task> func,
-        int? maxActionsToRunInParallel = null)
+    public static async Task ForEachAsyncConcurrent<T>(this IEnumerable<T> enumerable, Func<T, Task> func, int? maxActionsToRunInParallel = null)
     {
         if (maxActionsToRunInParallel.HasValue)
         {

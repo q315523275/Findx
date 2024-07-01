@@ -28,7 +28,7 @@ public class TestProxyInterceptor : InterceptorBase
     /// <param name="invocation"></param>
     public override async Task InterceptAsync(IMethodInvocation invocation)
     {
-        Console.WriteLine($"befor:{_keyGenerator.Create()},:{invocation.Arguments.ToJson()}");
+        Console.WriteLine($"before:{_keyGenerator.Create()},:{invocation.Arguments.ToJson()}");
         invocation.ReturnValue = true;
         Console.WriteLine($"after:{_keyGenerator.Create()}");
 

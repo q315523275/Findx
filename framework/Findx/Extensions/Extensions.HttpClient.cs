@@ -32,15 +32,13 @@ public static partial class Extensions
     /// <param name="parameter"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<HttpResponseMessage> PostAsJsonAsync<T>(this HttpClient httpClient, string requestUri,
-        T parameter, CancellationToken cancellationToken = default)
+    public static Task<HttpResponseMessage> PostAsJsonAsync<T>(this HttpClient httpClient, string requestUri, T parameter, CancellationToken cancellationToken = default)
     {
         Check.NotNull(httpClient, nameof(httpClient));
         Check.NotNull(requestUri, nameof(requestUri));
         Check.NotNull(parameter, nameof(parameter));
 
-        return httpClient.PostAsync(requestUri, new StringContent(parameter.ToJson(), Encoding.UTF8, JsonMediaType),
-            cancellationToken);
+        return httpClient.PostAsync(requestUri, new StringContent(parameter.ToJson(), Encoding.UTF8, JsonMediaType), cancellationToken);
     }
 
     /// <summary>
@@ -51,8 +49,7 @@ public static partial class Extensions
     /// <param name="paramDic"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<HttpResponseMessage> PostAsFormAsync(this HttpClient httpClient, string requestUri,
-        IEnumerable<KeyValuePair<string, string>> paramDic, CancellationToken cancellationToken = default)
+    public static Task<HttpResponseMessage> PostAsFormAsync(this HttpClient httpClient, string requestUri, IEnumerable<KeyValuePair<string, string>> paramDic, CancellationToken cancellationToken = default)
     {
         Check.NotNull(httpClient, nameof(httpClient));
         Check.NotNull(requestUri, nameof(requestUri));
@@ -73,9 +70,7 @@ public static partial class Extensions
     /// <param name="formFields"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUrl,
-        string filePath, string fileKey = "file", IEnumerable<KeyValuePair<string, string>> formFields = null,
-        CancellationToken cancellationToken = default)
+    public static Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUrl, string filePath, string fileKey = "file", IEnumerable<KeyValuePair<string, string>> formFields = null, CancellationToken cancellationToken = default)
     {
         Check.NotNull(httpClient, nameof(httpClient));
         Check.NotNull(requestUrl, nameof(requestUrl));
@@ -102,9 +97,7 @@ public static partial class Extensions
     /// <param name="formFields"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUrl,
-        Stream file, string fileName, string fileKey = "file",
-        IEnumerable<KeyValuePair<string, string>> formFields = null, CancellationToken cancellationToken = default)
+    public static async Task<HttpResponseMessage> PostFileAsync(this HttpClient httpClient, string requestUrl, Stream file, string fileName, string fileKey = "file", IEnumerable<KeyValuePair<string, string>> formFields = null, CancellationToken cancellationToken = default)
     {
         if (file == null) return await httpClient.PostAsFormAsync(requestUrl, formFields, cancellationToken);
 
@@ -141,8 +134,7 @@ public static partial class Extensions
                 content.Add(new StringContent(kv.Value), kv.Key);
 
         foreach (var file in files)
-            content.Add(new StreamContent(file.Value), Path.GetFileNameWithoutExtension(file.Key),
-                Path.GetFileName(file.Key));
+            content.Add(new StreamContent(file.Value), Path.GetFileNameWithoutExtension(file.Key), Path.GetFileName(file.Key));
 
         return await httpClient.PostAsync(requestUri, content, cancellationToken);
     }

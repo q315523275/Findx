@@ -16,7 +16,7 @@ public class AuditLogInfo: EntityBase<Guid>
     ///     应用名称
     /// </summary>
     public string ApplicationName { set; get; }
-    
+
     
     /// <summary>
     ///     用户Id

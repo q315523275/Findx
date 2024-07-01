@@ -22,6 +22,5 @@ public interface IApplicationEventPublisher
     /// <param name="applicationEvent"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default)
-        where TEvent : IApplicationEvent;
+    Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default) where TEvent : IApplicationEvent;
 }

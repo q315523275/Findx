@@ -87,7 +87,7 @@ public class WebSocketClientManager : IWebSocketClientManager
             return;
         }
 
-        _groups.TryAdd(groupId, new List<string> { clientInfo.Id });
+        _groups.TryAdd(groupId, [clientInfo.Id]);
     }
 
     /// <summary>

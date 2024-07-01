@@ -8,11 +8,13 @@ using System.Security.Cryptography;
 using System.Text;
 using ConsoleApp1;
 using Findx;
+using Findx.Caching.InMemory;
 using Findx.Configuration;
 using Findx.Extensions;
 using Findx.Linq;
 using Findx.Utilities;
 using MassTransit;
+using Microsoft.Extensions.Options;
 
 Console.Title = "Findx 控制台测试";
 Console.WriteLine("Hello, World!");
@@ -219,70 +221,73 @@ Console.WriteLine("Hello, World!");
 // }
 // watch.Stop();
 // Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
-//
-// var sequentialGuidList = new HashSet<string>();
-// for (int i = 0; i < 1000000; i++)
-// {
-//     sequentialGuidList.Add(NewId.NextSequentialGuid().ToString());
-// }
-// Console.WriteLine($"有序guid是否有重复:{sequentialGuidList.Count != 1000000}");
 
-// var sequentialGuidList = new List<Guid>();
-// for (int i = 0; i < 100; i++)
-// {
-//     sequentialGuidList.Add(NewId.NextSequentialGuid());
-// }
-//
-// var newGuids = sequentialGuidList.OrderBy(x => x).ToList();
-// for (int i = 0; i < 100; i++)
-// {
-//     Console.WriteLine($"比对:{sequentialGuidList[i] == newGuids[i]},源:{sequentialGuidList[i]},new:{newGuids[i]}");
-// }
+// 重复验证
+var repeatGuidList = new HashSet<Guid>();
+for (var i = 0; i < 1000000; i++)
+{
+    repeatGuidList.Add(NewId.NextSequentialGuid());
+}
+Console.WriteLine($"有序guid是否有重复:{repeatGuidList.Count != 1000000}");
+
+// 连续性
+Console.WriteLine($"检查是否是连续Guid......");
+var sequentialGuidList = new List<Guid>();
+for (var i = 0; i < 10000; i++)
+{
+    sequentialGuidList.Add(NewId.NextSequentialGuid());
+}
+var newGuids = sequentialGuidList.OrderBy(x => x).ToList();
+for (var i = 0; i < 10000; i++)
+{
+    if (newGuids[i] != sequentialGuidList[i])
+        Console.WriteLine($"发现非连续:{newGuids[i]} != {sequentialGuidList[i]}");
+}
 
 // Json表达式解析
-var filterGroup = new FilterGroup()
-{
-    Logic = FilterOperate.And,
-    Filters = new List<FilterCondition>
-    {
-        new()
-        {
-            Field = "Name", Value = "Name110", Operator = FilterOperate.NotContains
-        },
-        new ()
-        {
-            Field = "Status", Value = "0,1", Operator = FilterOperate.In
-        },
-        new()
-        {
-            Field = "CreatedTime", Value = "2021-12-30", Operator = FilterOperate.GreaterOrEqual
-        }
-    }
-};
-var dataSort = SortConditionBuilder.New<SysAppInfo>().OrderBy("Status").OrderBy(x => new { x.CreatedTime, x.Id}).Build();
-
-var filter = LambdaExpressionParser.ParseConditions<SysAppInfo>(filterGroup);
-
-var entities = new List<SysAppInfo>();
-for (var i = 0; i < 1000; i++)
-{
-    entities.Add(new SysAppInfo
-    {
-        Id = SequentialGuidUtility.Next(SequentialGuidType.AsString),
-        Name = "Name" + (i + 1),
-        Code = "Code" + (i + 1),
-        CreatedTime = DateTime.Now,
-        Status = i,
-    });
-}
-
-var s = entities.Where(filter.Compile()).OrderBy("Status", ListSortDirection.Ascending).ThenBy("CreatedTime", ListSortDirection.Descending);
-Console.WriteLine($"{entities.Count}---{s.Count()}");
-foreach (var item in s)
-{
-    Console.WriteLine(item.ToJson());
-}
-Console.ReadLine();
+// var filterGroup = new FilterGroup()
+// {
+//     Logic = FilterOperate.And,
+//     Filters = new List<FilterCondition>
+//     {
+//         new()
+//         {
+//             Field = "Name", Value = "Name110", Operator = FilterOperate.NotContains
+//         },
+//         new ()
+//         {
+//             Field = "Status", Value = "0,1", Operator = FilterOperate.In
+//         },
+//         new()
+//         {
+//             Field = "CreatedTime", Value = "2021-12-30", Operator = FilterOperate.GreaterOrEqual
+//         }
+//     }
+// };
+// var dataSort = SortConditionBuilder.New<SysAppInfo>().OrderBy("Status").OrderBy(x => new { x.CreatedTime, x.Id}).Build();
+//
+// var filter = LambdaExpressionParser.ParseConditions<SysAppInfo>(filterGroup);
+//
+// var entities = new List<SysAppInfo>();
+// for (var i = 0; i < 1000; i++)
+// {
+//     entities.Add(new SysAppInfo
+//     {
+//         Id = SequentialGuidUtility.Next(SequentialGuidType.AsString),
+//         Name = "Name" + (i + 1),
+//         Code = "Code" + (i + 1),
+//         CreatedTime = DateTime.Now,
+//         Status = i,
+//     });
+// }
+//
+// var s = entities.Where(filter.Compile()).OrderBy("Status", ListSortDirection.Ascending).ThenBy("CreatedTime", ListSortDirection.Descending);
+// Console.WriteLine($"{entities.Count}---{s.Count()}");
+// foreach (var item in s)
+// {
+//     Console.WriteLine(item.ToJson());
+// }
+// Console.ReadLine();
 
 // var moveFile = "/Users/tianliang/Downloads/生产流程图.jpg";
 // var moveToFile = "/Users/tianliang/Downloads/生产流程图_222.jpg";
@@ -334,4 +339,23 @@ Console.ReadLine();
 // var two = await CompressionUtility.DecompressByBrotliAsync(one);
 // Console.WriteLine(two.Length);
 // Console.WriteLine(Encoding.Default.GetString(two));
+
+
+
+// var watch = new Stopwatch();  
+// watch.Start();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     Guid.NewGuid();
+// }
+// watch.Stop();
+// Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (int i = 0; i < 1000000; i++)
+// {
+//     NewId.NextSequentialGuid();
+// }
+// watch.Stop();
+// Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
 

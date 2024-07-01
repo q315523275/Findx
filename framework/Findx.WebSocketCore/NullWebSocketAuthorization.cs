@@ -11,9 +11,9 @@ public class NullWebSocketAuthorization : IWebSocketAuthorization
     /// <summary>
     ///     鉴权
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="context"></param>
     /// <returns></returns>
-    public Task<bool> AuthorizeAsync(HttpRequest request)
+    public Task<bool> AuthorizeAsync(HttpContext context)
     {
         return Task.FromResult(true);
     }

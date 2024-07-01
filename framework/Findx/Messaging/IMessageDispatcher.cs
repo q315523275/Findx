@@ -14,8 +14,7 @@ public interface IMessageDispatcher
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<TResponse> SendAsync<TResponse>(IMessageRequest<TResponse> message,
-        CancellationToken cancellationToken = default);
+    Task<TResponse> SendAsync<TResponse>(IMessageRequest<TResponse> message, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     推送异步执行事件
@@ -24,6 +23,5 @@ public interface IMessageDispatcher
     /// <param name="applicationEvent"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default)
-        where TEvent : IApplicationEvent;
+    Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default) where TEvent : IApplicationEvent;
 }

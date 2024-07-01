@@ -32,6 +32,7 @@ public abstract class ExpirableBase<TKey> : EntityBase<TKey>, IExpirable where T
     {
         if (IsTimeValid()) 
             return;
+        
         throw new IndexOutOfRangeException("生效时间不能大于过期时间");
     }
 }

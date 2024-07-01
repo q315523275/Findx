@@ -20,10 +20,9 @@ public class AspectController : AreaApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("aspect")]
-    public CommonResult ApplicationInfo()
+    public CommonResult Aspect([FromServices] IMachine machine)
     {
-        var test = (IMachine)ServiceLocator.GetService(typeof(IMachine));
-        test.Purchase(1999999);
+        machine.Purchase(1999999);
         return CommonResult.Success();
     }
 }

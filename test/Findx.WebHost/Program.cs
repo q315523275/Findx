@@ -41,14 +41,13 @@ builder.Services.AddControllers()
     });
 
 #region ProxyGenerator
-var rpcProxyInterceptorType = typeof(TestProxyInterceptor);
-var rpcInterceptorAdapterType = typeof(CastleAsyncDeterminationInterceptor<>).MakeGenericType(rpcProxyInterceptorType);
-builder.Services.AddSingleton(new ProxyGenerator());
-builder.Services.AddTransient(rpcProxyInterceptorType);
+var testProxyInterceptorType = typeof(TestProxyInterceptor);
+var testInterceptorAdapterType = typeof(CastleAsyncDeterminationInterceptor<>).MakeGenericType(testProxyInterceptorType);
+builder.Services.AddTransient(testProxyInterceptorType);
 builder.Services.AddTransient(typeof(IMachine), provider =>
 {
-    var proxyGeneratorInstance = provider.GetRequiredService<ProxyGenerator>();
-    return proxyGeneratorInstance.CreateInterfaceProxyWithoutTarget(typeof(IMachine), (IInterceptor)provider.GetRequiredService(rpcInterceptorAdapterType));
+    var proxyGeneratorInstance = provider.GetRequiredService<IProxyGenerator>();
+    return proxyGeneratorInstance.CreateInterfaceProxyWithoutTarget(typeof(IMachine), (IInterceptor)provider.GetRequiredService(testInterceptorAdapterType));
 });
 #endregion
 

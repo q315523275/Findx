@@ -72,6 +72,8 @@ public interface IUnitOfWork: IAsyncDisposable
 
     /// <summary>
     ///     添加事件至工作单元缓冲区
+    /// <param name="eventData">IEvent事件</param>
+    /// <param name="transactionPhase">触发阶段</param>
     /// </summary>
-    void AddEventToBuffer<T>(T applicationEvent) where T : IEvent;
+    void AddEventToBuffer<T>(T eventData, TransactionPhase transactionPhase = TransactionPhase.AfterCommit) where T : IEvent;
 }

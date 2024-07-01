@@ -11,7 +11,7 @@ public abstract class FinderBase<TItem> : IFinder<TItem>
     /// <summary>
     ///     项缓存
     /// </summary>
-    protected readonly List<TItem> ItemsCache = new();
+    protected readonly List<TItem> ItemsCache = [];
 
     /// <summary>
     ///     是否已查找过

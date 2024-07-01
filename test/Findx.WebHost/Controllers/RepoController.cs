@@ -84,7 +84,7 @@ public class RepoController : ApiControllerBase
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <returns></returns>
-    [HttpGet("update")]
+    [HttpGet("auditing")]
     [AuditOperation]
     public async Task<Guid> UpdateAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
     {

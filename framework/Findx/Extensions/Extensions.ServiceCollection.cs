@@ -31,8 +31,7 @@ public static partial class Extensions
         services.GetOrAddSingletonInstance(() => new StartupLogger());
         services.GetOrAddSingletonInstance<IAppDomainAssemblyFinder>(() => new AppDomainAssemblyFinder());
         // 框架构建
-        var builder = services.GetOrAddSingletonInstance<IFindxBuilder>(() => new FindxBuilder(services));
-        return builder;
+        return services.GetOrAddSingletonInstance<IFindxBuilder>(() => new FindxBuilder(services));
     }
 
     /// <summary>
@@ -54,8 +53,7 @@ public static partial class Extensions
     /// <summary>
     ///     替换服务
     /// </summary>
-    public static IServiceCollection Replace<TService, TImplement>(this IServiceCollection services,
-        ServiceLifetime lifetime)
+    public static IServiceCollection Replace<TService, TImplement>(this IServiceCollection services, ServiceLifetime lifetime)
     {
         var descriptor = new ServiceDescriptor(typeof(TService), typeof(TImplement), lifetime);
         services.Replace(descriptor);
@@ -80,14 +78,11 @@ public static partial class Extensions
     /// <summary>
     ///     获取或添加指定类型查找器
     /// </summary>
-    public static TTypeFinder GetOrAddTypeFinder<TTypeFinder>(this IServiceCollection services,
-        Func<IAppDomainAssemblyFinder, TTypeFinder> factory)
-        where TTypeFinder : class
+    public static TTypeFinder GetOrAddTypeFinder<TTypeFinder>(this IServiceCollection services, Func<IAppDomainAssemblyFinder, TTypeFinder> factory) where TTypeFinder : class
     {
         return services.GetOrAddSingletonInstance(() =>
         {
-            var allAssemblyFinder =
-                services.GetOrAddSingletonInstance<IAppDomainAssemblyFinder>(() => new AppDomainAssemblyFinder());
+            var allAssemblyFinder = services.GetOrAddSingletonInstance<IAppDomainAssemblyFinder>(() => new AppDomainAssemblyFinder());
             return factory(allAssemblyFinder);
         });
     }
@@ -95,8 +90,7 @@ public static partial class Extensions
     /// <summary>
     ///     如果指定服务不存在，创建实例并添加
     /// </summary>
-    public static TServiceType GetOrAddSingletonInstance<TServiceType>(this IServiceCollection services,
-        Func<TServiceType> factory) where TServiceType : class
+    public static TServiceType GetOrAddSingletonInstance<TServiceType>(this IServiceCollection services, Func<TServiceType> factory) where TServiceType : class
     {
         var item = GetSingletonInstanceOrNull<TServiceType>(services);
         if (item == null)
@@ -113,8 +107,7 @@ public static partial class Extensions
     /// </summary>
     public static T GetSingletonInstanceOrNull<T>(this IServiceCollection services)
     {
-        var descriptor =
-            services.FirstOrDefault(d => d.ServiceType == typeof(T) && d.Lifetime == ServiceLifetime.Singleton);
+        var descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(T) && d.Lifetime == ServiceLifetime.Singleton);
 
         if (descriptor?.ImplementationInstance != null) return (T)descriptor.ImplementationInstance;
 
@@ -129,7 +122,8 @@ public static partial class Extensions
     public static T GetSingletonInstance<T>(this IServiceCollection services)
     {
         var instance = services.GetSingletonInstanceOrNull<T>();
-        if (instance == null) throw new InvalidOperationException($"无法找到已注册的单例服务：{typeof(T).AssemblyQualifiedName}");
+        if (instance == null) 
+            throw new InvalidOperationException($"无法找到已注册的单例服务：{typeof(T).AssemblyQualifiedName}");
 
         return instance;
     }
@@ -148,8 +142,7 @@ public static partial class Extensions
 
         var serviceProviderFactory = services.GetSingletonInstanceOrNull<IServiceProviderFactory<TContainerBuilder>>();
         if (serviceProviderFactory == null)
-            throw new Exception(
-                $"Could not find {typeof(IServiceProviderFactory<TContainerBuilder>).FullName} in {services}.");
+            throw new Exception($"Could not find {typeof(IServiceProviderFactory<TContainerBuilder>).FullName} in {services}.");
 
         var builder = serviceProviderFactory.CreateBuilder(services);
         builderAction?.Invoke(builder);
@@ -165,8 +158,7 @@ public static partial class Extensions
     /// </summary>
     public static IEnumerable<StartupModule> GetAllModules(this IServiceProvider provider)
     {
-        return provider.GetServices<StartupModule>().OrderBy(m => m.Level).ThenBy(m => m.Order)
-            .ThenBy(m => m.GetType().FullName);
+        return provider.GetServices<StartupModule>().OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName);
     }
 
     /// <summary>
@@ -278,8 +270,7 @@ public static partial class Extensions
     /// <summary>
     ///     执行<see cref="ServiceLifetime.Scoped" />生命周期的业务逻辑，并获取返回值
     /// </summary>
-    public static TResult ExecuteScopedWork<TResult>(this IServiceProvider provider,
-        Func<IServiceProvider, TResult> func)
+    public static TResult ExecuteScopedWork<TResult>(this IServiceProvider provider, Func<IServiceProvider, TResult> func)
     {
         using var scope = provider.CreateScope();
         return func(scope.ServiceProvider);
@@ -288,8 +279,7 @@ public static partial class Extensions
     /// <summary>
     ///     执行<see cref="ServiceLifetime.Scoped" />生命周期的业务逻辑，并获取返回值
     /// </summary>
-    public static async Task<TResult> ExecuteScopedWorkAsync<TResult>(this IServiceProvider provider,
-        Func<IServiceProvider, Task<TResult>> func)
+    public static async Task<TResult> ExecuteScopedWorkAsync<TResult>(this IServiceProvider provider, Func<IServiceProvider, Task<TResult>> func)
     {
         await using var scope = provider.CreateAsyncScope();
         return await func(scope.ServiceProvider);

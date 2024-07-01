@@ -13,6 +13,6 @@ public class TestNewsInfo : EntityBase<int>, IExtraObject, IRequest, IResponse
     public string Author { get; set; }
     
     public string Content { get; set; }
-    
+    public int Status { get; set; }
     public string ExtraProperties { get; set; }
 }

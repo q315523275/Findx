@@ -62,8 +62,7 @@ namespace Findx.RabbitMQ
 
                 var routingKeyDict = group.GroupBy(x => x.RoutingKey).ToDictionary(x => x.Key, x => x);
 
-                var consumer = _factory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration,
-                    defaultQueue.ConnectionName);
+                var consumer = _factory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration, defaultQueue.ConnectionName);
                 consumer.OnMessageReceived(async (channel, eventArgs) =>
                 {
                     // direct模式指定routingKey

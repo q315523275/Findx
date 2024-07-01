@@ -11,4 +11,7 @@ public class QueryNewsDto: PageBase
     
     [QueryField(FilterOperate = FilterOperate.Equal, Name = "Author")]
     public string Author { set; get; }
+    
+    [QueryField(FilterOperate = FilterOperate.Equal)]
+    public int? Status  { set; get; }
 }

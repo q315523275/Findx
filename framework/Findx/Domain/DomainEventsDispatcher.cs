@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Findx.Events;
 using Findx.Messaging;
 
 namespace Findx.Domain;
@@ -9,9 +10,9 @@ namespace Findx.Domain;
 public class DomainEventsDispatcher : IDomainEventsDispatcher
 {
     /// <summary>
-    /// 消息调度
+    ///     事件总线
     /// </summary>
-    private readonly IMessageDispatcher _messageDispatcher;
+    private readonly IEventBus _eventBus;
 
     /// <summary>
     ///     领域事件访问者
@@ -22,11 +23,11 @@ public class DomainEventsDispatcher : IDomainEventsDispatcher
     ///     Ctor
     /// </summary>
     /// <param name="domainEventsProvider"></param>
-    /// <param name="messageDispatcher"></param>
-    public DomainEventsDispatcher(IDomainEventsAccessor domainEventsProvider, IMessageDispatcher messageDispatcher)
+    /// <param name="eventBus"></param>
+    public DomainEventsDispatcher(IDomainEventsAccessor domainEventsProvider, IEventBus eventBus)
     {
         _domainEventsProvider = domainEventsProvider;
-        _messageDispatcher = messageDispatcher;
+        _eventBus = eventBus;
     }
 
 
@@ -40,6 +41,6 @@ public class DomainEventsDispatcher : IDomainEventsDispatcher
 
         _domainEventsProvider.ClearAllDomainEvents();
 
-        foreach (var domainEvent in domainEvents) await _messageDispatcher.PublishAsync(domainEvent);
+        foreach (var domainEvent in domainEvents) await _eventBus.PublishAsync(domainEvent);
     }
 }

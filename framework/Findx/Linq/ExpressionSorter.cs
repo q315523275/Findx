@@ -78,7 +78,7 @@ public class ExpressionSorter<T>
     /// <returns></returns>
     public ExpressionSorter<T> OrderByDescending(string field)
     {
-        _orderList.Add(new OrderByParameter<T>(field));
+        _orderList.Add(new OrderByParameter<T>(field, ListSortDirection.Descending));
         return this;
     }
 

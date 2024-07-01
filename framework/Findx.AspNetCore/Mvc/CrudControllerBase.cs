@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
 using Findx.Mapping;
-using Findx.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.AspNetCore.Mvc;
@@ -27,9 +26,7 @@ public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey
     where TRequest : IRequest, new()
     where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
-    where TUserKey : struct
-{
-}
+    where TUserKey : struct;
 
 /// <summary>
 ///     增删改查通用控制器基类
@@ -47,9 +44,7 @@ public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter
     where TRequest : IRequest, new()
     where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
-    where TUserKey : struct
-{
-}
+    where TUserKey : struct;
 
 /// <summary>
 ///     增删改查通用控制器基类
@@ -70,9 +65,7 @@ public abstract class
     where TUpdateRequest : IRequest, new()
     where TQueryParameter : PageBase, new()
     where TKey : IEquatable<TKey>
-    where TUserKey : struct
-{
-}
+    where TUserKey : struct;
 
 /// <summary>
 ///     增删改查通用控制器基类
@@ -178,6 +171,11 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     }
 
     /// <summary>
+    ///     工作单元
+    /// </summary>
+    protected IUnitOfWork UnitOfWork { get; set; }
+
+    /// <summary>
     ///     添加数据
     /// </summary>
     /// <param name="request"></param>
@@ -191,9 +189,13 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
 
         var repo = GetRepository<TModel, TKey>();
         var principal = GetService<IPrincipal>();
-
+        
         Check.NotNull(repo, nameof(repo));
-
+        
+        var unitOfManager = GetService<IUnitOfWorkManager>();
+        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, repo.GetDataSource(), cancellationToken);
+        repo.UnitOfWork = UnitOfWork;
+        
         var model = ToModelFromCreateRequest(request);
 
         Check.NotNull(model, nameof(model));
@@ -224,10 +226,12 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
 
         var repo = GetRepository<TModel, TKey>();
         var principal = GetService<IPrincipal>();
-        var currentUser = GetService<ICurrentUser>();
 
         Check.NotNull(repo, nameof(repo));
-        Check.NotNull(currentUser, nameof(currentUser));
+        
+        var unitOfManager = GetService<IUnitOfWorkManager>();
+        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, repo.GetDataSource(), cancellationToken);
+        repo.UnitOfWork = UnitOfWork;
 
         var model = ToModelFromUpdateRequest(request);
 
@@ -258,15 +262,16 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
             return CommonResult.Fail("delete.not.count", "不存在删除数据");
 
         var repo = GetRepository<TModel, TKey>();
-        var currentUser = GetService<ICurrentUser>();
 
         Check.NotNull(repo, nameof(repo));
-        Check.NotNull(currentUser, nameof(currentUser));
 
+        var unitOfManager = GetService<IUnitOfWorkManager>();
+        var dataSource = repo.GetDataSource();
+        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, dataSource, cancellationToken);
+        repo.UnitOfWork = UnitOfWork;
+        
         await DeleteBeforeAsync(request);
-
         var total = await repo.DeleteAsync(x => request.Contains(x.Id), cancellationToken);
-
         await DeleteAfterAsync(request, total);
 
         return CommonResult.Success($"共删除{total}条数据,失败{request.Count - total}条");

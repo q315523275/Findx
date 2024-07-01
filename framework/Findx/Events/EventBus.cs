@@ -48,8 +48,7 @@ public class EventBus: IEventBus
             IApplicationEvent applicationEvent => applicationEvent is IAsync
                 ? _eventPublisher.PublishAsync(applicationEvent, cancellationToken)
                 : _messageDispatcher.PublishAsync(applicationEvent, cancellationToken),
-            IIntegrationEvent integrationEvent => _distributedEventBus?.PublishAsync(integrationEvent,
-                cancellationToken),
+            IIntegrationEvent integrationEvent => _distributedEventBus?.PublishAsync(integrationEvent, cancellationToken),
             _ => throw new Exception($"no matching sender found for the event ({nameof(@event)})")
         };
     }

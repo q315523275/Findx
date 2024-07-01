@@ -22,7 +22,7 @@ public class OrderByParameter<TEntity>
     /// </summary>
     /// <param name="field"></param>
     /// <param name="sortDirection"></param>
-    public OrderByParameter(string field, ListSortDirection sortDirection = ListSortDirection.Descending)
+    public OrderByParameter(string field, ListSortDirection sortDirection = ListSortDirection.Ascending)
     {
         dynamic keySelector = CollectionPropertySorter<TEntity>.GetKeySelector(field);
         Conditions = keySelector;
@@ -37,5 +37,5 @@ public class OrderByParameter<TEntity>
     /// <summary>
     ///     排序方向
     /// </summary>
-    public ListSortDirection SortDirection { set; get; } = ListSortDirection.Descending;
+    public ListSortDirection SortDirection { set; get; } = ListSortDirection.Ascending;
 }

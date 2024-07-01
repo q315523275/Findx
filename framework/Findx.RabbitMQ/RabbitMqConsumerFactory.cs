@@ -17,8 +17,7 @@ namespace Findx.RabbitMQ
             ServiceScope?.Dispose();
         }
 
-        public IRabbitMqConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue,
-            string connectionName = null)
+        public IRabbitMqConsumer Create(ExchangeDeclareConfiguration exchange, QueueDeclareConfiguration queue, string connectionName = null)
         {
             var consumer = ServiceScope.ServiceProvider.GetRequiredService<RabbitMqConsumer>();
             consumer.Initialize(exchange, queue, connectionName);

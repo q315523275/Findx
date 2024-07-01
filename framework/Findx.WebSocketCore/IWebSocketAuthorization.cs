@@ -11,7 +11,7 @@ public interface IWebSocketAuthorization
    /// <summary>
    ///     鉴权
    /// </summary>
-   /// <param name="request"></param>
+   /// <param name="context"></param>
    /// <returns></returns>
-   Task<bool> AuthorizeAsync(HttpRequest request);
+   Task<bool> AuthorizeAsync(HttpContext context);
 }

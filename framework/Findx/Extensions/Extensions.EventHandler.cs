@@ -33,8 +33,7 @@ public static partial class Extensions
     /// <param name="eventHandler"></param>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    public static void InvokeSafely<TEventArgs>(this EventHandler<TEventArgs> eventHandler, object sender, TEventArgs e)
-        where TEventArgs : EventArgs
+    public static void InvokeSafely<TEventArgs>(this EventHandler<TEventArgs> eventHandler, object sender, TEventArgs e) where TEventArgs : EventArgs
     {
         eventHandler?.Invoke(sender, e);
     }

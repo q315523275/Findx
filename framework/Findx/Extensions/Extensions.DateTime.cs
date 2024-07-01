@@ -68,7 +68,7 @@ public static partial class Extensions
     }
     
     /// <summary>
-    /// Converts a DateTime to ISO 8601 string
+    ///     Converts a DateTime to ISO 8601 string
     /// </summary>
     public static string ToIso8601String(this DateTime value)
     {

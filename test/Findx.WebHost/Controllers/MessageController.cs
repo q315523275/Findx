@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
-using Findx.Events;
 using Findx.Messaging;
 using Findx.Utilities;
 using Findx.WebHost.EventHandlers;
@@ -40,19 +39,5 @@ public class MessageController : ApiControllerBase
     {
         await context.PublishAsync(new PayedOrderCommand(SnowflakeIdUtility.Default().NextId()));
         return "ok";
-    }
-    
-    /// <summary>
-    ///     消息通知示例接口(IEventBus适配服务)
-    /// </summary>
-    /// <param name="context"></param>
-    /// <returns></returns>
-    [HttpGet("bus")]
-    public async Task<string> Bus([FromServices] IEventBus context)
-    {
-        var command = new PayedOrderCommand(SnowflakeIdUtility.Default().NextId());
-        var orderId = command.OrderId;
-        await context.PublishAsync(command);
-        return $"IEventBus.PublishAsync###{orderId}****HandleAsync{command.OrderId}";
     }
 }
