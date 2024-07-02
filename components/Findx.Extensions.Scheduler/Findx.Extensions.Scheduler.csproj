@@ -13,4 +13,8 @@
       <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Findx" Version="2024.7.1" />
+    </ItemGroup>
+
 </Project>

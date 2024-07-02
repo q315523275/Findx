@@ -6,13 +6,9 @@
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
-    
+
     <ItemGroup>
-      <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <Folder Include="Handling\" />
+      <PackageReference Include="Findx" Version="2024.7.1" />
     </ItemGroup>
 
 </Project>

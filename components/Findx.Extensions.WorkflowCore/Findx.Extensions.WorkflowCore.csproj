@@ -8,4 +8,8 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Findx.AspNetCore" Version="2024.7.1" />
+    </ItemGroup>
+
 </Project>
