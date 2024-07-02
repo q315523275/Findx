@@ -49,6 +49,11 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     private static readonly ConcurrentDictionary<Type, Dictionary<PropertyInfo, QueryFieldAttribute>> QueryFieldDict = new();
     
     /// <summary>
+    ///     仓储
+    /// </summary>
+    protected IRepository<TModel, TKey> Repo { get; set; }
+    
+    /// <summary>
     ///     构建分页查询条件
     /// </summary>
     /// <param name="request"></param>
@@ -113,14 +118,14 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     {
         Check.NotNull(request, nameof(request));
 
-        var repo = GetRepository<TModel, TKey>();
+        Repo = GetRepository<TModel, TKey>();
 
-        Check.NotNull(repo, nameof(repo));
+        Check.NotNull(Repo, nameof(Repo));
 
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var result = await Repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(result);
     }
@@ -139,13 +144,14 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         // 默认条数提升到99条
         if (request.PageSize == 20) 
             request.PageSize = 99;
-        var repo = GetRepository<TModel, TKey>();
-        Check.NotNull(repo, nameof(repo));
+        
+        Repo = GetRepository<TModel, TKey>();
+        Check.NotNull(Repo, nameof(Repo));
 
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var list = await Repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(list);
     }
@@ -161,10 +167,10 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     public virtual async Task<CommonResult<TDetailDto>> Detail(TKey id, CancellationToken cancellationToken = default)
     {
         Check.NotNull(id, nameof(id));
-        var repo = GetRepository<TModel, TKey>();
-        Check.NotNull(repo, nameof(repo));
+        Repo = GetRepository<TModel, TKey>();
+        Check.NotNull(Repo, nameof(Repo));
 
-        var model = await repo.GetAsync(id, cancellationToken);
+        var model = await Repo.GetAsync(id, cancellationToken);
         var result = ToDetailDto(model);
         await DetailAfterAsync(model, result);
 

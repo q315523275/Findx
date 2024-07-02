@@ -51,7 +51,7 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
         {
             FunctionName = function.Name,
             ClientIpAddress = httpContext.GetClientIp(),
-            UserAgent = httpContext.Request.Headers.GetOrDefault("User-Agent"),
+            UserAgent = httpContext.Request.GetUserAgentString(),
             ExecutionTime = DateTime.Now
         };
 

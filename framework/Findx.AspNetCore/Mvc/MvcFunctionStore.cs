@@ -23,15 +23,6 @@ public class MvcFunctionStore : IFunctionStore<MvcFunction>
     }
 
     /// <summary>
-    ///     查询
-    /// </summary>
-    /// <returns></returns>
-    public IEnumerable<MvcFunction> GetFromDatabase()
-    {
-        return _functions;
-    }
-
-    /// <summary>
     ///     保存
     /// </summary>
     /// <param name="functions"></param>

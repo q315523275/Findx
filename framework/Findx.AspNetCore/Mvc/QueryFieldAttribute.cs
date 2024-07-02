@@ -6,7 +6,7 @@ namespace Findx.AspNetCore.Mvc;
 /// <summary>
 ///     查询字段
 /// </summary>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Property)]
 public class QueryFieldAttribute: Attribute
 {
     /// <summary>

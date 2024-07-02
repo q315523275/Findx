@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <PackageVersion>2024.05.08.1</PackageVersion>
+        <PackageVersion>2024.07.01</PackageVersion>
         <Description>Caslte DynamicProxy</Description>
         <LangVersion>default</LangVersion>
         <Authors>Findx</Authors>

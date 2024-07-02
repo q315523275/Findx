@@ -6,7 +6,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Swagger在线文档组件,优化中文展示</Description>
-        <PackageVersion>2024.05.08.1</PackageVersion>
+        <PackageVersion>2024.07.01</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
@@ -17,11 +17,15 @@
 
     <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="6.0.31">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.4">
+        <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="8.0.6">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>

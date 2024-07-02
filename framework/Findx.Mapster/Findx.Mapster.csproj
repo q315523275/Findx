@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>2023.12.25.1</Version>
+        <Version>2024.07.01</Version>
         <Description>Mapster高性能实体映射器,性能比AutoMapper高很多</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>

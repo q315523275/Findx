@@ -286,7 +286,7 @@ public static partial class Extensions
     }
     
     /// <summary>
-    /// 根据服务别名获取指定服务
+    ///     根据服务别名获取指定服务
     /// </summary>
     /// <param name="provider"></param>
     /// <param name="name">服务别名</param>
@@ -298,7 +298,7 @@ public static partial class Extensions
     }
 
     /// <summary>
-    /// 根据服务别名获取指定服务
+    ///     根据服务别名获取指定服务
     /// </summary>
     /// <param name="provider"></param>
     /// <param name="name">服务别名</param>
@@ -310,7 +310,7 @@ public static partial class Extensions
     }
     
     /// <summary>
-    /// 根据服务别名获取指定服务
+    ///     根据服务别名获取指定服务
     /// </summary>
     /// <param name="provider"></param>
     /// <param name="name">服务别名</param>

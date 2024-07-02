@@ -18,7 +18,6 @@ public static partial class Extensions
     {
         services.AddRazorPages();
         services.AddTransient<IRazorViewRender, RazorViewRender>();
-
         return services;
     }
 

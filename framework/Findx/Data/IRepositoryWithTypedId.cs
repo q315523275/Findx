@@ -289,10 +289,12 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="pageSize"></param>
     /// <param name="whereExpression"></param>
     /// <param name="orderParameters"></param>
+    /// <param name="returnCount">返回总数</param>
     /// <returns></returns>
     PageResult<List<TEntity>> Paged(int pageNumber, int pageSize,
         Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
+        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
+        bool returnCount = true);
 
     /// <summary>
     ///     分页查询
@@ -301,11 +303,14 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="pageSize"></param>
     /// <param name="whereExpression"></param>
     /// <param name="orderParameters"></param>
+    /// <param name="returnCount">返回总数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize,
         Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
+        IEnumerable<OrderByParameter<TEntity>> orderParameters = null, 
+        bool returnCount = true, 
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     分页查询并返回指定参数
@@ -316,11 +321,13 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="orderParameters"></param>
     /// <param name="selectExpression"></param>
+    /// <param name="returnCount">返回总数</param>
     /// <returns></returns>
     PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize,
         Expression<Func<TEntity, bool>> whereExpression = null,
         Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null);
+        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
+        bool returnCount = true);
 
     /// <summary>
     ///     分页查询并返回指定参数
@@ -331,12 +338,15 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="orderParameters"></param>
     /// <param name="selectExpression"></param>
+    /// <param name="returnCount"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize,
         Expression<Func<TEntity, bool>> whereExpression = null,
         Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default);
+        IEnumerable<OrderByParameter<TEntity>> orderParameters = null, 
+        bool returnCount = true, 
+        CancellationToken cancellationToken = default);
 
     #endregion
 

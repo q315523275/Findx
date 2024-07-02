@@ -40,7 +40,6 @@ public partial class Extensions
         foreach (var uri in appInfo.Uris.Split(";"))
             app.Urls.Add(uri);
 
-        
         app.Run();
     }
 

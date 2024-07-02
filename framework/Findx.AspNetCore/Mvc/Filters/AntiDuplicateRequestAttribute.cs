@@ -9,7 +9,6 @@ using Findx.Security;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.AspNetCore.Mvc.Filters;
 

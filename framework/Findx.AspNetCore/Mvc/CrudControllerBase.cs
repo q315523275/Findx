@@ -174,7 +174,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     ///     工作单元
     /// </summary>
     protected IUnitOfWork UnitOfWork { get; set; }
-
+    
     /// <summary>
     ///     添加数据
     /// </summary>
@@ -187,14 +187,14 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     {
         Check.NotNull(request, nameof(request));
 
-        var repo = GetRepository<TModel, TKey>();
+        Repo = GetRepository<TModel, TKey>();
         var principal = GetService<IPrincipal>();
         
-        Check.NotNull(repo, nameof(repo));
+        Check.NotNull(Repo, nameof(Repo));
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, repo.GetDataSource(), cancellationToken);
-        repo.UnitOfWork = UnitOfWork;
+        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, Repo.GetDataSource(), cancellationToken);
+        Repo.UnitOfWork = UnitOfWork;
         
         var model = ToModelFromCreateRequest(request);
 
@@ -206,7 +206,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         model.SetEmptyKey(); // 判断设置ID值
 
         await AddBeforeAsync(model, request);
-        var res = await repo.InsertAsync(model, cancellationToken);
+        var res = await Repo.InsertAsync(model, cancellationToken);
         await AddAfterAsync(model, request, res);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
@@ -224,14 +224,14 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     {
         Check.NotNull(request, nameof(request));
 
-        var repo = GetRepository<TModel, TKey>();
+        Repo = GetRepository<TModel, TKey>();
         var principal = GetService<IPrincipal>();
 
-        Check.NotNull(repo, nameof(repo));
+        Check.NotNull(Repo, nameof(Repo));
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, repo.GetDataSource(), cancellationToken);
-        repo.UnitOfWork = UnitOfWork;
+        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, Repo.GetDataSource(), cancellationToken);
+        Repo.UnitOfWork = UnitOfWork;
 
         var model = ToModelFromUpdateRequest(request);
 
@@ -241,7 +241,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         model.CheckUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
 
         await EditBeforeAsync(model, request);
-        var res = await repo.UpdateAsync(model, ignoreNullColumns: true, cancellationToken: cancellationToken);
+        var res = await Repo.UpdateAsync(model, ignoreNullColumns: true, cancellationToken: cancellationToken);
         await EditAfterAsync(model, request, res);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.edit.error", "数据更新失败");
@@ -261,17 +261,17 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         if (request.Count == 0)
             return CommonResult.Fail("delete.not.count", "不存在删除数据");
 
-        var repo = GetRepository<TModel, TKey>();
+        Repo = GetRepository<TModel, TKey>();
 
-        Check.NotNull(repo, nameof(repo));
+        Check.NotNull(Repo, nameof(Repo));
 
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        var dataSource = repo.GetDataSource();
+        var dataSource = Repo.GetDataSource();
         UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, dataSource, cancellationToken);
-        repo.UnitOfWork = UnitOfWork;
+        Repo.UnitOfWork = UnitOfWork;
         
         await DeleteBeforeAsync(request);
-        var total = await repo.DeleteAsync(x => request.Contains(x.Id), cancellationToken);
+        var total = await Repo.DeleteAsync(x => request.Contains(x.Id), cancellationToken);
         await DeleteAfterAsync(request, total);
 
         return CommonResult.Success($"共删除{total}条数据,失败{request.Count - total}条");
