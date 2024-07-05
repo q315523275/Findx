@@ -6,12 +6,12 @@
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>2024.07.02</Version>
+        <Version>2024.07.03</Version>
         <Description>分布式配置中心服务端</Description>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="2024.7.2" />
+      <PackageReference Include="Findx.AspNetCore" Version="2024.7.3" />
     </ItemGroup>
 
 </Project>
