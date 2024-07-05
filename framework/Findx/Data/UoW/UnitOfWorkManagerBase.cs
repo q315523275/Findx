@@ -26,10 +26,9 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IUnitOfWork> GetConnUnitOfWorkAsync(bool enableTransaction = false, bool beginTransaction = false,
-        string dbPrimary = default, CancellationToken cancellationToken = default)
+    public async Task<IUnitOfWork> GetConnUnitOfWorkAsync(bool enableTransaction = false, bool beginTransaction = false, string dbPrimary = default, CancellationToken cancellationToken = default)
     {
-        var cacheKey = dbPrimary ?? "null";
+        var cacheKey = dbPrimary ?? GetDataSourcePrimary();
         var unitOfWork = _scopedDictionary.GetConnUnitOfWork(cacheKey);
         if (unitOfWork != null)
         {
@@ -43,6 +42,7 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
         _scopedDictionary.SetConnUnitOfWork(cacheKey, unitOfWork);
         if (enableTransaction) unitOfWork.EnableTransaction();
         if (beginTransaction) await unitOfWork.BeginOrUseTransactionAsync(cancellationToken);
+        
         return unitOfWork;
     }
 
@@ -53,12 +53,11 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <param name="beginTransaction">是否启用事务</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false,
-        bool beginTransaction = false, CancellationToken cancellationToken = default)
+    public async Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
     {
         var entityType = typeof(TEntity);
         var extensionAttribute = entityType.GetEntityExtensionAttribute();
-        var dataSource = extensionAttribute?.DataSource;
+        var dataSource = extensionAttribute?.DataSource ?? GetDataSourcePrimary();
 
         var unitOfWork = _scopedDictionary.GetEntityUnitOfWork(entityType);
         if (unitOfWork != null)
@@ -102,4 +101,10 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <param name="dbPrimary"></param>
     /// <returns></returns>
     protected abstract IUnitOfWork CreateConnUnitOfWork(string dbPrimary);
+    
+    /// <summary>
+    ///     获取默认数据库链接标识
+    /// </summary>
+    /// <returns></returns>
+    protected abstract string GetDataSourcePrimary();
 }

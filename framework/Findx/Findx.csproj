@@ -8,7 +8,7 @@
         <Company>Findx</Company>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
         <Description>模块化、缓存、Cron、仓储工作单元实体约束、自动注入、图片处理、邮件发送、异常订阅、扩展集合、锁、实体映射、进程消息、指标计数器、认证、序列化、短信、存储、调度任务、验证、应用信息、工具类集合等组件核心库</Description>
-        <PackageVersion>2024.07.01</PackageVersion>
+        <PackageVersion>2024.07.03</PackageVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
@@ -20,26 +20,27 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
-    
-    <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
-        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
         <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
         <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
+    </ItemGroup>
+    
+    <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
+        
         <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.4" />
+        <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="6.0.31" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.0" />
-        <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-        <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.7.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
-        <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.3" />
+        <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="8.0.6" />
         <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />
     </ItemGroup>
     

@@ -152,10 +152,9 @@ public class AuthController : AreaApiControllerBase
             { ClaimTypes.UserIdTypeName, typeof(Guid).FullName },
             { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
             { ClaimTypes.TenantId, req.TenantId.ToString() },
-            { "org_id", accountInfo.OrgId.SafeString() },
-            { "org_name", accountInfo.OrgName.SafeString() }
+            { ClaimTypes.OrgId, accountInfo.OrgId.SafeString() },
+            { ClaimTypes.OrgName, accountInfo.OrgName.SafeString() }
         };
-        payload[ClaimTypes.UserId] = accountInfo.Id.SafeString();
         if (_useAbpJwt)
         {
             payload[System.Security.Claims.ClaimTypes.NameIdentifier] = accountInfo.Id.SafeString();

@@ -42,4 +42,13 @@ public class UnitOfWorkManager : UnitOfWorkManagerBase
 
         return new UnitOfWork(_serviceProvider, fsql);
     }
+
+    /// <summary>
+    ///     获取默认数据库链接标识
+    /// </summary>
+    /// <returns></returns>
+    protected override string GetDataSourcePrimary()
+    {
+        return _options.CurrentValue.Primary;
+    }
 }

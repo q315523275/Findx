@@ -4,15 +4,15 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <LangVersion>default</LangVersion>
-        <Version>2024.07.01</Version>
+        <Version>2024.07.02</Version>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="2024.7.1" />
-      <PackageReference Include="Findx.FreeSql" Version="2024.7.1" />
-      <PackageReference Include="Findx.Security" Version="2024.7.1" />
+      <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.FreeSql\Findx.FreeSql.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.Security\Findx.Security.csproj" />
     </ItemGroup>
     
 </Project>
