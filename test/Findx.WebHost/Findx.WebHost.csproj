@@ -33,4 +33,8 @@
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </Content>
     </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.832" />
+    </ItemGroup>
 </Project>

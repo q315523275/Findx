@@ -143,6 +143,13 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <returns>影响行数</returns>
     int UpdateColumns(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression);
+    
+    /// <summary>
+    ///     更新指定字段
+    /// </summary>
+    /// <param name="dict"></param>
+    /// <returns>影响行数</returns>
+    int UpdateColumns(Dictionary<string, object> dict);
 
     /// <summary>
     ///     更新指定字段
@@ -151,8 +158,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>影响行数</returns>
-    Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns,
-        Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
+    Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     更新指定字段
@@ -161,9 +167,16 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>影响行数</returns>
-    Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, bool>>> columns,
-        Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
+    Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     更新指定字段
+    /// </summary>
+    /// <param name="dict"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>影响行数</returns>
+    Task<int> UpdateColumnsAsync(Dictionary<string, object> dict, CancellationToken cancellationToken = default);
+    
     #endregion
 
     #region 查询

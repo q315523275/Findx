@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
-using Findx.Linq;
 using Findx.Security;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -181,8 +180,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
             .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
-    public Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        CancellationToken cancellationToken = default)
+    public Task<int> DeleteAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
     {
         if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault() && whereExpression == null)
             return _fsql.Update<TEntity>().AsTable(AsTableValueInternal)
@@ -207,8 +205,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
 
     #region 更新
 
-    public int Update(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null,
-        Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
+    public int Update(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
     {
         entity.ThrowIfNull();
         entity = CheckUpdate(entity)[0];
@@ -238,9 +235,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
-    public async Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null,
-        Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false,
-        CancellationToken cancellationToken = default)
+    public async Task<int> UpdateAsync(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false, CancellationToken cancellationToken = default)
     {
         entity = CheckUpdate(entity)[0];
 
@@ -269,8 +264,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return await update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
     }
 
-    public int Update(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null,
-        Expression<Func<TEntity, object>> ignoreColumns = null)
+    public int Update(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
     {
         entities = CheckUpdate(entities);
 
@@ -289,9 +283,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return result;
     }
 
-    public async Task<int> UpdateAsync(IEnumerable<TEntity> entities,
-        Expression<Func<TEntity, object>> updateColumns = null,
-        Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
+    public async Task<int> UpdateAsync(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, CancellationToken cancellationToken = default)
     {
         entities = CheckUpdate(entities);
 
@@ -310,22 +302,25 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return result;
     }
 
-    public int UpdateColumns(Expression<Func<TEntity, TEntity>> columns,
-        Expression<Func<TEntity, bool>> whereExpression)
+    public int UpdateColumns(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression)
     {
         return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(columns).Where(whereExpression)
             .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
-    public Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns,
-        Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
+    public int UpdateColumns(Dictionary<string, object> dict)
+    {
+        var tableName = GetDbTableName();
+        return _fsql.UpdateDict(dict).AsTable(tableName).WherePrimary("id").WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+    }
+
+    public Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
     {
         return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(columns).Where(whereExpression)
             .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
     }
 
-    public int UpdateColumns(List<Expression<Func<TEntity, bool>>> columns,
-        Expression<Func<TEntity, bool>> whereExpression)
+    public int UpdateColumns(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression)
     {
         Check.NotNull(columns, nameof(columns));
         Check.NotNull(whereExpression, nameof(whereExpression));
@@ -337,8 +332,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return update.Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
-    public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, bool>>> columns,
-        Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
+    public Task<int> UpdateColumnsAsync(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
     {
         Check.NotNull(columns, nameof(columns));
         Check.NotNull(whereExpression, nameof(whereExpression));
@@ -349,6 +343,12 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
 
         return update.Where(whereExpression).WithTransaction(UnitOfWork?.Transaction)
             .ExecuteAffrowsAsync(cancellationToken);
+    }
+
+    public Task<int> UpdateColumnsAsync(Dictionary<string, object> dict, CancellationToken cancellationToken = default)
+    {
+        var tableName = GetDbTableName();
+        return _fsql.UpdateDict(dict).AsTable(tableName).WherePrimary("id").WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
     }
 
     #endregion
@@ -376,8 +376,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
             .WithTransaction(UnitOfWork?.Transaction).First();
     }
 
-    public Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        CancellationToken cancellationToken = default)
+    public Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
     {
         if (whereExpression == null)
             return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
@@ -387,8 +386,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
     }
 
 
-    public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
+    public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
     {
         var queryable = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -405,9 +403,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return queryable.WithTransaction(UnitOfWork?.Transaction).ToList();
     }
 
-    public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
-        CancellationToken cancellationToken = default)
+    public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -424,9 +420,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync(cancellationToken);
     }
 
-    public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
+    public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
     {
         var select = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -445,10 +439,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return select.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
     }
 
-    public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
-        CancellationToken cancellationToken = default)
+    public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
     {
         var select = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -468,8 +459,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
     }
 
 
-    public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
+    public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -486,9 +476,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToList();
     }
 
-    public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
-        CancellationToken cancellationToken = default)
+    public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -505,9 +493,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToListAsync(cancellationToken);
     }
 
-    public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
+    public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -528,11 +514,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return queryable.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
     }
 
-    public Task<List<TObject>> TopAsync<TObject>(int topSize,
-        Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
-        CancellationToken cancellationToken = default)
+    public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -557,10 +539,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
 
     #region 分页
     
-    public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize,
-        Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
-        bool returnCount = true)
+    public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, bool returnCount = true)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -582,11 +561,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
     }
 
-    public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize,
-        Expression<Func<TEntity, bool>> whereExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
-        bool returnCount = true,
-        CancellationToken cancellationToken = default)
+    public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, bool returnCount = true, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -606,11 +581,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
     }
 
-    public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize,
-        Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
-        bool returnCount = true)
+    public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, bool returnCount = true)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -633,12 +604,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return new PageResult<List<TObject>>(pageNumber, pageSize, (int)totalRows, result);
     }
 
-    public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize,
-        Expression<Func<TEntity, bool>> whereExpression = null,
-        Expression<Func<TEntity, TObject>> selectExpression = null,
-        IEnumerable<OrderByParameter<TEntity>> orderParameters = null,
-        bool returnCount = true,
-        CancellationToken cancellationToken = default)
+    public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, bool returnCount = true, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -679,8 +645,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
             .WithTransaction(UnitOfWork?.Transaction).Count().To<int>();
     }
 
-    public async Task<int> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        CancellationToken cancellationToken = default)
+    public async Task<int> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
     {
         if (whereExpression == null)
             return (await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
@@ -698,8 +663,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
             .WithTransaction(UnitOfWork?.Transaction).Any();
     }
 
-    public Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        CancellationToken cancellationToken = default)
+    public Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
     {
         if (whereExpression == null)
             return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)

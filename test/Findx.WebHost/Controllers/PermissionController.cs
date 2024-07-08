@@ -9,6 +9,7 @@ using Findx.Security.Authorization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 
@@ -57,6 +58,19 @@ public class PermissionController : ApiControllerBase
             })
         });
         return CommonResult.Success(actionDesc);
+    }
+    
+    /// <summary>
+    ///     权限数据查询示例接口
+    /// </summary>
+    /// <param name="apiDescriptionsProvider"></param>
+    /// <returns></returns>
+    [HttpGet("actions2")]
+    public CommonResult ActionList2([FromServices] IApiDescriptionGroupCollectionProvider apiDescriptionsProvider)
+    {
+        var actions = apiDescriptionsProvider.ApiDescriptionGroups.Items
+            .SelectMany(group => group.Items);
+        return CommonResult.Success(actions);
     }
 
     /// <summary>
