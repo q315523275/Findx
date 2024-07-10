@@ -56,11 +56,11 @@ public class VerifyCoder : IVerifyCoder
         // 增加背景色与中心渐变,普通集成ocr无法直接识别
         imgText.Mutate(ctx => ctx.Fill(Rgba32.ParseHex(LightColorHexArr[RandomUtility.RandomInt(0, LightColorHexArr.Length)])));
         imgText.Mutate(ctx => ctx.Glow(Rgba32.ParseHex(LightColorHexArr[RandomUtility.RandomInt(0, LightColorHexArr.Length)])));
-
+        
         // 绘制验证码
         imgText.Mutate(ctx => ctx.DrawingEnText(imageWidth, imageHeight, text, ColorHexArr, fontSize, _fontFamilies));
-        imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
-        
+        // imgText.Mutate(ctx => ctx.GaussianBlur());
+
         // 读取流
         using var ms = Pool.MemoryStream.Rent();
         await imgText.SaveAsPngAsync(ms);
@@ -79,10 +79,10 @@ public class VerifyCoder : IVerifyCoder
 
         // 绘制验证码
         imgText.Mutate(ctx => ctx.DrawingEnText(width, height, text, ColorHexArr, fontSize, _fontFamilies));
-        imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
+        // imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
         
         // 读取流
-        using var ms = Pool.MemoryStream.Rent();
+        var ms = Pool.MemoryStream.Rent();
         await imgText.SaveAsPngAsync(ms);
         return ms;
     }

@@ -154,6 +154,14 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <summary>
     ///     更新指定字段
     /// </summary>
+    /// <param name="dict"></param>
+    /// <param name="whereExpression"></param>
+    /// <returns>影响行数</returns>
+    int UpdateColumns(Dictionary<string, object> dict, Expression<Func<TEntity, bool>> whereExpression);
+
+    /// <summary>
+    ///     更新指定字段
+    /// </summary>
     /// <param name="columns"></param>
     /// <param name="whereExpression"></param>
     /// <param name="cancellationToken"></param>
@@ -176,6 +184,15 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="cancellationToken"></param>
     /// <returns>影响行数</returns>
     Task<int> UpdateColumnsAsync(Dictionary<string, object> dict, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     更新指定字段
+    /// </summary>
+    /// <param name="dict"></param>
+    /// <param name="whereExpression"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>影响行数</returns>
+    Task<int> UpdateColumnsAsync(Dictionary<string, object> dict, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
     
     #endregion
 

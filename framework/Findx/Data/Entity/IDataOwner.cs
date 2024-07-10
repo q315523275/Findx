@@ -3,7 +3,7 @@ namespace Findx.Data;
 /// <summary>
 /// 数据拥有者接口
 /// </summary>
-public interface IDataOwner<TUser>: ICreatedTime where TUser : struct
+public interface IDataOwner<TUser> where TUser : struct
 {
     /// <summary>
     ///     数据拥有者编号

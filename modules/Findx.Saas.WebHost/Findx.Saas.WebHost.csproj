@@ -8,10 +8,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Findx.Extensions.ConfigurationServer" Version="2024.7.1" />
-        <PackageReference Include="Findx.ImageSharp" Version="2024.7.1" />
+        <PackageReference Include="Findx.Extensions.ConfigurationServer" Version="2024.7.5" />
+        <PackageReference Include="Findx.ImageSharp" Version="2024.7.5" />
         <PackageReference Include="Findx.Mapster" Version="2024.7.1" />
-        <PackageReference Include="Findx.Module.EleAdminPlus" Version="2024.7.3" />
+        <PackageReference Include="Findx.Module.EleAdminPlus" Version="2024.7.5" />
         <PackageReference Include="Findx.Swagger" Version="2024.7.2" />
         <PackageReference Include="Findx.WebSocketCore" Version="2024.5.8.1" />
         <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.832" />

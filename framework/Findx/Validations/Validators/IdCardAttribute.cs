@@ -34,8 +34,8 @@ public class IdCardAttribute : ValidationAttribute
             return ValidationResult.Success;
         if (RegexUtility.IsMatch(value.SafeString(), ValidatePattern.IdCardPattern))
             return ValidationResult.Success;
-        return new ValidationResult(FormatErrorMessage(string.IsNullOrWhiteSpace(validationContext.DisplayName)
+        return new ValidationResult(FormatErrorMessage((string.IsNullOrWhiteSpace(validationContext.DisplayName)
             ? validationContext.MemberName
-            : validationContext.DisplayName));
+            : validationContext.DisplayName) ?? string.Empty));
     }
 }

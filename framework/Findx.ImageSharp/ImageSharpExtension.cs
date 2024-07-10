@@ -60,7 +60,7 @@ public static class ImageSharpExtension
             var i1 = i;
             img2.Mutate(ctx =>
                         ctx.DrawText(text[i1].ToString(), scaledFont, Rgba32.ParseHex(colorHex), new Point(offsetLeft, offsetTop))
-                           .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 6, 1)
+                           .DrawingGrid(containerWidth, containerHeight, Rgba32.ParseHex(colorHex), 10, 1)
                            .Rotate(RandomUtility.RandomInt(-15, 15))
             );
             // 旋转后超出幕布

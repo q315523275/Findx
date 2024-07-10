@@ -314,6 +314,12 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return _fsql.UpdateDict(dict).AsTable(tableName).WherePrimary("id").WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
+    public int UpdateColumns(Dictionary<string, object> dict, Expression<Func<TEntity, bool>> whereExpression)
+    {
+        return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetDto(dict).Where(whereExpression)
+            .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+    }
+
     public Task<int> UpdateColumnsAsync(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
     {
         return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(columns).Where(whereExpression)
@@ -349,6 +355,12 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
     {
         var tableName = GetDbTableName();
         return _fsql.UpdateDict(dict).AsTable(tableName).WherePrimary("id").WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
+    }
+
+    public Task<int> UpdateColumnsAsync(Dictionary<string, object> dict, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default)
+    {
+        return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetDto(dict).Where(whereExpression)
+            .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
     }
 
     #endregion
