@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using Findx.Common;
 using Findx.Data;
@@ -275,14 +276,19 @@ public class FreeSqlModule : StartupModule
         var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
         if (auditEntityReport != null && e.Value != null)
         {
+            string entityId;
+            if (e.Object is Dictionary<string, object> dic && dic.TryGetValue("id", out var id))
+                entityId = id.ToString();
+            else
+                entityId = fsql.GetEntityKeyString(e.Object.GetType(), e.Object, false);
             // 实体值审计
             var auditEntityPropertyEntry = new AuditEntityPropertyEntry
             {
-                EntityId = fsql.GetEntityKeyString(e.Object.GetType(), e.Object, false),
+                EntityId = entityId,
                 EntityTypeName = e.Column.Table.CsName,
                 DisplayName = e.Column.Comment,
-                PropertyName = e.Property.Name,
-                PropertyTypeFullName = e.Property.PropertyType.FullName,
+                PropertyName = e.Property?.Name,
+                PropertyTypeFullName = e.Property?.PropertyType.FullName,
                 NewValue = e.Value?.ToString()
             };
             auditEntityReport.AuditEntityProperty(auditEntityPropertyEntry);

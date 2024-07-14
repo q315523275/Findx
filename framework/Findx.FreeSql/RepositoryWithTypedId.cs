@@ -10,6 +10,7 @@ using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Security;
+using FreeSql.Extensions.EntityUtil;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -20,7 +21,7 @@ namespace Findx.FreeSql;
 /// </summary>
 /// <typeparam name="TEntity"></typeparam>
 /// <typeparam name="TKey"></typeparam>
-public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> where TEntity : class, IEntity<TKey>
+public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey>, IDisposable where TEntity : class, IEntity<TKey>
 {
     private readonly EntityExtensionAttribute _entityExtensionAttribute;
 
@@ -362,7 +363,67 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetDto(dict).Where(whereExpression)
             .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
     }
+    
+    private readonly Dictionary<string, TEntity> _attachDict = new();
 
+    public void Attach(TEntity entity)
+    {
+        var key = entity.Id.SafeString();
+        if (key.IsNotNullOrWhiteSpace()) _attachDict[key] = entity;
+    }
+    
+    public int Save(TEntity entity)
+    {
+        var table = _fsql.CodeFirst.GetTableByEntity(_entityType);
+        if (!table.Primarys.Any()) 
+            throw new Exception($"实体{table.CsName}必须存在主键配置");
+        
+        var key = entity.Id.SafeString();
+        if (key.IsNullOrWhiteSpace())
+            throw new Exception($"实体{table.CsName}的主键值不可为空");
+        
+        if (!_attachDict.TryGetValue(key, out var oldValue)) oldValue = Get(key.CastTo<TKey>());
+
+        if (oldValue == null)
+        {
+            entity.SetEmptyKey();
+            return Insert(entity);
+        }
+        
+        var dic = _fsql.CompareChangeValues(entity, oldValue);
+        dic.Add("id", entity.Id);
+        
+        _attachDict[key] = entity;
+        
+        return UpdateColumns(dic);
+    }
+    
+    public async Task<int> SaveAsync(TEntity entity, CancellationToken cancellationToken = default)
+    {
+        var table = _fsql.CodeFirst.GetTableByEntity(_entityType);
+        if (!table.Primarys.Any()) 
+            throw new Exception($"实体{table.CsName}必须存在主键配置");
+        
+        var key = entity.Id.SafeString();
+        if (key.IsNullOrWhiteSpace())
+            throw new Exception($"实体{table.CsName}的主键值不可为空");
+        
+        if (!_attachDict.TryGetValue(key, out var oldValue)) oldValue = await GetAsync(entity.Id, cancellationToken);
+
+        if (oldValue == null)
+        {
+            entity.SetEmptyKey();
+            return await InsertAsync(entity, cancellationToken);
+        }
+
+        var dic = _fsql.CompareChangeValues(entity, oldValue);
+        dic.Add("id", entity.Id);
+        
+        _attachDict[key] = entity;
+        
+        return await UpdateColumnsAsync(dic, cancellationToken);
+    }
+    
     #endregion
 
     #region 查询
@@ -715,6 +776,30 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
         return this;
     }
 
+    public Dictionary<string, object[]> CompareState(TEntity newData, TEntity oldData)
+    {
+        if (newData == null) 
+            return null;
+        
+        var entityType = typeof(TEntity);
+        
+        var table = _fsql.CodeFirst.GetTableByEntity(entityType);
+        if (table.Primarys.Any() == false) 
+            throw new Exception($"实体{table.CsName}必须存在主键配置");
+        
+        var key = _fsql.GetEntityKeyString(entityType, newData, false);
+        if (string.IsNullOrEmpty(key)) 
+            throw new Exception($"实体{table.CsName}的主键值不可为空");
+
+        var res = _fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, a => new[]
+        {
+            _fsql.GetEntityValueWithPropertyName(entityType, newData, a),
+            _fsql.GetEntityValueWithPropertyName(entityType, oldData, a)
+        });
+
+        return res;
+    }
+
     public DatabaseType GetDbType()
     {
         var dataType = _fsql.Ado.DataType.ToString();
@@ -837,4 +922,11 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey> w
     }
 
     #endregion
+
+    public void Dispose()
+    {
+        AsTableValueInternal = null;
+        AsTableSelectValueInternal = null;
+        _attachDict.Clear();
+    }
 }

@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.Dtos;
 /// <summary>
 ///     设置字典数据Dto模型
 /// </summary>
-public class SetDictDataRequest : IRequest
+public class SetDictDataRequest : IRequest<long>
 {
     /// <summary>
     /// </summary>

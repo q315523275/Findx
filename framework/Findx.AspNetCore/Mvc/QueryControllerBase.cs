@@ -27,7 +27,7 @@ public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> :
     TQueryParameter, TKey>
     where TModel : EntityBase<TKey>, new()
     where TDto : IResponse, new()
-    where TQueryParameter : PageBase, new()
+    where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>;
 
 /// <summary>
@@ -42,16 +42,11 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     where TModel : EntityBase<TKey>, new()
     where TListDto : IResponse, new()
     where TDetailDto : IResponse, new()
-    where TQueryParameter : PageBase, new()
+    where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>
 {
     // ReSharper disable once StaticMemberInGenericType
     private static readonly ConcurrentDictionary<Type, Dictionary<PropertyInfo, QueryFieldAttribute>> QueryFieldDict = new();
-    
-    /// <summary>
-    ///     仓储
-    /// </summary>
-    protected IRepository<TModel, TKey> Repo { get; set; }
     
     /// <summary>
     ///     构建分页查询条件
@@ -95,8 +90,8 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     {
         var orderExp = SortConditionBuilder.New<TModel>();
 
-        if (request is PageBase pageBase && pageBase.SortField.IsNotNullOrWhiteSpace())
-            orderExp.Order(request.SortField, request.SortDirection);
+        if (request is SortCondition sortCondition && sortCondition.SortField.IsNotNullOrWhiteSpace())
+            orderExp.Order(sortCondition.SortField, sortCondition.SortDirection);
         
         if (typeof(TModel).IsAssignableTo(typeof(ISort)))
             orderExp.OrderBy(it => (it as ISort).Sort);
@@ -118,14 +113,14 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     {
         Check.NotNull(request, nameof(request));
 
-        Repo = GetRepository<TModel, TKey>();
+        var repo = GetRepository<TModel, TKey>();
 
-        Check.NotNull(Repo, nameof(Repo));
+        Check.NotNull(repo, nameof(repo));
 
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var result = await Repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(result);
     }
@@ -145,13 +140,13 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         if (request.PageSize == 20) 
             request.PageSize = 99;
         
-        Repo = GetRepository<TModel, TKey>();
-        Check.NotNull(Repo, nameof(Repo));
+        var repo = GetRepository<TModel, TKey>();
+        Check.NotNull(repo, nameof(repo));
 
         var whereExpression = CreatePageWhereExpression(request);
         var orderByExpression = CreatePageOrderExpression(request);
 
-        var list = await Repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(list);
     }
@@ -167,10 +162,10 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     public virtual async Task<CommonResult<TDetailDto>> Detail(TKey id, CancellationToken cancellationToken = default)
     {
         Check.NotNull(id, nameof(id));
-        Repo = GetRepository<TModel, TKey>();
-        Check.NotNull(Repo, nameof(Repo));
+        var repo = GetRepository<TModel, TKey>();
+        Check.NotNull(repo, nameof(repo));
 
-        var model = await Repo.GetAsync(id, cancellationToken);
+        var model = await repo.GetAsync(id, cancellationToken);
         var result = ToDetailDto(model);
         await DetailAfterAsync(model, result);
 

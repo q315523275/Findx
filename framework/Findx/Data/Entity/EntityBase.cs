@@ -53,4 +53,13 @@ public abstract class EntityBase<TKey> : ValidatableObject, IEntity<TKey> where 
         if (Id == null) return 0;
         return Id.ToString().GetHashCode();
     }
+    
+    /// <summary>
+    ///     浅克隆
+    /// </summary>
+    /// <returns></returns>
+    public object Clone()
+    {
+        return MemberwiseClone();
+    }
 }

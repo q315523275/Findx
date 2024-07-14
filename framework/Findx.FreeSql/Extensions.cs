@@ -1,4 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Findx.Data;
 using FreeSql;
+using FreeSql.Extensions.EntityUtil;
 
 namespace Findx.FreeSql;
 
@@ -90,5 +95,64 @@ public static class Extensions
         if (condition) return select.Count(out count);
         count = -1;
         return select;
+    }
+    
+        /// <summary>
+    ///     比较实体，计算出值发生变化的属性，以及属性变化的前后值
+    /// </summary>
+    /// <param name="fsql"></param>
+    /// <param name="newData">最新的实体对象</param>
+    /// <param name="oldData">原始的实体对象</param>
+    /// <returns>key: 属性名, value: [新值, 旧值]</returns>
+    public static Dictionary<string, object[]> CompareState<TEntity>(this IFreeSql fsql, TEntity newData, TEntity oldData) where TEntity : IEntity
+    {
+        if (newData == null) 
+            return null;
+        
+        var entityType = typeof(TEntity);
+        
+        var table = fsql.CodeFirst.GetTableByEntity(entityType);
+        if (table.Primarys.Any() == false) 
+            throw new Exception($"实体{table.CsName}必须存在主键配置");
+        
+        var key = fsql.GetEntityKeyString(entityType, newData, false);
+        if (string.IsNullOrEmpty(key)) 
+            throw new Exception($"实体{table.CsName}的主键值不可为空");
+
+        var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, a => new[]
+        {
+            fsql.GetEntityValueWithPropertyName(entityType, newData, a),
+            fsql.GetEntityValueWithPropertyName(entityType, oldData, a)
+        });
+
+        return res;
+    }
+    
+    /// <summary>
+    ///     比较实体，计算出值发生变化的属性，以及属性变化的值
+    /// </summary>
+    /// <param name="fsql">freeSql实例</param>
+    /// <param name="newData">最新的实体对象</param>
+    /// <param name="oldData">原始的实体对象</param>
+    /// <returns>key: 属性名, value: 新值</returns>
+    public static Dictionary<string, object> CompareChangeValues<TEntity>(this IFreeSql fsql, TEntity newData, TEntity oldData) where TEntity : IEntity
+    {
+        if (newData == null) 
+            return null;
+        
+        var entityType = typeof(TEntity);
+        
+        var table = fsql.CodeFirst.GetTableByEntity(entityType);
+        if (table.Primarys.Any() == false) 
+            throw new Exception($"实体{table.CsName}必须存在主键配置");
+        
+        var key = fsql.GetEntityKeyString(entityType, newData, false);
+        if (string.IsNullOrEmpty(key)) 
+            throw new Exception($"实体{table.CsName}的主键值不可为空");
+
+        var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, 
+            a => fsql.GetEntityValueWithPropertyName(entityType, newData, a));
+
+        return res;
     }
 }

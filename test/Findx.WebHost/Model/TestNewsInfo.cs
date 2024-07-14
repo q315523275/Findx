@@ -3,7 +3,7 @@ using FreeSql.DataAnnotations;
 
 namespace Findx.WebHost.Model;
 
-public class TestNewsInfo : EntityBase<int>, IExtraObject, IRequest, IResponse
+public class TestNewsInfo : EntityBase<int>, IExtraObject, IRequest<int>, IResponse
 {
     [Column(IsIdentity = true, IsPrimary = true)]
     public override int Id { get; set; }
@@ -13,6 +13,7 @@ public class TestNewsInfo : EntityBase<int>, IExtraObject, IRequest, IResponse
     public string Author { get; set; }
     
     public string Content { get; set; }
+    
     public int Status { get; set; }
     public string ExtraProperties { get; set; }
 }

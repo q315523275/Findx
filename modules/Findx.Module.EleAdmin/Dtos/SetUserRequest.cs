@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdmin.Dtos;
 /// <summary>
 ///     设置用户信息Dto模型
 /// </summary>
-public class SetUserRequest : IRequest
+public class SetUserRequest : IRequest<Guid>
 {
     /// <summary>
     ///     编号

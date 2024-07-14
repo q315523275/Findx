@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.Dtos;
 /// <summary>
 ///     设置组织信息Dto模型
 /// </summary>
-public class SetOrgRequest : IRequest
+public class SetOrgRequest : IRequest<long>
 {
     /// <summary>
     ///     机构id

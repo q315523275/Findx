@@ -193,7 +193,27 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="cancellationToken"></param>
     /// <returns>影响行数</returns>
     Task<int> UpdateColumnsAsync(Dictionary<string, object> dict, Expression<Func<TEntity, bool>> whereExpression, CancellationToken cancellationToken = default);
-    
+
+    /// <summary>
+    ///     附加实体到状态管理，可用于不查询就更新或删除
+    /// </summary>
+    /// <param name="entity"></param>
+    void Attach(TEntity entity);
+
+    /// <summary>
+    ///     更新或者新增数据,当更新时只更新变更值
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    int Save(TEntity entity);
+
+    /// <summary>
+    ///      更新或者新增数据,当更新时只更新变更值
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<int> SaveAsync(TEntity entity, CancellationToken cancellationToken = default);
     #endregion
 
     #region 查询
@@ -448,5 +468,12 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="tableRule"></param>
     IRepository<TEntity, TKey> AsTable(Func<string, string> tableRule);
 
+    /// <summary>
+    ///     比较实体，计算出值发生变化的属性，以及属性变化的前后值
+    /// </summary>
+    /// <param name="newData"></param>
+    /// <param name="oldData"></param>
+    /// <returns></returns>
+    Dictionary<string, object[]> CompareState(TEntity newData, TEntity oldData);
     #endregion
 }

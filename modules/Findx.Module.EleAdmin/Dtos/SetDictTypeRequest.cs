@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdmin.Dtos;
 /// <summary>
 ///     设置字典类型入参
 /// </summary>
-public class SetDictTypeRequest : IRequest
+public class SetDictTypeRequest : IRequest<Guid>
 {
     /// <summary>
     ///     编号

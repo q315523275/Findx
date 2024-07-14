@@ -96,7 +96,8 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
         var keyGenerator = GetRequiredService<IKeyGenerator<long>>();
         var service = GetService<IPrincipal>();
 
-        var model = ToModelFromUpdateRequest(req);
+        var model = await repo.GetAsync(req.Id, cancellationToken);
+        model = ToModelFromUpdateRequest(req, model);
         model.CheckUpdateTime();
         model.CheckUpdateAudited<SysRoleInfo, long>(service);
         

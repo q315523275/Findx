@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.Dtos;
 /// <summary>
 ///     设置菜单入参
 /// </summary>
-public class SetMenuRequest : IRequest
+public class SetMenuRequest : IRequest<long>
 {
     /// <summary>
     ///     编号

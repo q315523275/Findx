@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
@@ -112,5 +113,32 @@ public class RepoController : ApiControllerBase
         return keyGenerator.Create();
     }
     
-    
+    /// <summary>
+    ///     异步线程仓储工作单元
+    /// </summary>
+    /// <param name="keyGenerator"></param>
+    /// <returns></returns>
+    [HttpGet("dic")]
+    [DisableAuditing]
+    public async Task<Guid> DicAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
+    {
+        await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
+        {
+            var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
+            await using (var uow = await unitOfWorkManager.GetConnUnitOfWorkAsync(true, true))
+            {
+                var repo = uow.GetRepository<TestNewsInfo, int>();
+                var dic = new Dictionary<string, object>
+                {
+                    { "id", 0 },
+                    { "title", "123" },
+                    // { "title333", "456" }
+                };
+                await repo.UpdateColumnsAsync(dic);
+                
+                await uow.CommitAsync();
+            }
+        }
+        return keyGenerator.Create();
+    }
 }

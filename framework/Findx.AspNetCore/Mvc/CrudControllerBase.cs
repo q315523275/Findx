@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
+using Findx.Extensions;
 using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,8 +24,8 @@ namespace Findx.AspNetCore.Mvc;
 public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<TModel,
     TModel, TModel, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
     where TModel : EntityBase<TKey>, IResponse, new()
-    where TRequest : IRequest, new()
-    where TQueryParameter : PageBase, new()
+    where TRequest : IRequest<TKey>, new()
+    where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct;
 
@@ -41,8 +42,8 @@ public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter
     TModel, TDto, TDto, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
     where TModel : EntityBase<TKey>, new()
     where TDto : IResponse, new()
-    where TRequest : IRequest, new()
-    where TQueryParameter : PageBase, new()
+    where TRequest : IRequest<TKey>, new()
+    where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct;
 
@@ -62,8 +63,8 @@ public abstract class
     where TModel : EntityBase<TKey>, new()
     where TDto : IResponse, new()
     where TCreateRequest : IRequest, new()
-    where TUpdateRequest : IRequest, new()
-    where TQueryParameter : PageBase, new()
+    where TUpdateRequest : IRequest<TKey>, new()
+    where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct;
 
@@ -85,8 +86,8 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     where TListDto : IResponse, new()
     where TDetailDto : IResponse, new()
     where TCreateRequest : IRequest, new()
-    where TUpdateRequest : IRequest, new()
-    where TQueryParameter : PageBase, new()
+    where TUpdateRequest : IRequest<TKey>, new()
+    where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>
     where TUserKey : struct
 {
@@ -103,9 +104,10 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     ///     修改参数转换为实体
     /// </summary>
     /// <param name="request">修改参数</param>
-    protected virtual TModel ToModelFromUpdateRequest(TUpdateRequest request)
+    /// <param name="model"></param>
+    protected virtual TModel ToModelFromUpdateRequest(TUpdateRequest request, TModel model)
     {
-        return request.MapTo<TModel>();
+        return request.MapTo(model);
     }
 
     /// <summary>
@@ -187,14 +189,14 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     {
         Check.NotNull(request, nameof(request));
 
-        Repo = GetRepository<TModel, TKey>();
+        var repo = GetRepository<TModel, TKey>();
         var principal = GetService<IPrincipal>();
         
-        Check.NotNull(Repo, nameof(Repo));
+        Check.NotNull(repo, nameof(repo));
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, Repo.GetDataSource(), cancellationToken);
-        Repo.UnitOfWork = UnitOfWork;
+        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, repo.GetDataSource(), cancellationToken);
+        repo.UnitOfWork = UnitOfWork;
         
         var model = ToModelFromCreateRequest(request);
 
@@ -206,7 +208,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         model.SetEmptyKey(); // 判断设置ID值
 
         await AddBeforeAsync(model, request);
-        var res = await Repo.InsertAsync(model, cancellationToken);
+        var res = await repo.InsertAsync(model, cancellationToken);
         await AddAfterAsync(model, request, res);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
@@ -224,24 +226,25 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     {
         Check.NotNull(request, nameof(request));
 
-        Repo = GetRepository<TModel, TKey>();
+        var repo = GetRepository<TModel, TKey>();
         var principal = GetService<IPrincipal>();
 
-        Check.NotNull(Repo, nameof(Repo));
+        Check.NotNull(repo, nameof(repo));
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, Repo.GetDataSource(), cancellationToken);
-        Repo.UnitOfWork = UnitOfWork;
+        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, repo.GetDataSource(), cancellationToken);
+        repo.UnitOfWork = UnitOfWork;
 
-        var model = ToModelFromUpdateRequest(request);
-
+        var model = await repo.GetAsync(request.Id, cancellationToken);
         Check.NotNull(model, nameof(model));
-
+        repo.Attach(model.Clone().As<TModel>());
+        
+        model = ToModelFromUpdateRequest(request, model);
         model.CheckUpdateTime(); // 判断设置修改时间
         model.CheckUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
 
         await EditBeforeAsync(model, request);
-        var res = await Repo.UpdateAsync(model, ignoreNullColumns: true, cancellationToken: cancellationToken);
+        var res = await repo.SaveAsync(model, cancellationToken: cancellationToken);
         await EditAfterAsync(model, request, res);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.edit.error", "数据更新失败");
@@ -261,17 +264,17 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         if (request.Count == 0)
             return CommonResult.Fail("delete.not.count", "不存在删除数据");
 
-        Repo = GetRepository<TModel, TKey>();
+        var repo = GetRepository<TModel, TKey>();
 
-        Check.NotNull(Repo, nameof(Repo));
+        Check.NotNull(repo, nameof(repo));
 
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        var dataSource = Repo.GetDataSource();
+        var dataSource = repo.GetDataSource();
         UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, dataSource, cancellationToken);
-        Repo.UnitOfWork = UnitOfWork;
+        repo.UnitOfWork = UnitOfWork;
         
         await DeleteBeforeAsync(request);
-        var total = await Repo.DeleteAsync(x => request.Contains(x.Id), cancellationToken);
+        var total = await repo.DeleteAsync(x => request.Contains(x.Id), cancellationToken);
         await DeleteAfterAsync(request, total);
 
         return CommonResult.Success($"共删除{total}条数据,失败{request.Count - total}条");
