@@ -257,7 +257,8 @@ public class FreeSqlModule : StartupModule
     private static void Aop_AuditValue_Tenant(AuditValueEventArgs e, FreeSqlConnectionConfig option)
     {
         // 租户自动赋值
-        if (option.MultiTenant && TenantManager.Current != Guid.Empty && e.Property.Name == option.MultiTenantFieldName && e.Property.PropertyType == typeof(Guid?))
+        if (option.MultiTenant && TenantManager.Current != Guid.Empty && e.Property?.Name == option.MultiTenantFieldName 
+            && e.Property?.PropertyType == typeof(Guid?))
         {
             e.Value = TenantManager.Current;
         }

@@ -21,7 +21,7 @@ namespace Findx.Module.EleAdmin.Controller;
 [Route("api/[area]/user")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户"), Description("系统-用户")]
-public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUserRequest, QueryUserRequest, Guid, Guid>
+public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCreateDto, UserEditDto, QueryUserRequest, Guid, Guid>
 {
     private readonly IKeyGenerator<Guid> _keyGenerator;
 
@@ -140,7 +140,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
-    protected override async Task AddBeforeAsync(SysUserInfo model, SetUserRequest req)
+    protected override async Task AddBeforeAsync(SysUserInfo model, UserCreateDto req)
     {
         if (!req.Password.IsNullOrWhiteSpace()) model.Password = EncryptUtility.Md5By32(req.Password);
 
@@ -153,7 +153,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     /// <param name="model"></param>
     /// <param name="req"></param>
     /// <param name="result"></param>
-    protected override async Task AddAfterAsync(SysUserInfo model, SetUserRequest req, int result)
+    protected override async Task AddAfterAsync(SysUserInfo model, UserCreateDto req, int result)
     {
         if (result > 0)
         {
@@ -172,23 +172,12 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, SetUse
     }
 
     /// <summary>
-    ///     编辑前
-    /// </summary>
-    /// <param name="model"></param>
-    /// <param name="req"></param>
-    protected override async Task EditBeforeAsync(SysUserInfo model, SetUserRequest req)
-    {
-        model.Password = null;
-        await base.EditBeforeAsync(model, req);
-    }
-
-    /// <summary>
     ///     编辑后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
     /// <param name="result"></param>
-    protected override async Task EditAfterAsync(SysUserInfo model, SetUserRequest req, int result)
+    protected override async Task EditAfterAsync(SysUserInfo model, UserEditDto req, int result)
     {
         if (result > 0)
         {

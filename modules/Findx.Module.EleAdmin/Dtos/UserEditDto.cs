@@ -5,22 +5,17 @@ namespace Findx.Module.EleAdmin.Dtos;
 /// <summary>
 ///     设置用户信息Dto模型
 /// </summary>
-public class SetUserRequest : IRequest<Guid>
+public class UserEditDto : IRequest<Guid>
 {
     /// <summary>
     ///     编号
     /// </summary>
-    public Guid Id { get; set; } = Guid.Empty;
+    public Guid Id { get; set; }
 
     /// <summary>
     ///     账号
     /// </summary>
     public string UserName { get; set; }
-
-    /// <summary>
-    ///     密码
-    /// </summary>
-    public string Password { get; set; }
 
     /// <summary>
     ///     昵称
@@ -70,17 +65,12 @@ public class SetUserRequest : IRequest<Guid>
     /// <summary>
     ///     机构id
     /// </summary>
-    public Guid? OrgId { get; set; }
+    public long? OrgId { get; set; }
 
     /// <summary>
     ///     机构名称
     /// </summary>
     public string OrgName { get; set; }
-
-    /// <summary>
-    ///     员工编号
-    /// </summary>
-    public string EmployeeNumber { get; set; }
 
     /// <summary>
     ///     角色列表

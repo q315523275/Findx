@@ -1,17 +1,12 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdmin.Dtos;
 
 /// <summary>
 ///     设置用户信息Dto模型
 /// </summary>
-public class SetUserRequest : IRequest<long>
+public class UserCreateDto : IRequest
 {
-    /// <summary>
-    ///     编号
-    /// </summary>
-    public long Id { get; set; }
-
     /// <summary>
     ///     账号
     /// </summary>
