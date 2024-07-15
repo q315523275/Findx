@@ -382,7 +382,7 @@ public class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity, TKey>, 
         if (key.IsNullOrWhiteSpace())
             throw new Exception($"实体{table.CsName}的主键值不可为空");
         
-        if (!_attachDict.TryGetValue(key, out var oldValue)) oldValue = Get(key.CastTo<TKey>());
+        if (!_attachDict.TryGetValue(key, out var oldValue)) oldValue = Get(entity.Id);
 
         if (oldValue == null)
         {

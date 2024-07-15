@@ -9,6 +9,7 @@ using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Mapping;
+using Findx.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Findx.AspNetCore.Mvc;
@@ -240,9 +241,16 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         repo.Attach(model.Clone().As<TModel>());
         
         model = ToModelFromUpdateRequest(request, model);
-        model.CheckUpdateTime(); // 判断设置修改时间
-        model.CheckUpdateAudited<TModel, TUserKey>(principal); // 判断设置修改人
-
+        if (model is IUpdateTime entity1)
+        {
+            entity1.LastUpdatedTime = DateTime.Now;
+        }
+        if (model is IUpdateAudited<TUserKey> entity2)
+        {
+            entity2.LastUpdaterId = principal?.Identity.GetUserId<TUserKey>() ?? default;
+            entity2.LastUpdatedTime = DateTime.Now; 
+        }
+        
         await EditBeforeAsync(model, request);
         var res = await repo.SaveAsync(model, cancellationToken: cancellationToken);
         await EditAfterAsync(model, request, res);

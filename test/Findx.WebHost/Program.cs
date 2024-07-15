@@ -1,14 +1,12 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Unicode;
 using Castle.DynamicProxy;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Castle;
 using Findx.Data;
 using Findx.Extensions;
-using Findx.Extensions.AuditLogs.Services;
 using Findx.Serialization;
 using Findx.WebHost.Aspect;
 using Microsoft.AspNetCore.Builder;
@@ -51,7 +49,7 @@ builder.Services.AddTransient(typeof(IMachine), provider =>
 });
 #endregion
 
-builder.Services.AddScoped<IAuditStore, AuditStoreServices>();
+// builder.Services.AddScoped<IAuditStore, AuditStoreServices>();
 
 var app = builder.Build();
 
