@@ -72,6 +72,6 @@ public class ExpressionStarter<T>
     /// <returns></returns>
     public Expression<Func<T, bool>> Build()
     {
-        return _predicate ??= it => true;
+        return _predicate;
     }
 }

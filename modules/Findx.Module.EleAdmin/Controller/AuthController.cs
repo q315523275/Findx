@@ -36,6 +36,7 @@ public class AuthController : AreaApiControllerBase
     private readonly IOptions<JwtOptions> _options;
     private readonly IRepository<SysLoginRecordInfo> _recordRepo;
     private readonly IRepository<SysUserInfo> _repo;
+    private readonly IRepository<SysUserRoleInfo> _roleRepo;
     private readonly IJwtTokenBuilder _tokenBuilder;
 
     /// <summary>
@@ -49,8 +50,9 @@ public class AuthController : AreaApiControllerBase
     /// <param name="recordRepo"></param>
     /// <param name="settingProvider"></param>
     /// <param name="keyGenerator"></param>
+    /// <param name="roleRepo"></param>
     public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo,
-        ISettingProvider settingProvider, IKeyGenerator<Guid> keyGenerator)
+        ISettingProvider settingProvider, IKeyGenerator<Guid> keyGenerator, IRepository<SysUserRoleInfo> roleRepo)
     {
         _tokenBuilder = tokenBuilder;
         _options = options;
@@ -59,6 +61,7 @@ public class AuthController : AreaApiControllerBase
         _repo = repo;
         _recordRepo = recordRepo;
         _keyGenerator = keyGenerator;
+        _roleRepo = roleRepo;
         _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdmin:EnabledCaptcha");
         _useAbpJwt = settingProvider.GetValue<bool>("Modules:EleAdmin:UseAbpJwt");
     }
@@ -110,7 +113,7 @@ public class AuthController : AreaApiControllerBase
         CommonResult fail = null;
 
         // 验证账号密码是否正确
-        if (accountInfo.Password != EncryptUtility.Md5By32(req.Password))
+        if (!accountInfo.Password.Equals(EncryptUtility.Md5By32(req.Password), StringComparison.OrdinalIgnoreCase))
         {
             // 增加错误次数
             errorCount++;
@@ -161,6 +164,8 @@ public class AuthController : AreaApiControllerBase
             payload[System.Security.Claims.ClaimTypes.Name] = accountInfo.UserName.SafeString();
             payload[System.Security.Claims.ClaimTypes.GivenName] = accountInfo.Nickname.SafeString();
         }
+        var roles = await _roleRepo.SelectAsync(x => x.UserId == accountInfo.Id && x.RoleId == x.RoleInfo.Id, x => x.RoleInfo.Code);
+        payload[ClaimTypes.Role] = roles.Distinct().JoinAsString(",");
 
         var token = await _tokenBuilder.CreateAsync(payload, _options.Value);
         return CommonResult.Success(new { access_token = "Bearer " + token.AccessToken });

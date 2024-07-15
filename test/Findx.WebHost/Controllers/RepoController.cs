@@ -21,30 +21,24 @@ namespace Findx.WebHost.Controllers;
 public class RepoController : ApiControllerBase
 {
     /// <summary>
-    ///     异步仓储工作单元
+    ///     仓储操作
     /// </summary>
-    /// <param name="uowManager"></param>
     /// <param name="keyGenerator"></param>
     /// <returns></returns>
     [HttpGet("test")]
-    public async Task<Guid> Repo([FromServices] IUnitOfWorkManager uowManager, [FromServices] IKeyGenerator<Guid> keyGenerator)
+    public async Task<Guid> RepoAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
     {
-        await using (var uow = await uowManager.GetConnUnitOfWorkAsync(true, true))
-        {
-            var repo1 = uow.GetRepository<TestNewsInfo, int>();
-            var repo2 = uow.GetRepository<TestUserInfo, int>();
-            var a1 = await repo1.PagedAsync(1, 20);
-            var b2 = await repo2.PagedAsync(1, 20);
+        var repo1 = GetRepository<TestNewsInfo, int>();
+        var repo2 = GetRepository<TestUserInfo, int>();
+        var a1 = await repo1.PagedAsync(1, 20, whereExpression: null);
+        var b2 = await repo2.PagedAsync(1, 20);
 
-            var a = await repo1.SelectAsync();
-            var b = await repo2.SelectAsync();
+        var a = await repo1.SelectAsync(whereExpression: null);
+        var b = await repo2.SelectAsync();
 
-            var x = await repo1.DeleteAsync();
-            var y = await repo2.DeleteAsync();
-
-            // a1.Rows.First().GetProperty<string>("title");
-            await uow.CommitAsync();
-        }
+        var x = await repo1.DeleteAsync();
+        var y = await repo2.DeleteAsync();
+        
         return keyGenerator.Create();
     }
     
@@ -53,8 +47,8 @@ public class RepoController : ApiControllerBase
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <returns></returns>
-    [HttpGet("async")]
-    public async Task<Guid> RepoAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
+    [HttpGet("uow")]
+    public async Task<Guid> UnitOfWorkAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
     {
         await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
         {

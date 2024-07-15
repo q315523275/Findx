@@ -2,14 +2,14 @@
 
     <PropertyGroup>
         <Description>远端配置中心客户端</Description>
-        <PackageVersion>2024.07.01</PackageVersion>
+        <PackageVersion>2024.07.09</PackageVersion>
         <LangVersion>default</LangVersion>
         <Authors>Findx</Authors>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' != 'net8.0' ">
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
