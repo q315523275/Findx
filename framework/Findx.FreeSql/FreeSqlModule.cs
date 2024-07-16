@@ -63,14 +63,14 @@ public class FreeSqlModule : StartupModule
                                            .UseNameConvert(item.Value.NameConvertType)
                                            .Build();
 
-            // 开启逻辑删除
-            if (item.Value.SoftDeletable)
-                fsql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
-
             // 开启租户隔离
             if (item.Value.MultiTenant)
                 fsql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current != Guid.Empty, it => it.TenantId == TenantManager.Current);
             
+            // 开启逻辑删除
+            if (item.Value.SoftDeletable)
+                fsql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
+
             // AOP
             fsql.Aop.CurdBefore += (_, e) => Aop_CurdBefore(e, item.Value);
             fsql.Aop.CurdAfter += (_, e) => Aop_CurdAfter(e, item.Value);
@@ -256,11 +256,14 @@ public class FreeSqlModule : StartupModule
     /// <param name="e"></param>
     private static void Aop_AuditValue_Tenant(AuditValueEventArgs e, FreeSqlConnectionConfig option)
     {
-        // 租户自动赋值
-        if (option.MultiTenant && TenantManager.Current != Guid.Empty && e.Property?.Name == option.MultiTenantFieldName 
-            && e.Property?.PropertyType == typeof(Guid?))
+        // 新建数据时,租户自动赋值
+        if (option.MultiTenant && e.AuditValueType == AuditValueType.Insert && TenantManager.Current != Guid.Empty && option.MultiTenantFieldName.IsNotNullOrWhiteSpace())
         {
-            e.Value = TenantManager.Current;
+            //  实体属性字段
+            if (e.Column.CsName.Equals(option.MultiTenantFieldName, StringComparison.OrdinalIgnoreCase) && e.Column.CsType == typeof(Guid?) && e.Value == null)
+            {
+                e.Value = TenantManager.Current;
+            }
         }
     }
 
@@ -275,21 +278,22 @@ public class FreeSqlModule : StartupModule
         if (!option.AuditEntity) return;
         
         var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
-        if (auditEntityReport != null && e.Value != null)
+        if (auditEntityReport != null && e.Value != null && !e.Column.CsName.Equals("id", StringComparison.OrdinalIgnoreCase))
         {
             string entityId;
             if (e.Object is Dictionary<string, object> dic && dic.TryGetValue("id", out var id))
                 entityId = id.ToString();
             else
                 entityId = fsql.GetEntityKeyString(e.Object.GetType(), e.Object, false);
+
             // 实体值审计
             var auditEntityPropertyEntry = new AuditEntityPropertyEntry
             {
                 EntityId = entityId,
                 EntityTypeName = e.Column.Table.CsName,
                 DisplayName = e.Column.Comment,
-                PropertyName = e.Property?.Name,
-                PropertyTypeFullName = e.Property?.PropertyType.FullName,
+                PropertyName = e.Property?.Name?? e.Column.CsName,
+                PropertyTypeFullName = e.Property?.PropertyType.FullName?? e.Column.CsType.FullName,
                 NewValue = e.Value?.ToString()
             };
             auditEntityReport.AuditEntityProperty(auditEntityPropertyEntry);
