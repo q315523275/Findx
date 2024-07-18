@@ -1,26 +1,30 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Dict;
 
 /// <summary>
-///     设置字典类型入参
+///     设置字典数据Dto模型
 /// </summary>
-public class SetDictTypeRequest : IRequest<long>
+public class DictDataSaveDto : IRequest<long>
 {
     /// <summary>
-    ///     编号
     /// </summary>
     public long Id { get; set; }
 
     /// <summary>
-    ///     字典标识
+    ///     字典id
     /// </summary>
-    public string Code { get; set; }
+    public long TypeId { get; set; }
 
     /// <summary>
-    ///     字典名称
+    ///     字典项名称
     /// </summary>
     public string Name { get; set; }
+
+    /// <summary>
+    ///     字典项值
+    /// </summary>
+    public string Value { get; set; }
 
     /// <summary>
     ///     排序号

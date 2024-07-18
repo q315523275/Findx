@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Findx.AspNetCore.Mvc;
 using Findx.Exceptions;
-using Findx.Module.EleAdminPlus.Dtos;
+using Findx.Module.EleAdminPlus.Dtos.Dict;
 using Findx.Module.EleAdminPlus.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +16,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/dictType")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-字典"), Description("系统-字典")]
-public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SetDictTypeRequest, QueryDictTypeRequest, long, long>
+public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, DictTypeDto, DictTypeSaveDto, QueryDictTypeDto, long, long>
 {
     /// <summary>
     ///     删除前校验
@@ -27,7 +27,6 @@ public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, SetDict
     {
         var repo = GetRepository<SysDictDataInfo, long>();
         var isExist = await repo.ExistAsync(x => req.Contains(x.TypeId));
-        if (isExist)
-            throw new FindxException("500", "请先删除字典数据,再删除字典类型");
+        if (isExist) throw new FindxException("500", "请先删除字典数据,再删除字典类型");
     }
 }

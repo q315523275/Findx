@@ -1,11 +1,11 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Role;
 
 /// <summary>
 ///     设置角色信息Dto模型
 /// </summary>
-public class SetRoleRequest : IRequest<long>
+public class RoleSaveDto : IRequest<long>
 {
     /// <summary>
     ///     编号

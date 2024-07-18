@@ -1,11 +1,11 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Dict;
 
 /// <summary>
 ///     查询字典入参
 /// </summary>
-public class QueryDictDataRequest : PageBase
+public class QueryDictDataDto : PageBase
 {
     /// <summary>
     ///     TypeId

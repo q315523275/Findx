@@ -1,6 +1,8 @@
 ﻿using System.ComponentModel;
 using Findx.AspNetCore.Mvc;
+using Findx.Exceptions;
 using Findx.Module.EleAdminPlus.Dtos;
+using Findx.Module.EleAdminPlus.Dtos.Org;
 using Findx.Module.EleAdminPlus.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,4 +17,17 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/org")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-机构"), Description("系统-机构")]
-public class SysOrgController : CrudControllerBase<SysOrgInfo, SetOrgRequest, QueryOrgRequest, long, long>;
+public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDto, QueryOrgDto, long, long>
+{
+    /// <summary>
+    ///     删除前校验
+    /// </summary>
+    /// <param name="req"></param>
+    /// <returns></returns>
+    protected override async Task DeleteBeforeAsync(List<long> req)
+    {
+        var repo = GetRepository<SysOrgInfo, long>();
+        var isExist = await repo.ExistAsync(x => req.Contains(x.ParentId));
+        if (isExist) throw new FindxException("500", "请先删除下属机构,再删除选中机构");
+    }
+}

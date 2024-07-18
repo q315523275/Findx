@@ -1,7 +1,6 @@
 ﻿using Findx.Data;
-using Findx.Module.EleAdminPlus.Models;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.User;
 
 /// <summary>
 ///     用户Dto模型
@@ -17,11 +16,6 @@ public class UserDto : IResponse
     ///     账号
     /// </summary>
     public string UserName { get; set; }
-
-    /// <summary>
-    ///     密码
-    /// </summary>
-    public string Password { get; set; }
 
     /// <summary>
     ///     昵称
@@ -96,5 +90,5 @@ public class UserDto : IResponse
     /// <summary>
     ///     角色集合
     /// </summary>
-    public virtual IEnumerable<SysRoleInfo> Roles { get; set; }
+    public virtual IEnumerable<UserRoleSimplifyDto> Roles { get; set; }
 }

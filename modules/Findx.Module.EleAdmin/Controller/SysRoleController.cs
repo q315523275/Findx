@@ -80,8 +80,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
         {
             Id = keyGenerator.Create(),
             MenuId = x,
-            RoleId = roleId,
-            TenantId = TenantManager.Current
+            RoleId = roleId
         });
         // ReSharper disable once PossibleMultipleEnumeration
         if (list.Any()) await repo.InsertAsync(list);

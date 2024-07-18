@@ -2,12 +2,12 @@
 using Findx.Data;
 using Findx.Linq;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Org;
 
 /// <summary>
 ///     查询组织入参
 /// </summary>
-public class QueryOrgRequest : PageBase
+public class QueryOrgDto : PageBase
 {
     /// <summary>
     ///     类型

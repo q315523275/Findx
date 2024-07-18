@@ -127,6 +127,11 @@ public static class ClaimsIdentityExtensions
     }
 
     /// <summary>
+    ///     分隔符
+    /// </summary>
+    private static readonly char[] Separator = [','];
+
+    /// <summary>
     ///     获取所有角色
     /// </summary>
     public static IEnumerable<string> GetRoles(this IIdentity identity)
@@ -136,7 +141,7 @@ public static class ClaimsIdentityExtensions
         // 不知道什么原因，netcore认证组建会自动将自定义role key转换为 System.Security.Claims.ClaimTypes.Role key
         return claimsIdentity.FindAll(System.Security.Claims.ClaimTypes.Role).SelectMany(m =>
         {
-            return m.Value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+            return m.Value.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
         });
     }
 }

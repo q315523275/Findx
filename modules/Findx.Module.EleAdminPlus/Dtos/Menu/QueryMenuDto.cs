@@ -5,25 +5,31 @@ using Findx.Linq;
 namespace Findx.Module.EleAdminPlus.Dtos;
 
 /// <summary>
-///     查询角色入参
+///     查询菜单入参
 /// </summary>
-public class QueryRoleRequest : PageBase
+public class QueryMenuDto : PageBase
 {
     /// <summary>
     ///     名称
     /// </summary>
     [QueryField(FilterOperate = FilterOperate.Contains)]
-    public string Name { set; get; }
+    public string Title { set; get; }
 
     /// <summary>
-    ///     编号
+    ///     路径
     /// </summary>
     [QueryField(FilterOperate = FilterOperate.Contains)]
-    public string Code { set; get; }
+    public string Path { set; get; }
 
     /// <summary>
-    ///     备注
+    ///     权限标识
     /// </summary>
     [QueryField(FilterOperate = FilterOperate.Contains)]
-    public string Comments { set; get; }
+    public string Authority { set; get; }
+
+    /// <summary>
+    ///     父级id
+    /// </summary>
+    [QueryField(FilterOperate = FilterOperate.Equal)]
+    public long? ParentId { set; get; }
 }

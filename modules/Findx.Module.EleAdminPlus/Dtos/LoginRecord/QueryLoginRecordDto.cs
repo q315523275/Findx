@@ -2,12 +2,12 @@ using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Linq;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.LoginRecord;
 
 /// <summary>
-///     查询操作系统记录
+///     查询登录日志参数
 /// </summary>
-public class QueryOperationRecordRequest : PageBase
+public class QueryLoginRecordDto : PageBase
 {
     /// <summary>
     ///     账号

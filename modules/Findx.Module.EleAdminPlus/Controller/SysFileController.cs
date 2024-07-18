@@ -3,7 +3,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
-using Findx.Module.EleAdminPlus.Dtos;
+using Findx.Module.EleAdminPlus.Dtos.File;
 using Findx.Storage;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

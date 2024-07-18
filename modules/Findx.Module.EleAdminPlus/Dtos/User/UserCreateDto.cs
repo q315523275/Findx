@@ -1,6 +1,7 @@
 ﻿using Findx.Data;
+using Findx.Module.EleAdminPlus.Dtos.Role;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.User;
 
 /// <summary>
 ///     设置用户信息Dto模型
@@ -75,5 +76,5 @@ public class UserCreateDto : IRequest
     /// <summary>
     ///     角色列表
     /// </summary>
-    public List<RoleDto> Roles { get; set; } = new();
+    public List<RoleDto> Roles { get; set; } = [];
 }

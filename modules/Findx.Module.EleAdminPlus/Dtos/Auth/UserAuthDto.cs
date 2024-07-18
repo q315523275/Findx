@@ -1,6 +1,6 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Auth;
 
 /// <summary>
 ///     用户授权信息
@@ -75,18 +75,18 @@ public class UserAuthDto : IResponse
     /// <summary>
     ///     角色集合
     /// </summary>
-    public IEnumerable<RoleDto> Roles { get; set; }
+    public IEnumerable<UserAuthRoleDto> Roles { get; set; }
 
     /// <summary>
     ///     权限集合
     /// </summary>
-    public IEnumerable<MenuDto> Authorities { get; set; }
+    public IEnumerable<UserAuthMenuDto> Authorities { get; set; }
 }
 
 /// <summary>
 ///     ；角色模型
 /// </summary>
-public class RoleDto
+public class UserAuthRoleDto
 {
     /// <summary>
     ///     角色id
@@ -112,7 +112,7 @@ public class RoleDto
 /// <summary>
 ///     菜单Dto模型
 /// </summary>
-public class MenuDto
+public class UserAuthMenuDto
 {
     /// <summary>
     ///     菜单id

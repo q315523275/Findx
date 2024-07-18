@@ -3,7 +3,7 @@ using System.Security.Principal;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Mapping;
-using Findx.Module.EleAdminPlus.Dtos;
+using Findx.Module.EleAdminPlus.Dtos.Role;
 using Findx.Module.EleAdminPlus.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -18,7 +18,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/role")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-角色"), Description("系统-角色")]
-public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest, QueryRoleRequest, long, long>
+public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSaveDto, QueryRoleDto, long, long>
 {
     /// <summary>
     ///     查询角色对应菜单
@@ -63,7 +63,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("add"), Description("新增")]
-    public override async Task<CommonResult> AddAsync([FromBody] SetRoleRequest req, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult> AddAsync([FromBody] RoleSaveDto req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysRoleInfo, long>();
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
@@ -89,7 +89,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPut("edit"), Description("编辑")]
-    public override async Task<CommonResult> EditAsync([FromBody] SetRoleRequest req, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult> EditAsync([FromBody] RoleSaveDto req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysRoleInfo, long>();
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
@@ -115,7 +115,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPut("dataScope"), Description("数据范围")]
-    public async Task<CommonResult> DataScopeAsync([FromBody] SetRoleOrgRequest req, CancellationToken cancellationToken = default)
+    public async Task<CommonResult> DataScopeAsync([FromBody] RoleOrgSaveDto req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysRoleInfo, long>();
         var roleOrgRepo = GetRepository<SysRoleOrgInfo, long>();

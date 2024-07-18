@@ -1,11 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Auth;
 
 /// <summary>
 ///     修改密码
 /// </summary>
-public class UpdatePasswordRequest
+public class UpdatePasswordDto
 {
     /// <summary>
     ///     旧密码

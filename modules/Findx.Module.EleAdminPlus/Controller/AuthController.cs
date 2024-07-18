@@ -5,7 +5,7 @@ using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Mapping;
-using Findx.Module.EleAdminPlus.Dtos;
+using Findx.Module.EleAdminPlus.Dtos.Auth;
 using Findx.Module.EleAdminPlus.Enum;
 using Findx.Module.EleAdminPlus.Models;
 using Findx.Security;
@@ -73,7 +73,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("/api/login"), Description("登录")]
-    public async Task<CommonResult> LoginAsync([FromBody] LoginRequest req, CancellationToken cancellationToken = default)
+    public async Task<CommonResult> LoginAsync([FromBody] LoginDto req, CancellationToken cancellationToken = default)
     {
         var cache = _cacheFactory.Create(CacheType.DefaultMemory);
 
@@ -189,14 +189,14 @@ public class AuthController : AreaApiControllerBase
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
         var menuRepo = GetRepository<SysRoleMenuInfo, long>();
 
-        var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new RoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name })
+        var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name })
                             .DistinctBy(x => x.Id);
         // ReSharper disable once PossibleMultipleEnumeration
         var roleIds = roles.Select(x => x.Id);
         // ReSharper disable once PossibleMultipleEnumeration
         var menus = roleIds.Any() ?
                 // ReSharper disable once PossibleMultipleEnumeration
-                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuDto { MenuId = x.MenuId }) : [];
+                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new UserAuthMenuDto { MenuId = x.MenuId }) : [];
         
         var result = userInfo.MapTo<UserAuthDto>();
         // ReSharper disable once PossibleMultipleEnumeration
@@ -212,7 +212,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpPut("/api/auth/password"), Authorize, Description("修改账户密码")]
-    public async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordRequest req)
+    public async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req)
     {
         var userId = _currentUser.UserId.To<long>();
         var userInfo = await _userRepo.FirstAsync(x => x.Id == userId);

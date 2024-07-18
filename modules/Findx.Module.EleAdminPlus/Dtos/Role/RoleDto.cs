@@ -1,20 +1,16 @@
-﻿using Findx.Data;
-using FreeSql.DataAnnotations;
+using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Models;
+namespace Findx.Module.EleAdminPlus.Dtos.Role;
 
 /// <summary>
-///     角色
+///     角色Dto
 /// </summary>
-[Table(Name = "sys_role")]
-[EntityExtension(DataSource = "system")]
-public class SysRoleInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant
+public class RoleDto: IResponse
 {
     /// <summary>
     ///     角色id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
-    public override long Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     ///     角色名称
@@ -35,19 +31,9 @@ public class SysRoleInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant
     ///     备注
     /// </summary>
     public string Comments { get; set; }
-
-    /// <summary>
-    ///     租户id
-    /// </summary>
-    public Guid? TenantId { get; set; }
     
     /// <summary>
-    ///     是否删除
+    ///     创建时间
     /// </summary>
-    public bool IsDeleted { get; set; }
-
-    /// <summary>
-    ///     删除时间
-    /// </summary>
-    public DateTime? DeletionTime { get; set; }
+    public DateTime? CreatedTime { get; set; }
 }

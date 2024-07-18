@@ -1,20 +1,16 @@
 using Findx.Data;
-using FreeSql.DataAnnotations;
 
-namespace Findx.Module.EleAdminPlus.Models;
+namespace Findx.Module.EleAdminPlus.Dtos.OperationRecord;
 
 /// <summary>
-///     操作日志
+///     操作记录Dto
 /// </summary>
-[Table(Name = "sys_operation_record")]
-[EntityExtension(DataSource = "system")]
-public class SysOperationRecordInfo : EntityBase<long>, ICreatedTime, ITenant
+public class OperationRecordDto: IResponse
 {
     /// <summary>
     ///     编号
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
-    public override long Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     ///     账号
@@ -82,16 +78,6 @@ public class SysOperationRecordInfo : EntityBase<long>, ICreatedTime, ITenant
     public string Method { get; set; }
 
     /// <summary>
-    ///     请求参数
-    /// </summary>
-    public string Params { get; set; }
-
-    /// <summary>
-    ///     请求结果
-    /// </summary>
-    public string Result { get; set; }
-
-    /// <summary>
     ///     异常信息
     /// </summary>
     public string Error { get; set; }
@@ -100,11 +86,6 @@ public class SysOperationRecordInfo : EntityBase<long>, ICreatedTime, ITenant
     ///     消耗时间, 单位毫秒
     /// </summary>
     public int SpendTime { get; set; }
-
-    /// <summary>
-    ///     租户编号
-    /// </summary>
-    public Guid? TenantId { get; set; }
     
     /// <summary>
     ///     创建时间

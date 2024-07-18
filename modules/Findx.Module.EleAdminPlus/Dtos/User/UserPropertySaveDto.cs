@@ -1,9 +1,9 @@
-﻿namespace Findx.Module.EleAdminPlus.Dtos;
+﻿namespace Findx.Module.EleAdminPlus.Dtos.User;
 
 /// <summary>
 ///     设置用户属性值Dto模型
 /// </summary>
-public class SetUserPropertyRequest
+public class UserPropertySaveDto
 {
     /// <summary>
     ///     编号

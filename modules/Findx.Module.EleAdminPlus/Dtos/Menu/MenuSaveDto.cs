@@ -1,20 +1,16 @@
 ﻿using Findx.Data;
-using FreeSql.DataAnnotations;
 
-namespace Findx.Module.EleAdminPlus.Models;
+namespace Findx.Module.EleAdminPlus.Dtos;
 
 /// <summary>
-///     菜单
+///     设置菜单入参
 /// </summary>
-[Table(Name = "sys_menu")]
-[EntityExtension(DataSource = "system")]
-public class SysMenuInfo : FullAuditedBase<long, long>, ITenant, ISort, ISoftDeletable
+public class MenuSaveDto : IRequest<long>
 {
     /// <summary>
-    ///     菜单id
+    ///     编号
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
-    public override long Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     ///     上级id, 0是顶级
@@ -40,7 +36,7 @@ public class SysMenuInfo : FullAuditedBase<long, long>, ITenant, ISort, ISoftDel
     ///     类型, 0菜单, 1按钮
     /// </summary>
     public int MenuType { get; set; }
-    
+
     /// <summary>
     ///     排序号
     /// </summary>
@@ -50,7 +46,7 @@ public class SysMenuInfo : FullAuditedBase<long, long>, ITenant, ISort, ISoftDel
     ///     权限标识
     /// </summary>
     public string Authority { get; set; }
-
+    
     /// <summary>
     ///     菜单图标
     /// </summary>
@@ -65,19 +61,4 @@ public class SysMenuInfo : FullAuditedBase<long, long>, ITenant, ISort, ISoftDel
     ///     其它路由元信息
     /// </summary>
     public string Meta { get; set; }
-
-    /// <summary>
-    ///     租户id
-    /// </summary>
-    public Guid? TenantId { get; set; }
-
-    /// <summary>
-    ///     是否删除
-    /// </summary>
-    public bool IsDeleted { get; set; }
-
-    /// <summary>
-    ///     删除时间
-    /// </summary>
-    public DateTime? DeletionTime { get; set; }
 }

@@ -1,14 +1,14 @@
-﻿using Findx.Data;
+using Findx.Data;
 
 namespace Findx.Module.EleAdminPlus.Dtos;
 
 /// <summary>
-///     设置菜单入参
+///     菜单Dto
 /// </summary>
-public class SetMenuRequest : IRequest<long>
+public class MenuDto: IResponse
 {
     /// <summary>
-    ///     编号
+    ///     菜单id
     /// </summary>
     public long Id { get; set; }
 
@@ -36,7 +36,7 @@ public class SetMenuRequest : IRequest<long>
     ///     类型, 0菜单, 1按钮
     /// </summary>
     public int MenuType { get; set; }
-
+    
     /// <summary>
     ///     排序号
     /// </summary>
@@ -46,7 +46,7 @@ public class SetMenuRequest : IRequest<long>
     ///     权限标识
     /// </summary>
     public string Authority { get; set; }
-    
+
     /// <summary>
     ///     菜单图标
     /// </summary>

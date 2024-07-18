@@ -1,13 +1,14 @@
-﻿using Findx.Data;
+using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Dict;
 
 /// <summary>
-///     设置字典数据Dto模型
+///     字典项目数据
 /// </summary>
-public class SetDictDataRequest : IRequest<long>
+public class DictDataDto: IResponse
 {
     /// <summary>
+    ///     字典项id
     /// </summary>
     public long Id { get; set; }
 
@@ -30,9 +31,14 @@ public class SetDictDataRequest : IRequest<long>
     ///     排序号
     /// </summary>
     public int Sort { get; set; }
-
+    
     /// <summary>
     ///     备注
     /// </summary>
     public string Comments { get; set; }
+    
+    /// <summary>
+    ///     创建时间
+    /// </summary>
+    public DateTime? CreatedTime { get; set; }
 }

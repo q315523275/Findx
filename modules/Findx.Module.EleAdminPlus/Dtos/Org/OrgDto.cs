@@ -1,11 +1,11 @@
-﻿using Findx.Data;
+using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Org;
 
 /// <summary>
-///     设置组织信息Dto模型
+///     机构Dto
 /// </summary>
-public class SetOrgRequest : IRequest<long>
+public class OrgDto: IResponse
 {
     /// <summary>
     ///     机构id
@@ -43,9 +43,9 @@ public class SetOrgRequest : IRequest<long>
     public long? LeaderId { get; set; }
 
     /// <summary>
-    ///     负责人昵称
+    ///     负责人
     /// </summary>
-    public string LeaderNickname { get; set; }
+    public string Leader { get; set; }
 
     /// <summary>
     ///     排序号
@@ -56,4 +56,9 @@ public class SetOrgRequest : IRequest<long>
     ///     备注
     /// </summary>
     public string Comments { get; set; }
+    
+    /// <summary>
+    ///     创建时间
+    /// </summary>
+    public DateTime? CreatedTime { get; set; }
 }

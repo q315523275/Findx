@@ -1,5 +1,8 @@
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Role;
 
+/// <summary>
+///     角色数据机构范围
+/// </summary>
 public class RoleOrgDto
 {
     /// <summary>

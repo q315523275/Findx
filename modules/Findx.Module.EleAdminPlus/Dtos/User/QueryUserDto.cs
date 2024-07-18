@@ -2,12 +2,12 @@
 using Findx.Data;
 using Findx.Linq;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.User;
 
 /// <summary>
 ///     查询用户入参
 /// </summary>
-public class QueryUserRequest : PageBase
+public class QueryUserDto : PageBase
 {
     /// <summary>
     ///     账号

@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdmin.Models;
 /// </summary>
 [Table(Name = "sys_role_menu")]
 [EntityExtension(DataSource = "system")]
-public class SysRoleMenuInfo : EntityBase<Guid>, ITenant
+public class SysRoleMenuInfo : EntityBase<Guid>
 {
     /// <summary>
     ///     主键id
@@ -31,9 +31,4 @@ public class SysRoleMenuInfo : EntityBase<Guid>, ITenant
     /// </summary>
     [Navigate(nameof(MenuId))]
     public virtual SysMenuInfo MenuInfo { set; get; }
-
-    /// <summary>
-    ///     租户id
-    /// </summary>
-    public Guid? TenantId { get; set; }
 }

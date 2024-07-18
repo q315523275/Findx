@@ -163,7 +163,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
             var user = await repo.FirstAsync(x => x.UserName == req.UserName);
             if (user != null)
             {
-                var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = user.Id, TenantId = TenantManager.Current });
+                var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = user.Id });
                 await roleRepo.InsertAsync(list);
             }
         }
@@ -183,7 +183,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
         {
             var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
 
-            var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id, TenantId = TenantManager.Current });
+            var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id });
             await roleRepo.DeleteAsync(x => x.UserId == model.Id);
             await roleRepo.InsertAsync(list);
         }

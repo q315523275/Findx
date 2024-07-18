@@ -4,7 +4,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
-using Findx.Module.EleAdminPlus.Dtos;
+using Findx.Module.EleAdminPlus.Dtos.Dict;
 using Findx.Module.EleAdminPlus.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -19,27 +19,27 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/dictData")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-字典值"), Description("系统-字典值")]
-public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDictDataRequest, QueryDictDataRequest, long, long>
+public class SysDictDataController : CrudControllerBase<SysDictDataInfo, DictDataDto, DictDataSaveDto, QueryDictDataDto, long, long>
 {
     /// <summary>
     ///     构建查询条件
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="dto"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysDictDataInfo, bool>> CreatePageWhereExpression(QueryDictDataRequest request)
+    protected override Expression<Func<SysDictDataInfo, bool>> CreatePageWhereExpression(QueryDictDataDto dto)
     {
-        var typeId = request.TypeId;
-        if (!request.TypeCode.IsNullOrWhiteSpace())
+        var typeId = dto.TypeId;
+        if (!dto.TypeCode.IsNullOrWhiteSpace())
         {
             var repo = GetRepository<SysDictTypeInfo, long>();
-            var model = repo.First(x => x.Code == request.TypeCode);
+            var model = repo.First(x => x.Code == dto.TypeCode);
             typeId = model?.Id ?? 0;
         }
 
         var whereExp = PredicateBuilder.New<SysDictDataInfo>()
                                        .And(x => x.TypeId == x.TypeInfo.Id)
-                                       .AndIf(typeId > 0, x => x.TypeId == typeId)
-                                       .AndIf(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords))
+                                       .AndIf(typeId > -1, x => x.TypeId == typeId)
+                                       .AndIf(!dto.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(dto.Keywords))
                                        .Build();
         return whereExp;
     }
@@ -47,12 +47,12 @@ public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDict
     /// <summary>
     ///      列表查询
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="dto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<List<SysDictDataInfo>>> ListAsync([FromQuery] QueryDictDataRequest request, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult<List<DictDataDto>>> ListAsync([FromQuery] QueryDictDataDto dto, CancellationToken cancellationToken = default)
     {
-        request.PageSize = 9999;
-        return await base.ListAsync(request, cancellationToken);
+        dto.PageSize = 9999;
+        return await base.ListAsync(dto, cancellationToken);
     }
 }

@@ -1,20 +1,16 @@
 using Findx.Data;
-using FreeSql.DataAnnotations;
 
-namespace Findx.Module.EleAdminPlus.Models;
+namespace Findx.Module.EleAdminPlus.Dtos.LoginRecord;
 
 /// <summary>
-///     登录日志
+///     登陆记录Dto
 /// </summary>
-[Table(Name = "sys_login_record")]
-[EntityExtension(DataSource = "system")]
-public class SysLoginRecordInfo : EntityBase<long>, ICreatedTime, ITenant
+public class LoginRecordDto: IResponse
 {
     /// <summary>
     ///     编号
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
-    public override long Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     ///     账号
@@ -56,11 +52,6 @@ public class SysLoginRecordInfo : EntityBase<long>, ICreatedTime, ITenant
     ///     备注
     /// </summary>
     public string Comments { get; set; }
-
-    /// <summary>
-    ///     租户编号
-    /// </summary>
-    public Guid? TenantId { get; set; }
     
     /// <summary>
     ///     创建时间

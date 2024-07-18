@@ -1,11 +1,11 @@
 using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Role;
 
 /// <summary>
 ///     设置角色数据范围
 /// </summary>
-public class SetRoleOrgRequest: IRequest
+public class RoleOrgSaveDto: IRequest
 {
     /// <summary>
     ///     编号
@@ -20,5 +20,5 @@ public class SetRoleOrgRequest: IRequest
     /// <summary>
     ///     机构集合
     /// </summary>
-    public List<long> OrgIds { get; set; } = new();
+    public List<long> OrgIds { get; set; } = [];
 }

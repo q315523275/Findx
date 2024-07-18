@@ -1,4 +1,4 @@
-﻿namespace Findx.Module.EleAdminPlus.Dtos;
+﻿namespace Findx.Module.EleAdminPlus.Dtos.Role;
 
 /// <summary>
 ///     角色菜单Dto模型

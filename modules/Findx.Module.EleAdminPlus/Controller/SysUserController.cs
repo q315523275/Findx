@@ -4,7 +4,8 @@ using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
-using Findx.Module.EleAdminPlus.Dtos;
+using Findx.Mapping;
+using Findx.Module.EleAdminPlus.Dtos.User;
 using Findx.Module.EleAdminPlus.Models;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/user")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-用户"), Description("系统-用户")]
-public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCreateDto, UserEditDto, QueryUserRequest, long, long>
+public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCreateDto, UserEditDto, QueryUserDto, long, long>
 {
     private readonly IKeyGenerator<long> _keyGenerator;
 
@@ -39,7 +40,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<PageResult<List<UserDto>>>> PageAsync(QueryUserRequest request, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult<PageResult<List<UserDto>>>> PageAsync(QueryUserDto request, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysUserInfo, long>();
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
@@ -49,9 +50,10 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
 
         var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
         var ids = res.Rows.Select(x => x.Id).Distinct();
-        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
+        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), selectExpression: x => new { RoleId = x.RoleInfo.Id, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name, x.UserId }, cancellationToken: cancellationToken);
+        var roleDict = roles.GroupBy(x => x.UserId).ToDictionary(x => x.Key, x => x);
         foreach (var item in res.Rows)
-            item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
+            item.Roles = roleDict.TryGetValue(item.Id, out var userRoles) ? userRoles.Select(x => new UserRoleSimplifyDto { Id = x.RoleId, Code = x.RoleCode, Name = x.RoleName }) : Array.Empty<UserRoleSimplifyDto>();
         
         return CommonResult.Success(res);
     }
@@ -62,7 +64,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<List<UserDto>>> ListAsync(QueryUserRequest request, CancellationToken cancellationToken = new CancellationToken())
+    public override async Task<CommonResult<List<UserDto>>> ListAsync(QueryUserDto request, CancellationToken cancellationToken = new())
     {
         var repo = GetRepository<SysUserInfo, long>();
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
@@ -72,9 +74,10 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
 
         var res = await repo.TopAsync<UserDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
         var ids = res.Select(x => x.Id).Distinct();
-        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
+        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), selectExpression: x => new { RoleId = x.RoleInfo.Id, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name, x.UserId }, cancellationToken: cancellationToken);
+        var roleDict = roles.GroupBy(x => x.UserId).ToDictionary(x => x.Key, x => x);
         foreach (var item in res)
-            item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
+            item.Roles = roleDict.TryGetValue(item.Id, out var userRoles) ? userRoles.Select(x => new UserRoleSimplifyDto { Id = x.RoleId, Code = x.RoleCode, Name = x.RoleName }) : Array.Empty<UserRoleSimplifyDto>();
         
         return CommonResult.Success(res);
     }
@@ -85,7 +88,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpPut("status"), Description("修改状态")]
-    public CommonResult Status([FromBody] SetUserPropertyRequest req)
+    public CommonResult Status([FromBody] UserPropertySaveDto req)
     {
         var repo = GetRepository<SysUserInfo, long>();
         repo.UpdateColumns(x => new SysUserInfo { Status = req.Status }, x => x.Id == req.Id);
@@ -98,7 +101,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpPut("password"), Description("修改密码")]
-    public CommonResult Password([FromBody] SetUserPropertyRequest req)
+    public CommonResult Password([FromBody] UserPropertySaveDto req)
     {
         var repo = GetRepository<SysUserInfo, long>();
         var pwd = EncryptUtility.Md5By32(req.Password);
@@ -130,12 +133,11 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="model"></param>
     /// <param name="dto"></param>
     /// <returns></returns>
-    protected override Task DetailAfterAsync(SysUserInfo model, UserDto dto)
+    protected override async Task DetailAfterAsync(SysUserInfo model, UserDto dto)
     {
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
-        var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && x.UserId == model.Id);
-        dto.Roles = roles.Where(x => x.RoleInfo != null).Select(x => x.RoleInfo);
-        return Task.CompletedTask;
+        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && x.UserId == model.Id, x => x.RoleInfo);
+        dto.Roles = roles.MapTo<List<UserRoleSimplifyDto>>();
     }
 
     /// <summary>

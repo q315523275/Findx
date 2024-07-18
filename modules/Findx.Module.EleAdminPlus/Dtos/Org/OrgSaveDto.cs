@@ -1,20 +1,16 @@
 ﻿using Findx.Data;
-using FreeSql.DataAnnotations;
 
-namespace Findx.Module.EleAdminPlus.Models;
+namespace Findx.Module.EleAdminPlus.Dtos.Org;
 
 /// <summary>
-///     组织
+///     设置组织信息Dto模型
 /// </summary>
-[Table(Name = "sys_org")]
-[EntityExtension(DataSource = "system")]
-public class SysOrgInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable, ITenant
+public class OrgSaveDto : IRequest<long>
 {
     /// <summary>
     ///     机构id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
-    public override long Id { get; set; }
+    public long Id { get; set; }
 
     /// <summary>
     ///     上级id, 0是顶级
@@ -47,9 +43,9 @@ public class SysOrgInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable, IT
     public long? LeaderId { get; set; }
 
     /// <summary>
-    ///     负责人
+    ///     负责人昵称
     /// </summary>
-    public string Leader { get; set; }
+    public string LeaderNickname { get; set; }
 
     /// <summary>
     ///     排序号
@@ -60,19 +56,4 @@ public class SysOrgInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable, IT
     ///     备注
     /// </summary>
     public string Comments { get; set; }
-
-    /// <summary>
-    ///     是否删除
-    /// </summary>
-    public bool IsDeleted { get; set; }
-
-    /// <summary>
-    ///     删除时间
-    /// </summary>
-    public DateTime? DeletionTime { get; set; }
-
-    /// <summary>
-    ///     租户id
-    /// </summary>
-    public Guid? TenantId { get; set; }
 }
