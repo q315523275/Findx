@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Utilities;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.WebSocketCore;
@@ -80,11 +79,11 @@ public class WebSocketMiddleware
         #endif
     }
 
-    private async Task ReceiveAsync(WebSocketClient client, CancellationToken cancellationToken = default)
+    private async Task ReceiveAsync(WebSocketClient xclient, CancellationToken cancellationToken = default)
     {
         // 缓冲区大小
         var buffer = new byte[2048];
-        while (client.Client.State == WebSocketState.Open)
+        while (xclient.Client.State == WebSocketState.Open)
         {
             var arraySegment = new ArraySegment<byte>(buffer);
             try
@@ -95,15 +94,14 @@ public class WebSocketMiddleware
                 {
                     do
                     {
-                        result = await client.Client.ReceiveAsync(arraySegment, cancellationToken).ConfigureAwait(false);
+                        result = await xclient.Client.ReceiveAsync(arraySegment, cancellationToken).ConfigureAwait(false);
                         if (arraySegment.Array != null)
                             ms.Write(arraySegment.Array, arraySegment.Offset, result.Count);
-                        
                     } while (!result.EndOfMessage);
-
+    
                     // 使用固定 byte + MemoryStream方式读取内容,自动组合超过缓冲区内容
-                    client.LastHeartbeatTime = DateTime.Now;
-
+                    xclient.LastHeartbeatTime = DateTime.Now;
+    
                     ms.Seek(0, SeekOrigin.Begin);
                     using (var reader = new StreamReader(ms, Encoding.UTF8))
                     {
@@ -116,16 +114,16 @@ public class WebSocketMiddleware
                 }
                 
                 // 通过配置可以限定最大并行数量
-                HandleAsync(client, result, receiveMessage, cancellationToken).ConfigureAwait(false);
+                HandleAsync(xclient, result, receiveMessage, cancellationToken).ConfigureAwait(false);
             }
             catch (WebSocketException e)
             {
                 if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely) 
-                    client.Client.Abort();
+                    xclient.Client.Abort();
             }
         }
-
-        await WebSocketHandler.OnDisconnected(client, cancellationToken);
+    
+        await WebSocketHandler.OnDisconnected(xclient, cancellationToken);
     }
 
     private async Task HandleAsync(WebSocketClient client, WebSocketReceiveResult result, string msg, CancellationToken cancellationToken = default)

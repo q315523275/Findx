@@ -3,7 +3,9 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq.Expressions;
 using System.Net.NetworkInformation;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using ConsoleApp1;
@@ -12,6 +14,7 @@ using Findx.Caching.InMemory;
 using Findx.Configuration;
 using Findx.Extensions;
 using Findx.Linq;
+using Findx.Reflection;
 using Findx.Utilities;
 using MassTransit;
 using Microsoft.Extensions.Options;
@@ -223,26 +226,26 @@ Console.WriteLine("Hello, World!");
 // Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
 
 // 重复验证
-var repeatGuidList = new HashSet<Guid>();
-for (var i = 0; i < 1000000; i++)
-{
-    repeatGuidList.Add(NewId.NextSequentialGuid());
-}
-Console.WriteLine($"有序guid是否有重复:{repeatGuidList.Count != 1000000}");
-
-// 连续性
-Console.WriteLine($"检查是否是连续Guid......");
-var sequentialGuidList = new List<Guid>();
-for (var i = 0; i < 10000; i++)
-{
-    sequentialGuidList.Add(NewId.NextSequentialGuid());
-}
-var newGuids = sequentialGuidList.OrderBy(x => x).ToList();
-for (var i = 0; i < 10000; i++)
-{
-    if (newGuids[i] != sequentialGuidList[i])
-        Console.WriteLine($"发现非连续:{newGuids[i]} != {sequentialGuidList[i]}");
-}
+// var repeatGuidList = new HashSet<Guid>();
+// for (var i = 0; i < 1000000; i++)
+// {
+//     repeatGuidList.Add(NewId.NextSequentialGuid());
+// }
+// Console.WriteLine($"有序guid是否有重复:{repeatGuidList.Count != 1000000}");
+//
+// // 连续性
+// Console.WriteLine($"检查是否是连续Guid......");
+// var sequentialGuidList = new List<Guid>();
+// for (var i = 0; i < 10000; i++)
+// {
+//     sequentialGuidList.Add(NewId.NextSequentialGuid());
+// }
+// var newGuids = sequentialGuidList.OrderBy(x => x).ToList();
+// for (var i = 0; i < 10000; i++)
+// {
+//     if (newGuids[i] != sequentialGuidList[i])
+//         Console.WriteLine($"发现非连续:{newGuids[i]} != {sequentialGuidList[i]}");
+// }
 
 // Json表达式解析
 // var filterGroup = new FilterGroup()
@@ -340,8 +343,6 @@ for (var i = 0; i < 10000; i++)
 // Console.WriteLine(two.Length);
 // Console.WriteLine(Encoding.Default.GetString(two));
 
-
-
 // var watch = new Stopwatch();  
 // watch.Start();
 // for (int i = 0; i < 1000000; i++)
@@ -358,4 +359,143 @@ for (var i = 0; i < 10000; i++)
 // }
 // watch.Stop();
 // Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+// Expression 性能比较
+
+var t = new SysAppInfo { Id = NewId.NextSequentialGuid(), Code = "test", Name = "史册" };
+var entityType = t.GetType();
+var propertyName = "Name";
+var repeatTimes = 1000000;
+
+var expressionGetter = PropertyUtility.ExpressionGetter<SysAppInfo>(propertyName);
+var emitGetter = PropertyUtility.EmitGetter<SysAppInfo>(propertyName);
+PropertyValueGetter<SysAppInfo>.GetPropertyValueObject(entityType, t, propertyName);
+var propertyDynamicGetter = new PropertyDynamicGetter<SysAppInfo>();
+
+var val1 = expressionGetter(t);
+var val2 = emitGetter(t);
+var val3 = propertyDynamicGetter.GetPropertyValue(t, propertyName);
+Console.WriteLine($"t.Name Get:{val1}-{val2}-{val3}");
+    
+var stopwatch = new Stopwatch();  
+stopwatch.Start();
+for (var i = 0; i < repeatTimes; i++)
+{
+    _ = t.Name;
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, 原生属性值读取耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+stopwatch.Reset();
+stopwatch.Restart();
+for (var i = 0; i < repeatTimes; i++)
+{
+    _ = expressionGetter(t);
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, ExpressionGetter实例属性值读取耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+stopwatch.Reset();
+stopwatch.Restart();
+for (var i = 0; i < repeatTimes; i++)
+{
+    emitGetter(t);
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, EmitGetter实例属性值读取耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+stopwatch.Reset();
+stopwatch.Restart();
+for (var i = 0; i < repeatTimes; i++)
+{
+    PropertyValueGetter<SysAppInfo>.GetPropertyValueObject(entityType, t, propertyName);
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, PropertyValueGetter字典缓存实例属性值读取耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+stopwatch.Reset();
+stopwatch.Restart();
+for (var i = 0; i < repeatTimes; i++)
+{
+    propertyDynamicGetter.GetPropertyValue(t, propertyName);
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, PropertyDynamicGetter静态变量缓存实例属性值读取耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+Expression[] CreateParameterExpressions(ParameterInfo[] parameters, Expression arguments)
+{
+    var expressions = new Expression[parameters.Length];
+    for (var i = 0; i < parameters.Length; i++)
+    {
+        var parameter = parameters[i];
+        var argument = Expression.ArrayIndex(arguments, Expression.Constant(i));
+        expressions[i] = Expression.Convert(argument, parameter.ParameterType);
+    }
+
+    return expressions;
+}
+
+var op = new Op();
+var op2 = new Op();
+var op3 = new Op();
+var op4 = new Op();
+var methodInfo = op.GetType().GetMethod("Say");
+var fastInvoke = FastInvokeHandler.Create(methodInfo);
+var instance = Expression.Parameter(typeof(object), "instance");
+var arguments = Expression.Parameter(typeof(object[]), "arguments");
+var methodCall = Expression.Call(Expression.Convert(instance, op.GetType()), methodInfo!, CreateParameterExpressions(methodInfo?.GetParameters(), arguments));
+var lambdaExpression = Expression.Lambda<Action<object, object[]>>(methodCall, instance, arguments);;
+var expressionCall = lambdaExpression.Compile();
+
+Console.WriteLine($"Op.Say方法执行");
+stopwatch.Reset();
+stopwatch.Restart();
+for (var i = 0; i < repeatTimes; i++)
+{
+    op.Say(i);
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, 结果:{op}, 方法原生执行:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+stopwatch.Reset();
+stopwatch.Restart();
+for (var i = 0; i < repeatTimes; i++)
+{
+    fastInvoke.Invoke(op2, [i]);
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, 结果:{op2}, FastInvokeHandler方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+stopwatch.Reset();
+stopwatch.Restart();
+for (var i = 0; i < repeatTimes; i++)
+{
+    expressionCall(op3, [i]);
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, 结果:{op3}, Expression.Call方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+stopwatch.Reset();
+stopwatch.Restart();
+for (var i = 0; i < repeatTimes; i++)
+{
+    methodInfo.Invoke(op4, parameters: [i]);
+}
+stopwatch.Stop();
+Console.WriteLine($"Repeated {repeatTimes}, 结果:{op4}, MethodInfo.Invoke方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+
+internal class Op
+{
+    private int i;
+
+    public void Say(int index)
+    {
+        i += index;
+    }
+
+    public override string ToString()
+    {
+        return i.ToString();
+    }
+}
 

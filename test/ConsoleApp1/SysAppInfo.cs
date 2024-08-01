@@ -1,16 +1,15 @@
-using Findx.Data;
 
 namespace ConsoleApp1;
 
 /// <summary>
 ///     应用信息实体
 /// </summary>
-public class SysAppInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, ISort, IResponse
+public record SysAppInfo
 {
     /// <summary>
     ///     主键id
     /// </summary>
-    public override Guid Id { get; set; }
+    public Guid Id { get; set; }
 
     /// <summary>
     ///     编码

@@ -12,19 +12,19 @@ internal class ApplicationEventHandlerWrapperImpl<TEvent> : ApplicationEventHand
 {
     public override async Task HandleAsync(IApplicationEvent message, IServiceProvider serviceProvider, CancellationToken cancellationToken = default)
     {
-        var applicationEvent = (TEvent)message;
+        // var applicationEvent = (TEvent)message;
         var handlers = serviceProvider.GetServices<IApplicationEventHandler<TEvent>>();
         var pipelines = serviceProvider.GetServices<IApplicationEventPipeline<TEvent>>();
         // ReSharper disable once PossibleMultipleEnumeration
         if (!pipelines.Any())
         {
-            await ExecuteHandlersAsync(handlers, applicationEvent, cancellationToken);
+            await ExecuteHandlersAsync(handlers, (TEvent)message, cancellationToken);
         }
         else
         {
-            Task Handler() { return ExecuteHandlersAsync(handlers, applicationEvent, cancellationToken); }
+            Task Handler(TEvent eventData) { return ExecuteHandlersAsync(handlers, eventData, cancellationToken); }
             // ReSharper disable once PossibleMultipleEnumeration
-            pipelines.Reverse().Aggregate((PipelineInvokeDelegate)Handler, (next, pipeline) => () => pipeline.InvokeAsync(applicationEvent, next, cancellationToken))();
+            pipelines.Reverse().Aggregate((PipelineInvokeDelegate<TEvent>)Handler, (next, pipeline) => eventData => pipeline.InvokeAsync(eventData, next))((TEvent)message);
         }
     }
 

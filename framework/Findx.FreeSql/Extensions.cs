@@ -96,8 +96,8 @@ public static class Extensions
         count = -1;
         return select;
     }
-    
-        /// <summary>
+
+    /// <summary>
     ///     比较实体，计算出值发生变化的属性，以及属性变化的前后值
     /// </summary>
     /// <param name="fsql"></param>
@@ -106,25 +106,26 @@ public static class Extensions
     /// <returns>key: 属性名, value: [新值, 旧值]</returns>
     public static Dictionary<string, object[]> CompareState<TEntity>(this IFreeSql fsql, TEntity newData, TEntity oldData) where TEntity : IEntity
     {
-        if (newData == null) 
+        if (newData == null)
             return null;
-        
+
         var entityType = typeof(TEntity);
-        
+
         var table = fsql.CodeFirst.GetTableByEntity(entityType);
-        if (table.Primarys.Any() == false) 
+        if (table.Primarys.Any() == false)
             throw new Exception($"实体{table.CsName}必须存在主键配置");
-        
+
         var key = fsql.GetEntityKeyString(entityType, newData, false);
-        if (string.IsNullOrEmpty(key)) 
+        if (string.IsNullOrEmpty(key))
             throw new Exception($"实体{table.CsName}的主键值不可为空");
 
-        var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, a => new[]
-        {
-            fsql.GetEntityValueWithPropertyName(entityType, newData, a),
-            fsql.GetEntityValueWithPropertyName(entityType, oldData, a)
-        });
-
+        var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, a =>
+                    table.Columns.TryGetValue(a, out var columnInfo) ? new[]
+                        { 
+                            fsql.GetEntityValueWithPropertyName(entityType, newData, columnInfo.CsName), 
+                            fsql.GetEntityValueWithPropertyName(entityType, oldData, columnInfo.CsName)
+                        }
+                        : [null, null]);
         return res;
     }
     
@@ -150,8 +151,8 @@ public static class Extensions
         if (string.IsNullOrEmpty(key)) 
             throw new Exception($"实体{table.CsName}的主键值不可为空");
 
-        var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, 
-            a => fsql.GetEntityValueWithPropertyName(entityType, newData, a));
+        var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a,
+            a => table.Columns.TryGetValue(a, out var columnInfo) ? fsql.GetEntityValueWithPropertyName(entityType, newData, columnInfo.CsName) : null);
 
         return res;
     }

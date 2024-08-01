@@ -41,4 +41,23 @@ public partial class Extensions
     {
         return JsonSerializer.Deserialize(json, type, SystemTextJsonStringSerializer.Options);
     }
+    
+    /// <summary>
+    ///     判断是否为json字符串
+    /// </summary>
+    /// <param name="input">字符串</param>
+    /// <returns></returns>
+    public static bool IsJson(this string input)
+    {
+        try
+        {
+            JsonDocument.Parse(input);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
 }

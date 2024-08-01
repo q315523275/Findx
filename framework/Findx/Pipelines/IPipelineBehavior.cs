@@ -5,21 +5,20 @@ namespace Findx.Pipelines;
 /// <summary>
 ///     管道调用委托
 /// </summary>
-/// <returns></returns>
-public delegate Task PipelineInvokeDelegate();
+/// <typeparam name="TContext">管道调用上下文</typeparam>
+public delegate Task PipelineInvokeDelegate<in TContext>(TContext context);
 
 /// <summary>
 ///     泛型管道接口
 /// </summary>
 /// <typeparam name="TContext"></typeparam>
-public interface IPipelineBehavior<in TContext>
+public interface IPipelineBehavior<TContext>
 {
     /// <summary>
     ///     管道调用执行
     /// </summary>
-    /// <param name="context"></param>
-    /// <param name="next"></param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="context">上下文</param>
+    /// <param name="next">下一个管道</param>
     /// <returns></returns>
-    Task InvokeAsync(TContext context, PipelineInvokeDelegate next, CancellationToken cancellationToken = default);
+    Task InvokeAsync(TContext context, PipelineInvokeDelegate<TContext> next);
 }

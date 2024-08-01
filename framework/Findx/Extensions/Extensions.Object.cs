@@ -183,29 +183,4 @@ public static partial class Extensions
         ms.Seek(0L, SeekOrigin.Begin);
         return (T)formatter.Deserialize(ms);
     }
-
-    /// <summary>
-    ///     根据属性名获取属性值
-    /// </summary>
-    /// <typeparam name="T">对象类型</typeparam>
-    /// <typeparam name="TReturn">返回值类型</typeparam>
-    /// <param name="t">对象</param>
-    /// <param name="name">属性名</param>
-    /// <returns>属性的值</returns>
-    public static TReturn GetPropertyValue<T, TReturn>(this T t, string name) where T : class
-    {
-        return PropertyValueGetter<T>.GetPropertyValue<TReturn>(t, name);
-    }
-    
-    /// <summary>
-    ///     根据属性名获取属性值
-    /// </summary>
-    /// <typeparam name="T">对象类型</typeparam>
-    /// <param name="t">对象</param>
-    /// <param name="name">属性名</param>
-    /// <returns>属性的值</returns>
-    public static object GetPropertyValueObject<T>(this T t, string name) where T : class
-    {
-        return PropertyValueGetter<T>.GetPropertyValueObject(t, name);
-    }
 }
