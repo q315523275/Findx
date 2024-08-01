@@ -57,6 +57,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     {
         var filters = new List<FilterCondition>();
         var reqType = request.GetType();
+        var propertyDynamicGetter = new PropertyDynamicGetter<TQueryParameter>();
         
         // 属性标记查询字段
         var queryFields = QueryFieldDict.GetOrAdd(reqType, () =>
@@ -73,7 +74,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         // 标记字段计算
         foreach (var fieldInfo in queryFields)
         {
-            var value = PropertyValueGetter<TQueryParameter>.GetPropertyValue<string>(request, fieldInfo.Key.Name);
+            var value = propertyDynamicGetter.GetPropertyValue(request, fieldInfo.Key.Name).CastTo<string>();
             if (value.IsNotNullOrWhiteSpace())
                 filters.Add(new FilterCondition { Field = fieldInfo.Value?.Name?? fieldInfo.Key.Name, Operator = fieldInfo.Value?.FilterOperate?? FilterOperate.Equal, Value = value });
         }

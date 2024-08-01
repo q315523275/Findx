@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <LangVersion>default</LangVersion>
@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\framework\Findx.Configuration\Findx.Configuration.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.FreeSql\Findx.FreeSql.csproj" />
       <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
     </ItemGroup>
 

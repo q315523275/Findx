@@ -27,8 +27,10 @@ public static class PropertyUtility
         
         // 对象实例
         var parameterExpression = Expression.Parameter(typeof(object), "obj");
+        
         // 转换参数为真实类型,a.xx
         var unaryExpression = Expression.Convert(parameterExpression, type);
+        
         // 调用获取属性的方法
         var callMethod = Expression.Call(unaryExpression, getMethod);
         var expression = Expression.Lambda<Func<T, object>>(callMethod, parameterExpression);
