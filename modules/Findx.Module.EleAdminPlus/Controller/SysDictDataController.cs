@@ -19,14 +19,14 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/dictData")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-字典值"), Description("系统-字典值")]
-public class SysDictDataController : CrudControllerBase<SysDictDataInfo, DictDataDto, DictDataSaveDto, QueryDictDataDto, long, long>
+public class SysDictDataController : CrudControllerBase<SysDictDataInfo, DictDataDto, DictDataSaveDto, DictDataPageQueryDto, long, long>
 {
     /// <summary>
     ///     构建查询条件
     /// </summary>
     /// <param name="dto"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysDictDataInfo, bool>> CreatePageWhereExpression(QueryDictDataDto dto)
+    protected override Expression<Func<SysDictDataInfo, bool>> CreatePageWhereExpression(DictDataPageQueryDto dto)
     {
         var typeId = dto.TypeId;
         if (!dto.TypeCode.IsNullOrWhiteSpace())
@@ -50,7 +50,7 @@ public class SysDictDataController : CrudControllerBase<SysDictDataInfo, DictDat
     /// <param name="dto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<List<DictDataDto>>> ListAsync([FromQuery] QueryDictDataDto dto, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult<List<DictDataDto>>> ListAsync([FromQuery] DictDataPageQueryDto dto, CancellationToken cancellationToken = default)
     {
         dto.PageSize = 9999;
         return await base.ListAsync(dto, cancellationToken);

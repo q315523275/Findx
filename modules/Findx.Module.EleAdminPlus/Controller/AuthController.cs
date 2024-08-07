@@ -73,7 +73,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("/api/login"), Description("登录")]
-    public async Task<CommonResult> LoginAsync([FromBody] LoginDto req, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult> LoginAsync([FromBody] LoginDto req, CancellationToken cancellationToken = default)
     {
         var cache = _cacheFactory.Create(CacheType.DefaultMemory);
 
@@ -179,7 +179,7 @@ public class AuthController : AreaApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("/api/auth/user"), Authorize, Description("查看账户信息")]
-    public async Task<CommonResult> UserAsync()
+    public virtual async Task<CommonResult> UserAsync()
     {
         var userId = _currentUser.UserId.To<long>();
         var userInfo = await _userRepo.FirstAsync(x => x.Id == userId);
@@ -212,7 +212,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpPut("/api/auth/password"), Authorize, Description("修改账户密码")]
-    public async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req)
+    public virtual async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req)
     {
         var userId = _currentUser.UserId.To<long>();
         var userInfo = await _userRepo.FirstAsync(x => x.Id == userId);

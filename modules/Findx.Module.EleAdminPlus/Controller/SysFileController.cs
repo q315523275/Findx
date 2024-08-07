@@ -1,10 +1,16 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Findx.AspNetCore.Mvc;
 using Findx.Common;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Module.EleAdminPlus.Dtos.File;
+using Findx.Module.EleAdminPlus.Models;
+using Findx.Security;
+using Findx.Setting;
 using Findx.Storage;
+using Findx.Utilities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,24 +21,34 @@ namespace Findx.Module.EleAdminPlus.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/file")]
+[Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-文件"), Description("系统-文件")]
-public class SysFileController: AreaApiControllerBase
+public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePageQueryDto, long>
 {
     private readonly IApplicationContext _applicationContext;
     private readonly IKeyGenerator<long> _keyGenerator;
     private readonly IFileStorage _fileStorage;
-
+    private readonly IRepository<SysFileInfo, long> _repo;
+    private readonly ICurrentUser _currentUser;
+    private readonly string _folderHost;
     /// <summary>
     /// Ctor
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <param name="applicationContext"></param>
     /// <param name="storageFactory"></param>
-    public SysFileController(IKeyGenerator<long> keyGenerator, IApplicationContext applicationContext, IStorageFactory storageFactory)
+    /// <param name="repo"></param>
+    /// <param name="currentUser"></param>
+    /// <param name="settingProvider"></param>
+    public SysFileController(IKeyGenerator<long> keyGenerator, IApplicationContext applicationContext, IStorageFactory storageFactory, IRepository<SysFileInfo, long> repo, ICurrentUser currentUser, ISettingProvider settingProvider)
     {
         _keyGenerator = keyGenerator;
         _applicationContext = applicationContext;
+        _repo = repo;
+        _currentUser = currentUser;
         _fileStorage = storageFactory.Create(FileStorageType.Folder.ToString());
+        _folderHost = settingProvider.GetValue<string>("Findx:Storage:Folder:Host") 
+                      ?? $"//{HostUtility.ResolveHostAddress(HostUtility.ResolveHostName())}:{_applicationContext.Port}";
     }
 
     /// <summary>
@@ -66,6 +82,7 @@ public class SysFileController: AreaApiControllerBase
         var date = DateTime.Now;
         var name = uploadFileDto.File.FileName;
         var size = uploadFileDto.File.Length;
+        var contentType = uploadFileDto.File.ContentType;
         var pathDir = Path.Combine("storage", "default", date.ToString("yyyy"), date.ToString("MM"), date.ToString("dd"));
         var id = _keyGenerator.Create();
         var saveName = $"{id.ToString().Replace("-", "")}{Path.GetExtension(name)}"; // 文件名
@@ -80,9 +97,44 @@ public class SysFileController: AreaApiControllerBase
         {
             await _fileStorage.SaveFileAsync(fullPath, fileStream, cancellationToken); // 内部 Path.Combine 组合
             // 替换域名
-            fileInfo.Url = Path.Combine(_applicationContext.Uris, fileInfo.Path.SafeString()).NormalizePath();
+            fileInfo.Url = Path.Combine(_folderHost, fileInfo.Path.SafeString()).NormalizePath();
         }
-        
+
+        var model = new SysFileInfo
+        {
+            Id = id,
+            Name = fileInfo.FileName, 
+            Creator = _currentUser.Nickname, 
+            Length = size / 1024, 
+            Path = fileInfo.Path, 
+            Url = fileInfo.Url, 
+            CreatedTime = DateTime.Now, 
+            CreatorId = _currentUser.UserId?.CastTo<long>(), 
+            DownloadUrl = fileInfo.Url,
+            ContentType = contentType,
+            Extension = fileInfo.Extension,
+            
+            FileType = uploadFileDto.FileType,
+            FileTypeId = uploadFileDto.FileTypeId, 
+            FileTypeName = uploadFileDto.FileTypeName
+        };
+        await _repo.InsertAsync(model, cancellationToken);
+            
         return CommonResult.Success(fileInfo);
+    }
+    
+    /// <summary>
+    ///     删除数据
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpPost("delete")]
+    [Description("删除")]
+    public virtual async Task<CommonResult> DeleteAsync([FromBody] [MinLength(1)] List<long> request, CancellationToken cancellationToken = default)
+    {
+        var repo = GetRepository<SysFileInfo, long>();
+        var total = await repo.DeleteAsync(x => request.Contains(x.Id), cancellationToken);
+        return CommonResult.Success($"共删除{total}条数据,失败{request.Count - total}条");
     }
 }

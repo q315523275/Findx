@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdminPlus.Dtos.Org;
 /// <summary>
 ///     查询组织入参
 /// </summary>
-public class QueryOrgDto : PageBase
+public class OrgQueryDto : SortCondition
 {
     /// <summary>
     ///     类型

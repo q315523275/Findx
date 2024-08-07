@@ -1,4 +1,5 @@
 ﻿using Findx.Data;
+using Findx.Module.EleAdminPlus.Enum;
 using FreeSql.DataAnnotations;
 
 namespace Findx.Module.EleAdminPlus.Models;

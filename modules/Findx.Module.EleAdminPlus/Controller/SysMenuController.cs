@@ -3,6 +3,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Exceptions;
 using Findx.Module.EleAdminPlus.Dtos;
+using Findx.Module.EleAdminPlus.Dtos.Menu;
 using Findx.Module.EleAdminPlus.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -17,18 +18,18 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/menu")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-菜单"), Description("系统-菜单")]
-public class SysMenuController : CrudControllerBase<SysMenuInfo, MenuDto, MenuSaveDto, QueryMenuDto, long, long>
+public class SysMenuController : CrudControllerBase<SysMenuInfo, MenuDto, MenuSaveDto, MenuPageQueryDto, long, long>
 {
     /// <summary>
     ///     列表查询
     /// </summary>
-    /// <param name="dto"></param>
+    /// <param name="queryDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override Task<CommonResult<List<MenuDto>>> ListAsync(QueryMenuDto dto, CancellationToken cancellationToken = default)
+    public override Task<CommonResult<List<MenuDto>>> ListAsync(MenuPageQueryDto queryDto, CancellationToken cancellationToken = default)
     {
-        dto.PageSize = 9999;
-        return base.ListAsync(dto, cancellationToken);
+        queryDto.PageSize = 9999;
+        return base.ListAsync(queryDto, cancellationToken);
     }
     
     /// <summary>

@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdminPlus.Dtos.User;
 /// <summary>
 ///     查询用户入参
 /// </summary>
-public class QueryUserDto : PageBase
+public class UserQueryDto : SortCondition
 {
     /// <summary>
     ///     账号

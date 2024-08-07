@@ -17,7 +17,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/org")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-机构"), Description("系统-机构")]
-public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDto, QueryOrgDto, long, long>
+public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDto, OrgPageQueryDto, long, long>
 {
     /// <summary>
     ///     删除前校验

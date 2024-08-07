@@ -23,6 +23,16 @@ public class RoleSaveDto : IRequest<long>
     public string Code { get; set; }
 
     /// <summary>
+    ///     Ip限定
+    /// </summary>
+    public bool IpLimit { get; set; }
+    
+    /// <summary>
+    ///     Ip地址
+    /// </summary>
+    public string IpAddress { get; set; }
+    
+    /// <summary>
     ///     备注
     /// </summary>
     public string Comments { get; set; }
@@ -30,5 +40,5 @@ public class RoleSaveDto : IRequest<long>
     /// <summary>
     ///     菜单集合
     /// </summary>
-    public List<long> MenuIds { get; set; } = new();
+    public List<long> MenuIds { get; set; } = [];
 }

@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdminPlus.Dtos.Role;
 /// <summary>
 ///     查询角色入参
 /// </summary>
-public class QueryRoleDto : PageBase
+public class RoleQueryDto : SortCondition
 {
     /// <summary>
     ///     名称

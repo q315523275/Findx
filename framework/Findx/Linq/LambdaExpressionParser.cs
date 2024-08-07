@@ -191,7 +191,7 @@ public static class LambdaExpressionParser
         for (var index = 0; index < propertyNames.Length; index++)
         {
             var propertyName = propertyNames[index];
-            var property = type.GetProperty(propertyName, BindingFlags.IgnoreCase);
+            var property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
             if (property == null)
                 throw new InvalidOperationException($"指定的属性“{condition.Field}”在类型“{type.FullName}”中不存在。");
 

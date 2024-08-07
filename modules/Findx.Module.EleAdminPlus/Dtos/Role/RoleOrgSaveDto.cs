@@ -1,4 +1,5 @@
 using Findx.Data;
+using Findx.Module.EleAdminPlus.Enum;
 
 namespace Findx.Module.EleAdminPlus.Dtos.Role;
 
@@ -15,7 +16,7 @@ public class RoleOrgSaveDto: IRequest
     /// <summary>
     ///     数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）
     /// </summary>
-    public int DataScope { get; set; } = 1;
+    public DataScope DataScope { get; set; }
 
     /// <summary>
     ///     机构集合

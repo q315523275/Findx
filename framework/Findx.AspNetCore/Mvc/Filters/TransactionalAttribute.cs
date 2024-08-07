@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Data;
+using System.Threading.Tasks;
 using Findx.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -16,6 +17,11 @@ public class TransactionalAttribute : ActionFilterAttribute
 	/// </summary>
 	// ReSharper disable once MemberCanBePrivate.Global
 	public string DataSource { get; set; } = null;
+
+	/// <summary>
+	///		事物级别
+	/// </summary>
+	public IsolationLevel? IsolationLevel { get; set; } = null;
 	
 	/// <summary>
 	/// 

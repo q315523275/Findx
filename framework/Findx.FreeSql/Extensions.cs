@@ -115,12 +115,14 @@ public static class Extensions
         if (table.Primarys.Any() == false)
             throw new Exception($"实体{table.CsName}必须存在主键配置");
 
+        var columns = table.Columns;
+        
         var key = fsql.GetEntityKeyString(entityType, newData, false);
         if (string.IsNullOrEmpty(key))
             throw new Exception($"实体{table.CsName}的主键值不可为空");
 
         var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, a =>
-                    table.Columns.TryGetValue(a, out var columnInfo) ? new[]
+                        columns.TryGetValue(a, out var columnInfo) ? new[]
                         { 
                             fsql.GetEntityValueWithPropertyName(entityType, newData, columnInfo.CsName), 
                             fsql.GetEntityValueWithPropertyName(entityType, oldData, columnInfo.CsName)
@@ -146,13 +148,15 @@ public static class Extensions
         var table = fsql.CodeFirst.GetTableByEntity(entityType);
         if (table.Primarys.Any() == false) 
             throw new Exception($"实体{table.CsName}必须存在主键配置");
+
+        var columns = table.Columns;
         
         var key = fsql.GetEntityKeyString(entityType, newData, false);
         if (string.IsNullOrEmpty(key)) 
             throw new Exception($"实体{table.CsName}的主键值不可为空");
 
         var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a,
-            a => table.Columns.TryGetValue(a, out var columnInfo) ? fsql.GetEntityValueWithPropertyName(entityType, newData, columnInfo.CsName) : null);
+                    a => columns.TryGetValue(a, out var columnInfo) ? fsql.GetEntityValueWithPropertyName(entityType, newData, columnInfo.CsName) : null);
 
         return res;
     }

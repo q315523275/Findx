@@ -16,7 +16,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/dictType")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-字典"), Description("系统-字典")]
-public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, DictTypeDto, DictTypeSaveDto, QueryDictTypeDto, long, long>
+public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, DictTypeDto, DictTypeSaveDto, DictTypePageQueryDto, long, long>
 {
     /// <summary>
     ///     删除前校验

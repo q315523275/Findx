@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdminPlus.Dtos.OperationRecord;
 /// <summary>
 ///     查询操作系统记录
 /// </summary>
-public class QueryOperationRecordDto : PageBase
+public class OperationRecordQueryDto : SortCondition
 {
     /// <summary>
     ///     账号

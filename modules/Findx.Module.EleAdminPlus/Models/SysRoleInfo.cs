@@ -1,4 +1,5 @@
 ﻿using Findx.Data;
+using Findx.Module.EleAdminPlus.Enum;
 using FreeSql.DataAnnotations;
 
 namespace Findx.Module.EleAdminPlus.Models;
@@ -27,9 +28,20 @@ public class SysRoleInfo : FullAuditedBase<long, long>, ISoftDeletable, ITenant
     public string Code { get; set; }
 
     /// <summary>
-    ///     数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限）
+    ///     数据范围（1：全部数据权限 2：自定数据权限 3：本部门数据权限 4：本部门及以下数据权限 5:本人）
     /// </summary>
-    public int DataScope { get; set; } = 1;
+    [Column(MapType = typeof(int))]
+    public DataScope DataScope { get; set; } = DataScope.All;
+    
+    /// <summary>
+    ///     Ip限定
+    /// </summary>
+    public bool IpLimit { get; set; }
+    
+    /// <summary>
+    ///     Ip地址
+    /// </summary>
+    public string IpAddress { get; set; }
     
     /// <summary>
     ///     备注

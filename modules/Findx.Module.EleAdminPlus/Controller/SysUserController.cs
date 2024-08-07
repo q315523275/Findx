@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Findx.AspNetCore.Mvc;
+using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Linq;
@@ -21,7 +22,7 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/user")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-用户"), Description("系统-用户")]
-public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCreateDto, UserEditDto, QueryUserDto, long, long>
+public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCreateDto, UserEditDto, UserPageQueryDto, long, long>
 {
     private readonly IKeyGenerator<long> _keyGenerator;
 
@@ -40,7 +41,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<PageResult<List<UserDto>>>> PageAsync(QueryUserDto request, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult<PageResult<List<UserDto>>>> PageAsync(UserPageQueryDto request, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysUserInfo, long>();
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
@@ -64,7 +65,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<List<UserDto>>> ListAsync(QueryUserDto request, CancellationToken cancellationToken = new())
+    public override async Task<CommonResult<List<UserDto>>> ListAsync(UserPageQueryDto request, CancellationToken cancellationToken = new())
     {
         var repo = GetRepository<SysUserInfo, long>();
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
@@ -119,10 +120,15 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     [HttpGet("existence"), Description("检查是否存在")]
     public CommonResult Existence([Required] string field, [Required] string value, long id)
     {
-        var whereExp = PredicateBuilder.New<SysUserInfo>()
-                                       .AndIf(field == "userName", x => x.UserName == value)
-                                       .And(x => x.Id != id)
-                                       .Build();
+        var filterGroup = new FilterGroup
+        {
+            Logic = FilterOperate.And,
+            Filters = [
+                new FilterCondition { Field = field.ToPascalCase(), Value = value, Operator = FilterOperate.Equal },
+                new FilterCondition { Field = "Id", Value = id.ToString(), Operator = FilterOperate.NotEqual }
+            ]
+        };
+        var whereExp = LambdaExpressionParser.ParseConditions<SysUserInfo>(filterGroup);
         var repo = GetRepository<SysUserInfo, long>();
         return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
     }
@@ -147,7 +153,8 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="req"></param>
     protected override async Task AddBeforeAsync(SysUserInfo model, UserCreateDto req)
     {
-        if (!req.Password.IsNullOrWhiteSpace()) model.Password = EncryptUtility.Md5By32(req.Password);
+        if (!req.Password.IsNullOrWhiteSpace())
+            model.Password = EncryptUtility.Md5By32(req.Password);
 
         await base.AddBeforeAsync(model, req);
     }
@@ -177,6 +184,18 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     }
 
     /// <summary>
+    ///     编辑
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [Transactional(DataSource = "system")]
+    public override Task<CommonResult> EditAsync(UserEditDto request, CancellationToken cancellationToken = default)
+    {
+        return base.EditAsync(request, cancellationToken);
+    }
+    
+    /// <summary>
     ///     编辑后
     /// </summary>
     /// <param name="model"></param>
@@ -186,11 +205,10 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     {
         if (result > 0)
         {
-            var roleRepo = GetRepository<SysUserRoleInfo, long>();
-
+            var userRoleRepo = GetRepository<SysUserRoleInfo, long>();
             var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id });
-            await roleRepo.DeleteAsync(x => x.UserId == model.Id);
-            await roleRepo.InsertAsync(list);
+            await userRoleRepo.DeleteAsync(x => x.UserId == model.Id);
+            await userRoleRepo.InsertAsync(list);
         }
     }
 }

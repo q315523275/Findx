@@ -2,12 +2,12 @@
 using Findx.Data;
 using Findx.Linq;
 
-namespace Findx.Module.EleAdminPlus.Dtos;
+namespace Findx.Module.EleAdminPlus.Dtos.Menu;
 
 /// <summary>
 ///     查询菜单入参
 /// </summary>
-public class QueryMenuDto : PageBase
+public class MenuQueryDto : SortCondition
 {
     /// <summary>
     ///     名称

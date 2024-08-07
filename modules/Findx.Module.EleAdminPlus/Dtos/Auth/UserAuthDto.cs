@@ -102,11 +102,6 @@ public class UserAuthRoleDto
     ///     角色标识
     /// </summary>
     public string RoleCode { get; set; }
-
-    /// <summary>
-    ///     备注
-    /// </summary>
-    public string Comments { get; set; }
 }
 
 /// <summary>

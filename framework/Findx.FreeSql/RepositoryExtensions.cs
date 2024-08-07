@@ -48,7 +48,7 @@ public static class RepositoryExtensions
     {
         var dataSource = repository.GetDataSource();
         var clients = ServiceLocator.GetService<FreeSqlClient>();
-        return clients.GetOrDefault(dataSource).Select<TEntity>();
+        return clients.GetOrDefault(dataSource).Select<TEntity>().WithTransaction(repository.UnitOfWork?.Transaction);
     }
     
     /// <summary>
@@ -62,7 +62,7 @@ public static class RepositoryExtensions
     {
         var dataSource = repository.GetDataSource();
         var clients = ServiceLocator.GetService<FreeSqlClient>();
-        return clients.GetOrDefault(dataSource).Select<TEntity>();
+        return clients.GetOrDefault(dataSource).Select<TEntity>().WithTransaction(repository.UnitOfWork?.Transaction);
     }
     
     /// <summary>
@@ -75,7 +75,7 @@ public static class RepositoryExtensions
     {
         var dataSource = repository.GetDataSource();
         var clients = ServiceLocator.GetService<FreeSqlClient>();
-        return clients.GetOrDefault(dataSource).Update<TEntity>();
+        return clients.GetOrDefault(dataSource).Update<TEntity>().WithTransaction(repository.UnitOfWork?.Transaction);
     }
     
     /// <summary>
@@ -89,6 +89,6 @@ public static class RepositoryExtensions
     {
         var dataSource = repository.GetDataSource();
         var clients = ServiceLocator.GetService<FreeSqlClient>();
-        return clients.GetOrDefault(dataSource).Update<TEntity>();
+        return clients.GetOrDefault(dataSource).Update<TEntity>().WithTransaction(repository.UnitOfWork?.Transaction);
     }
 }

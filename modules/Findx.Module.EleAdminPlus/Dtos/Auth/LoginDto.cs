@@ -1,11 +1,12 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Findx.Data;
 
 namespace Findx.Module.EleAdminPlus.Dtos.Auth;
 
 /// <summary>
 ///     登录参数
 /// </summary>
-public class LoginDto
+public class LoginDto: IRequest
 {
     /// <summary>
     ///     账号

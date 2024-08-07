@@ -2,9 +2,11 @@
 using System.Security.Principal;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
+using Findx.Extensions;
 using Findx.Mapping;
 using Findx.Module.EleAdminPlus.Dtos.Role;
 using Findx.Module.EleAdminPlus.Models;
+using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,40 +20,42 @@ namespace Findx.Module.EleAdminPlus.Controller;
 [Route("api/[area]/role")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-角色"), Description("系统-角色")]
-public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSaveDto, QueryRoleDto, long, long>
+public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSaveDto, RolePageQueryDto, long, long>
 {
     /// <summary>
     ///     查询角色对应菜单
     /// </summary>
     /// <param name="roleId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("menu/{roleId}"), Description("系统-查看角色菜单")]
-    public CommonResult Menu(long roleId)
+    public async Task<CommonResult<IOrderedEnumerable<RoleMenuDto>>> MenuAsync(long roleId, CancellationToken cancellationToken)
     {
         var repo = GetRepository<SysRoleMenuInfo, long>();
         var menuRepo = GetRepository<SysMenuInfo, long>();
 
-        var menuIdArray = repo.Select(x => x.RoleId == roleId, x => x.MenuId).Distinct();
-        var menuList = menuRepo.Select<RoleMenuDto>();
-
+        var menuIdArray = (await repo.SelectAsync(x => x.RoleId == roleId, x => x.MenuId, cancellationToken: cancellationToken)).Distinct();
+        var menuList = await menuRepo.SelectAsync<RoleMenuDto>(cancellationToken: cancellationToken);
+        
         menuList.ForEach(x => { x.Checked = menuIdArray.Contains(x.Id); });
 
         return CommonResult.Success(menuList.OrderBy(x => x.Sort));
     }
-    
+
     /// <summary>
     ///     查询角色对应机构
     /// </summary>
     /// <param name="roleId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("org/{roleId}"), Description("系统-查看角色对应机构")]
-    public CommonResult Org(long roleId)
+    public async Task<CommonResult<IOrderedEnumerable<RoleOrgDto>>> OrgAsync(long roleId, CancellationToken cancellationToken)
     {
         var repo = GetRepository<SysRoleOrgInfo, long>();
         var orgRepo = GetRepository<SysOrgInfo, long>();
 
-        var orgIdArray = repo.Select(x => x.RoleId == roleId, x => x.OrgId).Distinct();
-        var orgList = orgRepo.Select<RoleOrgDto>();
+        var orgIdArray = (await repo.SelectAsync(x => x.RoleId == roleId, x => x.OrgId, cancellationToken: cancellationToken)).Distinct();
+        var orgList = await orgRepo.SelectAsync<RoleOrgDto>(cancellationToken: cancellationToken);
 
         orgList.ForEach(x => { x.Checked = orgIdArray.Contains(x.Id); });
 
@@ -68,18 +72,20 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         var repo = GetRepository<SysRoleInfo, long>();
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
         var keyGenerator = GetRequiredService<IKeyGenerator<long>>();
-        var service = GetService<IPrincipal>();
+        var principal = GetService<IPrincipal>();
 
         var model = ToModelFromCreateRequest(req);
         model.CheckCreatedTime();
-        model.CheckCreationAudited<SysRoleInfo, long>(service);
-        model.CheckTenant(service);
+        model.CheckCreationAudited<SysRoleInfo, long>(principal);
+        model.CheckTenant(principal);
         model.SetEmptyKey();
 
         var menuList = req.MenuIds.Select(x => new SysRoleMenuInfo { Id = keyGenerator.Create(), MenuId = x, RoleId = model.Id });
         
         await repo.InsertAsync(model, cancellationToken);
-        if (menuList.Any()) await roleMenuRepo.InsertAsync(menuList, cancellationToken);
+        
+        if (menuList.Any()) 
+            await roleMenuRepo.InsertAsync(menuList, cancellationToken);
         
         return CommonResult.Success();
     }
@@ -94,16 +100,31 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         var repo = GetRepository<SysRoleInfo, long>();
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
         var keyGenerator = GetRequiredService<IKeyGenerator<long>>();
-        var service = GetService<IPrincipal>();
-
+        var principal = GetService<IPrincipal>();
+        
         var model = await repo.GetAsync(req.Id, cancellationToken);
+        if (model == null) 
+            return CommonResult.Fail("not.exist", "未能查到相关信息");
+        
+        repo.Attach(model.Clone().As<SysRoleInfo>());
+        
         model = ToModelFromUpdateRequest(req, model);
-        model.CheckUpdateTime();
-        model.CheckUpdateAudited<SysRoleInfo, long>(service);
+        if (model is IUpdateTime entity1)
+        {
+            entity1.LastUpdatedTime = DateTime.Now;
+        }
+        if (model is IUpdateAudited<long> entity2)
+        {
+            entity2.LastUpdaterId = principal?.Identity.GetUserId<long>() ?? default;
+            entity2.LastUpdatedTime = DateTime.Now; 
+        }
+        model.CheckTenant(principal);
+        
+        await EditBeforeAsync(model, req);
+        var res = await repo.SaveAsync(model, cancellationToken: cancellationToken);
+        await EditAfterAsync(model, req, res);
         
         var menuList = req.MenuIds.Select(x => new SysRoleMenuInfo { Id = keyGenerator.Create(), MenuId = x, RoleId = model.Id });
-        
-        await repo.UpdateAsync(model, ignoreNullColumns: true, cancellationToken: cancellationToken);
         await roleMenuRepo.DeleteAsync(x => x.RoleId == model.Id, cancellationToken);
         if (menuList.Any()) await roleMenuRepo.InsertAsync(menuList, cancellationToken);
         
@@ -127,10 +148,11 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         model.CheckUpdateAudited<SysRoleInfo, long>(service);
 
         var orgList = req.OrgIds.Select(x => new SysRoleOrgInfo { Id = keyGenerator.Create(), OrgId = x, RoleId = model.Id });
-        
+
         await repo.UpdateAsync(model, updateColumns: x => new { x.DataScope, x.LastUpdatedTime, x.LastUpdaterId }, cancellationToken: cancellationToken);
         await roleOrgRepo.DeleteAsync(x => x.RoleId == model.Id, cancellationToken);
-        if (orgList.Any()) await roleOrgRepo.InsertAsync(orgList, cancellationToken);
+        if (orgList.Any()) 
+            await roleOrgRepo.InsertAsync(orgList, cancellationToken);
         
         return CommonResult.Success();
     }

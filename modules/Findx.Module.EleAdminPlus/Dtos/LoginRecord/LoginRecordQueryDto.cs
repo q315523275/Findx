@@ -7,7 +7,7 @@ namespace Findx.Module.EleAdminPlus.Dtos.LoginRecord;
 /// <summary>
 ///     查询登录日志参数
 /// </summary>
-public class QueryLoginRecordDto : PageBase
+public class LoginRecordQueryDto : SortCondition
 {
     /// <summary>
     ///     账号
