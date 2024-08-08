@@ -17,7 +17,8 @@ public class JwtTokenRenewalMiddleware
 {
     private readonly ILogger<JwtTokenRenewalMiddleware> _logger;
     private readonly RequestDelegate _next;
-
+    private static readonly List<string> ClaimIgnoreKeys = ["nbf", "exp", "iat", "iss", "aud"];
+    
     /// <summary>
     ///     Ctor
     /// </summary>
@@ -48,17 +49,13 @@ public class JwtTokenRenewalMiddleware
                                DateTimeOffset.Now.LocalDateTime;
                 if (spanTime.TotalMinutes <= options.Value.RenewalMinutes)
                 {
-                    var claimIgnoreKeys = new List<string> { "nbf", "exp", "iat", "iss", "aud" };
-                    var renewalDict = context.User.Claims.Where(claim => !claimIgnoreKeys.Contains(claim.Type))
-                        .ToDictionary(claim => claim.Type, claim => claim.Value);
+                    var renewalDict = context.User.Claims.Where(claim => !ClaimIgnoreKeys.Contains(claim.Type)).ToDictionary(claim => claim.Type, claim => claim.Value);
                     var jwtBuilder = context.RequestServices.GetRequiredService<IJwtTokenBuilder>();
                     var token = await jwtBuilder.CreateAsync(renewalDict, options.Value);
-
                     context.Response.Headers.Append("Authorization", $"Bearer {token.AccessToken}");
                 }
             }
         }
-
         await _next(context);
     }
 }

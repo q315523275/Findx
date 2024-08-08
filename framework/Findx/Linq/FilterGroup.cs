@@ -15,5 +15,5 @@ public class FilterGroup
     ///     筛选器集合
     /// </summary>
     // ReSharper disable once CollectionNeverUpdated.Global
-    public List<FilterCondition> Filters { get; set; } = [];
+    public IEnumerable<FilterCondition> Filters { get; set; } = [];
 }

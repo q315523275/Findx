@@ -13,17 +13,14 @@ public class TreeBuilder<TNode, TKey> where TNode : ITreeNode<TKey> where TKey :
     /// <param name="nodes"></param>
     /// <param name="rootParentId"></param>
     /// <returns></returns>
-    public List<TNode> Build(List<TNode> nodes, TKey rootParentId)
+    public IEnumerable<TNode> Build(List<TNode> nodes, TKey rootParentId)
     {
         nodes.ForEach(u => BuildChildNodes(nodes, u, []));
 
-        var result = new List<TNode>();
-        nodes.ForEach(u =>
+        foreach (var item in nodes.Where(item => rootParentId.Equals(item.GetPId())))
         {
-            if (rootParentId.Equals(u.GetPId()))
-                result.Add(u);
-        });
-        return result;
+            yield return item;
+        }
     }
 
     /// <summary>
@@ -32,7 +29,7 @@ public class TreeBuilder<TNode, TKey> where TNode : ITreeNode<TKey> where TKey :
     /// <param name="totalNodes"></param>
     /// <param name="node"></param>
     /// <param name="childNodeList"></param>
-    private void BuildChildNodes(List<TNode> totalNodes, TNode node, List<TNode> childNodeList)
+    private static void BuildChildNodes(List<TNode> totalNodes, TNode node, List<TNode> childNodeList)
     {
         var nodeSubList = new List<TNode>();
         totalNodes.ForEach(u =>
@@ -40,7 +37,7 @@ public class TreeBuilder<TNode, TKey> where TNode : ITreeNode<TKey> where TKey :
             if (u.GetPId().Equals(node.GetId()))
                 nodeSubList.Add(u);
         });
-        nodeSubList.ForEach(u => BuildChildNodes(totalNodes, u, new List<TNode>()));
+        nodeSubList.ForEach(u => BuildChildNodes(totalNodes, u, []));
         childNodeList.AddRange(nodeSubList);
         node.SetChildren(childNodeList);
     }

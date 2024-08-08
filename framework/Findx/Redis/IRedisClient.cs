@@ -727,7 +727,7 @@ public interface IRedisClient
     /// <param name="stop">-1表示全部取出</param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    List<T> ListRange<T>(string cacheKey, long start, long stop);
+    IEnumerable<T> ListRange<T>(string cacheKey, long start, long stop);
 
     /// <summary>
     ///     删除列表中的一个元素,可设置要删除的数量,返回删除的数量
@@ -863,7 +863,7 @@ public interface IRedisClient
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> ListRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> ListRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     删除列表中的一个元素,可设置要删除的数量,返回删除的数量
@@ -955,7 +955,7 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    List<T> SetMembers<T>(string cacheKey);
+    IEnumerable<T> SetMembers<T>(string cacheKey);
 
     /// <summary>
     ///     从集合中随机取出一个元素(会删除集合中的元素)
@@ -972,7 +972,7 @@ public interface IRedisClient
     /// <param name="count"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    List<T> SetRandomMembers<T>(string cacheKey, int count = 1);
+    IEnumerable<T> SetRandomMembers<T>(string cacheKey, int count = 1);
 
     /// <summary>
     ///     从集合中移除一堆元素
@@ -1019,7 +1019,7 @@ public interface IRedisClient
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> SetMembersAsync<T>(string cacheKey, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> SetMembersAsync<T>(string cacheKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从集合中随机取出一个元素(会删除集合中的元素)
@@ -1038,7 +1038,7 @@ public interface IRedisClient
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从集合中移除一堆元素
@@ -1105,7 +1105,7 @@ public interface IRedisClient
     /// <param name="stop"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    List<T> SortedSetRangeByRank<T>(string cacheKey, long start, long stop);
+    IEnumerable<T> SortedSetRangeByRank<T>(string cacheKey, long start, long stop);
 
     /// <summary>
     ///     返回有序集合中的元素的索引
@@ -1191,7 +1191,7 @@ public interface IRedisClient
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    Task<List<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default);
+    Task<IEnumerable<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     返回有序集合中的元素的索引
@@ -1288,7 +1288,7 @@ public interface IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="members"></param>
     /// <returns></returns>
-    List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, IEnumerable<string> members);
+    IEnumerable<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, IEnumerable<string> members);
 
     /// <summary>
     ///     获取地理位置的坐标
@@ -1297,7 +1297,7 @@ public interface IRedisClient
     /// <param name="members"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default);
+    Task<IEnumerable<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     根据用户给定的经纬度坐标来获取指定范围内的地理位置集合
@@ -1309,7 +1309,7 @@ public interface IRedisClient
     /// <param name="count">取数,-1全部</param>
     /// <param name="order">排序方式</param>
     /// <returns></returns>
-    List<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius, string unit = "m",
+    IEnumerable<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius, string unit = "m",
         int count = -1, string order = "asc");
 
     /// <summary>
@@ -1323,7 +1323,7 @@ public interface IRedisClient
     /// <param name="order">排序方式</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<List<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member, double radius,
+    Task<IEnumerable<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member, double radius,
         string unit = "m", int count = -1, string order = "asc", CancellationToken cancellationToken = default);
 
     #endregion

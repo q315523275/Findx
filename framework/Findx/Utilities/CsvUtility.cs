@@ -1,10 +1,12 @@
-﻿using System.Globalization;
+﻿using System.Threading.Tasks;
+using Findx.Data;
 using Findx.Extensions;
+using Findx.Linq;
 
 namespace Findx.Utilities;
 
 /// <summary>
-///     Csv数据转换工具类 - 简单版
+///     Csv数据转换工具类 - 简化版
 /// </summary>
 public static class CsvUtility
 {
@@ -12,40 +14,36 @@ public static class CsvUtility
     ///     读取Csv数据
     /// </summary>
     /// <typeparam name="T">属性顺序需与csv列顺序一致</typeparam>
-    /// <param name="stream"></param>
+    /// <param name="path"></param>
     /// <param name="skipFirstLine"></param>
     /// <param name="csvDelimiter"></param>
     /// <returns></returns>
-    public static IList<T> ReadCsvStream<T>(Stream stream, bool skipFirstLine = true, string csvDelimiter = ",") where T : new()
+    public static IEnumerable<T> ReadCsv<T>(string path, bool skipFirstLine = true, string csvDelimiter = ",") where T : class, new()
     {
-        // 可以增加映射实现自动匹配属性名,无需现在必须顺序一致
-        // Todo 使用Emit或者ExpressionTree进行性能优化
-        
-        var records = new List<T>();
-        var item = new T();
-        var properties = item.GetType().GetProperties();
+        var entityType = typeof(T);
+        var properties = SingletonDictionary<Type, PropertyInfo[]>.Instance.GetOrAdd(entityType, () => entityType.GetProperties());
         var csvDelimiters = csvDelimiter.ToCharArray();
-        using var reader = new StreamReader(stream);
+        using var reader = new StreamReader(path);
         while (!reader.EndOfStream)
         {
             var line = reader.ReadLine();
             if (line == null) continue;
+            
             var values = line.Split(csvDelimiters);
+            if (properties.Length != values.Length) continue;
+            
             if (skipFirstLine)
             {
                 skipFirstLine = false;
             }
             else
             {
+                var model = new T();
                 for (var i = 0; i < values.Length; i++)
-                {
-                    properties[i].SetValue(item, Convert.ChangeType(values[i], properties[i].PropertyType, CultureInfo.CurrentCulture), null);
-                }
-                records.Add(item);
+                    PropertyValueSetter<T>.SetPropertyValueObject(entityType, model, properties[i].Name, values[i].CastTo(properties[i].PropertyType));
+                yield return model;
             }
         }
-
-        return records;
     }
 
     /// <summary>
@@ -53,31 +51,46 @@ public static class CsvUtility
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="data"></param>
+    /// <param name="path">cs文件路径</param>
     /// <param name="includeHeader"></param>
     /// <param name="csvDelimiter"></param>
+    /// <param name="rewrite"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static string ExportCsv<T>(IList<T> data, bool includeHeader = true, string csvDelimiter = ",")
+    public static async Task ExportCsv<T>(IEnumerable<T> data, string path, bool includeHeader = true, string csvDelimiter = ",", bool rewrite = false, CancellationToken cancellationToken = default) where T: class
     {
-        // Todo 使用Emit或者ExpressionTree进行性能优化
+        if (FileUtility.Exists(path) && !rewrite) throw new Exception($"Csv文件“{path}”已存在");
         
-        var type = data.GetType();
-        Type itemType;
+        var allLineText = BuildAllLineText(data, includeHeader, csvDelimiter);
+        
+        if (rewrite) FileUtility.DeleteIfExists(path);
+            
+        await File.AppendAllLinesAsync(path, allLineText, cancellationToken);
+    }
 
-        if (type.GetGenericArguments().Length > 0)
-            itemType = type.GetGenericArguments()[0];
-        else
-            itemType = type.GetElementType();
+    /// <summary>
+    ///     构建所有行文本数据集合
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="includeHeader"></param>
+    /// <param name="csvDelimiter"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    private static IEnumerable<string> BuildAllLineText<T>(IEnumerable<T> data, bool includeHeader = true, string csvDelimiter = ",") where T: class
+    {
+        var entityType = typeof(T);
+        var properties = SingletonDictionary<Type, PropertyInfo[]>.Instance.GetOrAdd(entityType, () => entityType.GetProperties());
 
+        if (includeHeader)
+            yield return properties.Select(x => x.Name).JoinAsString(csvDelimiter);
+
+        var propertyDynamicGetter = new PropertyDynamicGetter<T>();
         var csvDelimiterLen = csvDelimiter.Length;
         
-        using var stringWriter = new StringWriter();
-        if (includeHeader)
-            stringWriter.WriteLine(string.Join<string>(csvDelimiter, itemType.GetProperties().Select(x => x.Name)));
-        
-        using var psb = Pool.StringBuilder.Get(out var sb);
-        foreach (var obj in data)
+        foreach (var item in data)
         {
-            var values = obj.GetType().GetProperties().Select(pi => new { Value = pi.GetValue(obj, null) });
+            using var psb = Pool.StringBuilder.Get(out var sb);
+            var values = properties.Select(pi => new { Value = propertyDynamicGetter.GetPropertyValue(item, pi.Name) });
             foreach (var val in values)
             {
                 if (val.Value != null)
@@ -85,7 +98,7 @@ public static class CsvUtility
                     var escapeVal = val.Value.ToString();
                     // ReSharper disable once PossibleNullReferenceException
                     if (escapeVal.Contains(',')) 
-                        escapeVal = string.Concat("\"", escapeVal, "\"");
+                        escapeVal = $"\"{escapeVal}\"";
 
                     if (escapeVal.Contains('\r', StringComparison.OrdinalIgnoreCase))
                         escapeVal = escapeVal.ReplaceFirst("\r", " ", StringComparison.OrdinalIgnoreCase);
@@ -100,11 +113,8 @@ public static class CsvUtility
                     sb.Append(string.Empty).Append(csvDelimiter);
                 }
             }
-
             sb.Remove(sb.Length - csvDelimiterLen, csvDelimiterLen);
-            stringWriter.WriteLine(sb.ToString());
-            sb.Clear();
+            yield return sb.ToString();
         }
-        return stringWriter.ToString();
     }
 }

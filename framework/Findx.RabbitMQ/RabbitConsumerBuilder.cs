@@ -40,7 +40,7 @@ namespace Findx.RabbitMQ
             _methodFinder = methodFinder;
             _factory = factory;
             _serializer = serializer;
-            ConsumerList = new List<IRabbitMqConsumer>();
+            ConsumerList = [];
 
             MethodParameterType = new Dictionary<MethodInfo, Type>();
             MethodHandlers = new Dictionary<MethodInfo, Func<object, object[], object>>();
@@ -125,12 +125,12 @@ namespace Findx.RabbitMQ
         /// <returns></returns>
         private IEnumerable<ConsumerExecutorDescriptor> FindAllConsumerExecutor()
         {
-            var result = new List<ConsumerExecutorDescriptor>();
             var types = _finder.FindAll(true);
             foreach (var type in types)
             foreach (var method in _methodFinder.Find(type, it => it.HasAttribute<RabbitConsumerAttribute>()))
             foreach (var attr in method.GetAttributes<RabbitConsumerAttribute>())
-                result.Add(new ConsumerExecutorDescriptor
+            {
+                yield return new ConsumerExecutorDescriptor
                 {
                     ExchangeType = attr.ExchangeType,
                     ExchangeName = attr.ExchangeName,
@@ -142,8 +142,8 @@ namespace Findx.RabbitMQ
                     MethodInfo = method,
                     Type = type,
                     AutoAck = attr.AutoAck
-                });
-            return result;
+                };
+            }
         }
     }
 }

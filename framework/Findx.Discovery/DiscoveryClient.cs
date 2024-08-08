@@ -60,7 +60,6 @@ public class DiscoveryClient : IDiscoveryClient
         foreach (var serviceName in serviceNames)
         {
             var instances = await GetServiceEndPointsAsync(serviceName, group, cancellationToken: cancellationToken);
-
             allInstances.AddRange(instances);
         }
 

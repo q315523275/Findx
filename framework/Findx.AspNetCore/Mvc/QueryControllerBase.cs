@@ -45,22 +45,18 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>
 {
-    // ReSharper disable once StaticMemberInGenericType
-    private static readonly ConcurrentDictionary<Type, Dictionary<PropertyInfo, QueryFieldAttribute>> QueryFieldDict = new();
-    
     /// <summary>
-    ///     构建分页查询条件
+    ///     构建动态过滤条件
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="req"></param>
     /// <returns></returns>
-    protected virtual Expression<Func<TModel, bool>> CreatePageWhereExpression(TQueryParameter request)
+    protected virtual IEnumerable<FilterCondition> BuildFilterCondition(TQueryParameter req)
     {
-        var filters = new List<FilterCondition>();
-        var reqType = request.GetType();
+        var reqType = req.GetType();
         var propertyDynamicGetter = new PropertyDynamicGetter<TQueryParameter>();
         
         // 属性标记查询字段
-        var queryFields = QueryFieldDict.GetOrAdd(reqType, () =>
+        var queryFields = SingletonDictionary<Type, Dictionary<PropertyInfo, QueryFieldAttribute>>.Instance.GetOrAdd(reqType, () =>
         {
             var fieldDict = new Dictionary<PropertyInfo, QueryFieldAttribute>();
             var queryFieldProperties = reqType.GetProperties().Where(x => x.HasAttribute<QueryFieldAttribute>());
@@ -74,16 +70,25 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         // 标记字段计算
         foreach (var fieldInfo in queryFields)
         {
-            var value = propertyDynamicGetter.GetPropertyValue(request, fieldInfo.Key.Name).CastTo<string>();
+            var value = propertyDynamicGetter.GetPropertyValue(req, fieldInfo.Key.Name).CastTo<string>();
             if (value.IsNotNullOrWhiteSpace())
-                filters.Add(new FilterCondition { Field = fieldInfo.Value?.Name?? fieldInfo.Key.Name, Operator = fieldInfo.Value?.FilterOperate?? FilterOperate.Equal, Value = value });
+                yield return new FilterCondition { Field = fieldInfo.Value?.Name?? fieldInfo.Key.Name, Operator = fieldInfo.Value?.FilterOperate?? FilterOperate.Equal, Value = value };
         }
-        
+    }
+    
+    /// <summary>
+    ///     构建查询条件
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    protected virtual Expression<Func<TModel, bool>> CreatePageWhereExpression(TQueryParameter request)
+    {
+        var filters = BuildFilterCondition(request);
         return filters.Any() ? LambdaExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And }) : null;
     }
 
     /// <summary>
-    ///     构建分页查询条件
+    ///     构建查询排序
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>

@@ -200,7 +200,7 @@ public class AuthController : AreaApiControllerBase
             // ReSharper disable once PossibleMultipleEnumeration
             menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id,
                 x => new MenuDto { MenuId = x.MenuId })
-            : new List<MenuDto>();
+            : [];
 
         var appCodes = menus.Select(x => x.ApplicationCode).Distinct();
         var appList = appRepo.Select(x => appCodes.Contains(x.Code), x => new AppDto());

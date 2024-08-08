@@ -100,6 +100,9 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
             await store.SaveAsync(dict.AuditOperation, context.HttpContext.RequestAborted);
     }
 
+    // 过滤类型
+    private static readonly List<Type> IgnoredTypes = [typeof(IFormFile), typeof(FromServicesAttribute), typeof(Stream)];
+    
     /// <summary>
     ///     转换参数报文
     /// </summary>
@@ -112,13 +115,10 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
         {
             if (arguments.IsNullOrEmpty()) return string.Empty;
 
-            // 过滤类型
-            var ignoredTypes = new List<Type> { typeof(IFormFile), typeof(FromServicesAttribute), typeof(Stream) };
-
             var dictionary = new Dictionary<string, object>();
 
             foreach (var argument in arguments)
-                if (argument.Value != null && ignoredTypes.Any(t => t.IsInstanceOfType(argument.Value)))
+                if (argument.Value != null && IgnoredTypes.Any(t => t.IsInstanceOfType(argument.Value)))
                     dictionary[argument.Key] = null;
                 else
                     dictionary[argument.Key] = argument.Value;

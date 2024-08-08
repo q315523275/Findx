@@ -1026,17 +1026,13 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public List<T> ListRange<T>(string cacheKey, long start, long stop)
+        public IEnumerable<T> ListRange<T>(string cacheKey, long start, long stop)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var list = new List<T>();
-
             var bytes = _cache.ListRange(cacheKey, start, stop);
-
-            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
-
-            return list;
+            foreach (var item in bytes)
+                yield return _serializer.Deserialize<T>(item);
         }
 
         public long ListRemove<T>(string cacheKey, long count, T cacheValue)
@@ -1183,7 +1179,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<List<T>> ListRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<T>> ListRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1273,17 +1269,13 @@ namespace Findx.Redis.StackExchangeRedis
             return flag;
         }
 
-        public List<T> SetMembers<T>(string cacheKey)
+        public IEnumerable<T> SetMembers<T>(string cacheKey)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            var list = new List<T>();
-
+            
             var bytes = _cache.SetMembers(cacheKey);
-
-            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
-
-            return list;
+            foreach (var item in bytes) 
+               yield return _serializer.Deserialize<T>(item);
         }
 
         public T SetPop<T>(string cacheKey)
@@ -1291,21 +1283,16 @@ namespace Findx.Redis.StackExchangeRedis
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
             var bytes = _cache.SetPop(cacheKey);
-
             return _serializer.Deserialize<T>(bytes);
         }
 
-        public List<T> SetRandomMembers<T>(string cacheKey, int count = 1)
+        public IEnumerable<T> SetRandomMembers<T>(string cacheKey, int count = 1)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-            var list = new List<T>();
-
+            
             var bytes = _cache.SetRandomMembers(cacheKey, count);
-
-            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
-
-            return list;
+            foreach (var item in bytes) yield 
+                return _serializer.Deserialize<T>(item);
         }
 
         public long SetRemove<T>(string cacheKey, IList<T> cacheValues = null)
@@ -1359,7 +1346,7 @@ namespace Findx.Redis.StackExchangeRedis
             return flag;
         }
 
-        public async Task<List<T>> SetMembersAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<T>> SetMembersAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1381,7 +1368,7 @@ namespace Findx.Redis.StackExchangeRedis
             return _serializer.Deserialize<T>(bytes);
         }
 
-        public async Task<List<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1460,17 +1447,13 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public List<T> SortedSetRangeByRank<T>(string cacheKey, long start, long stop)
+        public IEnumerable<T> SortedSetRangeByRank<T>(string cacheKey, long start, long stop)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-            var list = new List<T>();
-
             var bytes = _cache.SortedSetRangeByRank(cacheKey, start, stop);
-
-            foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
-
-            return list;
+            foreach (var item in bytes) 
+                yield return _serializer.Deserialize<T>(item);
         }
 
         public long? SortedSetRank<T>(string cacheKey, T cacheValue)
@@ -1548,7 +1531,7 @@ namespace Findx.Redis.StackExchangeRedis
             return len;
         }
 
-        public async Task<List<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1659,27 +1642,23 @@ namespace Findx.Redis.StackExchangeRedis
             return await _cache.GeoHashAsync(cacheKey, members.Select(x => (RedisValue)x).ToArray());
         }
 
-        public List<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, IEnumerable<string> members)
+        public IEnumerable<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, IEnumerable<string> members)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
 
             var res = _cache.GeoPosition(cacheKey, members.Select(x => (RedisValue)x).ToArray());
 
-            var tuple = new List<(decimal longitude, decimal latitude)?>();
-
             foreach (var item in res)
+            {
                 if (item.HasValue)
-                    tuple.Add((Convert.ToDecimal(item.Value.Longitude),
-                        Convert.ToDecimal(item.Value.Latitude)));
+                    yield return (Convert.ToDecimal(item.Value.Longitude), Convert.ToDecimal(item.Value.Latitude));
                 else
-                    tuple.Add(null);
-
-            return tuple;
+                    yield return null;
+            }
         }
 
-        public async Task<List<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey,
-            IEnumerable<string> members, CancellationToken cancellationToken = default)
+        public async Task<IEnumerable<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(members, nameof(members));
@@ -1690,31 +1669,25 @@ namespace Findx.Redis.StackExchangeRedis
 
             foreach (var item in res)
                 if (item.HasValue)
-                    tuple.Add((Convert.ToDecimal(item.Value.Longitude),
-                        Convert.ToDecimal(item.Value.Latitude)));
+                    tuple.Add((Convert.ToDecimal(item.Value.Longitude), Convert.ToDecimal(item.Value.Latitude)));
                 else
                     tuple.Add(null);
 
             return tuple;
         }
 
-        public List<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius,
+        public IEnumerable<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius,
             string unit = "m", int count = -1, string order = "asc")
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             Check.NotNull(member, nameof(member));
 
-            var res = _cache.GeoRadius(cacheKey, member, radius, GetGeoUnit(unit), count, GetGeoOrder(order),
-                GeoRadiusOptions.WithDistance);
-
-            var tuple = new List<(string member, double? distance)>();
-
-            foreach (var item in res) tuple.Add((item.Member, item.Distance));
-
-            return tuple;
+            var res = _cache.GeoRadius(cacheKey, member, radius, GetGeoUnit(unit), count, GetGeoOrder(order), GeoRadiusOptions.WithDistance);
+            foreach (var item in res)
+                yield return (item.Member, item.Distance);
         }
 
-        public async Task<List<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member,
+        public async Task<IEnumerable<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member,
             double radius, string unit = "m", int count = -1, string order = "asc", CancellationToken cancellationToken = default)
         {
             Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1725,7 +1698,8 @@ namespace Findx.Redis.StackExchangeRedis
 
             var tuple = new List<(string member, double? distance)>();
 
-            foreach (var item in res) tuple.Add((item.Member, item.Distance));
+            foreach (var item in res) 
+                tuple.Add((item.Member, item.Distance));
 
             return tuple;
         }

@@ -20,7 +20,7 @@ public class InMemoryJobStorage : IJobStorage
     {
         _lock = new AsyncLock();
         // 字典存储也可以
-        _jobs = new List<JobInfo>();
+        _jobs = [];
     }
 
     /// <summary>
