@@ -26,7 +26,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, SetRoleRequest,
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysRoleInfo, bool>> CreatePageWhereExpression(QueryRoleRequest request)
+    protected override Expression<Func<SysRoleInfo, bool>> CreateWhereExpression(QueryRoleRequest request)
     {
         var whereExp = PredicateBuilder.New<SysRoleInfo>()
                                        .AndIf(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))

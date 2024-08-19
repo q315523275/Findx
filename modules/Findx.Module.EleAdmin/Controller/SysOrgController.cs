@@ -26,7 +26,7 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, SetOrgRequest, Qu
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysOrgInfo, bool>> CreatePageWhereExpression(QueryOrgRequest request)
+    protected override Expression<Func<SysOrgInfo, bool>> CreateWhereExpression(QueryOrgRequest request)
     {
         var whereExp = PredicateBuilder.New<SysOrgInfo>()
                                        .AndIf(request.Pid != null && request.Pid != Guid.Empty, x => x.ParentId == request.Pid)

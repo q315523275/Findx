@@ -26,7 +26,7 @@ public class SysDictDataController : CrudControllerBase<SysDictDataInfo, SetDict
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysDictDataInfo, bool>> CreatePageWhereExpression(QueryDictDataRequest request)
+    protected override Expression<Func<SysDictDataInfo, bool>> CreateWhereExpression(QueryDictDataRequest request)
     {
         var typeId = request.TypeId;
         if (!request.TypeCode.IsNullOrWhiteSpace())

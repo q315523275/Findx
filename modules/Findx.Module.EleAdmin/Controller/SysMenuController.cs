@@ -26,7 +26,7 @@ public class SysMenuController : CrudControllerBase<SysMenuInfo, SetMenuRequest,
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysMenuInfo, bool>> CreatePageWhereExpression(QueryMenuRequest request)
+    protected override Expression<Func<SysMenuInfo, bool>> CreateWhereExpression(QueryMenuRequest request)
     {
         var whereExp = PredicateBuilder.New<SysMenuInfo>()
                                        .AndIf(!request.Title.IsNullOrWhiteSpace(), x => x.Title.Contains(request.Title))

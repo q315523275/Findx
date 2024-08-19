@@ -25,7 +25,7 @@ public class LoginRecordController : QueryControllerBase<SysLoginRecordInfo, Sys
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysLoginRecordInfo, bool>> CreatePageWhereExpression(QueryLoginRecordRequest req)
+    protected override Expression<Func<SysLoginRecordInfo, bool>> CreateWhereExpression(QueryLoginRecordRequest req)
     {
         var whereExp = PredicateBuilder.New<SysLoginRecordInfo>()
                                        .AndIf(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))

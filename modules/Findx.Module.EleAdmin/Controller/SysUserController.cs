@@ -39,7 +39,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysUserInfo, bool>> CreatePageWhereExpression(QueryUserRequest req)
+    protected override Expression<Func<SysUserInfo, bool>> CreateWhereExpression(QueryUserRequest req)
     {
         var whereExp = PredicateBuilder.New<SysUserInfo>()
                                        .AndIf(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
@@ -61,8 +61,8 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
         var repo = GetRepository<SysUserInfo>();
         var roleRepo = GetRepository<SysUserRoleInfo>();
 
-        var whereExpression = CreatePageWhereExpression(request);
-        var orderByExpression = CreatePageOrderExpression(request);
+        var whereExpression = CreateWhereExpression(request);
+        var orderByExpression = CreateOrderExpression(request);
 
         var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
         var ids = res.Rows.Select(x => x.Id).Distinct();

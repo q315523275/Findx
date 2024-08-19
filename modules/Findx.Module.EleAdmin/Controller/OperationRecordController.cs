@@ -25,7 +25,7 @@ public class OperationRecordController : QueryControllerBase<SysOperationRecordI
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysOperationRecordInfo, bool>> CreatePageWhereExpression(QueryOperationRecordRequest req)
+    protected override Expression<Func<SysOperationRecordInfo, bool>> CreateWhereExpression(QueryOperationRecordRequest req)
     {
         var whereExp = PredicateBuilder.New<SysOperationRecordInfo>()
                                        .AndIf(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
