@@ -11,11 +11,14 @@
     <ItemGroup>
       <ProjectReference Include="..\..\framework\Findx.Configuration\Findx.Configuration.csproj" />
       <ProjectReference Include="..\..\framework\Findx.FreeSql\Findx.FreeSql.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
       <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="CsvHelper" Version="33.0.1" />
       <PackageReference Include="NewId" Version="4.0.1" />
+      <PackageReference Include="System.IO.Pipelines" Version="5.0.1" />
       <PackageReference Include="XC.RSAUtil" Version="1.3.6" />
     </ItemGroup>
 

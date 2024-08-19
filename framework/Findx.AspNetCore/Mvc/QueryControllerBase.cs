@@ -81,7 +81,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected virtual Expression<Func<TModel, bool>> CreatePageWhereExpression(TQueryParameter request)
+    protected virtual Expression<Func<TModel, bool>> CreateWhereExpression(TQueryParameter request)
     {
         var filters = BuildFilterCondition(request);
         return filters.Any() ? LambdaExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And }) : null;
@@ -92,7 +92,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    protected virtual IEnumerable<OrderByParameter<TModel>> CreatePageOrderExpression(TQueryParameter request)
+    protected virtual IEnumerable<OrderByParameter<TModel>> CreateOrderExpression(TQueryParameter request)
     {
         var orderExp = SortConditionBuilder.New<TModel>();
 
@@ -123,8 +123,8 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
 
         Check.NotNull(repo, nameof(repo));
 
-        var whereExpression = CreatePageWhereExpression(request);
-        var orderByExpression = CreatePageOrderExpression(request);
+        var whereExpression = CreateWhereExpression(request);
+        var orderByExpression = CreateOrderExpression(request);
 
         var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
@@ -149,8 +149,8 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var repo = GetRepository<TModel, TKey>();
         Check.NotNull(repo, nameof(repo));
 
-        var whereExpression = CreatePageWhereExpression(request);
-        var orderByExpression = CreatePageOrderExpression(request);
+        var whereExpression = CreateWhereExpression(request);
+        var orderByExpression = CreateOrderExpression(request);
 
         var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 

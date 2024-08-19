@@ -45,6 +45,42 @@ public static class CsvUtility
             }
         }
     }
+    
+    /// <summary>
+    ///     读取Csv数据
+    /// </summary>
+    /// <typeparam name="T">属性顺序需与csv列顺序一致</typeparam>
+    /// <param name="path"></param>
+    /// <param name="skipFirstLine"></param>
+    /// <param name="csvDelimiter"></param>
+    /// <returns></returns>
+    public static async IAsyncEnumerable<T> ReadCsvAsync<T>(string path, bool skipFirstLine = true, string csvDelimiter = ",") where T : class, new()
+    {
+        var entityType = typeof(T);
+        var properties = SingletonDictionary<Type, PropertyInfo[]>.Instance.GetOrAdd(entityType, () => entityType.GetProperties());
+        var csvDelimiters = csvDelimiter.ToCharArray();
+        using var reader = new StreamReader(path);
+        while (!reader.EndOfStream)
+        {
+            var line = await reader.ReadLineAsync();
+            if (line == null) continue;
+            
+            var values = line.Split(csvDelimiters);
+            if (properties.Length != values.Length) continue;
+            
+            if (skipFirstLine)
+            {
+                skipFirstLine = false;
+            }
+            else
+            {
+                var model = new T();
+                for (var i = 0; i < values.Length; i++)
+                    PropertyValueSetter<T>.SetPropertyValueObject(entityType, model, properties[i].Name, values[i].CastTo(properties[i].PropertyType));
+                yield return model;
+            }
+        }
+    }
 
     /// <summary>
     ///     导出Csv数据
@@ -57,7 +93,7 @@ public static class CsvUtility
     /// <param name="rewrite"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task ExportCsv<T>(IEnumerable<T> data, string path, bool includeHeader = true, string csvDelimiter = ",", bool rewrite = false, CancellationToken cancellationToken = default) where T: class
+    public static async Task ExportCsvAsync<T>(IEnumerable<T> data, string path, bool includeHeader = true, string csvDelimiter = ",", bool rewrite = false, CancellationToken cancellationToken = default) where T: class
     {
         if (FileUtility.Exists(path) && !rewrite) throw new Exception($"Csv文件“{path}”已存在");
         
@@ -97,14 +133,14 @@ public static class CsvUtility
                 {
                     var escapeVal = val.Value.ToString();
                     // ReSharper disable once PossibleNullReferenceException
-                    if (escapeVal.Contains(',')) 
+                    if (escapeVal.IndexOf(',') != -1) 
                         escapeVal = $"\"{escapeVal}\"";
-
-                    if (escapeVal.Contains('\r', StringComparison.OrdinalIgnoreCase))
-                        escapeVal = escapeVal.ReplaceFirst("\r", " ", StringComparison.OrdinalIgnoreCase);
-
-                    if (escapeVal.Contains('\n', StringComparison.OrdinalIgnoreCase))
-                        escapeVal = escapeVal.ReplaceFirst("\n", " ", StringComparison.OrdinalIgnoreCase);
+                    
+                    if (escapeVal.IndexOf('\r', StringComparison.OrdinalIgnoreCase) != -1)
+                        escapeVal = escapeVal.Replace("\r", " ", StringComparison.OrdinalIgnoreCase);
+                    
+                    if (escapeVal.IndexOf('\n', StringComparison.OrdinalIgnoreCase) != -1)
+                        escapeVal = escapeVal.Replace("\n", " ", StringComparison.OrdinalIgnoreCase);
 
                     sb.Append(escapeVal).Append(csvDelimiter);
                 }

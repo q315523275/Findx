@@ -3,12 +3,15 @@
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq.Expressions;
 using System.Net.NetworkInformation;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using ConsoleApp1;
+using CsvHelper;
 using Findx;
 using Findx.Caching.InMemory;
 using Findx.Configuration;
@@ -16,6 +19,7 @@ using Findx.Extensions;
 using Findx.Linq;
 using Findx.Reflection;
 using Findx.Utilities;
+using Findx.WebSocketCore.Hubs.Client;
 using MassTransit;
 using Microsoft.Extensions.Options;
 
@@ -146,12 +150,67 @@ Console.WriteLine("Hello, World!");
 //     public string Title { get; set; }
 // }
 
-// Console.WriteLine(new User { Name = "测试员", Title = "Json测试" }.ToJson());
-// var str = CsvUtility.ExportCsv(new List<User> { new User { Name = "测试员", Title = "Json测试" }, new User { Name = "罗伯特" }, new User { Title = "特罗伯" } });
-// Console.WriteLine(str);
+// Csv测试
+// var userList = new List<User>();
+// for (var i = 0; i < 10000; i++)
+// {
+//     userList.Add(new User
+//     {
+//         Id = i + 1,
+//         Name = "测试员" + (i + 1), 
+//         Title = "Csv测试"
+//     });
+// }
+// var csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test.csv");
+// var csvPath2 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test2.csv");
+// // 预热
+// await CsvUtility.ExportCsvAsync(userList, csvPath, rewrite: true);
+// _ = CsvUtility.ReadCsv<User>(csvPath);
+//
+// await using var writer0 = new StreamWriter(csvPath2);
+// await using var csvWriter0 = new CsvWriter(writer0, CultureInfo.InvariantCulture);
+// await csvWriter0.WriteRecordsAsync(userList);
+// using var reader0 = new StreamReader(csvPath2);
+// using var csvReader0 = new CsvReader(reader0, CultureInfo.InvariantCulture);
+// csvReader0.GetRecords<User>();
+//
+// Console.WriteLine($"组建预热完成,开始进行CsvUtility与CsvHelper组建性能比较...");
+// Console.WriteLine();
+//
+// var stopWatch = new Stopwatch();
+// stopWatch.Start(); 
+// await CsvUtility.ExportCsvAsync(userList, csvPath, rewrite: true);
+// stopWatch.Stop();
+// Console.WriteLine($"CsvUtility.ExportCsv导出{userList.Count}条记录集合耗时:{stopWatch.ElapsedMilliseconds}ms");
+//
+// stopWatch.Restart();
+// var users = CsvUtility.ReadCsv<User>(csvPath).ToList();
+// stopWatch.Stop();
+// Console.WriteLine($"CsvUtility.ReadCsv读取{users.Count}条记录集合耗时:{stopWatch.ElapsedMilliseconds}ms");
+// Console.WriteLine($"CsvUtility.ReadCsv最后一条json数据:{users.OrderByDescending(x => x.Id).First().ToJson()}");
+//
+// Console.WriteLine();
+//
+// // 写入CSV文件数据
+// stopWatch.Restart();
+// await using var writer = new StreamWriter(csvPath2);
+// await using var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture);
+// await csvWriter.WriteRecordsAsync(userList);
+// stopWatch.Stop();
+// Console.WriteLine($"CsvHelper.CsvWriter导出{userList.Count}条记录集合耗时:{stopWatch.ElapsedMilliseconds}ms");
+//
+// //读取CSV文件数据
+// stopWatch.Restart();
+// using var reader = new StreamReader(csvPath2);
+// using var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture);
+// var getStudentInfos = csvReader.GetRecords<User>().ToList();
+// stopWatch.Stop();
+// Console.WriteLine($"CsvHelper.CsvReader读取{getStudentInfos.Count}条记录集合耗时:{stopWatch.ElapsedMilliseconds}ms");
+// Console.WriteLine($"CsvHelper.CsvReader最后一条json数据:{getStudentInfos.OrderByDescending(x => x.Id).First().ToJson()}");
 // // Json
 // class User
 // {
+//     public int Id { set; get; }
 //     public string Name { set; get; }
 //     public string Title { set; get; }
 // }
@@ -251,23 +310,20 @@ Console.WriteLine("Hello, World!");
 // var filterGroup = new FilterGroup()
 // {
 //     Logic = FilterOperate.And,
-//     Filters = new List<FilterCondition>
-//     {
-//         new()
+//     Filters =
+//     [
+//         new FilterCondition
 //         {
-//             Field = "Name", Value = "Name110", Operator = FilterOperate.NotContains
+//             Field = "name", Value = "Name110", Operator = FilterOperate.NotContains
 //         },
-//         new ()
+//
+//         new FilterCondition
 //         {
 //             Field = "Status", Value = "0,1", Operator = FilterOperate.In
-//         },
-//         new()
-//         {
-//             Field = "CreatedTime", Value = "2021-12-30", Operator = FilterOperate.GreaterOrEqual
 //         }
-//     }
+//     ]
 // };
-// var dataSort = SortConditionBuilder.New<SysAppInfo>().OrderBy("Status").OrderBy(x => new { x.CreatedTime, x.Id}).Build();
+// var dataSort = SortConditionBuilder.New<SysAppInfo>().OrderBy("Status").OrderBy(x => new { x.Code, x.Id}).Build();
 //
 // var filter = LambdaExpressionParser.ParseConditions<SysAppInfo>(filterGroup);
 //
@@ -276,15 +332,15 @@ Console.WriteLine("Hello, World!");
 // {
 //     entities.Add(new SysAppInfo
 //     {
-//         Id = SequentialGuidUtility.Next(SequentialGuidType.AsString),
+//         Id = NewId.NextSequentialGuid(),
 //         Name = "Name" + (i + 1),
 //         Code = "Code" + (i + 1),
-//         CreatedTime = DateTime.Now,
-//         Status = i,
+//         Status = (i % 2) > 0 ? 0 : 1,
+//         Sort = i
 //     });
 // }
 //
-// var s = entities.Where(filter.Compile()).OrderBy("Status", ListSortDirection.Ascending).ThenBy("CreatedTime", ListSortDirection.Descending);
+// var s = entities.Where(filter.Compile()).OrderBy("Status", ListSortDirection.Ascending).ThenBy("Sort", ListSortDirection.Descending);
 // Console.WriteLine($"{entities.Count}---{s.Count()}");
 // foreach (var item in s)
 // {
@@ -365,7 +421,7 @@ Console.WriteLine("Hello, World!");
 var t = new SysAppInfo { Id = NewId.NextSequentialGuid(), Code = "test", Name = "史册" };
 var entityType = t.GetType();
 var propertyName = "Name";
-var repeatTimes = 1000000;
+var repeatTimes = 1_000_000;
 
 var expressionGetter = PropertyUtility.ExpressionGetter<SysAppInfo>(propertyName);
 var emitGetter = PropertyUtility.EmitGetter<SysAppInfo>(propertyName);
@@ -435,67 +491,84 @@ Expression[] CreateParameterExpressions(ParameterInfo[] parameters, Expression a
     return expressions;
 }
 
-var op = new Op();
-var op2 = new Op();
-var op3 = new Op();
-var op4 = new Op();
-var methodInfo = op.GetType().GetMethod("Say");
-var fastInvoke = FastInvokeHandler.Create(methodInfo);
-var instance = Expression.Parameter(typeof(object), "instance");
-var arguments = Expression.Parameter(typeof(object[]), "arguments");
-var methodCall = Expression.Call(Expression.Convert(instance, op.GetType()), methodInfo!, CreateParameterExpressions(methodInfo?.GetParameters(), arguments));
-var lambdaExpression = Expression.Lambda<Action<object, object[]>>(methodCall, instance, arguments);;
-var expressionCall = lambdaExpression.Compile();
+// var op = new Op();
+// var op2 = new Op();
+// var op3 = new Op();
+// var op4 = new Op();
+// var methodInfo = op.GetType().GetMethod("Say");
+// var fastInvoke = FastInvokeHandler.Create(methodInfo);
+// var instance = Expression.Parameter(typeof(object), "instance");
+// var arguments = Expression.Parameter(typeof(object[]), "arguments");
+// var methodCall = Expression.Call(Expression.Convert(instance, op.GetType()), methodInfo!, CreateParameterExpressions(methodInfo?.GetParameters(), arguments));
+// var lambdaExpression = Expression.Lambda<Action<object, object[]>>(methodCall, instance, arguments);;
+// var expressionCall = lambdaExpression.Compile();
+//
+// Console.WriteLine($"Op.Say方法执行");
+// stopwatch.Reset();
+// stopwatch.Restart();
+// for (var i = 0; i < repeatTimes; i++)
+// {
+//     op.Say(i);
+// }
+// stopwatch.Stop();
+// Console.WriteLine($"Repeated {repeatTimes}, 结果:{op}, 方法原生执行:{stopwatch.Elapsed.TotalMilliseconds}ms");
+//
+// stopwatch.Reset();
+// stopwatch.Restart();
+// for (var i = 0; i < repeatTimes; i++)
+// {
+//     fastInvoke.Invoke(op2, [i]);
+// }
+// stopwatch.Stop();
+// Console.WriteLine($"Repeated {repeatTimes}, 结果:{op2}, FastInvokeHandler方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+//
+// stopwatch.Reset();
+// stopwatch.Restart();
+// for (var i = 0; i < repeatTimes; i++)
+// {
+//     expressionCall(op3, [i]);
+// }
+// stopwatch.Stop();
+// Console.WriteLine($"Repeated {repeatTimes}, 结果:{op3}, Expression.Call方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+//
+// stopwatch.Reset();
+// stopwatch.Restart();
+// for (var i = 0; i < repeatTimes; i++)
+// {
+//     methodInfo.Invoke(op4, parameters: [i]);
+// }
+// stopwatch.Stop();
+// Console.WriteLine($"Repeated {repeatTimes}, 结果:{op4}, MethodInfo.Invoke方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+//
+// internal class Op
+// {
+//     private int i;
+//
+//     public void Say(int index)
+//     {
+//         i += index;
+//     }
+//
+//     public override string ToString()
+//     {
+//         return i.ToString();
+//     }
+// }
 
-Console.WriteLine($"Op.Say方法执行");
-stopwatch.Reset();
-stopwatch.Restart();
-for (var i = 0; i < repeatTimes; i++)
-{
-    op.Say(i);
-}
-stopwatch.Stop();
-Console.WriteLine($"Repeated {repeatTimes}, 结果:{op}, 方法原生执行:{stopwatch.Elapsed.TotalMilliseconds}ms");
 
-stopwatch.Reset();
-stopwatch.Restart();
-for (var i = 0; i < repeatTimes; i++)
-{
-    fastInvoke.Invoke(op2, [i]);
-}
-stopwatch.Stop();
-Console.WriteLine($"Repeated {repeatTimes}, 结果:{op2}, FastInvokeHandler方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
-
-stopwatch.Reset();
-stopwatch.Restart();
-for (var i = 0; i < repeatTimes; i++)
-{
-    expressionCall(op3, [i]);
-}
-stopwatch.Stop();
-Console.WriteLine($"Repeated {repeatTimes}, 结果:{op3}, Expression.Call方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
-
-stopwatch.Reset();
-stopwatch.Restart();
-for (var i = 0; i < repeatTimes; i++)
-{
-    methodInfo.Invoke(op4, parameters: [i]);
-}
-stopwatch.Stop();
-Console.WriteLine($"Repeated {repeatTimes}, 结果:{op4}, MethodInfo.Invoke方法执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
-
-internal class Op
-{
-    private int i;
-
-    public void Say(int index)
-    {
-        i += index;
-    }
-
-    public override string ToString()
-    {
-        return i.ToString();
-    }
-}
-
+// var uri = new Uri("ws://106.54.160.19:10020/ws");
+//
+// var hub = new HubConnection("ws://106.54.160.19:10020/ws", false);
+// var stopwatch = new Stopwatch();  
+// stopwatch.Start();
+// await hub.StartAsync();
+// stopwatch.Stop();
+// Console.WriteLine($"远程连接执行耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+//
+// hub.On((a, b) => { Console.WriteLine(a); return Task.CompletedTask; });
+//
+// stopwatch.Restart();
+// await hub.SendAsync(new ArraySegment<byte>("dotnet --info".ToBytes()), WebSocketMessageType.Text, true);
+// stopwatch.Stop();
+// Console.WriteLine($"发送消息耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
+// Console.ReadLine();

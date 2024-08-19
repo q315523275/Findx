@@ -13,7 +13,7 @@
         <PackageReference Include="Findx.Mapster" Version="2024.7.1" />
         <PackageReference Include="Findx.Swagger" Version="2024.7.9" />
         <PackageReference Include="Findx.WebSocketCore" Version="2024.7.9" />
-        <PackageReference Include="FreeSql.Provider.PostgreSQL" Version="3.2.833" />
+        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.833" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Findx.Module.EleAdminPlus\Findx.Module.EleAdminPlus.csproj" />
+      <ProjectReference Include="..\Findx.Module.EleAdminPlus.WebAppApi\Findx.Module.EleAdminPlus.WebAppApi.csproj" />
     </ItemGroup>
     
 </Project>

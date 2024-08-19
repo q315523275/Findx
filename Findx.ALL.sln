@@ -75,13 +75,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Guids.NewId", "framew
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.SkiaSharp", "framework\Findx.SkiaSharp\Findx.SkiaSharp.csproj", "{576035D4-836E-4F8D-B1AA-C3DAEC99BD4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Module.EleAdminPlus", "modules\Findx.Module.EleAdminPlus\Findx.Module.EleAdminPlus.csproj", "{1EFB2413-A096-4EA7-A731-9C5FDBD72AC6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Module.EleAdminPlus.WebAppApi", "modules\Findx.Module.EleAdminPlus.WebAppApi\Findx.Module.EleAdminPlus.WebAppApi.csproj", "{1EFB2413-A096-4EA7-A731-9C5FDBD72AC6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp2", "test\ConsoleApp2\ConsoleApp2.csproj", "{D82FDCA5-15C7-46D5-A2CB-FF42759E9005}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Extensions.WorkflowCore", "components\Findx.Extensions.WorkflowCore\Findx.Extensions.WorkflowCore.csproj", "{C614D440-D19C-4FE7-BEAB-3B0A01BECE38}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Extensions.AuditLogs", "components\Findx.Extensions.AuditLogs\Findx.Extensions.AuditLogs.csproj", "{53FBC093-8EBC-4B3D-9F29-2E653F0DB535}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Module.EleAdminPlus.Shared", "modules\Findx.Module.EleAdminPlus.Shared\Findx.Module.EleAdminPlus.Shared.csproj", "{0F6BC535-EB25-4156-9A69-0F11B2A3958B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -233,6 +235,10 @@ Global
 		{53FBC093-8EBC-4B3D-9F29-2E653F0DB535}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53FBC093-8EBC-4B3D-9F29-2E653F0DB535}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53FBC093-8EBC-4B3D-9F29-2E653F0DB535}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F6BC535-EB25-4156-9A69-0F11B2A3958B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F6BC535-EB25-4156-9A69-0F11B2A3958B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F6BC535-EB25-4156-9A69-0F11B2A3958B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F6BC535-EB25-4156-9A69-0F11B2A3958B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -274,6 +280,7 @@ Global
 		{D82FDCA5-15C7-46D5-A2CB-FF42759E9005} = {298F30E3-70D0-4D99-938C-C776C9FF488D}
 		{C614D440-D19C-4FE7-BEAB-3B0A01BECE38} = {24F330DB-6EDF-491F-8CAB-E4EA548482EB}
 		{53FBC093-8EBC-4B3D-9F29-2E653F0DB535} = {24F330DB-6EDF-491F-8CAB-E4EA548482EB}
+		{0F6BC535-EB25-4156-9A69-0F11B2A3958B} = {7F3FEAA2-C11E-437D-8D98-CCFECE28E891}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7630DAB2-2CEC-407B-81D8-220E7EF09F33}

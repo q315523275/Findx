@@ -75,11 +75,11 @@ public class JsonExceptionHandlerMiddleware
         catch (Exception ex)
         {
             _logger.LogError(ex, "全局异常捕获,Url:{DisplayUrl}", context?.Request?.GetDisplayUrl());
-
+            
             await _exceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-
-            if (context == null || context.Response.HasStarted) 
-                return;
+            
+            if (context == null || context.Response.HasStarted) return;
+            
             // 开启异常,方便外层组件熔断等功能使用
             context.Response.Clear();
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
@@ -99,6 +99,6 @@ public class JsonExceptionHandlerMiddleware
         context.Response.Clear();
         context.Response.StatusCode = (int)HttpStatusCode.OK;
         context.Response.ContentType = "application/json;charset=utf-8"; ;
-        await context.Response.WriteAsync("{\"code\":\"" + code + "\",\"msg\":\"" + message + "\"}");
+        await context.Response.WriteAsJsonAsync(CommonResult.Fail(code, message));
     }
 }
