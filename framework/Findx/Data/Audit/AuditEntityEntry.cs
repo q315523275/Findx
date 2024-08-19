@@ -38,5 +38,5 @@ public class AuditEntityEntry
     /// <summary>
     /// 获取或设置 操作实体属性集合
     /// </summary>
-    public ICollection<AuditEntityPropertyEntry> PropertyEntries { get; set; } = [];
+    public ICollection<AuditEntityPropertyEntry> PropertyEntries { get; set; } = new List<AuditEntityPropertyEntry>();
 }

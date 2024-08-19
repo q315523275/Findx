@@ -49,7 +49,7 @@ public class DefaultWorkContext: IWorkContext, IScopeDependency
     /// <summary>
     ///     机构集合
     /// </summary>
-    public IEnumerable<long> OrgIds { get; private set; } = [];
+    public IEnumerable<long> OrgIds { get; private set; } = new List<long>();
 
     /// <summary>
     ///     设置数据范围

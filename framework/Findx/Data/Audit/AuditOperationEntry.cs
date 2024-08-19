@@ -66,12 +66,12 @@ public class AuditOperationEntry
     /// <summary>
     ///     获取或设置 审计实体数据信息集合
     /// </summary>
-    public ICollection<AuditEntityEntry> EntityEntries { get; set; } = [];
-    
+    public ICollection<AuditEntityEntry> EntityEntries { get; set; } = new List<AuditEntityEntry>();
+
     /// <summary>
     ///     获取或设置 审计Sql数据信息集合
     /// </summary>
-    public ICollection<AuditSqlRawEntry> SqlRawEntries { get; set; } = [];
+    public ICollection<AuditSqlRawEntry> SqlRawEntries { get; set; } = new List<AuditSqlRawEntry>();
     
     /// <summary>
     ///     获取 扩展数据字典

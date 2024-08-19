@@ -50,5 +50,5 @@ public class AuditSqlRawInfo: EntityBase<Guid>
     /// <summary>
     ///     获取或设置 操作实体属性集合
     /// </summary>
-    public ICollection<AuditSqlRawParameterInfo> DbParameters { get; set; } = [];
+    public ICollection<AuditSqlRawParameterInfo> DbParameters { get; set; } = new List<AuditSqlRawParameterInfo>();
 }

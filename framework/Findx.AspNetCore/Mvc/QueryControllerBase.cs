@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -84,7 +83,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     protected virtual Expression<Func<TModel, bool>> CreateWhereExpression(TQueryParameter request)
     {
         var filters = BuildFilterCondition(request);
-        return filters.Any() ? LambdaExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And }) : null;
+        return filters != null && filters.Any() ? LambdaExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And }) : null;
     }
 
     /// <summary>
@@ -123,6 +122,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
 
         Check.NotNull(repo, nameof(repo));
 
+        Console.WriteLine(request.ToString());
         var whereExpression = CreateWhereExpression(request);
         var orderByExpression = CreateOrderExpression(request);
 

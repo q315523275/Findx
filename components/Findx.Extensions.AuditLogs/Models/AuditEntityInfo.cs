@@ -50,5 +50,5 @@ public class AuditEntityInfo: EntityBase<Guid>
     /// <summary>
     ///     获取或设置 操作实体属性集合
     /// </summary>
-    public virtual ICollection<AuditEntityPropertyInfo> PropertyEntries { get; set; } = [];
+    public virtual ICollection<AuditEntityPropertyInfo> PropertyEntries { get; set; } = new List<AuditEntityPropertyInfo>();
 }

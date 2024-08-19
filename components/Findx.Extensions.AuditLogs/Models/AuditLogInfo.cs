@@ -112,15 +112,15 @@ public class AuditLogInfo: EntityBase<Guid>
     ///     备注
     /// </summary>
     public string Comments { set; get; }
-    
-    
+
+
     /// <summary>
     ///     获取或设置 审计实体信息集合
     /// </summary>
-    public virtual ICollection<AuditEntityInfo> EntityEntries { get; set; } = [];
-    
+    public virtual ICollection<AuditEntityInfo> EntityEntries { get; set; } = new List<AuditEntityInfo>();
+
     /// <summary>
     ///     获取或设置 审计Sql数据信息集合
     /// </summary>
-    public virtual ICollection<AuditSqlRawInfo> SqlRawEntries { get; set; } = [];
+    public virtual ICollection<AuditSqlRawInfo> SqlRawEntries { get; set; } = new List<AuditSqlRawInfo>();
 }

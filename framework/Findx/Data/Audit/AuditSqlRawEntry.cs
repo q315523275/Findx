@@ -38,5 +38,5 @@ public class AuditSqlRawEntry
     /// <summary>
     ///     获取或设置 操作实体属性集合
     /// </summary>
-    public ICollection<AuditSqlRawParameterEntry> DbParameters { get; set; } = [];
+    public ICollection<AuditSqlRawParameterEntry> DbParameters { get; set; } = new List<AuditSqlRawParameterEntry>();
 }
