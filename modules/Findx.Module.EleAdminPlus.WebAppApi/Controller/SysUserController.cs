@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using System.Text.Json;
 using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
@@ -12,10 +13,12 @@ using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.Shared.Mvc.Filters;
 using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
+using Findx.Serialization;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
@@ -30,16 +33,19 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
 {
     private readonly IKeyGenerator<long> _keyGenerator;
     private readonly IWorkContext _workContext;
+    private readonly IOptions<JsonOptions> _jsonOptions;
 
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <param name="workContext"></param>
-    public SysUserController(IKeyGenerator<long> keyGenerator, IWorkContext workContext)
+    /// <param name="jsonOptions"></param>
+    public SysUserController(IKeyGenerator<long> keyGenerator, IWorkContext workContext, IOptions<JsonOptions> jsonOptions)
     {
         _keyGenerator = keyGenerator;
         _workContext = workContext;
+        _jsonOptions = jsonOptions;
     }
 
     /// <summary>
@@ -155,7 +161,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     {
         if (!req.Password.IsNullOrWhiteSpace())
             model.Password = EncryptUtility.Md5By32(req.Password);
-        model.RoleJson = req.Roles?.ToJson();
+        model.RoleJson = JsonSerializer.Serialize(req.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
         await base.AddBeforeAsync(model, req);
     }
 
@@ -197,7 +203,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <returns></returns>
     protected override Task EditBeforeAsync(SysUserInfo model, UserEditDto request)
     {
-        model.RoleJson = request.Roles?.ToJson();
+        model.RoleJson = JsonSerializer.Serialize(request.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
         return base.EditBeforeAsync(model, request);
     }
 

@@ -6,7 +6,6 @@ using Findx.Extensions;
 using Findx.Linq;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dict;
 using Findx.Module.EleAdminPlus.Shared.Models;
-using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dict;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

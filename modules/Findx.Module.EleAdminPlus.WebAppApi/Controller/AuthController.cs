@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Text.Json;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
@@ -8,6 +9,7 @@ using Findx.Mapping;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Auth;
 using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
+using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
 using Findx.Security;
 using Findx.Security.Authentication.Jwt;
 using Findx.Setting;
@@ -36,8 +38,8 @@ public class AuthController : AreaApiControllerBase
     private readonly IOptions<JwtOptions> _options;
     private readonly IRepository<SysLoginRecordInfo, long> _loginRecordRepo;
     private readonly IRepository<SysUserInfo, long> _userRepo;
-    private readonly IRepository<SysUserRoleInfo, long> _roleRepo;
     private readonly IJwtTokenBuilder _tokenBuilder;
+    private readonly IOptions<JsonOptions> _jsonOptions;
 
     /// <summary>
     ///     Ctor
@@ -50,8 +52,8 @@ public class AuthController : AreaApiControllerBase
     /// <param name="loginRecordRepo"></param>
     /// <param name="settingProvider"></param>
     /// <param name="keyGenerator"></param>
-    /// <param name="roleRepo"></param>
-    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo, long> userRepo, IRepository<SysLoginRecordInfo, long> loginRecordRepo, ISettingProvider settingProvider, IKeyGenerator<long> keyGenerator, IRepository<SysUserRoleInfo, long> roleRepo)
+    /// <param name="jsonOptions"></param>
+    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo, long> userRepo, IRepository<SysLoginRecordInfo, long> loginRecordRepo, ISettingProvider settingProvider, IKeyGenerator<long> keyGenerator, IOptions<JsonOptions> jsonOptions)
     {
         _tokenBuilder = tokenBuilder;
         _options = options;
@@ -60,7 +62,7 @@ public class AuthController : AreaApiControllerBase
         _userRepo = userRepo;
         _loginRecordRepo = loginRecordRepo;
         _keyGenerator = keyGenerator;
-        _roleRepo = roleRepo;
+        _jsonOptions = jsonOptions;
         
         _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdminPlus:EnabledCaptcha");
         _useAbpJwt = settingProvider.GetValue<bool>("Modules:EleAdminPlus:UseAbpJwt");
@@ -168,7 +170,7 @@ public class AuthController : AreaApiControllerBase
             payload[System.Security.Claims.ClaimTypes.GivenName] = accountInfo.Nickname.SafeString();
         }
         // 角色id及编号
-        var roles = await _roleRepo.SelectAsync(x => x.UserId == accountInfo.Id && x.RoleId == x.RoleInfo.Id, x => new { x.RoleInfo.Id, x.RoleInfo.Code }, cancellationToken: cancellationToken);
+        var roles = JsonSerializer.Deserialize<List<RoleDto>>(accountInfo.RoleJson ?? "[]", options: _jsonOptions.Value.JsonSerializerOptions);
         payload[ClaimTypes.RoleIds] = roles.Select(x => x.Id).Distinct().JoinAsString(",");
         payload[ClaimTypes.Role] = roles.Select(x => x.Code).Distinct().JoinAsString(",");
         

@@ -121,12 +121,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
             return CommonResult.Fail("not.exist", "未能查到相关信息");
         
         repo.Attach(model.Clone().As<SysRoleInfo>());
-        
         model = ToModelFromUpdateRequest(req, model);
-        if (model is IUpdateTime entity1)
-        {
-            entity1.LastUpdatedTime = DateTime.Now;
-        }
         if (model is IUpdateAudited<long> entity2)
         {
             entity2.LastUpdaterId = principal?.Identity.GetUserId<long>() ?? default;
@@ -157,10 +152,12 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         var keyGenerator = GetRequiredService<IKeyGenerator<long>>();
         var service = GetService<IPrincipal>();
         
-        var model = req.MapTo<SysRoleInfo>();
+        var model = await repo.GetAsync(req.Id, cancellationToken);
+        if (model == null) return CommonResult.Fail("not.exist", "未能查到相关信息");
+        repo.Attach(model.Clone().As<SysRoleInfo>());
+        model = req.MapTo(model);
         model.CheckUpdateAudited<SysRoleInfo, long>(service);
         model.OrgJson = req.OrgIds.ToJson();
-        
         await repo.SaveAsync(model, cancellationToken: cancellationToken);
         
         var orgList = req.OrgIds.Select(x => new SysRoleOrgInfo { Id = keyGenerator.Create(), OrgId = x, RoleId = model.Id });
