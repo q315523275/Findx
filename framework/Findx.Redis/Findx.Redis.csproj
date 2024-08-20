@@ -4,7 +4,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Redis通用功能、分布式锁等(StackExchangeRedis)</Description>
-        <PackageVersion>2024.07.01</PackageVersion>
+        <PackageVersion>2024.07.14</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>

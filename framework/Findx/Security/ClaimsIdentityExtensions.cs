@@ -139,9 +139,6 @@ public static class ClaimsIdentityExtensions
         Check.NotNull(identity, nameof(identity));
         if (identity is not ClaimsIdentity claimsIdentity) return Array.Empty<string>();
         // 不知道什么原因，netcore认证组建会自动将自定义role key转换为 System.Security.Claims.ClaimTypes.Role key
-        return claimsIdentity.FindAll(System.Security.Claims.ClaimTypes.Role).SelectMany(m =>
-        {
-            return m.Value.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
-        });
+        return claimsIdentity.FindAll(System.Security.Claims.ClaimTypes.Role).SelectMany(m => m.Value.Split(Separator, StringSplitOptions.RemoveEmptyEntries));
     }
 }

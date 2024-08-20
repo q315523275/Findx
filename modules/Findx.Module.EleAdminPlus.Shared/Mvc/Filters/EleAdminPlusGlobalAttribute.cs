@@ -3,12 +3,10 @@ using Findx.AspNetCore.Extensions;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
-using Findx.FreeSql;
 using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 using Findx.Security;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,7 +44,7 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
 
             // 用户角色信息
             var roles = await AllRoleListAsync(context);
-            var userRoleIds = currentUser.FindClaims(ClaimTypes.RoleIds).Select(x => x.Value.CastTo<long>());
+            var userRoleIds = currentUser.FindClaims(ClaimTypes.RoleIds).SelectMany(m => m.Value.Split(',', StringSplitOptions.RemoveEmptyEntries)).Select(long.Parse);
             var userRoleList = roles.Where(x => userRoleIds.Contains(x.Id));
             
             // 客户访问ip限定

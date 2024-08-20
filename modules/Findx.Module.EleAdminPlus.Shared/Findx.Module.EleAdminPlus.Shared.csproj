@@ -6,7 +6,7 @@
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>2024.08.21</Version>
+        <Version>2024.08.25</Version>
     </PropertyGroup>
 
     <ItemGroup>
