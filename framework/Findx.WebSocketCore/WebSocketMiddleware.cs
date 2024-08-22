@@ -82,7 +82,7 @@ public class WebSocketMiddleware
     private async Task ReceiveAsync(WebSocketClient xclient, CancellationToken cancellationToken = default)
     {
         // 缓冲区大小
-        var buffer = new byte[2048];
+        var buffer = new byte[128];
         while (xclient.Client.State == WebSocketState.Open)
         {
             var arraySegment = new ArraySegment<byte>(buffer);

@@ -34,7 +34,7 @@ public class WebSocketClientManager : IWebSocketClientManager
     /// <summary>
     ///     连接总数
     /// </summary>
-    public int Count => _clients.Count();
+    public int Count => _clients.Count;
 
     /// <summary>
     ///     获取WebSocketClient信息

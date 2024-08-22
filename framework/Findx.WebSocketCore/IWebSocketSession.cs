@@ -31,6 +31,5 @@ public interface IWebSocketSession
     /// <param name="statusDescription"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription,
-        CancellationToken cancellationToken = default);
+    Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken = default);
 }

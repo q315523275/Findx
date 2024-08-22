@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Nullable>disable</Nullable>
-        <Version>2024.06.01</Version>
+        <Version>11.1.2024.822</Version>
         <Description>MassTransit对应NewId使用,生成连续有序Guid,性能比Abp有序Guid快4倍多</Description>
         <Authors>Findx</Authors>
         <RootNamespace>Findx.Guids.NewId</RootNamespace>

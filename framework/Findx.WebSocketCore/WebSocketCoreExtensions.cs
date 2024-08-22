@@ -17,8 +17,7 @@ public static class WebSocketCoreExtensions
     /// <param name="path"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
-    public static IApplicationBuilder MapWebSocketManager(this IApplicationBuilder app, PathString path,
-        WebSocketHandlerBase handler)
+    public static IApplicationBuilder MapWebSocketManager(this IApplicationBuilder app, PathString path, WebSocketHandlerBase handler)
     {
         return app.Map(path, x => x.UseMiddleware<WebSocketMiddleware>(handler));
     }

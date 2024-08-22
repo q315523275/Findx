@@ -11,32 +11,32 @@ namespace Findx.Utilities;
 public class SnowflakeIdUtility
 {
     /// <summary>
-    /// Start time 2010-11-04 09:42:54
+    ///     Start time 2022-02-02 02:02:02
     /// </summary>
-    private const long Twepoch = 1288834974657L;
+    private const long Twepoch = 1643738522000L;
 
     /// <summary>
-    /// The number of bits occupied by workerId
+    ///     The number of bits occupied by workerId
     /// </summary>
     private const int WorkerIdBits = 10;
 
     /// <summary>
-    /// The number of bits occupied by timestamp
+    ///     The number of bits occupied by timestamp
     /// </summary>
     private const int TimestampBits = 41;
 
     /// <summary>
-    /// The number of bits occupied by sequence
+    ///     The number of bits occupied by sequence
     /// </summary>
     private const int SequenceBits = 12;
 
     /// <summary>
-    /// Maximum supported machine id, the result is 1023
+    ///     Maximum supported machine id, the result is 1023
     /// </summary>
     private const int MaxWorkerId = ~(-1 << WorkerIdBits);
 
     /// <summary>
-    /// mask that help to extract timestamp and sequence from a long
+    ///     mask that help to extract timestamp and sequence from a long
     /// </summary>
     private const long TimestampAndSequenceMask = ~(-1L << (TimestampBits + SequenceBits));
 

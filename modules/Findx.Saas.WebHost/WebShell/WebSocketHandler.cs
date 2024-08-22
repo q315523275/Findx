@@ -6,10 +6,10 @@ namespace Findx.Saas.WebHost.WebShell;
 
 public class WebSocketHandler : WebSocketHandlerBase
 {
-    public WebSocketHandler(IWebSocketClientManager clientManager, IWebSocketSerializer serializer) : base(
-        clientManager, serializer)
+    public WebSocketHandler(IWebSocketClientManager clientManager, IWebSocketSerializer serializer) : base(clientManager, serializer)
     {
     }
+    
     /// <summary>
     ///     接收消息
     /// </summary>
