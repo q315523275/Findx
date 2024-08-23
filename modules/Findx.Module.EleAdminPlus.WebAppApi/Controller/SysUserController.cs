@@ -171,7 +171,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [Transactional(DataSource = "system")]
+    [Transactional(EntityType = typeof(SysUserInfo))]
     public override Task<CommonResult> AddAsync(UserCreateDto request, CancellationToken cancellationToken = default)
     {
         return base.AddAsync(request, cancellationToken);
@@ -213,7 +213,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [Transactional(DataSource = "system")]
+    [Transactional(EntityType = typeof(SysUserInfo))]
     public override Task<CommonResult> EditAsync(UserEditDto request, CancellationToken cancellationToken = default)
     {
         return base.EditAsync(request, cancellationToken);

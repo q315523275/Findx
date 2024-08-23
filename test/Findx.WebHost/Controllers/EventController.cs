@@ -42,7 +42,7 @@ public class EventController : ApiControllerBase
     [HttpGet("uow-event")]
     public async Task<string> UnitOfWorkEvent([FromServices] IUnitOfWorkManager uowMgr)
     {
-        var uow = await uowMgr.GetConnUnitOfWorkAsync(true, true);
+        var uow = await uowMgr.GetUnitOfWorkAsync(null, true, true);
 
         var repo1 = uow.GetRepository<TestNewsInfo, int>();
         await repo1.PagedAsync(1, 20);

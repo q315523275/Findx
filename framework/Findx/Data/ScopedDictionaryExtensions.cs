@@ -10,50 +10,24 @@ public static class ScopedDictionaryExtensions
     /// <summary>
     ///     获取连接串的UnitOfWork
     /// </summary>
-    public static IUnitOfWork GetConnUnitOfWork(this ScopedDictionary dict, string connPrimary)
+    public static IUnitOfWork GetUnitOfWork(this ScopedDictionary dict, string primary)
     {
-        return dict.TryGetValue<IUnitOfWork>($"UnitOfWork_ConnPrimary_{connPrimary}", out var uow) ? uow : default;
-    }
-
-    /// <summary>
-    ///     获取所有连接串的UnitOfWork
-    /// </summary>
-    public static IEnumerable<IUnitOfWork> GetAllConnUnitOfWork(this ScopedDictionary dict)
-    {
-        return dict.Where(m => m.Key.StartsWith("UnitOfWork_ConnPrimary_")).Select(m => m.Value as IUnitOfWork);
+        return dict.TryGetValue<IUnitOfWork>($"UnitOfWork_Primary_{primary}", out var uow) ? uow : default;
     }
 
     /// <summary>
     ///     设置连接串的UnitOfWork
     /// </summary>
-    public static void SetConnUnitOfWork(this ScopedDictionary dict, string connString, IUnitOfWork unitOfWork)
+    public static void SetUnitOfWork(this ScopedDictionary dict, string primary, IUnitOfWork unitOfWork)
     {
-        dict.TryAdd($"UnitOfWork_ConnPrimary_{connString}", unitOfWork);
+        dict.TryAdd($"UnitOfWork_Primary_{primary}", unitOfWork);
     }
-
+    
     /// <summary>
-    ///     获取指定实体类的UnitOfWork
+    ///     获取所有连接串的UnitOfWork
     /// </summary>
-    public static IUnitOfWork GetEntityUnitOfWork(this ScopedDictionary dict, Type entityType)
+    public static IEnumerable<IUnitOfWork> GetAllUnitOfWork(this ScopedDictionary dict)
     {
-        var key = $"UnitOfWork_EntityType_{entityType.FullName}";
-        return dict.TryGetValue<IUnitOfWork>(key, out var uow) ? uow : default;
-    }
-
-    /// <summary>
-    ///     获取所有实体类的UnitOfWork
-    /// </summary>
-    public static IEnumerable<IUnitOfWork> GetAllEntityUnitOfWork(this ScopedDictionary dict)
-    {
-        return dict.Where(m => m.Key.StartsWith("UnitOfWork_EntityType_")).Select(m => m.Value as IUnitOfWork);
-    }
-
-    /// <summary>
-    ///     设置指定实体类的UnitOfWork
-    /// </summary>
-    public static void SetEntityUnitOfWork(this ScopedDictionary dict, Type entityType, IUnitOfWork unitOfWork)
-    {
-        var key = $"UnitOfWork_EntityType_{entityType.FullName}";
-        dict.TryAdd(key, unitOfWork);
+        return dict.Where(m => m.Key.StartsWith("UnitOfWork_Primary_")).Select(m => m.Value as IUnitOfWork);
     }
 }

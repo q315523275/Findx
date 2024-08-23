@@ -10,13 +10,23 @@ public interface IUnitOfWorkManager
     /// <summary>
     ///     根据数据源名获取工作单元
     /// </summary>
-    /// <param name="dbPrimary">连接Key</param>
+    /// <param name="primary">工作单元标识</param>
     /// <param name="enableTransaction">是否启用事务</param>
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IUnitOfWork> GetConnUnitOfWorkAsync(bool enableTransaction = false, bool beginTransaction = false, string dbPrimary = default, CancellationToken cancellationToken = default);
+    Task<IUnitOfWork> GetUnitOfWorkAsync(string primary = null, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     根据实体类型获取工作单元
+    /// </summary>
+    /// <param name="entityType">实体类型</param>
+    /// <param name="enableTransaction">是否启用事务</param>
+    /// <param name="beginTransaction">是否开启事物</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IUnitOfWork> GetEntityUnitOfWorkAsync(Type entityType, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default);
+    
     /// <summary>
     ///     根据实体获取工作单元
     /// </summary>
@@ -25,18 +35,11 @@ public interface IUnitOfWorkManager
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default);
-    
-    /// <summary>
-    ///     获取所以已创建工作单元
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    Task<IEnumerable<IUnitOfWork>> GetAllConnUnitOfWorkAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取所以已创建工作单元
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IEnumerable<IUnitOfWork>> GetAllEntityUnitOfWorkAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<IUnitOfWork>> GetAllUnitOfWorkAsync(CancellationToken cancellationToken = default);
 }

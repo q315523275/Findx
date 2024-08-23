@@ -136,6 +136,10 @@ public static class LambdaExpressionParser
     private static readonly Dictionary<Type, Func<string[], object>> TypeConverters = new()
     {
         {typeof(string), values => values},
+        {typeof(ushort), values => values.Select(ushort.Parse) },
+        {typeof(ushort?), values => values.Select(s => ushort.TryParse(s, out var intValue) ? (ushort?)intValue : null) },
+        {typeof(short), values => values.Select(short.Parse) },
+        {typeof(short?), values => values.Select(s => short.TryParse(s, out var intValue) ? (short?)intValue : null) },
         {typeof(int), values => values.Select(int.Parse) },
         {typeof(int?), values => values.Select(s => int.TryParse(s, out var intValue) ? (int?)intValue : null) },
         {typeof(long), values => values.Select(long.Parse) },

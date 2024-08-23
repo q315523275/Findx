@@ -196,7 +196,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         Check.NotNull(repo, nameof(repo));
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, repo.GetDataSource(), cancellationToken);
+        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
         repo.UnitOfWork = UnitOfWork;
         
         var model = ToModelFromCreateRequest(request);
@@ -233,7 +233,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         Check.NotNull(repo, nameof(repo));
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, repo.GetDataSource(), cancellationToken);
+        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
         repo.UnitOfWork = UnitOfWork;
 
         var model = await repo.GetAsync(request.Id, cancellationToken);
@@ -279,8 +279,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         Check.NotNull(repo, nameof(repo));
 
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        var dataSource = repo.GetDataSource();
-        UnitOfWork = await unitOfManager.GetConnUnitOfWorkAsync(false, false, dataSource, cancellationToken);
+        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
         repo.UnitOfWork = UnitOfWork;
         
         await DeleteBeforeAsync(request);

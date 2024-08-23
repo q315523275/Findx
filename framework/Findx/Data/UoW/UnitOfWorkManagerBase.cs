@@ -21,15 +21,15 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <summary>
     ///     获取指定库工作单元
     /// </summary>
-    /// <param name="dbPrimary"></param>
+    /// <param name="primary">工作单元标识</param>
     /// <param name="enableTransaction">是否启用事务</param>
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IUnitOfWork> GetConnUnitOfWorkAsync(bool enableTransaction = false, bool beginTransaction = false, string dbPrimary = default, CancellationToken cancellationToken = default)
+    public async Task<IUnitOfWork> GetUnitOfWorkAsync(string primary = default, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
     {
-        var cacheKey = dbPrimary ?? GetDataSourcePrimary();
-        var unitOfWork = _scopedDictionary.GetConnUnitOfWork(cacheKey);
+        var primaryKey = primary ?? GetDataSourcePrimary();
+        var unitOfWork = _scopedDictionary.GetUnitOfWork(primaryKey);
         if (unitOfWork != null)
         {
             if (enableTransaction) unitOfWork.EnableTransaction();
@@ -38,8 +38,8 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
             return unitOfWork;
         }
 
-        unitOfWork = CreateConnUnitOfWork(dbPrimary);
-        _scopedDictionary.SetConnUnitOfWork(cacheKey, unitOfWork);
+        unitOfWork = CreateConnUnitOfWork(primaryKey);
+        _scopedDictionary.SetUnitOfWork(primaryKey, unitOfWork);
         if (enableTransaction) unitOfWork.EnableTransaction();
         if (beginTransaction) await unitOfWork.BeginOrUseTransactionAsync(cancellationToken);
         
@@ -49,30 +49,26 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <summary>
     ///     根据实体获取工作单元
     /// </summary>
+    /// <param name="entityType">实体类型</param>
     /// <param name="enableTransaction">是否启用事务</param>
     /// <param name="beginTransaction">是否启用事务</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
+    public Task<IUnitOfWork> GetEntityUnitOfWorkAsync(Type entityType, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
     {
-        var entityType = typeof(TEntity);
-        var extensionAttribute = entityType.GetEntityExtensionAttribute();
-        var dataSource = extensionAttribute?.DataSource ?? GetDataSourcePrimary();
+        return GetUnitOfWorkAsync(entityType.GetEntityExtensionAttribute()?.DataSource, enableTransaction, beginTransaction, cancellationToken);
+    }
 
-        var unitOfWork = _scopedDictionary.GetEntityUnitOfWork(entityType);
-        if (unitOfWork != null)
-        {
-            if (enableTransaction) unitOfWork.EnableTransaction();
-            if (beginTransaction) await unitOfWork.BeginOrUseTransactionAsync(cancellationToken);
-            return unitOfWork;
-        }
-
-        unitOfWork = CreateConnUnitOfWork(dataSource);
-        _scopedDictionary.SetEntityUnitOfWork(entityType, unitOfWork);
-        if (enableTransaction) unitOfWork.EnableTransaction();
-        if (beginTransaction) await unitOfWork.BeginOrUseTransactionAsync(cancellationToken);
-
-        return unitOfWork;
+    /// <summary>
+    ///     根据实体获取工作单元
+    /// </summary>
+    /// <param name="enableTransaction">是否启用事务</param>
+    /// <param name="beginTransaction">是否启用事务</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
+    {
+        return GetEntityUnitOfWorkAsync(typeof(TEntity), enableTransaction, beginTransaction, cancellationToken);
     }
 
     /// <summary>
@@ -80,21 +76,11 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<IEnumerable<IUnitOfWork>> GetAllConnUnitOfWorkAsync(CancellationToken cancellationToken = default)
+    public Task<IEnumerable<IUnitOfWork>> GetAllUnitOfWorkAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_scopedDictionary.GetAllConnUnitOfWork());
+        return Task.FromResult(_scopedDictionary.GetAllUnitOfWork());
     }
-
-    /// <summary>
-    ///     获取所以已创建工作单元
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public Task<IEnumerable<IUnitOfWork>> GetAllEntityUnitOfWorkAsync(CancellationToken cancellationToken = default)
-    {
-        return Task.FromResult(_scopedDictionary.GetAllEntityUnitOfWork());
-    }
-
+    
     /// <summary>
     ///     获取指定DB连接工作单元
     /// </summary>

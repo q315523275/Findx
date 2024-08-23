@@ -4,23 +4,23 @@ namespace Findx.Data;
 
 internal class NullUnitOfWorkManager : IUnitOfWorkManager
 {
-    public Task<IUnitOfWork> GetConnUnitOfWorkAsync(bool enableTransaction = false, bool beginTransaction = false, string dbPrimary = default, CancellationToken cancellationToken = default)
+    public Task<IUnitOfWork> GetUnitOfWorkAsync(string primary = null, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
     {
-        return default;
+        throw new NotImplementedException();
     }
 
     public Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
     {
-        return default;
+        throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<IUnitOfWork>> GetAllConnUnitOfWorkAsync(CancellationToken cancellationToken = default)
+    public Task<IUnitOfWork> GetEntityUnitOfWorkAsync(Type entityType, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
     {
-        return default;
+        throw new NotImplementedException();
     }
 
-    public Task<IEnumerable<IUnitOfWork>> GetAllEntityUnitOfWorkAsync(CancellationToken cancellationToken = default)
+    public Task<IEnumerable<IUnitOfWork>> GetAllUnitOfWorkAsync(CancellationToken cancellationToken = default)
     {
-        return default;
+        throw new NotImplementedException();
     }
 }

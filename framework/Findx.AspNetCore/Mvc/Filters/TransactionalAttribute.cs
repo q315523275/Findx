@@ -1,4 +1,6 @@
-﻿using System.Data;
+﻿#nullable enable
+using System;
+using System.Data;
 using System.Threading.Tasks;
 using Findx.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +15,14 @@ namespace Findx.AspNetCore.Mvc.Filters;
 public class TransactionalAttribute : ActionFilterAttribute
 {
 	/// <summary>
-	///     数据连接标识,不传默认使用主连接
+	///     工作单元标识
 	/// </summary>
-	// ReSharper disable once MemberCanBePrivate.Global
-	public string DataSource { get; set; } = null;
+	public string DataSource { get; set; } = string.Empty;
+
+	/// <summary>
+	///     实体类型
+	/// </summary>
+	public Type? EntityType { get; set; }
 
 	/// <summary>
 	///		事物级别
@@ -32,19 +38,23 @@ public class TransactionalAttribute : ActionFilterAttribute
 	{
 		var provider = context.HttpContext.RequestServices;
 		var cancellationToken = context.HttpContext.RequestAborted;
+		var unitOfWorkManager = provider.GetRequiredService<IUnitOfWorkManager>();
 		
 		// 初始化工作单元
-		// ReSharper disable once PossibleNullReferenceException
-		var uow = await	provider.GetService<IUnitOfWorkManager>()?.GetConnUnitOfWorkAsync(true, true, DataSource, cancellationToken);
-
+		IUnitOfWork unitOfWork;
+		if (EntityType != null)
+			unitOfWork = await unitOfWorkManager.GetEntityUnitOfWorkAsync(EntityType, true, true, cancellationToken);
+		else
+			unitOfWork = await unitOfWorkManager.GetUnitOfWorkAsync(DataSource, true, true, cancellationToken);
+		
 		// 执行业务
 		var actionContext = await next();
 
-		if (uow == null) return;
+		if (unitOfWork == null) return;
 		
 		if (actionContext.Exception != null)
 		{
-			await uow.RollbackAsync(cancellationToken).ConfigureAwait(false);
+			await unitOfWork.RollbackAsync(cancellationToken).ConfigureAwait(false);
 		}
 		else switch (actionContext.Result)
 		{
@@ -53,13 +63,13 @@ public class TransactionalAttribute : ActionFilterAttribute
 				if (result1.Value is CommonResult ajax)
 				{
 					if (ajax.IsSuccess())
-						await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+						await unitOfWork.CommitAsync(cancellationToken).ConfigureAwait(false);
 					else
-						await uow.RollbackAsync(cancellationToken).ConfigureAwait(false);
+						await unitOfWork.RollbackAsync(cancellationToken).ConfigureAwait(false);
 				}
 				else
 				{
-					await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+					await unitOfWork.CommitAsync(cancellationToken).ConfigureAwait(false);
 				}
 				break;
 			}
@@ -68,13 +78,13 @@ public class TransactionalAttribute : ActionFilterAttribute
 				if (result2.Value is CommonResult ajax)
 				{
 					if (ajax.IsSuccess())
-						await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+						await unitOfWork.CommitAsync(cancellationToken).ConfigureAwait(false);
 					else
-						await uow.RollbackAsync(cancellationToken).ConfigureAwait(false);
+						await unitOfWork.RollbackAsync(cancellationToken).ConfigureAwait(false);
 				}
 				else
 				{
-					await uow.CommitAsync(cancellationToken).ConfigureAwait(false);
+					await unitOfWork.CommitAsync(cancellationToken).ConfigureAwait(false);
 				}
 				break;
 			}
@@ -82,11 +92,11 @@ public class TransactionalAttribute : ActionFilterAttribute
 			{
 				if (actionContext.HttpContext.Response.StatusCode < 400)
 				{
-					await uow.CommitAsync(cancellationToken);
+					await unitOfWork.CommitAsync(cancellationToken);
 				}
 				else
 				{
-					await uow.RollbackAsync(cancellationToken).ConfigureAwait(false);
+					await unitOfWork.RollbackAsync(cancellationToken).ConfigureAwait(false);
 				}
 				break;
 			}
