@@ -49,5 +49,5 @@ public class SysAppInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, 
     /// <summary>
     ///     租户
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
 }

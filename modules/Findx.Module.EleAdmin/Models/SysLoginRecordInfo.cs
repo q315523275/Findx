@@ -70,5 +70,5 @@ public class SysLoginRecordInfo : EntityBase<Guid>, ICreationAudited<Guid>, ITen
     /// <summary>
     ///     租户编号
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
 }

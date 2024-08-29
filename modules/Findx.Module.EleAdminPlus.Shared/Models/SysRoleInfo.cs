@@ -51,7 +51,7 @@ public class SysRoleInfo : FullAuditedBase<long, long>, ITenant, ISoftDeletable
     /// <summary>
     ///     租户id
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
     
     /// <summary>
     ///     是否删除

@@ -4,7 +4,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Exceptions;
-using Findx.Linq;
+using Findx.Expressions;
 using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.Shared.Mvc.Filters;

@@ -1,9 +1,8 @@
 ﻿using System.ComponentModel;
 using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
-using Findx.Data;
+using Findx.Expressions;
 using Findx.Extensions;
-using Findx.Linq;
 using Findx.Module.EleAdmin.Dtos;
 using Findx.Module.EleAdmin.Models;
 using Microsoft.AspNetCore.Authorization;

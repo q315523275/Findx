@@ -74,5 +74,5 @@ public class SysOrgInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, 
     /// <summary>
     ///     租户id
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
 }

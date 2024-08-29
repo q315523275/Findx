@@ -109,7 +109,7 @@ public class SysUserInfo : FullAuditedBase<long, long>, ITenant, ISoftDeletable
     /// <summary>
     ///     租户id
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
     
     /// <summary>
     ///     冗余角色Json

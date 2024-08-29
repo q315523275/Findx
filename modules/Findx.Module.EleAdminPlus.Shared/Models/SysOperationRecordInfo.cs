@@ -104,7 +104,7 @@ public class SysOperationRecordInfo : EntityBase<long>, ITenant, ICreatedTime
     /// <summary>
     ///     租户编号
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
     
     /// <summary>
     ///     创建时间

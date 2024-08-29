@@ -69,7 +69,7 @@ public class SysMenuInfo : FullAuditedBase<long, long>, ITenant, ISort, ISoftDel
     /// <summary>
     ///     租户id
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
 
     /// <summary>
     ///     是否删除

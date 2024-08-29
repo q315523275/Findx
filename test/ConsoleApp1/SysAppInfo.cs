@@ -44,5 +44,5 @@ public record SysAppInfo
     /// <summary>
     ///     租户
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
 }

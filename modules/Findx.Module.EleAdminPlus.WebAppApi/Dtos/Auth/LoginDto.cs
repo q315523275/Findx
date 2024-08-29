@@ -28,7 +28,7 @@ public class LoginDto: IRequest
     /// <summary>
     ///     租户
     /// </summary>
-    public Guid TenantId { set; get; }
+    public string TenantId { set; get; }
 
     /// <summary>
     ///     uuid

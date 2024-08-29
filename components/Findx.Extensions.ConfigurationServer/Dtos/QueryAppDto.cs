@@ -1,6 +1,6 @@
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
-using Findx.Linq;
+using Findx.Expressions;
 
 namespace Findx.Extensions.ConfigurationServer.Dtos;
 

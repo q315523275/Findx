@@ -114,5 +114,5 @@ public class SysOperationRecordInfo : EntityBase<Guid>, ICreationAudited<Guid>, 
     /// <summary>
     ///     租户编号
     /// </summary>
-    public Guid? TenantId { get; set; }
+    public string TenantId { get; set; }
 }

@@ -6,7 +6,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions;
-using Findx.Linq;
+using Findx.Expressions;
 using Findx.Mapping;
 using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
