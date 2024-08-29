@@ -1,4 +1,4 @@
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     动态筛选规则

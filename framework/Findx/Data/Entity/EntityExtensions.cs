@@ -158,7 +158,7 @@ public static class EntityExtensions
     {
         if (user.Identity != null && entity is ITenant entity1 && user.Identity.IsAuthenticated && !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
         {
-            entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<Guid>();
+            entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId);
             return (TEntity)entity1;
         }
 

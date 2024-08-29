@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Findx.Data;
+using Findx.Expressions;
 using FreeSql;
 using FreeSql.Extensions.EntityUtil;
 
@@ -106,6 +107,9 @@ public static class Extensions
     /// <returns>key: 属性名, value: [新值, 旧值]</returns>
     public static Dictionary<string, object[]> CompareState<TEntity>(this IFreeSql fsql, TEntity newData, TEntity oldData) where TEntity : IEntity
     {
+        // 不使用性能更高的 PropertyDynamicGetter 属性值读取器
+        // 如果使用还需要实现实体及属性缓存, 造成多余缓存占用空间
+        
         if (newData == null)
             return null;
 
@@ -120,7 +124,7 @@ public static class Extensions
         var key = fsql.GetEntityKeyString(entityType, newData, false);
         if (string.IsNullOrEmpty(key))
             throw new Exception($"实体{table.CsName}的主键值不可为空");
-
+        
         var res = fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, a =>
                         columns.TryGetValue(a, out var columnInfo) ? new[]
                         { 
@@ -140,6 +144,9 @@ public static class Extensions
     /// <returns>key: 属性名, value: 新值</returns>
     public static Dictionary<string, object> CompareChangeValues<TEntity>(this IFreeSql fsql, TEntity newData, TEntity oldData) where TEntity : IEntity
     {
+        // 不使用性能更高的 PropertyDynamicGetter 属性值读取器
+        // 如果使用还需要实现实体及属性缓存, 造成多余缓存占用空间
+        
         if (newData == null) 
             return null;
         

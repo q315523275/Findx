@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     筛选规则

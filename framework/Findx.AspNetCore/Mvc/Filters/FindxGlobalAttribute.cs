@@ -24,6 +24,14 @@ public class FindxGlobalAttribute : IActionFilter
     /// <param name="context"></param>
     public void OnActionExecuting(ActionExecutingContext context)
     {
+        // 租户赋值
+        var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
+        if (currentUser is { IsAuthenticated: true } && currentUser.TenantId.IsNotNullOrWhiteSpace())
+            TenantManager.Current = currentUser.TenantId;
+
+        // 刷新Token
+        // 已迁移组建内置实现
+        
         // 模型判断
         if (!context.ModelState.IsValid)
         {
@@ -33,14 +41,6 @@ public class FindxGlobalAttribute : IActionFilter
 
             context.Result = new JsonResult(CommonResult.Fail("400", errors.Select(x => x.ErrorMessage).ExpandAndToString(CommonUtility.Line)));
         }
-
-        // 租户赋值
-        var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
-        if (currentUser is { IsAuthenticated: true } && currentUser.TenantId.IsNotNullOrWhiteSpace())
-            TenantManager.Current = currentUser.TenantId.CastTo<Guid>();
-
-        // 刷新Token
-        // 已迁移组建内置实现
     }
 
     /// <summary>
@@ -49,6 +49,6 @@ public class FindxGlobalAttribute : IActionFilter
     /// <param name="context"></param>
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        TenantManager.Current = Guid.Empty;
+        TenantManager.Current = string.Empty;
     }
 }

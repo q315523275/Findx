@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     动态查询构建器

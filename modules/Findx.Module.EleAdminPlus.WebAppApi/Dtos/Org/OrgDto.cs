@@ -40,12 +40,12 @@ public class OrgDto: IResponse
     /// <summary>
     ///     负责人id
     /// </summary>
-    public long? LeaderId { get; set; }
+    public long? OwnerId { get; set; }
 
     /// <summary>
     ///     负责人
     /// </summary>
-    public string Leader { get; set; }
+    public string Owner { get; set; }
 
     /// <summary>
     ///     排序号

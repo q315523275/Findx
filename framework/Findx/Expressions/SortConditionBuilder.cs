@@ -1,4 +1,4 @@
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     数据排序构建器

@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 using Findx.Extensions;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 /// ExpressionStarter

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Text.Json.Serialization;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     列表字段排序条件

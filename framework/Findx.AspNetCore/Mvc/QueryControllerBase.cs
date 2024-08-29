@@ -8,8 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
+using Findx.Expressions;
 using Findx.Extensions;
-using Findx.Linq;
 using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
 
@@ -121,11 +121,10 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var repo = GetRepository<TModel, TKey>();
 
         Check.NotNull(repo, nameof(repo));
-
-        Console.WriteLine(request.ToString());
+        
         var whereExpression = CreateWhereExpression(request);
         var orderByExpression = CreateOrderExpression(request);
-
+        
         var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(result);

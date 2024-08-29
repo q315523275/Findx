@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Findx.AspNetCore.Mvc.Middlewares;
 using Findx.Builders;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Logging;
 using Findx.Utilities;
@@ -25,7 +26,7 @@ public partial class Extensions
         var appInfo = app.Services.GetRequiredService<IApplicationContext>();
         foreach (var uri in appInfo.Uris.Split(";"))
             app.Urls.Add(uri);
-
+        ServiceLocator.Instance = app.Services;
         return app;
     }
     
@@ -39,7 +40,7 @@ public partial class Extensions
         var appInfo = app.Services.GetRequiredService<IApplicationContext>();
         foreach (var uri in appInfo.Uris.Split(";"))
             app.Urls.Add(uri);
-
+        ServiceLocator.Instance = app.Services;
         app.Run();
     }
 

@@ -1291,8 +1291,8 @@ public class RedisClient : IRedisClient
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             
         var bytes = _cache.SetRandomMembers(cacheKey, count);
-        foreach (var item in bytes) yield 
-            return _serializer.Deserialize<T>(item);
+        foreach (var item in bytes) 
+            yield return _serializer.Deserialize<T>(item);
     }
 
     public long SetRemove<T>(string cacheKey, IList<T> cacheValues = null)

@@ -65,7 +65,7 @@ public class FreeSqlModule : StartupModule
 
             // 开启租户隔离
             if (item.Value.MultiTenant)
-                fsql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current != Guid.Empty, it => it.TenantId == TenantManager.Current);
+                fsql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current.IsNotNullOrWhiteSpace(), it => it.TenantId == TenantManager.Current);
             
             // 开启逻辑删除
             if (item.Value.SoftDeletable)
@@ -257,7 +257,7 @@ public class FreeSqlModule : StartupModule
     private static void Aop_AuditValue_Tenant(AuditValueEventArgs e, FreeSqlConnectionConfig option)
     {
         // 新建数据时,租户自动赋值
-        if (option.MultiTenant && e.AuditValueType == AuditValueType.Insert && TenantManager.Current != Guid.Empty && option.MultiTenantFieldName.IsNotNullOrWhiteSpace())
+        if (option.MultiTenant && e.AuditValueType == AuditValueType.Insert && TenantManager.Current.IsNotNullOrWhiteSpace() && option.MultiTenantFieldName.IsNotNullOrWhiteSpace())
         {
             //  实体属性字段
             if (e.Column.CsName.Equals(option.MultiTenantFieldName, StringComparison.OrdinalIgnoreCase) && e.Column.CsType == typeof(Guid?) && e.Value == null)

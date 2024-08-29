@@ -1,7 +1,7 @@
 using Findx.Common;
 using Findx.Utilities;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     属性值设置器(字典存储委托)

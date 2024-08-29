@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Linq.Expressions;
-using Findx.Linq;
+using Findx.Expressions;
 
 namespace Findx.Data;
 

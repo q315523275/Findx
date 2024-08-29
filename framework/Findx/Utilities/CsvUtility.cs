@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Findx.Data;
+using Findx.Expressions;
 using Findx.Extensions;
-using Findx.Linq;
 
 namespace Findx.Utilities;
 

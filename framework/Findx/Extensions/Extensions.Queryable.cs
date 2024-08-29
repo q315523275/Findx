@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Linq.Expressions;
 using Findx.Common;
-using Findx.Linq;
+using Findx.Expressions;
 
 namespace Findx.Extensions;
 

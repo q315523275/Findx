@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     集合属性排序(缓存)
@@ -18,12 +18,20 @@ public static class CollectionPropertySorter<TEntity>
     /// <exception cref="InvalidOperationException"></exception>
     public static LambdaExpression GetKeySelector(string field)
     {
-        var entityType = typeof(TEntity);
+        return GetKeySelector(typeof(TEntity), field);
+    }
+
+    /// <summary>
+    ///     LambdaExpression
+    /// </summary>
+    /// <param name="entityType"></param>
+    /// <param name="field"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static LambdaExpression GetKeySelector(Type entityType, string field)
+    {
         var key = entityType.FullName + "." + field;
-        if (PropertyAccessDict.TryGetValue(key, out var selector))
-        {
-            return selector;
-        }
+        if (PropertyAccessDict.TryGetValue(key, out var selector)) return selector;
         
         var parameter = Expression.Parameter(entityType, "x");
         Expression propertyAccess = parameter;
@@ -49,9 +57,7 @@ public static class CollectionPropertySorter<TEntity>
         // var keySelector = Expression.Lambda(propertyAccess, parameter);
         // 适配Orm，多一层转换
         var keySelector = Expression.Lambda<Func<TEntity, object>>(Expression.Convert(propertyAccess, typeof(object)), parameter);
-        
         PropertyAccessDict[key] = keySelector;
-        
         return keySelector;
     }
 }

@@ -2,7 +2,7 @@ using Findx.Common;
 using Findx.Extensions;
 using Findx.Utilities;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     属性值读取器(字典存储委托)

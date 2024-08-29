@@ -8,7 +8,7 @@ public interface ITenant
     /// <summary>
     ///     租户ID
     /// </summary>
-    Guid? TenantId { get; set; }
+    string TenantId { get; set; }
 }
 
 /// <summary>

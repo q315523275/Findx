@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.Serialization.Formatters.Binary;
-using Findx.Linq;
 using Findx.Utilities;
 
 namespace Findx.Extensions;

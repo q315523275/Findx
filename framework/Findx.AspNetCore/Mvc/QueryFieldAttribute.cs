@@ -1,5 +1,5 @@
 using System;
-using Findx.Linq;
+using Findx.Expressions;
 
 namespace Findx.AspNetCore.Mvc;
 

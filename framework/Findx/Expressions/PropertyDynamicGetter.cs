@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     属性值动态读取器(性能高于字典缓存)

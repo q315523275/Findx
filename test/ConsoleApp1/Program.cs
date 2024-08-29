@@ -15,8 +15,8 @@ using CsvHelper;
 using Findx;
 using Findx.Caching.InMemory;
 using Findx.Configuration;
+using Findx.Data;
 using Findx.Extensions;
-using Findx.Linq;
 using Findx.Reflection;
 using Findx.Utilities;
 using Findx.WebSocketCore.Hubs.Client;
@@ -257,39 +257,23 @@ Console.WriteLine("Hello, World!");
 // 有序Id
 Console.WriteLine(Guid.NewGuid());
 Console.WriteLine(SequentialGuidUtility.Next(SequentialGuidType.AsString));
-Console.WriteLine(GenerateWorkerIdBaseOnMac());
 var snowflakeId = SnowflakeIdUtility.Default().NextId();
 Console.WriteLine(snowflakeId);
-Console.WriteLine(GenerateWorkerIdBaseOnMac() | snowflakeId);
-Console.WriteLine(3 & 2);
-
-
-var options = new IdGeneratorOptions();
-// options.WorkerIdBitLength = 10; // 默认值6，限定 WorkerId 最大值为2^6-1，即默认最多支持64个节点。
-options.SeqBitLength = 12; // 默认值6，限制每毫秒生成的ID个数。若生成速度超过5万个/秒，建议加大 SeqBitLength 到 10。
-// options.BaseTime = Your_Base_Time; // 如果要兼容老系统的雪花算法，此处应设置为老系统的BaseTime。
+var options = new IdGeneratorOptions { WorkerIdBitLength = 10, SeqBitLength = 12 };
 YitIdHelper.SetIdGenerator(options);
 Console.WriteLine(YitIdHelper.NextId());
 
-
+Console.WriteLine();
 Console.WriteLine("有序Id生成预热结束");
+Console.WriteLine();
 
-var watch = new Stopwatch();  
-watch.Start();
+var watch = Stopwatch.StartNew();
 for (var i = 0; i < 1000000; i++)
 {
     Guid.NewGuid();
 }
 watch.Stop();
 Console.WriteLine($"原生NewGuid耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (var i = 0; i < 1000000; i++)
-{
-    NewId.NextSequentialGuid();
-}
-watch.Stop();
-Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
 
 watch.Restart();
 for (var i = 0; i < 1000000; i++)
@@ -302,10 +286,18 @@ Console.WriteLine($"Abp有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
 watch.Restart();
 for (var i = 0; i < 1000000; i++)
 {
+    NewId.NextSequentialGuid();
+}
+watch.Stop();
+Console.WriteLine($"NewId有序Guid耗时:{watch.Elapsed.TotalMilliseconds}ms");
+
+watch.Restart();
+for (var i = 0; i < 1000000; i++)
+{
     SnowflakeIdUtility.Default().NextId();
 }
 watch.Stop();
-Console.WriteLine($"SnowflakeId耗时:{watch.Elapsed.TotalMilliseconds}ms");
+Console.WriteLine($"SnowflakeIdUtility耗时:{watch.Elapsed.TotalMilliseconds}ms");
 
 watch.Restart();
 for (var i = 0; i < 1000000; i++)
@@ -317,27 +309,49 @@ Console.WriteLine($"YitIdHelper.NextId()耗时:{watch.Elapsed.TotalMilliseconds}
 
 
 // 重复验证
-// var repeatGuidList = new HashSet<Guid>();
-// for (var i = 0; i < 1000000; i++)
-// {
-//     repeatGuidList.Add(NewId.NextSequentialGuid());
-// }
-// Console.WriteLine($"有序guid是否有重复:{repeatGuidList.Count != 1000000}");
+Console.WriteLine();
+var repeatList = new long[1000000];;
+Parallel.For(0, 1000000, i =>
+{
+    repeatList[i] = SnowflakeIdUtility.Default().NextId();
+});
+Console.WriteLine($"有序Id-SnowflakeIdUtility是否有重复:{repeatList.Distinct().Count() != 1000000}");
+
+var repeatList2 = new Guid[1000000];;
+Parallel.For(0, 1000000, i =>
+{
+    repeatList2[i] = NewId.NextSequentialGuid();
+});
+Console.WriteLine($"有序Id-NewId是否有重复:{repeatList2.Distinct().Count() != 1000000}");
+
+var repeatList3= new long[1000000];;
+Parallel.For(0, 1000000, i =>
+{
+    repeatList3[i] = YitIdHelper.NextId();
+});
+Console.WriteLine($"有序Id-YitIdHelper是否有重复:{repeatList3.Distinct().Count() != 1000000}");
 
 // 连续性
-// Console.WriteLine($"检查是否是连续Guid......");
-// var sequentialList = new List<long>();
-// for (var i = 0; i < 10000; i++)
-// {
-//     sequentialList.Add(YitIdHelper.NextId());
-// }
-// var newGuids = sequentialList.OrderBy(x => x).ToList();
-// for (var i = 0; i < 10000; i++)
-// {
-//     if (newGuids[i] != sequentialList[i])
-//         Console.WriteLine($"发现非连续:{newGuids[i]} != {sequentialList[i]}");
-// }
+Console.WriteLine();
+Console.WriteLine($"检查是否是连续Guid......");
+var sequentialList = new List<long>();
+for (var i = 0; i < 1000000; i++)
+{
+    sequentialList.Add(SnowflakeIdUtility.Default().NextId());
+}
+var newGuids = sequentialList.OrderBy(x => x).ToList();
+for (var i = 0; i < 1000000; i++)
+{
+    if (newGuids[i] != sequentialList[i])
+        Console.WriteLine($"发现非连续:{newGuids[i]} != {sequentialList[i]}");
+}
+Console.WriteLine($"有序Id连续检查结果打印结束");
 
+// Console.WriteLine("雪花id 1829194612124213248 反解析...");
+SnowflakeIdUtility.TryParse(1829194612124213248, out var timestamp, out var wid, out var sequence);
+Console.WriteLine(timestamp.ToString(CultureInfo.InvariantCulture));
+Console.WriteLine(wid);
+Console.WriteLine(sequence);
 
 // Json表达式解析
 // var filterGroup = new FilterGroup()
@@ -403,17 +417,17 @@ Console.WriteLine($"YitIdHelper.NextId()耗时:{watch.Elapsed.TotalMilliseconds}
 // Console.WriteLine(DirectoryUtility.GetDirectories(movePath, "*").ToJson());
 
 // Console.WriteLine(GenerateWorkerIdBaseOnMac());
-static long GenerateWorkerIdBaseOnMac()
-{
-    var nice = NetworkInterface.GetAllNetworkInterfaces();
-    // exclude virtual and Loopback
-    var firstUpInterface = nice.OrderByDescending(x => x.Speed).FirstOrDefault(x => !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up);
-    if (firstUpInterface == null) throw new Exception("no available mac found");
-    var address = firstUpInterface.GetPhysicalAddress();
-    var mac = address.GetAddressBytes();
-
-    return ((mac[4] & 0B11) << 8) | (mac[5] & 0xFF);
-}
+// static long GenerateWorkerIdBaseOnMac()
+// {
+//     var nice = NetworkInterface.GetAllNetworkInterfaces();
+//     // exclude virtual and Loopback
+//     var firstUpInterface = nice.OrderByDescending(x => x.Speed).FirstOrDefault(x => !x.Description.Contains("Virtual") && x.NetworkInterfaceType != NetworkInterfaceType.Loopback && x.OperationalStatus == OperationalStatus.Up);
+//     if (firstUpInterface == null) throw new Exception("no available mac found");
+//     var address = firstUpInterface.GetPhysicalAddress();
+//     var mac = address.GetAddressBytes();
+//
+//     return ((mac[4] & 0B11) << 8) | (mac[5] & 0xFF);
+// }
 
 
 // Console.WriteLine(EncryptUtility.Md5By32("123456"));

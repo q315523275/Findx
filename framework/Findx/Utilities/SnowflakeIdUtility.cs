@@ -5,81 +5,51 @@ namespace Findx.Utilities;
 
 /// <summary>
 ///     雪花算法生成ID
-///     https://github.com/dotnetcore/cap/blob/master/src/DotNetCore.CAP/Internal/SnowflakeId.cs
 /// </summary>
 // ReSharper disable once ClassWithVirtualMembersNeverInherited.Global
 public class SnowflakeIdUtility
 {
     /// <summary>
-    ///     Start time 2022-02-02 02:02:02
+    ///     Start time 2010-11-04 09:42:54
     /// </summary>
-    private const long Twepoch = 1643738522000L;
+    private const long StartTimestamp = 1288834974657L;
 
-    /// <summary>
-    ///     The number of bits occupied by workerId
-    /// </summary>
-    private const int WorkerIdBits = 10;
-
-    /// <summary>
-    ///     The number of bits occupied by timestamp
-    /// </summary>
-    private const int TimestampBits = 41;
-
-    /// <summary>
-    ///     The number of bits occupied by sequence
-    /// </summary>
-    private const int SequenceBits = 12;
-
-    /// <summary>
-    ///     Maximum supported machine id, the result is 1023
-    /// </summary>
-    private const int MaxWorkerId = ~(-1 << WorkerIdBits);
-
-    /// <summary>
-    ///     mask that help to extract timestamp and sequence from a long
-    /// </summary>
-    private const long TimestampAndSequenceMask = ~(-1L << (TimestampBits + SequenceBits));
+    private const int WorkerIdBitLength = 10;
+    private const int SequenceBitLength = 12;
+    private const int MaxWorkerId = ~(-1 << WorkerIdBitLength);
+    
+    private const int WorkerIdShift = SequenceBitLength;
+    private const int TimestampLeftShift = SequenceBitLength + WorkerIdBitLength;
+    private const long SequenceMask = -1L ^ (-1L << SequenceBitLength);
 
     private static SnowflakeIdUtility? _snowflakeId;
 
     private static readonly object SLock = new();
-
-    private readonly object _lock = new();
-
+    
     /// <summary>
-    /// timestamp and sequence mix in one Long
-    /// highest 11 bit: not used
-    /// middle  41 bit: timestamp
-    /// lowest  12 bit: sequence
-    /// </summary>
-    private long _timestampAndSequence;
-
-    /// <summary>
-    /// 
+    ///     Ctor
     /// </summary>
     /// <param name="workerId">工作id</param>
     /// <exception cref="ArgumentException"></exception>
     public SnowflakeIdUtility(long workerId)
     {
-        InitTimestampAndSequence();
         // sanity check for workerId
         if (workerId is > MaxWorkerId or < 0)
             throw new ArgumentException($"worker Id can't be greater than {MaxWorkerId} or less than 0");
 
-        WorkerId = workerId << (TimestampBits + SequenceBits);
+        WorkerId = workerId << WorkerIdShift;
     }
-
-    /// <summary>
-    /// business meaning: machine ID (0 ~ 1023)
-    /// actual layout in memory:
-    /// highest 1 bit: 0
-    /// middle 10 bit: workerId
-    /// lowest 53 bit: all 0
-    /// </summary>
+    
+    private readonly object _lock = new();
+    
     private long WorkerId { get; }
+    
+    private long _lastTimeTick = -1L;
+    
+    private int _sequence = -1;
 
     /// <summary>
-    /// 默认雪花算法服务
+    ///     默认雪花算法服务
     /// </summary>
     /// <returns></returns>
     public static SnowflakeIdUtility Default()
@@ -93,7 +63,12 @@ public class SnowflakeIdUtility
                 return _snowflakeId;
 
             if (!long.TryParse(Environment.GetEnvironmentVariable("WORKERID"), out var workerId))
-                workerId = Util.GenerateWorkerId(MaxWorkerId);
+            {
+                var nodeId = Util.GenerateWorkerId(MaxWorkerId);
+                var pid = Environment.ProcessId;
+                var tid = Environment.CurrentManagedThreadId;
+                workerId = ((nodeId & 0x1F) << 5) | (uint)((pid ^ tid) & 0x1F);
+            }
             
             // ReSharper disable once PossibleMultipleWriteAccessInDoubleCheckLocking
             return _snowflakeId = new SnowflakeIdUtility(workerId);
@@ -101,56 +76,88 @@ public class SnowflakeIdUtility
     }
 
     /// <summary>
-    /// 雪花Id
+    ///     雪花Id
     /// </summary>
     /// <returns></returns>
     public virtual long NextId()
     {
         lock (_lock)
         {
-            WaitIfNecessary();
-            var timestampWithSequence = _timestampAndSequence & TimestampAndSequenceMask;
-            return WorkerId | timestampWithSequence;
+            var currentTimeTick = GetCurrentTimeTick();
+            if (currentTimeTick < _lastTimeTick)
+            {
+                var t = _lastTimeTick - currentTimeTick;
+                
+                // 在夏令时地区，时间可能回拨1个小时
+                if (t > 3600_000 + 10_000) 
+                    throw new InvalidOperationException($"time reversal too large ({t}ms). To ensure uniqueness, Snowflake refuses to generate a new Id");
+            }
+            
+            if (currentTimeTick > _lastTimeTick)
+            {
+                _lastTimeTick = currentTimeTick;
+                _sequence = 0;
+                return GenerateId(_lastTimeTick);
+            }
+            
+            _sequence += 1;
+
+            if (_sequence > SequenceMask)
+            {
+                _lastTimeTick++;
+                _sequence = 0;
+            }
+            
+            return GenerateId(_lastTimeTick);
         }
     }
 
-    /// <summary>
-    /// init first timestamp and sequence immediately
-    /// </summary>
-    private void InitTimestampAndSequence()
+    private long GenerateId(long useTimeTick)
     {
-        var timestamp = GetNewestTimestamp();
-        var timestampWithSequence = timestamp << SequenceBits;
-        _timestampAndSequence = timestampWithSequence;
+        return (useTimeTick << TimestampLeftShift) | WorkerId | (uint)_sequence;
     }
-
-    /// <summary>
-    /// block current thread if the QPS of acquiring UUID is too high
-    /// that current sequence space is exhausted
-    /// </summary>
-    private void WaitIfNecessary()
+    
+    private long GetCurrentTimeTick()
     {
-        var currentWithSequence = ++_timestampAndSequence;
-        var current = currentWithSequence >> SequenceBits;
-        var newest = GetNewestTimestamp();
-
-        if (current >= newest) Thread.Sleep(5);
+        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - StartTimestamp;
     }
-
+    
     /// <summary>
-    /// get newest timestamp relative to twepoch
-    /// </summary>
+    ///     时间转为Id，不带节点和序列号。可用于构建时间片段查询</summary>
+    /// <remarks>
+    ///     基于指定时间，转为utc时间后，生成不带WorkerId和序列号的Id。
+    ///     一般用于构建时间片段查询，例如查询某个时间段内的数据，把时间片段转为雪花Id片段。
+    /// </remarks>
+    /// <param name="time">时间</param>
     /// <returns></returns>
-    private long GetNewestTimestamp()
+    public static long GetId(DateTime time)
     {
-        return DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - Twepoch;
+        var dateTimeOffset = new DateTimeOffset(time);
+        var t = dateTimeOffset.ToUniversalTime().ToUnixTimeMilliseconds() - StartTimestamp;
+        return t << TimestampLeftShift;
+    }
+
+    /// <summary>
+    ///     解析雪花Id，得到时间、WorkerId和序列号
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="time">返回本地时间(DateTimeOffset.LocalDateTime)</param>
+    /// <param name="workerId">节点</param>
+    /// <param name="sequence">序列号</param>
+    /// <returns></returns>
+    public static bool TryParse(long id, out DateTime time, out int workerId, out int sequence)
+    {
+        time = DateTimeOffset.FromUnixTimeMilliseconds((id >> TimestampLeftShift) + StartTimestamp).LocalDateTime;
+        workerId = (int)((id >> WorkerIdShift) & MaxWorkerId);
+        sequence = (int)(id & SequenceMask);
+        return true;
     }
 }
 
 internal static class Util
 {
     /// <summary>
-    /// auto generate workerId, try using mac first, if failed, then randomly generate one
+    ///     auto generate workerId, try using mac first, if failed, then randomly generate one
     /// </summary>
     /// <returns>workerId</returns>
     public static long GenerateWorkerId(int maxWorkerId)
@@ -166,7 +173,7 @@ internal static class Util
     }
 
     /// <summary>
-    /// use lowest 10 bit of available MAC as workerId
+    ///     use lowest 10 bit of available MAC as workerId
     /// </summary>
     /// <returns>workerId</returns>
     private static long GenerateWorkerIdBaseOnMac()
@@ -182,7 +189,7 @@ internal static class Util
     }
 
     /// <summary>
-    /// randomly generate one as workerId
+    ///     randomly generate one as workerId
     /// </summary>
     /// <returns></returns>
     private static long GenerateRandomWorkerId(int maxWorkerId)

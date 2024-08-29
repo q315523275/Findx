@@ -40,12 +40,12 @@ public class OrgSaveDto : IRequest<long>
     /// <summary>
     ///     负责人id
     /// </summary>
-    public long? LeaderId { get; set; }
+    public long? OwnerId { get; set; }
 
     /// <summary>
-    ///     负责人昵称
+    ///     负责人
     /// </summary>
-    public string LeaderNickname { get; set; }
+    public string Owner { get; set; }
 
     /// <summary>
     ///     排序号

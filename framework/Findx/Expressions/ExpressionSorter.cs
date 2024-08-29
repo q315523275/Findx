@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Linq.Expressions;
 using Findx.Data;
 
-namespace Findx.Linq;
+namespace Findx.Expressions;
 
 /// <summary>
 ///     Expression表达式扩展类

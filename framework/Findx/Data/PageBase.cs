@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using Findx.Linq;
+using Findx.Expressions;
 
 namespace Findx.Data;
 

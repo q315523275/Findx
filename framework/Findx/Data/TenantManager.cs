@@ -7,12 +7,12 @@ namespace Findx.Data;
 /// </summary>
 public static class TenantManager
 {
-    private static readonly IValueAccessor<Guid> ValueAccessor = new ValueAccessor<Guid>();
+    private static readonly IValueAccessor<string> ValueAccessor = new ValueAccessor<string>();
 
     /// <summary>
     ///     当前租户编号
     /// </summary>
-    public static Guid Current
+    public static string Current
     {
         get => ValueAccessor.Value;
         set => ValueAccessor.Value = value;

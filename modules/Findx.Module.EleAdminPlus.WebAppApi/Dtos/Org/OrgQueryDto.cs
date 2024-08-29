@@ -16,8 +16,14 @@ public class OrgQueryDto : SortCondition
     public string Type { set; get; }
 
     /// <summary>
-    ///     关键词
+    ///     名称
     /// </summary>
     [QueryField(FilterOperate = FilterOperate.Contains)]
     public string Name { set; get; }
+    
+    /// <summary>
+    ///     负责人
+    /// </summary>
+    [QueryField(FilterOperate = FilterOperate.Equal)]
+    public string Owner { set; get; }
 }
