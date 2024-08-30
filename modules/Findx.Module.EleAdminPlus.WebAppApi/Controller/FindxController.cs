@@ -120,7 +120,7 @@ public class FindxController : AreaApiControllerBase
     /// <returns></returns>
     [HttpGet("modules"), Description("模块列表")]
     [DisableAuditing]
-    public CommonResult Modules([FromServices] IFindxBuilder builder, [FromServices] IKeyGenerator<Guid> keyGenerator)
+    public CommonResult Modules([FromServices] IFindxBuilder builder, [FromServices] IKeyGenerator<long> keyGenerator)
     {
         var res = builder.Modules.Select(m => new
         {
@@ -144,21 +144,5 @@ public class FindxController : AreaApiControllerBase
     public async Task<CommonResult> Functions([FromServices] IFunctionStore<MvcFunction> store)
     {
         return CommonResult.Success(await store.QueryFromDatabaseAsync());
-    }
-    
-    /// <summary>
-    ///     测试
-    /// </summary>
-    /// <returns></returns>
-    [HttpGet("test"), Description("测试")]
-    [DisableAuditing]
-    public CommonResult Test()
-    {
-        var twepoch = 1643738522000L;
-        var dic = new Dictionary<string, object>();
-        dic.Add("GetNewestTimestamp", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - twepoch);
-        dic.Add("GetNewestTimestamp", DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - twepoch);
-        
-        return CommonResult.Success(dic);
     }
 }

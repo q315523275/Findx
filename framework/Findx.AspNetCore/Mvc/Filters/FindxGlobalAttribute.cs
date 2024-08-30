@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Security;

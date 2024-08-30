@@ -14,6 +14,7 @@
         <PackageReference Include="Findx.Swagger" Version="11.1.2024.822" />
         <PackageReference Include="Findx.WebSocketCore" Version="11.1.2024.822" />
         <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.833" />
+        <PackageReference Include="FreeSql.Provider.PostgreSQL" Version="3.2.833" />
     </ItemGroup>
 
     <ItemGroup>

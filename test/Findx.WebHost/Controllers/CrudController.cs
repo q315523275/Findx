@@ -18,7 +18,7 @@ namespace Findx.WebHost.Controllers;
 [Route("api/crud")]
 public class CrudController : CrudControllerBase<TestNewsInfo, TestNewsInfo, QueryNewsDto, int, int>
 {
-    [Transactional(EntityType = typeof(TestNewsInfo))]
+    [Transactional]
     public override Task<CommonResult> DeleteAsync(List<int> request, CancellationToken cancellationToken = default)
     {
         return base.DeleteAsync(request, cancellationToken);

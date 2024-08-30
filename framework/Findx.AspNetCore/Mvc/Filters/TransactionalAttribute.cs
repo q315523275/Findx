@@ -17,7 +17,7 @@ public class TransactionalAttribute : ActionFilterAttribute
 	/// <summary>
 	///     工作单元标识
 	/// </summary>
-	public string DataSource { get; set; } = string.Empty;
+	public string? DataSource { get; set; }
 
 	/// <summary>
 	///     实体类型

@@ -6,6 +6,7 @@ using Findx.Data;
 using Findx.Imaging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
@@ -20,18 +21,21 @@ public class CaptchaController : AreaApiControllerBase
     private readonly ICacheFactory _cacheFactory;
     private readonly IVerifyCoder _verifyCoder;
     private readonly IKeyGenerator<Guid> _keyGenerator;
-
+    private readonly IApplicationContext _applicationContext;
+    
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="verifyCoder"></param>
     /// <param name="cacheFactory"></param>
     /// <param name="keyGenerator"></param>
-    public CaptchaController(IVerifyCoder verifyCoder, ICacheFactory cacheFactory, IKeyGenerator<Guid> keyGenerator)
+    /// <param name="applicationContext"></param>
+    public CaptchaController(IVerifyCoder verifyCoder, ICacheFactory cacheFactory, IKeyGenerator<Guid> keyGenerator, IApplicationContext applicationContext)
     {
         _verifyCoder = verifyCoder;
         _cacheFactory = cacheFactory;
         _keyGenerator = keyGenerator;
+        _applicationContext = applicationContext;
     }
 
     /// <summary>
@@ -52,6 +56,7 @@ public class CaptchaController : AreaApiControllerBase
         var cacheKey = $"verifyCode:{uuid}";
         var cache = _cacheFactory.Create(CacheType.DefaultMemory);
         await cache.AddAsync(cacheKey, code.ToLower(), TimeSpan.FromMinutes(2), cancellationToken);
-        return CommonResult.Success(new { text = code.ToLower(), uuid, Base64 = $"data:image/png;base64,{Convert.ToBase64String(st)}" });
+        code = _applicationContext.HostEnvironment.IsProduction() ? string.Empty : code.ToLower();
+        return CommonResult.Success(new { text = code, uuid, Base64 = $"data:image/png;base64,{Convert.ToBase64String(st)}" });
     }
 }
