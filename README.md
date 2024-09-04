@@ -76,7 +76,8 @@
 
 ## 🍁 说明
 
--   Findx.Module.EleAdminPlu Swagger 在线地址：http://106.54.160.19:10020/swagger/index.html
+-   Findx.Module.EleAdminPlus Swagger 在线地址：http://106.54.160.19:10020/swagger/index.html
+-   EleAdminPlus Vue通用管理后端 在线地址：http://106.54.160.19:8080/  admin 123456
 
 ## 📙 启动
 

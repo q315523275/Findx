@@ -4,7 +4,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>NLog日志组件包</Description>
-        <PackageVersion>11.1.2024.822</PackageVersion>
+        <PackageVersion>11.1.2024.902</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
     </PropertyGroup>

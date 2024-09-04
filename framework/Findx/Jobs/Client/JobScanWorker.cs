@@ -6,7 +6,7 @@ namespace Findx.Jobs.Client;
 /// <summary>
 ///     任务自动构建工作器
 /// </summary>
-public class JobAutoBuildWorker : BackgroundService
+public class JobScanWorker : BackgroundService
 {
     private readonly IJobFinder _jobFinder;
     private readonly IJobScheduler _scheduler;
@@ -16,7 +16,7 @@ public class JobAutoBuildWorker : BackgroundService
     /// </summary>
     /// <param name="scheduler"></param>
     /// <param name="jobFinder"></param>
-    public JobAutoBuildWorker(IJobScheduler scheduler, IJobFinder jobFinder)
+    public JobScanWorker(IJobScheduler scheduler, IJobFinder jobFinder)
     {
         _scheduler = scheduler;
         _jobFinder = jobFinder;

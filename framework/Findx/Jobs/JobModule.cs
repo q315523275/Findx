@@ -73,7 +73,7 @@ public class JobModule : StartupModule
         
         services.AddHostedService<BackgroundScheduleServer>();
         services.AddHostedService<BackgroundTimeWheelServer>();
-        services.AddHostedService<JobAutoBuildWorker>();
+        services.AddHostedService<JobScanWorker>();
 
         return services;
     }
