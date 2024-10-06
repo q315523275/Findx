@@ -208,6 +208,7 @@ public sealed class ImageProcessor : IImageProcessor
 
     /// <summary>
     ///     图片压缩
+    /// <remarks>注意using使用</remarks>
     /// </summary>
     /// <param name="imageStream"></param>
     /// <param name="quality">压缩比率：alpha 必须是范围 (0~100] 的数字</param>

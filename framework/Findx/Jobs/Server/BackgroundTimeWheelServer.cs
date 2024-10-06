@@ -43,11 +43,10 @@ public class BackgroundTimeWheelServer: BackgroundService, IBackgroundTimeWheelS
     /// <param name="stoppingToken"></param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        try
+        while (!stoppingToken.IsCancellationRequested)
         {
-            while (!stoppingToken.IsCancellationRequested)
+            try
             {
-                //Console.WriteLine(TimeWheel.ToJson());
                 var nowTime = DateTime.Now;
                 var nowSecond = nowTime.Second;
                 var ringItemData = new List<JobExecuteInfo>();
@@ -64,13 +63,13 @@ public class BackgroundTimeWheelServer: BackgroundService, IBackgroundTimeWheelS
                 {
                     await _backgroundJobTriggerServer.TriggerAsync(item, stoppingToken);
                 }
-                // 休眠
-                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
             }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "时间轮执行失败");
+            catch (Exception e)
+            {
+                _logger.LogError(e, "时间轮执行失败");
+            }
+            // 休眠
+            await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
         }
     }
 }

@@ -95,7 +95,7 @@ public class BackgroundScheduleServer : BackgroundService, IBackgroundScheduleSe
     /// <param name="jobInfo"></param>
     /// <param name="nowTime"></param>
     /// <param name="cancellationToken"></param>
-    private async Task DispatchAsync(JobInfo jobInfo, DateTimeOffset nowTime, CancellationToken cancellationToken = default)
+    public async Task DispatchAsync(JobInfo jobInfo, DateTimeOffset nowTime, CancellationToken cancellationToken = default)
     {
         if (nowTime > jobInfo.NextRunTime?.AddSeconds(_options.Value.ScheduleDelay))
         {

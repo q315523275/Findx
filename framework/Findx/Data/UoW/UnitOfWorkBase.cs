@@ -1,3 +1,4 @@
+using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
 using Findx.Common;
@@ -92,11 +93,34 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     }
 
     /// <summary>
+    ///     开启或使用事物
+    /// </summary>
+    /// <param name="isolationLevel">事物级别</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task BeginOrUseTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
+    {
+        if (!IsEnabledTransaction || Transaction != null) return;
+        
+        await BeginTransactionAsync(isolationLevel, cancellationToken);
+        
+        HasCommitted = false;
+    }
+
+    /// <summary>
     ///     开启具体事物
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected abstract Task BeginTransactionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     开启具体事物
+    /// </summary>
+    /// <param name="isolationLevel"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected abstract Task BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     保存变更数据

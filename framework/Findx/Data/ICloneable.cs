@@ -4,10 +4,11 @@ namespace Findx.Data;
 ///     泛型浅克隆
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public interface ICloneable<out T>
+public interface IClone<out T>
 {
     /// <summary>
     ///     Clones the object.
+    ///     <remarks>注意引用对象的变更影响</remarks>
     /// </summary>
     /// <returns>The cloned instance</returns>
     T Clone();

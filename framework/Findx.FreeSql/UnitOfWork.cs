@@ -65,6 +65,30 @@ public class UnitOfWork : UnitOfWorkBase
     }
 
     /// <summary>
+    ///     真实开启事物
+    /// </summary>
+    /// <param name="isolationLevel"></param>
+    /// <param name="cancellationToken"></param>
+    protected override async Task BeginTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default)
+    {
+        // 如果已获取数据库连接，先归还再获取
+        if (_conn != null)
+            _fsql.Ado.MasterPool.Return(_conn);
+            
+        // 数据库连接池获取连接
+        _conn = _fsql.Ado.MasterPool.Get();
+        try
+        { 
+            Transaction = await _conn.Value.BeginTransactionAsync(isolationLevel, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            ReturnObject();
+            ex.ReThrow();
+        }
+    }
+
+    /// <summary>
     ///     保存变更数据
     /// </summary>
     /// <param name="cancellationToken"></param>

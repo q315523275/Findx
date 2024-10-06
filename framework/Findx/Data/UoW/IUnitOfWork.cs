@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using System.Data;
+using System.Data.Common;
 using System.Threading.Tasks;
 using Findx.Events;
 
@@ -50,6 +51,14 @@ public interface IUnitOfWork: IAsyncDisposable
     /// <param name="cancellationToken">异步取消标记</param>
     /// <returns></returns>
     Task BeginOrUseTransactionAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     对数据库连接开启事务
+    /// </summary>
+    /// <param name="isolationLevel">事物级别</param>
+    /// <param name="cancellationToken">异步取消标记</param>
+    /// <returns></returns>
+    Task BeginOrUseTransactionAsync(IsolationLevel isolationLevel, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     保存变更

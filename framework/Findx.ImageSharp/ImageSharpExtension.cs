@@ -178,7 +178,7 @@ public static class ImageSharpExtension
 
 
     /// <summary>
-    /// 获取图片处理后字节数组
+    ///     获取图片处理后字节数组
     /// </summary>
     /// <param name="originalImage"></param>
     /// <param name="imageFormat"></param>
@@ -192,8 +192,9 @@ public static class ImageSharpExtension
     }
 
     /// <summary>
-    /// 获取图片处理后数据流
+    ///     获取图片处理后数据流
     /// </summary>
+    /// <remarks>注意using使用</remarks>
     /// <param name="originalImage"></param>
     /// <param name="imageFormat"></param>
     /// <param name="cancellationToken"></param>

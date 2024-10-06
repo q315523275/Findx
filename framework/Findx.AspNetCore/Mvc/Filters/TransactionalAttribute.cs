@@ -43,15 +43,19 @@ public class TransactionalAttribute : ActionFilterAttribute
 		// 初始化工作单元
 		IUnitOfWork unitOfWork;
 		if (EntityType != null)
-			unitOfWork = await unitOfWorkManager.GetEntityUnitOfWorkAsync(EntityType, true, true, cancellationToken);
+			unitOfWork = await unitOfWorkManager.GetEntityUnitOfWorkAsync(EntityType, true, false, cancellationToken);
 		else
-			unitOfWork = await unitOfWorkManager.GetUnitOfWorkAsync(DataSource, true, true, cancellationToken);
+			unitOfWork = await unitOfWorkManager.GetUnitOfWorkAsync(DataSource, true, false, cancellationToken);
+		
+		// 开启事物
+		if (IsolationLevel.HasValue)
+			await unitOfWork.BeginOrUseTransactionAsync(IsolationLevel.Value, cancellationToken);
+		else
+			await unitOfWork.BeginOrUseTransactionAsync(cancellationToken);
 		
 		// 执行业务
 		var actionContext = await next();
 
-		if (unitOfWork == null) return;
-		
 		if (actionContext.Exception != null)
 		{
 			await unitOfWork.RollbackAsync(cancellationToken).ConfigureAwait(false);
