@@ -26,11 +26,11 @@ public class DefaultWorkContext: IWorkContext, IScopeDependency
     ///     获取当前用户信息
     /// </summary>
     /// <returns></returns>
-    public UserDto GetCurrentUser()
+    public UserSimplifyDto GetCurrentUser()
     {
         if (_currentUser is { IsAuthenticated: true })
         {
-            return new UserDto
+            return new UserSimplifyDto
             {
                 UserId = _currentUser.UserId.CastTo<long>(),
                 Nickname  = _currentUser.UserName, 

@@ -11,7 +11,7 @@ public interface IWorkContext
     /// <summary>
     ///     获取当前用户
     /// </summary>
-    UserDto GetCurrentUser();
+    UserSimplifyDto GetCurrentUser();
 
     /// <summary>
     ///     数据范围

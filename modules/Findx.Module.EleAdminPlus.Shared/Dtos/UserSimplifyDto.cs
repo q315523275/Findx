@@ -3,7 +3,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Dtos;
 /// <summary>
 ///     用户Dto
 /// </summary>
-public class UserDto
+public class UserSimplifyDto
 {
     /// <summary>
     ///     用户Id

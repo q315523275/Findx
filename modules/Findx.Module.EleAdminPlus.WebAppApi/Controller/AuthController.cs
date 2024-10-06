@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Security.Principal;
 using System.Text.Json;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
@@ -183,10 +184,10 @@ public class AuthController : AreaApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("/api/auth/user"), Authorize, Description("查看账户信息")]
-    public virtual async Task<CommonResult> UserAsync()
+    public virtual async Task<CommonResult> UserAsync(CancellationToken cancellationToken)
     {
         var userId = _currentUser.UserId.To<long>();
-        var userInfo = await _userRepo.FirstAsync(x => x.Id == userId);
+        var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
@@ -214,12 +215,13 @@ public class AuthController : AreaApiControllerBase
     ///     修改密码
     /// </summary>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPut("/api/auth/password"), Authorize, Description("修改账户密码")]
-    public virtual async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req)
+    public virtual async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req, CancellationToken cancellationToken)
     {
         var userId = _currentUser.UserId.To<long>();
-        var userInfo = await _userRepo.FirstAsync(x => x.Id == userId);
+        var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
@@ -227,7 +229,28 @@ public class AuthController : AreaApiControllerBase
             return CommonResult.Fail("D1000", "旧密码错误");
 
         var pwd = EncryptUtility.Md5By32(req.Password);
-        await _userRepo.UpdateColumnsAsync(x => new SysUserInfo { Password = pwd }, x => x.Id == userInfo.Id);
+        await _userRepo.UpdateColumnsAsync(x => new SysUserInfo { Password = pwd }, x => x.Id == userInfo.Id, cancellationToken);
+
+        return CommonResult.Success();
+    }
+    
+    /// <summary>
+    ///     修改账户信息
+    /// </summary>
+    /// <returns></returns>
+    [HttpPut("/api/auth/user"), Authorize, Description("修改账户信息")]
+    public virtual async Task<CommonResult> SaveUserAsync([FromBody] SaveUserDto req, CancellationToken cancellationToken)
+    {
+        var principal = GetRequiredService<IPrincipal>();
+        var userId = _currentUser.UserId.To<long>();
+        var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);
+        if (userInfo == null)
+            return CommonResult.Fail("D1000", "账户不存在");
+        
+        _userRepo.Attach(userInfo.Clone().As<SysUserInfo>());
+        userInfo = req.MapTo(userInfo);
+        userInfo.CheckUpdateAudited<SysUserInfo, long>(principal);
+        await _userRepo.SaveAsync(userInfo, cancellationToken);
 
         return CommonResult.Success();
     }
