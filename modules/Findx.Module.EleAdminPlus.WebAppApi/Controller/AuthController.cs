@@ -6,6 +6,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
+using Findx.Imaging;
 using Findx.Mapping;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Auth;
 using Findx.Module.EleAdminPlus.Shared.Enums;
@@ -14,6 +15,7 @@ using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
 using Findx.Security;
 using Findx.Security.Authentication.Jwt;
 using Findx.Setting;
+using Findx.Storage;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -159,7 +161,7 @@ public class AuthController : AreaApiControllerBase
             { ClaimTypes.UserIdTypeName, typeof(long).FullName },
             { ClaimTypes.UserName, accountInfo.UserName.SafeString() },
             { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
-            { ClaimTypes.TenantId, req.TenantId.ToString() },
+            { ClaimTypes.TenantId, req.TenantId },
             { ClaimTypes.OrgId, accountInfo.OrgId.SafeString() },
             { ClaimTypes.OrgName, accountInfo.OrgName.SafeString() }
         };
@@ -249,6 +251,51 @@ public class AuthController : AreaApiControllerBase
         
         _userRepo.Attach(userInfo.Clone().As<SysUserInfo>());
         userInfo = req.MapTo(userInfo);
+        userInfo.CheckUpdateAudited<SysUserInfo, long>(principal);
+        await _userRepo.SaveAsync(userInfo, cancellationToken);
+
+        return CommonResult.Success();
+    }
+    
+    /// <summary>
+    ///     修改账户头像
+    /// </summary>
+    /// <returns></returns>
+    [HttpPut("/api/auth/user/avatar"), Authorize, Description("修改账户头像")]
+    public virtual async Task<CommonResult> SaveUserAvatarAsync([FromBody] SaveUserAvatarDto req, CancellationToken cancellationToken)
+    {
+        var principal = GetRequiredService<IPrincipal>();
+        var userId = _currentUser.UserId.To<long>();
+        var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);
+        if (userInfo == null)
+            return CommonResult.Fail("D1000", "账户不存在");
+        
+        // 头像处理,覆盖模式
+        
+        // 服务
+        var fileStorage = GetService<IFileStorage>();
+        var settingProvider = GetService<ISettingProvider>();
+        var applicationContext = GetService<IApplicationContext>();
+        // 图片参数处理
+        var folderHost = settingProvider.GetValue<string>("Findx:Storage:Folder:Host") ?? $"//{HostUtility.ResolveHostAddress(HostUtility.ResolveHostName())}:{applicationContext.Port}";
+        var pathDir = Path.Combine("storage", "avatar");
+        var fileExt = "jpeg";
+        var imageBase64 = req.Avatar;
+        if (req.Avatar.StartsWith("data:image/", StringComparison.OrdinalIgnoreCase))
+        {
+            fileExt = req.Avatar.Replace("data:image/", string.Empty).Split(";")[0];
+            imageBase64 = req.Avatar.Replace($"data:image/{fileExt};base64,", string.Empty);
+        }
+        var saveName = $"{userId}.{fileExt}"; // 文件名
+        var path = Path.Combine(pathDir, saveName);
+        var fullPath = Path.Combine(applicationContext.RootPath, path);
+        // 图片压缩
+        var imageByte = Convert.FromBase64String(imageBase64);
+        // 物理存储
+        await fileStorage.SaveFileAsync(fullPath, imageByte, cancellationToken);
+        
+        // 落库
+        userInfo.Avatar = Path.Combine(folderHost, path).NormalizePath();
         userInfo.CheckUpdateAudited<SysUserInfo, long>(principal);
         await _userRepo.SaveAsync(userInfo, cancellationToken);
 
