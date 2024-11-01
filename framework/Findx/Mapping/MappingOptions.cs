@@ -13,7 +13,7 @@ public class MappingOptions : IOptions<MappingOptions>
     /// <summary>
     ///     是否空值
     /// </summary>
-    public bool IgnoreNullValues { set; get; } = false;
+    public bool IgnoreNullValues { set; get; }
 
     /// <summary>
     ///     this

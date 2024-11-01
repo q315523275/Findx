@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Buffers;
+using System.Security.Cryptography;
 using Findx.Common;
 using Findx.Extensions;
 
@@ -10,7 +11,6 @@ namespace Findx.Utilities;
 public static class EncryptUtility
 {
     #region SHA256加密
-
     /// <summary>
     ///     SHA256加密
     /// </summary>
@@ -20,7 +20,6 @@ public static class EncryptUtility
         var hashValue = SHA256.HashData(bytes);
         return ToHexString(hashValue);
     }
-
     #endregion
 
     #region Md5加密
@@ -47,7 +46,6 @@ public static class EncryptUtility
     /// <summary>
     ///     Md5加密
     /// </summary>
-
     private static string Md5(string value, Encoding encoding)
     {
         if (string.IsNullOrWhiteSpace(value))

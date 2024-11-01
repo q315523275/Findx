@@ -276,21 +276,15 @@ public static class FileUtility
         return targetEncoding;
     }
 
+    private static readonly List<string> ImageAllExt = ["bmp", "jpeg", "jpg", "gif", "png"];
+    
     /// <summary>
     ///     是否为图片文件
     /// </summary>
     /// <param name="fileExt">文件扩展名，不含“.”</param>
     public static bool IsImage(string fileExt)
     {
-        var al = new ArrayList
-        {
-            "bmp",
-            "jpeg",
-            "jpg",
-            "gif",
-            "png"
-        };
-        return al.Contains(fileExt.ToLower());
+        return ImageAllExt.Contains(fileExt, StringComparer.OrdinalIgnoreCase);
     }
 
     /// <summary>

@@ -61,7 +61,7 @@ public static class LambdaExpressionParser
             case FilterOperate.NotContains:
                 if (left.Type != typeof(string))
                     throw new NotSupportedException("“NotContains”比较方式只支持字符串类型的数据");
-                var methodInfo = typeof(string).GetMethod("Contains", [typeof(string)]) ?? throw new InvalidOperationException($"名称为“Contains”的方法不存在");
+                var methodInfo = MethodStringContains ?? throw new InvalidOperationException($"名称为“Contains”的方法不存在");
                 var exp = Expression.Call(left, methodInfo, ChangeTypeToExpression(condition.Value, left.Type));
                 if (condition.Operator == FilterOperate.NotContains)
                     return Expression.Not(exp);
@@ -70,13 +70,13 @@ public static class LambdaExpressionParser
             case FilterOperate.StartsWith:
                 if (left.Type != typeof(string))
                     throw new NotSupportedException("“StartsWith”比较方式只支持字符串类型的数据");
-                var methodInfoStartsWith = typeof(string).GetMethod("StartsWith", [typeof(string)]) ?? throw new InvalidOperationException($"名称为“StartsWith”的方法不存在");
+                var methodInfoStartsWith = MethodStringStartsWith ?? throw new InvalidOperationException($"名称为“StartsWith”的方法不存在");
                 return Expression.Call(left, methodInfoStartsWith, ChangeTypeToExpression(condition.Value, left.Type));
             
             case FilterOperate.EndsWith:
                 if (left.Type != typeof(string))
                     throw new NotSupportedException("“EndsWith”比较方式只支持字符串类型的数据");
-                var methodInfoEndsWith = typeof(string).GetMethod("EndsWith", [typeof(string)]) ?? throw new InvalidOperationException($"名称为“EndsWith”的方法不存在");
+                var methodInfoEndsWith = MethodStringEndsWith ?? throw new InvalidOperationException($"名称为“EndsWith”的方法不存在");
                 return Expression.Call(left, methodInfoEndsWith, ChangeTypeToExpression(condition.Value, left.Type));
             
             case FilterOperate.Equal:
@@ -130,6 +130,11 @@ public static class LambdaExpressionParser
         return Expression.AndAlso(start, end);
     }
 
+    private static readonly MethodInfo MethodStringContains = typeof(string).GetMethod("Contains", [typeof(string)]);
+    private static readonly MethodInfo MethodStringStartsWith = typeof(string).GetMethod("StartsWith", [typeof(string)]);
+    private static readonly MethodInfo MethodStringEndsWith = typeof(string).GetMethod("EndsWith", [typeof(string)]);
+    private static readonly MethodInfo MethodEnumerableContains = typeof(Enumerable).GetMethods().First(a => a.Name == "Contains");
+    
     /// <summary>
     ///     字符串集合转换器字典
     /// </summary>
@@ -166,15 +171,34 @@ public static class LambdaExpressionParser
     /// <returns></returns>
     private static Expression CreateExpressionIn(Expression left, FilterCondition condition)
     {
+        // 值数组
         var values = condition.Value.Split(',');
         
+        // 集合包含方法类
+        var method = MethodEnumerableContains.MakeGenericMethod(left.Type);
+
+        // 真实类型
+        var conversionType = left.Type;
+        if (conversionType.IsNullableType()) conversionType = conversionType.GetUnNullableType();
+        
+        // 枚举类型判断
+        if (conversionType.IsEnum)
+        {
+            // Todo 性能
+            var enumValues = Array.CreateInstance(left.Type, values.Length);
+            for (var i = 0; i < values.Length; i++)
+            {
+                enumValues.SetValue(Enum.Parse(left.Type, values[i]), i);
+            }
+            var constantEnumCollection = Expression.Constant(enumValues);
+            return Expression.Call(method, constantEnumCollection, left);
+        }
+        
+        // 默认值类型处理
         if (!TypeConverters.TryGetValue(left.Type, out var converter))
             throw new NotSupportedException($"“ParseIn”不支持此类型{left.Type.Name}的数据");
-        
         var objectValues = converter(values);
-        var method = typeof(Enumerable).GetMethods().First(a => a.Name == "Contains").MakeGenericMethod(left.Type);
         var constantCollection = Expression.Constant(objectValues);
-
         return Expression.Call(method, constantCollection, left);
     }
     
@@ -187,7 +211,7 @@ public static class LambdaExpressionParser
     /// <exception cref="InvalidOperationException"></exception>
     private static Expression GetPropertyExpression(ParameterExpression parameter, FilterCondition condition)
     {
-        // Todo 缓存
+        // Todo 缓存+性能优化,可使用parameter.Type进行字典缓存
         // 嵌套字段名，如：User.Name
         var propertyNames = condition.Field.Split('.');
         Expression propertyAccess = parameter;

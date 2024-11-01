@@ -10,7 +10,7 @@ public static class Pool
     /// <summary>
     ///     内存流
     /// </summary>
-    public static IPool<MemoryStream> MemoryStream { get; } = new MemoryStreamPool();
+    public static IPool<MemoryStream> MemoryStream { get; } = new StreamPool();
     
     /// <summary>
     ///     字符串构建器

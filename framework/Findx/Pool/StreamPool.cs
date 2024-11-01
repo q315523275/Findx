@@ -5,7 +5,7 @@ namespace Findx;
 /// <summary>
 /// Stream池
 /// </summary>
-internal class MemoryStreamPool: IPool<MemoryStream>
+internal class StreamPool: IPool<MemoryStream>
 {
     private readonly RecyclableMemoryStreamManager _memoryStreamManager = new();
     

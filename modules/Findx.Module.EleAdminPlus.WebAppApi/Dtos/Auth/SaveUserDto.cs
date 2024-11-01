@@ -13,11 +13,6 @@ public class SaveUserDto : IRequest
     public string Nickname { get; set; }
 
     /// <summary>
-    ///     头像
-    /// </summary>
-    public string Avatar { get; set; }
-
-    /// <summary>
     ///     性别
     /// </summary>
     public int Sex { get; set; }

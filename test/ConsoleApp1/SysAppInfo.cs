@@ -24,7 +24,7 @@ public record SysAppInfo
     /// <summary>
     ///     状态（字典 0正常 1停用）
     /// </summary>
-    public int Status { get; set; }
+    public CommonStatus Status { get; set; }
 
     /// <summary>
     ///     是否删除
@@ -45,4 +45,9 @@ public record SysAppInfo
     ///     租户
     /// </summary>
     public string TenantId { get; set; }
+}
+
+public enum CommonStatus
+{
+    Success, Failed, Deleted
 }
