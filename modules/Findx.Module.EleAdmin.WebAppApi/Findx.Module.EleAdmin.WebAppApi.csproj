@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>True</GenerateDocumentationFile>
+        <PackageVersion>11.1.2024.1105</PackageVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <RootNamespace>Findx.Module.EleAdmin</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1006"/>
+        <PackageReference Include="Findx.FreeSql" Version="11.1.2024.1006"/>
+        <PackageReference Include="Findx.Security" Version="11.1.2024.822"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Findx.Module.EleAdmin.Shared\Findx.Module.EleAdmin.Shared.csproj"/>
+    </ItemGroup>
+</Project>

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Version>11.1.2024.1105</Version>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1006"/>
+        <PackageReference Include="Findx.FreeSql" Version="11.1.2024.1006"/>
+    </ItemGroup>
+
+</Project>

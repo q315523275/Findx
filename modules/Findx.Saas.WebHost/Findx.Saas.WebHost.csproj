@@ -4,17 +4,16 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>default</LangVersion>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Findx.Guids.NewId" Version="11.1.2024.822" />
         <PackageReference Include="Findx.ImageSharp" Version="11.1.2024.822" />
-        <PackageReference Include="Findx.Mapster" Version="11.1.2024.822" />
+        <PackageReference Include="Findx.Mapster" Version="11.1.2024.1018" />
         <PackageReference Include="Findx.Swagger" Version="11.1.2024.822" />
         <PackageReference Include="Findx.WebSocketCore" Version="11.1.2024.822" />
         <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.833" />
-        <PackageReference Include="FreeSql.Provider.PostgreSQL" Version="3.2.833" />
     </ItemGroup>
 
     <ItemGroup>
@@ -24,7 +23,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Findx.Module.EleAdminPlus.WebAppApi\Findx.Module.EleAdminPlus.WebAppApi.csproj" />
+      <ProjectReference Include="..\Findx.Module.EleAdmin.WebAppApi\Findx.Module.EleAdmin.WebAppApi.csproj" />
     </ItemGroup>
     
 </Project>

@@ -6,3 +6,9 @@ services:
     build:
       context: .
       dockerfile: modules/Findx.Admin.WebHost/Dockerfile
+
+  findx.saas.webhost:
+    image: findx.saas.webhost
+    build:
+      context: .
+      dockerfile: modules/Findx.Saas.WebHost/bin/Release/net6.0/Dockerfile

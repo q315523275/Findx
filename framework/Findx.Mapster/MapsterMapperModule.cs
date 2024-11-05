@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Findx.Extensions;
 using Findx.Mapping;
 using Findx.Modularity;
 using Mapster;
@@ -44,16 +45,17 @@ namespace Findx.Mapster
             var option = provider.GetService<IOptions<MappingOptions>>();
 
             // 设置不区分大小写
-            if (option != null && option.Value.IgnoreCase)
+            if (option is { Value.IgnoreCase: true })
                 TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
 
             // 设置忽略Null值映射
-            if (option != null && option.Value.IgnoreNullValues)
+            if (option is { Value.IgnoreNullValues: true })
                 TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
 
             // 设置指定属性的字段映射
             TypeAdapterConfig.GlobalSettings.Default.IgnoreAttribute(typeof(IgnoreMappingAttribute));
-
+            TypeAdapterConfig<string, DateTime?>.NewConfig().MapWith(src => src.IsNotNullOrWhiteSpace() ? null : DateTime.Parse(src));
+            
             MapperExtensions.SetMapper(provider.GetRequiredService<IMapper>());
 
             base.UseModule(provider);
