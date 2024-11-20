@@ -72,10 +72,10 @@ public class WebSocketMiddleware
         var cts = new CancellationTokenSource();
         await WebSocketHandler.OnConnected(webSocketClient, cts.Token).ConfigureAwait(false);
         await ReceiveAsync(webSocketClient, cts.Token);
-        #if !NET8_0_OR_GREATER
-            cts.Cancel();
-        #else
+        #if NET8_0_OR_GREATER
             await cts.CancelAsync(); 
+        #else
+            cts.Cancel();
         #endif
     }
 

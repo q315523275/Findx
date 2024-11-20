@@ -472,6 +472,13 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     ///     比较实体，计算出值发生变化的属性，以及属性变化的前后值
     /// </summary>
     /// <param name="newData"></param>
+    /// <returns></returns>
+    Dictionary<string, object[]> CompareState(TEntity newData);
+    
+    /// <summary>
+    ///     比较实体，计算出值发生变化的属性，以及属性变化的前后值
+    /// </summary>
+    /// <param name="newData"></param>
     /// <param name="oldData"></param>
     /// <returns></returns>
     Dictionary<string, object[]> CompareState(TEntity newData, TEntity oldData);

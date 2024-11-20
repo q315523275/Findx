@@ -22,9 +22,7 @@ namespace Findx.Module.EleAdmin.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/findx")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("Findx框架")]
-[Description("Findx框架")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("Findx框架"), Description("Findx框架")]
 public class FindxController : AreaApiControllerBase
 {
     /// <summary>

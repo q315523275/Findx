@@ -19,9 +19,7 @@ namespace Findx.Module.EleAdmin.Controller;
 [Area("system")]
 [Route("api/[area]/app")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-应用")]
-[Description("系统-应用")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-应用"), Description("系统-应用")]
 public class SysAppController : CrudControllerBase<SysAppInfo, AppSaveDto, AppQueryDto, Guid, Guid>
 {
     /// <summary>

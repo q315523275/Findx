@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Findx.Configuration" Version="11.1.2024.822" />
+        <PackageReference Include="Findx.Configuration" Version="11.1.2024.1120" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     </ItemGroup>
 

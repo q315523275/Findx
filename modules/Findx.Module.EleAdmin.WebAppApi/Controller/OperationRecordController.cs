@@ -18,9 +18,7 @@ namespace Findx.Module.EleAdmin.Controller;
 [Area("system")]
 [Route("api/[area]/operation-record")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-操作日志")]
-[Description("系统-操作日志")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-操作日志"), Description("系统-操作日志")]
 public class OperationRecordController : QueryControllerBase<SysOperationRecordInfo, SysOperationRecordInfo, OperationRecordQueryDto, Guid>
 {
     /// <summary>

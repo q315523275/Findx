@@ -163,9 +163,14 @@ public static class FileUtility
             {
                 readSize = fs.Length - offset;
             }
-
-            // ReSharper disable once MustUseReturnValue
-            fs.Read(buffer, 0, (int)readSize);
+            
+            #if NET8_0_OR_GREATER
+                fs.ReadExactly(buffer, 0, (int)readSize);
+            #else
+                // ReSharper disable once MustUseReturnValue
+                fs.Read(buffer, 0, (int)readSize);
+            #endif
+            
             if (offset + readSize < fs.Length)
             {
                 md5.TransformBlock(buffer, 0, (int)readSize, buffer, 0);

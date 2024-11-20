@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text;
@@ -29,18 +30,20 @@ public class HubConnection: IAsyncDisposable
     private readonly TimeSpan _reconnectInterval = TimeSpan.FromSeconds(5);
 
     private readonly RecyclableMemoryStreamManager _memoryStreamPool = new();
-    
+
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="url"></param>
     /// <param name="automaticReconnect">释放自动重连</param>
-    public HubConnection(string url, bool automaticReconnect)
+    /// <param name="webSocketSerializer"></param>
+    public HubConnection(string url, bool automaticReconnect, IWebSocketSerializer webSocketSerializer)
     {
         WebSocket = new ClientWebSocket();
         _cts = new CancellationTokenSource();
         
         _uri = new Uri(url);
+        _serializer = webSocketSerializer;
         if (automaticReconnect) HandleReconnect();
     }
 
@@ -73,6 +76,11 @@ public class HubConnection: IAsyncDisposable
     ///     使用 ClientWebSocket 通信
     /// </summary>
     protected ClientWebSocket WebSocket;
+    
+    /// <summary>
+    ///     序列化工具
+    /// </summary>
+    private readonly IWebSocketSerializer _serializer;
     
     /// <summary>
     ///     开始连接
@@ -148,7 +156,7 @@ public class HubConnection: IAsyncDisposable
     /// <param name="received"></param>
     public void On<TMessage>(Func<TMessage, CancellationToken, Task> received) where TMessage: HubMessage
     {
-        //MessageReceived += received;
+        // MessageReceived += received;
         StartReceiveMessage();
     }
 
@@ -187,12 +195,12 @@ public class HubConnection: IAsyncDisposable
                     }
                     else
                     {
-                        
+                        // 小于缓冲区,直接使用字节数组
                         if (result.EndOfMessage)
                         {
                             if (bufferSegment.Array != null)
                             {
-                                await HandleMessageAsync(result, bufferSegment.Array[Range.EndAt(result.Count)], _cts.Token);
+                                await HandleMessageAsync(result, bufferSegment, _cts.Token);
                             }
                         }
                         else
@@ -248,27 +256,26 @@ public class HubConnection: IAsyncDisposable
     ///     处理消息
     /// </summary>
     /// <param name="result"></param>
-    /// <param name="data"></param>
+    /// <param name="arraySegment"></param>
     /// <param name="cancellationToken"></param>
-    private async Task HandleMessageAsync(WebSocketReceiveResult result, byte[] data, CancellationToken cancellationToken = default)
+    private async Task HandleMessageAsync(WebSocketReceiveResult result, ArraySegment<byte> arraySegment, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine(data.ToString2());
-        // var rs = JsonSerializer.Deserialize<HubMessage>(data, SystemTextUtf8ByteSerializer.Options);
-        // switch (result.MessageType)
-        // {
-        //     case WebSocketMessageType.Text when MessageReceived != null:
-        //         await MessageReceived.Invoke(rs, cancellationToken).ConfigureAwait(false);
-        //         break;
-        //     case WebSocketMessageType.Close:
-        //         State = HubConnectionState.Disconnected;
-        //         Closed?.Invoke(new Exception($"{result.CloseStatus}_{result.CloseStatusDescription}"));
-        //         break;
-        //     case WebSocketMessageType.Binary:
-        //         break;
-        //     default:
-        //         throw new ArgumentOutOfRangeException();
-        // }
-        await Task.CompletedTask;
+        var rs = _serializer.Deserialize<HubMessage>(arraySegment.Array.AsSpan(arraySegment.Offset, result.Count));
+        switch (result.MessageType)
+        {
+            case WebSocketMessageType.Text when MessageReceived != null:
+                await MessageReceived.Invoke(rs, cancellationToken).ConfigureAwait(false);
+                break;
+            case WebSocketMessageType.Close:
+                State = HubConnectionState.Disconnected;
+                Closed?.Invoke(new Exception($"{result.CloseStatus}_{result.CloseStatusDescription}"));
+                break;
+            case WebSocketMessageType.Binary:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        // await Task.CompletedTask;
     }
     
     /// <summary>
@@ -279,22 +286,20 @@ public class HubConnection: IAsyncDisposable
     /// <param name="cancellationToken"></param>
     private async Task HandleMessageAsync(WebSocketReceiveResult result, Stream stream, CancellationToken cancellationToken = default)
     {
-        using var reader = new StreamReader(stream, Encoding.UTF8);
-        Console.WriteLine(await reader.ReadToEndAsync().ConfigureAwait(false));
-        // var rs = await JsonSerializer.DeserializeAsync<HubMessage>(stream, options: SystemTextUtf8ByteSerializer.Options, cancellationToken: cancellationToken);
-        // switch (result.MessageType)
-        // {
-        //     case WebSocketMessageType.Binary when MessageReceived != null:
-        //     case WebSocketMessageType.Text when MessageReceived != null:
-        //         await MessageReceived.Invoke(rs, cancellationToken).ConfigureAwait(false);
-        //         break;
-        //     case WebSocketMessageType.Close:
-        //         State = HubConnectionState.Disconnected;
-        //         Closed?.Invoke(new Exception($"{result.CloseStatus}_{result.CloseStatusDescription}"));
-        //         break;
-        //     default:
-        //         throw new ArgumentOutOfRangeException();
-        // }
+        var rs = _serializer.Deserialize<HubMessage>(stream);
+        switch (result.MessageType)
+        {
+            case WebSocketMessageType.Binary when MessageReceived != null:
+            case WebSocketMessageType.Text when MessageReceived != null:
+                await MessageReceived.Invoke(rs, cancellationToken).ConfigureAwait(false);
+                break;
+            case WebSocketMessageType.Close:
+                State = HubConnectionState.Disconnected;
+                Closed?.Invoke(new Exception($"{result.CloseStatus}_{result.CloseStatusDescription}"));
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
     #endregion
     

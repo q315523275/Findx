@@ -18,9 +18,7 @@ namespace Findx.Module.EleAdmin.Controller;
 [Area("system")]
 [Route("api/[area]/login-record")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-登录日志")]
-[Description("系统-登录日志")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-登录日志"), Description("系统-登录日志")]
 public class LoginRecordController : QueryControllerBase<SysLoginRecordInfo, SysLoginRecordInfo, LoginRecordQueryDto, Guid>
 {
     /// <summary>

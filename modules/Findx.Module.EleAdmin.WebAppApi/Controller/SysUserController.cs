@@ -24,9 +24,7 @@ namespace Findx.Module.EleAdmin.Controller;
 [Area("system")]
 [Route("api/[area]/user")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-用户")]
-[Description("系统-用户")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-用户"), Description("系统-用户")]
 public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto, UserAddDto, UserEditDto, UserQueryDto, Guid, Guid>
 {
     private readonly IKeyGenerator<Guid> _keyGenerator;

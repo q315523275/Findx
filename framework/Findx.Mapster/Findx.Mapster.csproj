@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>11.1.2024.1018</Version>
-        <Description>Mapster高性能实体映射器,性能比AutoMapper高很多</Description>
+        <Version>11.1.2024.1120</Version>
+        <Description>Mapster高性能实体映射器</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <LangVersion>default</LangVersion>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>

@@ -70,7 +70,6 @@ public partial class Extensions
         #endregion
 
         var provider = app.Services;
-        IApplicationBuilder applicationBuilder = app;
         var logger = provider.GetLogger("ApplicationBuilderExtensions");
 
         logger.LogInformation(0, "框架初始化开始");
@@ -80,19 +79,22 @@ public partial class Extensions
         startupLogger?.Print(provider);
 
         var watch = Stopwatch.StartNew();
+        
         // 框架构建接口
         var findxBuilder = provider.GetRequiredService<IFindxBuilder>();
         var modules = findxBuilder.Modules;
         logger.LogInformation("共有 {Count} 个模块需要初始化{Line}", modules.Count(), CommonUtility.Line);
+        
         // 所有模块初始化
         foreach (var module in findxBuilder.Modules)
         {
             var jsTime = DateTime.Now;
             var moduleType = module.GetType();
-            logger.LogInformation("正在初始化模块《{Description}》({ModuleTypeName})”", moduleType.GetDescription(),
-                moduleType.Name);
-            if (module is AspNetCoreModuleBase aspNetCoreModule)
-                aspNetCoreModule.UseModule(applicationBuilder);
+            logger.LogInformation("正在初始化模块《{Description}》({ModuleTypeName})”", moduleType.GetDescription(), moduleType.Name);
+            if (module is MinimalModuleBase minimalModule)
+                minimalModule.UseModule(app);
+            else if (module is AspNetCoreModuleBase aspNetCoreModule)
+                aspNetCoreModule.UseModule(app);
             else
                 module.UseModule(provider);
             logger.LogInformation("模块《{Description}》({ModuleTypeName})” 初始化完成，耗时{TotalMilliseconds}ms",

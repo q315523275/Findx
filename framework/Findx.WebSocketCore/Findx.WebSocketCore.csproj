@@ -5,9 +5,9 @@
         <Nullable>disable</Nullable>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>11.1.2024.822</PackageVersion>
+        <PackageVersion>11.1.2024.1120</PackageVersion>
         <Description>基于System.Net.WebSockets的服务端与客户端,可扩展为分布式WebSockets服务</Description>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
@@ -22,6 +22,10 @@
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,8 +1,11 @@
 ﻿using System.ComponentModel;
 using Findx.Modularity;
+using Findx.NLog.LayoutRenderX;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.LayoutRenderers;
 
 namespace Findx.NLog
 {
@@ -30,6 +33,8 @@ namespace Findx.NLog
         public override IServiceCollection ConfigureServices(IServiceCollection services)
         {
             services.Replace(new ServiceDescriptor(typeof(ILoggerProvider), typeof(NLogLoggerProvider), ServiceLifetime.Singleton));
+
+            LayoutRenderer.Register<TraceIdentifierLayoutRenderer>("TraceIdentifier");
             return services;
         }
     }

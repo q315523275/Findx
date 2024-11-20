@@ -11,7 +11,7 @@
     <ItemGroup>
       <PackageReference Include="BenchmarkDotNet" Version="0.14.0" />
       <PackageReference Include="DotNetCore.CAP" Version="8.2.0" />
-      <PackageReference Include="Findx.Guids.NewId" Version="11.1.2024.822" />
+      <PackageReference Include="Findx.Guids.NewId" Version="11.1.2024.1120" />
       <PackageReference Include="NewLife.Core" Version="10.10.2024.902" />
       <PackageReference Include="Yitter.IdGenerator" Version="1.0.14" />
     </ItemGroup>

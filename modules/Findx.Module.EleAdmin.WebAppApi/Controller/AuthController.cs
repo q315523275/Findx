@@ -7,7 +7,6 @@ using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Mapping;
-using Findx.Module.EleAdmin.Dtos;
 using Findx.Module.EleAdmin.Dtos.App;
 using Findx.Module.EleAdmin.Dtos.Auth;
 using Findx.Module.EleAdmin.Dtos.User;
@@ -20,6 +19,7 @@ using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Module.EleAdmin.Controller;
@@ -29,9 +29,8 @@ namespace Findx.Module.EleAdmin.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/auth")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-账户")]
-[Description("系统-账户")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-账户"), Description("系统-账户")]
+[EndpointGroupName("eleAdmin")]
 public class AuthController : AreaApiControllerBase
 {
     private readonly ICacheFactory _cacheFactory;
@@ -78,7 +77,7 @@ public class AuthController : AreaApiControllerBase
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    [Description("登录")]
+    [Description("登录"), EndpointName("登录")]
     [HttpPost("/api/login")]
     public async Task<CommonResult> Login([FromBody] LoginDto req)
     {

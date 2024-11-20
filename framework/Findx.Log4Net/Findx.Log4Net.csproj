@@ -1,16 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>11.1.2024.822</Version>
+        <Version>11.1.2024.1120</Version>
         <Description>Log4Net日志组件包</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="log4net" Version="2.0.17" />
+        <PackageReference Include="log4net" Version="3.0.3" />
     </ItemGroup>
 
     <ItemGroup>

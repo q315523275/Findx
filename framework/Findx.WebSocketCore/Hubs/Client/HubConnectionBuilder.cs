@@ -22,14 +22,26 @@ public class HubConnectionBuilder
     ///     配置自动重连
     /// </summary>
     /// <returns></returns>
-    public HubConnectionBuilder WithAutomaticReconnect()
+    public HubConnectionBuilder WithAutomaticReconnection()
     {
-        _automaticReconnect = true;
+        _automaticReconnection = true;
         return this;
     }
 
+    /// <summary>
+    ///     配置序列化工具
+    /// </summary>
+    /// <returns></returns>
+    public HubConnectionBuilder WithSerializer(IWebSocketSerializer serializer)
+    {
+        _webSocketSerializer = serializer;
+        return this;
+    }
+    
+    
     private string _url;
-    private bool _automaticReconnect;
+    private bool _automaticReconnection;
+    private IWebSocketSerializer _webSocketSerializer;
     
     /// <summary>
     ///     
@@ -38,6 +50,6 @@ public class HubConnectionBuilder
     public HubConnection Build()
     {
         Check.NotNullOrWhiteSpace(_url, nameof(_url));
-        return new HubConnection(_url, _automaticReconnect);
+        return new HubConnection(_url, _automaticReconnection, _webSocketSerializer);
     }
 }

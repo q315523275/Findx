@@ -6,6 +6,7 @@ using System.Linq.Expressions;
 using System.Security.Principal;
 using Findx.Common;
 using Findx.Data;
+using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Security;
 using FreeSql.Extensions.EntityUtil;
@@ -201,8 +202,9 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     public int UpdateColumns(Dictionary<string, object> dict)
     {
+        FindxException.ThrowIf(dict == null || !dict.ContainsKey("Id"), "505", "字典更新时必须包含主键Id数据");
         var tableName = GetDbTableName();
-        return _fsql.UpdateDict(dict).AsTable(tableName).WherePrimary("id").WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+        return _fsql.UpdateDict(dict).AsTable(tableName).WherePrimary("Id").WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
     public int UpdateColumns(Dictionary<string, object> dict, Expression<Func<TEntity, bool>> whereExpression)
@@ -477,28 +479,18 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return this;
     }
 
+    public Dictionary<string, object[]> CompareState(TEntity newData)
+    {
+        if (!_attachDict.TryGetValue(newData.Id.SafeString(), out var oldData))
+        {
+            oldData = Get(newData.Id);
+        }
+        return _fsql.CompareState(newData, oldData);
+    }
+
     public Dictionary<string, object[]> CompareState(TEntity newData, TEntity oldData)
     {
-        if (newData == null) 
-            return null;
-        
-        var entityType = typeof(TEntity);
-        
-        var table = _fsql.CodeFirst.GetTableByEntity(entityType);
-        if (table.Primarys.Any() == false) 
-            throw new Exception($"实体{table.CsName}必须存在主键配置");
-        
-        var key = _fsql.GetEntityKeyString(entityType, newData, false);
-        if (string.IsNullOrEmpty(key)) 
-            throw new Exception($"实体{table.CsName}的主键值不可为空");
-
-        var res = _fsql.CompareEntityValueReturnColumns(entityType, oldData, newData, false).ToDictionary(a => a, a => new[]
-        {
-            _fsql.GetEntityValueWithPropertyName(entityType, newData, a),
-            _fsql.GetEntityValueWithPropertyName(entityType, oldData, a)
-        });
-
-        return res;
+        return _fsql.CompareState(newData, oldData);
     }
 
     public DatabaseType GetDbType()

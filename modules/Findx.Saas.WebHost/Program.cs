@@ -31,8 +31,8 @@ builder.Services.AddCorsAccessor();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseJsonExceptionHandler();
-app.UseCorsAccessor().UseRouting();
+app.UseJsonExceptionHandler().UseCorsAccessor();
+app.UseRouting();
 app.UseStaticFiles(new StaticFileOptions
 {
     RequestPath = "/storage",

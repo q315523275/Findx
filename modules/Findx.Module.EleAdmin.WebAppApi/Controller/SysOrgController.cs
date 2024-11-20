@@ -19,9 +19,7 @@ namespace Findx.Module.EleAdmin.Controller;
 [Area("system")]
 [Route("api/[area]/org")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-机构")]
-[Description("系统-机构")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-机构"), Description("系统-机构")]
 public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSaveDto, OrgQueryDto, Guid, Guid>
 {
     private readonly ICache _cache;

@@ -15,12 +15,3 @@ public class SwaggerOptions
 
     public DocExpansion DocExpansion { get; set; } = DocExpansion.None;
 }
-
-public class SwaggerEndpoint
-{
-    public string Title { get; set; }
-
-    public string Version { get; set; }
-
-    public string Url { get; set; }
-}

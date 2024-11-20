@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+
 namespace Findx.WebSocketCore;
 
 /// <summary>
@@ -20,4 +23,20 @@ public interface IWebSocketSerializer
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     T Deserialize<T>(byte[] serializedObject);
+    
+    /// <summary>
+    ///     反序列化
+    /// </summary>
+    /// <param name="serializedObject"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    T Deserialize<T>(Span<byte> serializedObject);
+    
+    /// <summary>
+    ///     反序列化
+    /// </summary>
+    /// <param name="serializedObject"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    T Deserialize<T>(Stream serializedObject);
 }

@@ -6,7 +6,6 @@ using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
-using Findx.Imaging;
 using Findx.Mapping;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Auth;
 using Findx.Module.EleAdminPlus.Shared.Enums;

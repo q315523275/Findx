@@ -23,9 +23,7 @@ namespace Findx.Module.EleAdmin.Controller;
 [Area("system")]
 [Route("api/[area]/role")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-角色")]
-[Description("系统-角色")]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-角色"), Description("系统-角色")]
 public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, RoleQueryDto, Guid, Guid>
 {
     private readonly ICache _cache;

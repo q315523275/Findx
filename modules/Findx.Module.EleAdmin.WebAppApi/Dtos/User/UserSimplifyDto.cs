@@ -19,11 +19,6 @@ public class UserSimplifyDto : IResponse
     public string UserName { get; set; }
 
     /// <summary>
-    ///     密码
-    /// </summary>
-    public string Password { get; set; }
-
-    /// <summary>
     ///     昵称
     /// </summary>
     public string Nickname { get; set; }

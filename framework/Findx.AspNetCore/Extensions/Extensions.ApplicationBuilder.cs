@@ -51,6 +51,7 @@ public static partial class Extensions
     ///     注册请求日志中间件
     /// </summary>
     /// <param name="builder">应用程序生成器</param>
+    [Obsolete("Please use code UseFindx(this WebApplication app))")]
     public static IApplicationBuilder UseFindx(this IApplicationBuilder builder)
     {
         #region Findx图标

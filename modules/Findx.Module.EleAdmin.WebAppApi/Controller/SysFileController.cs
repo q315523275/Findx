@@ -6,6 +6,7 @@ using Findx.Extensions;
 using Findx.Module.EleAdmin.Dtos;
 using Findx.Module.EleAdmin.Dtos.File;
 using Findx.Storage;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,9 +17,8 @@ namespace Findx.Module.EleAdmin.Controller;
 /// </summary>
 [Area("system")]
 [Route("api/[area]/file")]
-[ApiExplorerSettings(GroupName = "eleAdmin")]
-[Tags("系统-文件")]
-[Description("系统-文件")]
+[Authorize]
+[ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-文件"), Description("系统-文件")]
 public class SysFileController : AreaApiControllerBase
 {
     private readonly IApplicationContext _applicationContext;

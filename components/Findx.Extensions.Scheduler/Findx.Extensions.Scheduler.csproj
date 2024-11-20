@@ -14,8 +14,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx" Version="11.1.2024.1031" />
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1006" />
+      <PackageReference Include="Findx" Version="11.1.2024.1120" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1120" />
     </ItemGroup>
 
 </Project>

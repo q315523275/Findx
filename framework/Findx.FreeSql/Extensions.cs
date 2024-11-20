@@ -110,7 +110,7 @@ public static class Extensions
         // 不使用性能更高的 PropertyDynamicGetter 属性值读取器
         // 如果使用还需要实现实体及属性缓存, 造成多余缓存占用空间
         
-        if (newData == null)
+        if (newData == null || oldData == null)
             return null;
 
         var entityType = typeof(TEntity);
@@ -147,7 +147,7 @@ public static class Extensions
         // 不使用性能更高的 PropertyDynamicGetter 属性值读取器
         // 如果使用还需要实现实体及属性缓存, 造成多余缓存占用空间
         
-        if (newData == null) 
+        if (newData == null || oldData == null)
             return null;
         
         var entityType = typeof(TEntity);

@@ -1,3 +1,5 @@
+using System;
+using System.IO;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
@@ -37,6 +39,28 @@ public class WebSocketSerializer : IWebSocketSerializer
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     public T Deserialize<T>(byte[] serializedObject)
+    {
+        return JsonSerializer.Deserialize<T>(serializedObject, _options.Value.SerializerOptions);
+    }
+
+    /// <summary>
+    ///     反序列化
+    /// </summary>
+    /// <param name="serializedObject"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T Deserialize<T>(Span<byte> serializedObject)
+    {
+        return JsonSerializer.Deserialize<T>(serializedObject, _options.Value.SerializerOptions);
+    }
+
+    /// <summary>
+    ///     反序列化
+    /// </summary>
+    /// <param name="serializedObject"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T Deserialize<T>(Stream serializedObject)
     {
         return JsonSerializer.Deserialize<T>(serializedObject, _options.Value.SerializerOptions);
     }

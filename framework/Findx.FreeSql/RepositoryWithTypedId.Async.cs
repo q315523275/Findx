@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
+using Findx.Exceptions;
 using Findx.Extensions;
 
 namespace Findx.FreeSql;
@@ -152,6 +153,7 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
 
     public Task<int> UpdateColumnsAsync(Dictionary<string, object> dict, CancellationToken cancellationToken = default)
     {
+        FindxException.ThrowIf(dict == null || !dict.ContainsKey("Id"), "505", "字典更新时必须包含主键Id数据");
         var tableName = GetDbTableName();
         return _fsql.UpdateDict(dict).AsTable(tableName).WherePrimary("id").WithTransaction(UnitOfWork?.Transaction).ExecuteAffrowsAsync(cancellationToken);
     }

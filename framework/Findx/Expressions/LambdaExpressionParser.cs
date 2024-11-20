@@ -202,6 +202,9 @@ public static class LambdaExpressionParser
         return Expression.Call(method, constantCollection, left);
     }
     
+    
+    private static readonly ConcurrentDictionary<string, Expression> PropertyAccessDict = new();
+    
     /// <summary>
     ///     获取属性表达式
     /// </summary>
@@ -211,11 +214,14 @@ public static class LambdaExpressionParser
     /// <exception cref="InvalidOperationException"></exception>
     private static Expression GetPropertyExpression(ParameterExpression parameter, FilterCondition condition)
     {
-        // Todo 缓存+性能优化,可使用parameter.Type进行字典缓存
+        // 缓存静态字典
+        var key = parameter.Type.FullName + "_" + condition.Field;
+        if (PropertyAccessDict.TryGetValue(key, out var selector)) return selector;
+        
         // 嵌套字段名，如：User.Name
         var propertyNames = condition.Field.Split('.');
-        Expression propertyAccess = parameter;
         var type = parameter.Type;
+        Expression propertyAccess = parameter;
         for (var index = 0; index < propertyNames.Length; index++)
         {
             var propertyName = propertyNames[index];
@@ -236,6 +242,10 @@ public static class LambdaExpressionParser
             }
             propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
         }
+        
+        // 缓存静态字典
+        PropertyAccessDict[key] = propertyAccess;
+        
         return propertyAccess;
     }
     
