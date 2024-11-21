@@ -94,11 +94,12 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         model.CheckCreationAudited<SysRoleInfo, long>(principal);
         model.CheckTenant(principal);
         model.SetEmptyKey();
-
+        
+        await AddBeforeAsync(model, req);
+        var result = await repo.InsertAsync(model, cancellationToken);
+        await AddAfterAsync(model, req, result);
+        
         var menuList = req.MenuIds.Select(x => new SysRoleMenuInfo { Id = keyGenerator.Create(), MenuId = x, RoleId = model.Id });
-        
-        await repo.InsertAsync(model, cancellationToken);
-        
         if (menuList.Any()) await roleMenuRepo.InsertAsync(menuList, cancellationToken);
         
         return CommonResult.Success();
@@ -199,6 +200,12 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// <returns></returns>
     protected override async Task DeleteAfterAsync(List<long> req, int total)
     {
+        var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
+        var roleOrgRepo = GetRepository<SysRoleOrgInfo, long>();
+
+        await roleMenuRepo.DeleteAsync(x => req.Contains(x.RoleId));
+        await roleOrgRepo.DeleteAsync(x => req.Contains(x.RoleId));
+        
         await _cache.RemoveAsync(_cacheKey);
     }
 }

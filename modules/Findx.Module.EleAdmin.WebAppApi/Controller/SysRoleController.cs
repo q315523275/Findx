@@ -62,8 +62,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
     /// <param name="roleId"></param>
     /// <param name="applicationCode"></param>
     /// <returns></returns>
-    [HttpGet("menu/{roleId}")]
-    [Description("系统-查看角色菜单")]
+    [HttpGet("menu/{roleId}"), Description("系统-查看角色菜单")]
     public CommonResult Menu(Guid roleId, string applicationCode)
     {
         var repo = GetRequiredService<IRepository<SysRoleMenuInfo>>();
@@ -109,8 +108,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
     /// <param name="roleId"></param>
     /// <param name="req"></param>
     /// <returns></returns>
-    [HttpPut("menu/{roleId}")]
-    [Description("系统-设置角色菜单")]
+    [HttpPut("menu/{roleId}"), Description("系统-设置角色菜单")]
     public async Task<CommonResult> MenuAsync(Guid roleId, [FromBody] List<Guid> req)
     {
         var keyGenerator = GetRequiredService<IKeyGenerator<Guid>>();
@@ -187,6 +185,12 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
     /// <returns></returns>
     protected override async Task DeleteAfterAsync(List<Guid> req, int total)
     {
+        var roleMenuRepo = GetRepository<SysRoleMenuInfo, Guid>();
+        var roleOrgRepo = GetRepository<SysRoleOrgInfo, Guid>();
+
+        await roleMenuRepo.DeleteAsync(x => req.Contains(x.RoleId));
+        await roleOrgRepo.DeleteAsync(x => req.Contains(x.RoleId));
+        
         await _cache.RemoveAsync(_cacheKey);
     }
 }

@@ -2,6 +2,7 @@
 using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
+using Findx.Exceptions;
 using Findx.Expressions;
 using Findx.Extensions;
 using Findx.Module.EleAdmin.Dtos.Org;
@@ -73,6 +74,18 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSaveDto, OrgQu
         await _cache.RemoveAsync(_cacheKey);
     }
 
+    /// <summary>
+    ///     删除前校验
+    /// </summary>
+    /// <param name="req"></param>
+    /// <returns></returns>
+    protected override async Task DeleteBeforeAsync(List<Guid> req)
+    {
+        var repo = GetRepository<SysOrgInfo>();
+        var isExist = await repo.ExistAsync(x => req.Contains(x.ParentId));
+        if (isExist) throw new FindxException("500", "请先删除下属机构,再删除选中机构");
+    }
+    
     /// <summary>
     ///     删除完成之后
     /// </summary>
