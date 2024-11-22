@@ -9,7 +9,7 @@
         <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
-
+    
     <ItemGroup>
       <ProjectReference Include="..\..\framework\Findx.Security\Findx.Security.csproj" />
       <ProjectReference Include="..\Findx.Module.EleAdminPlus.Shared\Findx.Module.EleAdminPlus.Shared.csproj" />

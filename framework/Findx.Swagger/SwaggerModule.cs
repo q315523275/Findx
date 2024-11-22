@@ -1,18 +1,26 @@
-﻿using System;
+﻿
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using Findx.AspNetCore;
 using Findx.Extensions;
 using Findx.Modularity;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+#if NET9_0_OR_GREATER
+using Findx.Swagger.Transformers;
+using System.Threading.Tasks;
+#else
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Swashbuckle.AspNetCore.SwaggerGen;
+#endif
 
 namespace Findx.Swagger;
 
@@ -20,7 +28,7 @@ namespace Findx.Swagger;
 ///     Findx-Swagger文档模块
 /// </summary>
 [Description("Findx-Swagger文档模块")]
-public class SwaggerModule : AspNetCoreModuleBase
+public class SwaggerModule : MinimalModuleBase
 {
     /// <summary>
     ///     配置
@@ -47,49 +55,72 @@ public class SwaggerModule : AspNetCoreModuleBase
         // 配置服务
         var configuration = services.GetConfiguration();
         configuration.GetSection("Findx:Swagger").Bind(_swaggerOptions);
-        if (!_swaggerOptions.Enabled)
-            return services;
+        
+        if (!_swaggerOptions.Enabled) return services;
 
-        services.AddEndpointsApiExplorer();
+        #if NET9_0_OR_GREATER
+            if (_swaggerOptions?.Endpoints?.Count > 0)
+            {
+                foreach (var endpoint in _swaggerOptions.Endpoints)
+                {
+                    services.AddOpenApi(endpoint.Version, options => {
+                        options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+                        options.AddDocumentTransformer((document, _, _) =>
+                        {
+                            document.Info.Title = endpoint.Title ?? document.Info.Title;
+                            document.Servers = endpoint.Servers?.Select(x => new OpenApiServer { Url = x.Url, Description = x.Description }).ToList() ?? [];
+                            return Task.CompletedTask;
+                        });
+                    });
+                }
+            }
+        #else
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(options =>
+            {
+                // 添加文档
+                AddDocs(_swaggerOptions, options);
 
-        services.AddSwaggerGen(options =>
-        {
-            // 添加文档
-            AddDocs(_swaggerOptions, options);
+                // 添加自定义配置
+                AddCustomOptions(_swaggerOptions, options);
 
-            // 添加自定义配置
-            AddCustomOptions(_swaggerOptions, options);
+                // 添加注释
+                AddXmlComments(options);
 
-            // 添加注释
-            AddXmlComments(options);
+                // 添加过滤器
+                // AddDocumentFilter(options);
 
-            // 添加过滤器
-            // AddDocumentFilter(options);
+                // 添加权限
+                    AddSecurity(options);
 
-            // 添加权限
-            AddSecurity(options);
-
-            // 标签分组
-            // AddActionTag(options);
-        });
+                // 标签分组
+                // AddActionTag(options);
+            });
+        #endif
 
         return services;
     }
 
-    public override void UseModule(IApplicationBuilder app)
+    public override void UseModule(WebApplication app)
     {
         if (!_swaggerOptions.Enabled)
             return;
 
-        app.UseSwagger()
-            .UseSwaggerUI(options =>
-            {
-                if (_swaggerOptions.Endpoints?.Count > 0)
-                    foreach (var endpoint in _swaggerOptions.Endpoints)
-                        options.SwaggerEndpoint(endpoint.Url, endpoint.Title);
+        #if NET9_0_OR_GREATER
+            app.MapOpenApi();
+            app.MapOpenApi("/swagger/{documentName}/swagger.json");
+        #else
+            app.UseSwagger();
+        #endif
+        
+        app.UseSwaggerUI(options =>
+        {
+            if (_swaggerOptions.Endpoints?.Count > 0)
+                foreach (var endpoint in _swaggerOptions.Endpoints)
+                    options.SwaggerEndpoint(endpoint.Url, endpoint.Title);
 
-                // 接口地址复制功能
-                options.HeadContent = @"
+            // 接口地址复制功能
+            options.HeadContent = @"
                         <script type='text/javascript'>
                             window.addEventListener('load', function () {
                                 setTimeout(() => {
@@ -108,15 +139,16 @@ public class SwaggerModule : AspNetCoreModuleBase
                             })
                         </script>";
 
-                options.DocExpansion(_swaggerOptions.DocExpansion);
+            options.DocExpansion(_swaggerOptions.DocExpansion);
 
-                if (_swaggerOptions.HideSchemas)
-                    options.DefaultModelsExpandDepth(-1);
-            });
-
+            if (_swaggerOptions.HideSchemas)
+                options.DefaultModelsExpandDepth(-1);
+        });
+        
         base.UseModule(app);
     }
 
+    #if !NET9_0_OR_GREATER
     /// <summary>
     ///     添加文档
     /// </summary>
@@ -212,4 +244,5 @@ public class SwaggerModule : AspNetCoreModuleBase
         // 自定义架构编号
         options.CustomSchemaIds(x => x.ToString());
     }
+    #endif
 }

@@ -9,7 +9,6 @@
 
     <ItemGroup>
         <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.2.833" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -23,7 +22,6 @@
       <ProjectReference Include="..\..\framework\Findx.ImageSharp\Findx.ImageSharp.csproj" />
       <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj" />
       <ProjectReference Include="..\..\framework\Findx.NLog\Findx.NLog.csproj" />
-      <ProjectReference Include="..\..\framework\Findx.Scalar\Findx.Scalar.csproj" />
       <ProjectReference Include="..\..\framework\Findx.Swagger\Findx.Swagger.csproj" />
       <ProjectReference Include="..\..\framework\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
       <ProjectReference Include="..\Findx.Module.EleAdmin.WebAppApi\Findx.Module.EleAdmin.WebAppApi.csproj" />

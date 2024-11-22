@@ -1,3 +1,4 @@
+#if !NET9_0_OR_GREATER
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -18,3 +19,4 @@ public class TagReorderDocumentFilter : IDocumentFilter
             swaggerDoc.Tags.Add(tag);
     }
 }
+#endif
