@@ -25,7 +25,7 @@ public class ConfigClientController : AreaApiControllerBase
     private readonly IRepository<AppInfo, long> _appRepo;
     private readonly IRepository<ConfigDataInfo, long> _configRepo;
     private readonly IClientCallBack _clientCallBack;
-    private readonly ISerializer _serializer;
+    private readonly IObjectSerializer _serializer;
 
     /// <summary>
     ///     Ctor
@@ -34,7 +34,7 @@ public class ConfigClientController : AreaApiControllerBase
     /// <param name="appRepo"></param>
     /// <param name="configRepo"></param>
     /// <param name="serializer"></param>
-    public ConfigClientController(IClientCallBack clientCallBack, IRepository<AppInfo, long> appRepo, IRepository<ConfigDataInfo, long> configRepo, ISerializer serializer)
+    public ConfigClientController(IClientCallBack clientCallBack, IRepository<AppInfo, long> appRepo, IRepository<ConfigDataInfo, long> configRepo, IObjectSerializer serializer)
     {
         _clientCallBack = clientCallBack;
         _appRepo = appRepo;

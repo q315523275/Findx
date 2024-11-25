@@ -286,7 +286,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <returns></returns>
     private static List<ConfigItemDto> ConvertToConfigItem(string body)
     {
-        return JsonSerializer.Deserialize<List<ConfigItemDto>>(body, SystemTextJsonStringSerializer.Options);
+        return JsonSerializer.Deserialize<List<ConfigItemDto>>(body, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
     }
 
     /// <summary>
@@ -308,7 +308,7 @@ public class ConfigClient : IConfigClient, IDisposable
         try
         {
             var content = await File.ReadAllBytesAsync(file, cancellationToken);
-            return JsonSerializer.Deserialize<T>(content.AsSpan(), SystemTextUtf8ByteSerializer.Options);
+            return JsonSerializer.Deserialize<T>(content.AsSpan(), SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
         }
         catch (Exception)
         {
@@ -328,7 +328,7 @@ public class ConfigClient : IConfigClient, IDisposable
         Check.NotNull(path, nameof(path));
         Check.NotNull(obj, nameof(obj));
 
-        var content = JsonSerializer.SerializeToUtf8Bytes(obj, SystemTextUtf8ByteSerializer.Options);
+        var content = JsonSerializer.SerializeToUtf8Bytes(obj, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
 
         path = path.NormalizePath();
         var file = Path.Combine(System.Environment.CurrentDirectory, path);

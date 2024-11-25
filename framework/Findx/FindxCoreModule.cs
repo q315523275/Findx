@@ -98,8 +98,8 @@ public class FindxCoreModule : StartupModule
         services.AddSingleton<IApplicationEventPublisher, ApplicationEventPublisher>();
 
         // 序列化
-        services.AddSingleton<IJsonSerializer, SystemTextJsonStringSerializer>();
-        services.AddSingleton<IObjectSerializer, SystemTextUtf8ByteSerializer>();
+        services.AddSingleton<IJsonSerializer, SystemTextJsonSerializer>();
+        services.AddSingleton<IObjectSerializer, SystemTextByteSerializer>();
 
         // 短信
         services.AddSingleton<ISmsSender, NullSmsSender>();

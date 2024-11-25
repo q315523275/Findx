@@ -12,10 +12,12 @@ public partial class Extensions
     /// </summary>
     /// <typeparam name="T">对象类型</typeparam>
     /// <param name="obj"></param>
+    /// <param name="camelCase">小驼峰</param>
+    /// <param name="indented">整齐打印</param>
     /// <returns>json格式的字符串</returns>
-    public static string ToJson<T>(this T obj)
+    public static string ToJson<T>(this T obj, bool camelCase = false, bool indented = false)
     {
-        return JsonSerializer.Serialize(obj, SystemTextJsonStringSerializer.Options);
+        return JsonSerializer.Serialize(obj, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions(camelCase, indented));
     }
 
     /// <summary>
@@ -24,10 +26,11 @@ public partial class Extensions
     /// </summary>
     /// <typeparam name="T">要转换的对象类型</typeparam>
     /// <param name="json">json格式字符串</param>
+    /// <param name="camelCase">小驼峰</param>
     /// <returns>指定对象的实例</returns>
-    public static T ToObject<T>(this string json)
+    public static T ToObject<T>(this string json, bool camelCase = false)
     {
-        return JsonSerializer.Deserialize<T>(json, SystemTextJsonStringSerializer.Options);
+        return JsonSerializer.Deserialize<T>(json, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions(camelCase));
     }
 
     /// <summary>
@@ -36,10 +39,11 @@ public partial class Extensions
     /// </summary>
     /// <param name="json">json格式字符串</param>
     /// <param name="type">要转换的对象类型</param>
+    /// <param name="camelCase">小驼峰</param>
     /// <returns>指定对象的实例</returns>
-    public static object ToObject(this string json, Type type)
+    public static object ToObject(this string json, Type type, bool camelCase = false)
     {
-        return JsonSerializer.Deserialize(json, type, SystemTextJsonStringSerializer.Options);
+        return JsonSerializer.Deserialize(json, type, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions(camelCase));
     }
     
     /// <summary>

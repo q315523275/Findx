@@ -11,7 +11,7 @@ namespace Findx.Extensions.ConfigurationServer;
 /// <summary>
 ///     配置服务模块
 /// </summary>
-[Description("Findx配置中心-服务端模块")]
+[Description("Findx-配置中心服务端")]
 public class ConfigServiceModule : StartupModule
 {
     /// <summary>

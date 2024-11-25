@@ -77,7 +77,7 @@ public static class ExtraObjectExtensions
         }
 
         // ReSharper disable once PossibleNullReferenceException
-        var data = jsonObject.ToJsonString(SystemTextJsonStringSerializer.Options);
+        var data = jsonObject.ToJsonString(SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
         if (data == "{}") data = null;
 
         extraObject.ExtraProperties = data;
@@ -107,7 +107,7 @@ public static class ExtraObjectExtensions
 
         jsonObject.Remove(name);
 
-        var data = jsonObject.ToJsonString(SystemTextJsonStringSerializer.Options);
+        var data = jsonObject.ToJsonString(SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
         if (data == "{}") data = null;
 
         extraObject.ExtraProperties = data;

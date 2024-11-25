@@ -3,12 +3,15 @@
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
+        <Version>11.1.2024.1126</Version>
+        <Description>Findx审计日志保存扩展模块</Description>
+        <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
+      <PackageReference Include="Findx" Version="11.1.2024.1126" />
     </ItemGroup>
 
 </Project>
