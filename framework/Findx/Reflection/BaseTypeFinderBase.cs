@@ -28,7 +28,7 @@ public abstract class BaseTypeFinderBase<TBaseType> : FinderBase<Type>, ITypeFin
     {
         var assemblies = _appDomainAssemblyFinder.FindAll(true);
         return assemblies.SelectMany(assembly => assembly.GetTypes())
-            .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && type.IsDeriveClassFrom<TBaseType>())
-            .Distinct();
+                         .Where(type => type.IsClass && !type.IsAbstract && !type.IsInterface && type.IsDeriveClassFrom<TBaseType>())
+                         .Distinct();
     }
 }

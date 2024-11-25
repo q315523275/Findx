@@ -60,25 +60,11 @@ public class ConfigClient : IConfigClient, IDisposable
     ///     Ctor
     /// </summary>
     /// <param name="options"></param>
-    public ConfigClient(ConfigOptions options)
+    public ConfigClient(ConfigOptions options): this(options.AppId, options.Secret, options.Environment, options.Servers, options.IsRecover)
     {
         Check.NotNull(options, nameof(options));
         if (options.Validate().Any())
             throw new ArgumentNullException(nameof(options));
-
-        AppId = options.AppId;
-        AppSecret = options.Secret;
-        Environment = options.Environment;
-        Servers = options.Servers;
-        IsRecover = options.IsRecover;
-
-        _nodeIndex = new AtomicInteger(0);
-        _polling = new AtomicBoolean(false);
-        _changeCallbacks = [];
-        _cts = new CancellationTokenSource();
-
-        CurrentDataVersion = 0;
-        ClientId = Guid.NewGuid().ToString();
     }
 
     #region 属性

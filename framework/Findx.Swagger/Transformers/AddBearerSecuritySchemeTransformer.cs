@@ -34,8 +34,7 @@ public sealed class BearerSecuritySchemeTransformer(IAuthenticationSchemeProvide
             
             //  全局增加Bearer
             document.SecurityRequirements??= new List<OpenApiSecurityRequirement>();
-            document.SecurityRequirements.Add(new OpenApiSecurityRequirement
-            {
+            document.SecurityRequirements.Add(new OpenApiSecurityRequirement {
                 [new OpenApiSecurityScheme { Reference = new OpenApiReference { Id = "Bearer", Type = ReferenceType.SecurityScheme } }] = Array.Empty<string>()
             });
             

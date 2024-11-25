@@ -5,8 +5,7 @@
 /// </summary>
 public class DirectoryAssemblyFinder : IAssemblyFinder
 {
-    private static readonly IDictionary<string, IEnumerable<Assembly>> CacheDict =
-        new Dictionary<string, IEnumerable<Assembly>>();
+    private static readonly Dictionary<string, IEnumerable<Assembly>> CacheDict = new();
 
     private readonly string _path;
 
@@ -35,11 +34,14 @@ public class DirectoryAssemblyFinder : IAssemblyFinder
     /// <returns></returns>
     public IEnumerable<Assembly> FindAll(bool fromCache = false)
     {
-        if (fromCache && CacheDict.ContainsKey(_path)) return CacheDict[_path];
+        if (fromCache && CacheDict.TryGetValue(_path, out var all)) return all;
+        
         var files = Directory.GetFiles(_path, "*.dll", SearchOption.TopDirectoryOnly)
-            .Concat(Directory.GetFiles(_path, "*.exe", SearchOption.TopDirectoryOnly));
+                             .Concat(Directory.GetFiles(_path, "*.exe", SearchOption.TopDirectoryOnly));
+        
         var assemblies = files.Select(Assembly.LoadFrom).Distinct();
         CacheDict[_path] = assemblies;
+        
         return assemblies;
     }
 }

@@ -1,6 +1,4 @@
-﻿
-using System.Collections.Generic;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Linq;
 using Findx.AspNetCore;
 using Findx.Extensions;
@@ -16,7 +14,6 @@ using System.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -68,7 +65,7 @@ public class SwaggerModule : MinimalModuleBase
                         options.AddDocumentTransformer((document, _, _) =>
                         {
                             document.Info.Title = endpoint.Title ?? document.Info.Title;
-                            document.Servers = endpoint.Servers?.Select(x => new OpenApiServer { Url = x.Url, Description = x.Description }).ToList() ?? [];
+                            document.Servers = endpoint.Servers?.Select(x => new OpenApiServer { Url = x.Url, Description = x.Description }).ToArray();
                             return Task.CompletedTask;
                         });
                     });
@@ -91,7 +88,7 @@ public class SwaggerModule : MinimalModuleBase
                 // AddDocumentFilter(options);
 
                 // 添加权限
-                    AddSecurity(options);
+                AddSecurity(options);
 
                 // 标签分组
                 // AddActionTag(options);
@@ -216,7 +213,7 @@ public class SwaggerModule : MinimalModuleBase
             var tagAttribute = description.ActionDescriptor.EndpointMetadata.OfType<TagsAttribute>().FirstOrDefault();
             if (tagAttribute != null) return tagAttribute.Tags.ToList();
 
-            return new List<string> { description.ActionDescriptor.CastTo<ControllerActionDescriptor>().ControllerName };
+            return new List<string> { description.ActionDescriptor.As<ControllerActionDescriptor>().ControllerName };
         });
     }
 

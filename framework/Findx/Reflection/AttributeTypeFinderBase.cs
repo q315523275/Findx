@@ -7,8 +7,7 @@ namespace Findx.Reflection;
 ///     标注了指定<see cref="Attribute" />特性的类型查找器基类
 /// </summary>
 /// <typeparam name="TAttributeType">要查找的特性注解</typeparam>
-public abstract class AttributeTypeFinderBase<TAttributeType> : FinderBase<Type>, ITypeFinder
-    where TAttributeType : Attribute
+public abstract class AttributeTypeFinderBase<TAttributeType> : FinderBase<Type>, ITypeFinder where TAttributeType : Attribute
 {
     private readonly IAppDomainAssemblyFinder _appDomainAssemblyFinder;
 

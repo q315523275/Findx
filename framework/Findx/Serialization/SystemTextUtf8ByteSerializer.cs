@@ -6,7 +6,7 @@ namespace Findx.Serialization;
 /// <summary>
 ///     序列化
 /// </summary>
-public class SystemTextUtf8ByteSerializer : ISerializer
+public class SystemTextUtf8ByteSerializer : IObjectSerializer
 {
     /// <summary>
     ///     Ctor

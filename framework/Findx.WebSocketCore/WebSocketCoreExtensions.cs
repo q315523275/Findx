@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Findx.Common;
 using Findx.Extensions;
+using Findx.WebSocketCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 

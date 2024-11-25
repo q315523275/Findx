@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
 
-namespace Findx.WebSocketCore;
+namespace Findx.WebSocketCore.Middlewares;
 
 /// <summary>
 ///     中间件

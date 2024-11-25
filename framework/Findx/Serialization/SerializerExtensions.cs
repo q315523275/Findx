@@ -11,7 +11,7 @@ public static class SerializerExtensions
 	/// <param name="serializer"></param>
 	/// <param name="model"></param>
 	/// <returns></returns>
-	public static byte[] SerializeToBytes<T>(this ISerializer serializer, T model)
+	public static byte[] SerializeToBytes<T>(this IObjectSerializer serializer, T model)
     {
         return serializer.Serialize(model);
     }

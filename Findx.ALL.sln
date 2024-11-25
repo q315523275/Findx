@@ -37,7 +37,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.FreeSql", "framework\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Security", "framework\Findx.Security\Findx.Security.csproj", "{6E0694F1-230D-43D4-84E8-EFC969F5E4E5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.RPC", "framework\Findx.RPC\Findx.RPC.csproj", "{E55E70F5-56C5-4717-A0A8-2D2575CF00A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.Net", "framework\Findx.Net\Findx.Net.csproj", "{E55E70F5-56C5-4717-A0A8-2D2575CF00A9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Findx.WebHost", "test\Findx.WebHost\Findx.WebHost.csproj", "{42D79752-8798-4118-B86A-A265425E1F61}"
 EndProject

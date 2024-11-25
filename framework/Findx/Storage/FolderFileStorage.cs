@@ -25,7 +25,7 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
     /// <param name="app"></param>
     /// <param name="logger"></param>
     /// <param name="settingProvider"></param>
-    public FolderFileStorage(ISerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, IConfiguration settingProvider)
+    public FolderFileStorage(IObjectSerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, IConfiguration settingProvider)
     {
         Serializer = serializer;
         _logger = logger;
@@ -36,7 +36,7 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
     /// <summary>
     ///     序列化工具
     /// </summary>
-    public ISerializer Serializer { get; }
+    public IObjectSerializer Serializer { get; }
 
     /// <summary>
     ///     文件存储类型名称

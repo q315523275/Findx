@@ -3,7 +3,7 @@
 /// <summary>
 ///     对象序列化
 /// </summary>
-public interface ISerializer
+public interface IObjectSerializer
 {
     /// <summary>
     ///     序列化

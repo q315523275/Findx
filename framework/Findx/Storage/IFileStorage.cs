@@ -12,7 +12,7 @@ public interface IFileStorage
     /// <summary>
     ///     序列化器
     /// </summary>
-    ISerializer Serializer { get; }
+    IObjectSerializer Serializer { get; }
 
     /// <summary>
     ///     获取文件数据流

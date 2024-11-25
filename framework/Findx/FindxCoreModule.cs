@@ -99,7 +99,7 @@ public class FindxCoreModule : StartupModule
 
         // 序列化
         services.AddSingleton<IJsonSerializer, SystemTextJsonStringSerializer>();
-        services.AddSingleton<ISerializer, SystemTextUtf8ByteSerializer>();
+        services.AddSingleton<IObjectSerializer, SystemTextUtf8ByteSerializer>();
 
         // 短信
         services.AddSingleton<ISmsSender, NullSmsSender>();

@@ -8,7 +8,7 @@ using InvokeHandler = Func<object, object[], object>;
 ///     快速调用处理程序
 ///     http://www.codeproject.com/Articles/14593/A-General-Fast-Method-Invoker
 /// </summary>
-public class FastInvokeHandler
+public static class FastInvokeHandler
 {
     /// <summary>
     ///     创建
@@ -19,10 +19,7 @@ public class FastInvokeHandler
     public static InvokeHandler Create(MethodInfo methodInfo)
     {
         if (methodInfo.DeclaringType == null) throw new InvalidOperationException("methodInfo的类型为空。");
-        var dynamicMethod = new DynamicMethod(string.Empty,
-            typeof(object),
-            new[] { typeof(object), typeof(object[]) },
-            methodInfo.DeclaringType.Module);
+        var dynamicMethod = new DynamicMethod(string.Empty, typeof(object), [typeof(object), typeof(object[])], methodInfo.DeclaringType.Module);
         var il = dynamicMethod.GetILGenerator();
         var ps = methodInfo.GetParameters();
         var paramTypes = new Type[ps.Length];
@@ -114,7 +111,7 @@ public class FastInvokeHandler
         }
 
 
-        if (value > -129 && value < 128)
+        if (value is > -129 and < 128)
             il.Emit(OpCodes.Ldc_I4_S, (sbyte)value);
         else
             il.Emit(OpCodes.Ldc_I4, value);
