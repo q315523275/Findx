@@ -81,7 +81,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Module.EleAdminPlus.S
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmark", "benchmark", "{BEB0D21A-7929-49FD-BC8F-4B4370FFB244}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Benchmark.App", "benchmark\Benchmark.App\Benchmark.App.csproj", "{C89585C2-B98E-4EC1-A122-4E09C1B4A3C9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BenchmarkDotNetExercise", "benchmark\BenchmarkDotNetExercise\BenchmarkDotNetExercise.csproj", "{C89585C2-B98E-4EC1-A122-4E09C1B4A3C9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.Module.EleAdmin.Shared", "modules\Findx.Module.EleAdmin.Shared\Findx.Module.EleAdmin.Shared.csproj", "{8F5EDE6F-C2C7-41E7-9493-F2BE3F6585B8}"
 EndProject

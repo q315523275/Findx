@@ -268,13 +268,14 @@ Console.WriteLine("Hello, World!");
 // Console.WriteLine($"YitIdHelper:" + YitIdHelper.NextId());
 // var newLifeSnowflakeId = new Snowflake();
 // Console.WriteLine($"NewLife.Snowflake:" + newLifeSnowflakeId.NewId());
-// Ulid.NewUlid();
+// Console.WriteLine($"Ulid.NewUlid:" + Ulid.NewUlid());
 //
 // Console.WriteLine();
 // Console.WriteLine("有序Id生成预热结束");
 // Console.WriteLine();
 //
 // var cyclesCount = 1_000_000;
+// var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
 //
 // var watch = Stopwatch.StartNew();
 // for (var i = 0; i < cyclesCount; i++)
@@ -382,51 +383,51 @@ Console.WriteLine("Hello, World!");
 
 
 // Json表达式解析
-var entities = new List<SysAppInfo>();
-for (var i = 0; i < 1000; i++)
-{
-    entities.Add(new SysAppInfo
-    {
-        Id = NewId.NextSequentialGuid(),
-        Name = "Name" + (i + 1),
-        Code = "Code" + (i + 1),
-        // Status = (i % 2) > 0 ? 0 : 1,
-        Status = (i % 2) > 0 ? CommonStatus.Success : CommonStatus.Failed,
-        Sort = i
-    });
-}
-
-// 排序表达式
-var dataSort = SortConditionBuilder.New<SysAppInfo>().OrderBy("Status").OrderBy(x => new { x.Code, x.Id }).Build();
-
-// 自定义筛选器
-var filterGroup = new FilterGroup
-{
-    Logic = FilterOperate.And,
-    Filters =
-    [
-        new FilterCondition
-        {
-            Field = "name", Value = "Name110", Operator = FilterOperate.Contains
-        },
-
-        // new FilterCondition
-        // {
-        //     Field = "Status", Value = "0,2", Operator = FilterOperate.In
-        // }
-    ]
-};
-var st = DateTime.Now;
-var filter = LambdaExpressionParser.ParseConditions<SysAppInfo>(filterGroup);
-Console.WriteLine($"LambdaExpressionParser:{(DateTime.Now - st).TotalMilliseconds}ms");
-
-var s = entities.Where(filter.Compile()).OrderBy("Status", ListSortDirection.Ascending).ThenBy("Sort", ListSortDirection.Descending);
-Console.WriteLine($"{entities.Count}---{s.Count()}");
-foreach (var item in s)
-{
-    Console.WriteLine(item.ToJson());
-}
-Console.ReadLine();
+// var entities = new List<SysAppInfo>();
+// for (var i = 0; i < 1000; i++)
+// {
+//     entities.Add(new SysAppInfo
+//     {
+//         Id = NewId.NextSequentialGuid(),
+//         Name = "Name" + (i + 1),
+//         Code = "Code" + (i + 1),
+//         // Status = (i % 2) > 0 ? 0 : 1,
+//         Status = (i % 2) > 0 ? CommonStatus.Success : CommonStatus.Failed,
+//         Sort = i
+//     });
+// }
+//
+// // 排序表达式
+// var dataSort = SortConditionBuilder.New<SysAppInfo>().OrderBy("Status").OrderBy(x => new { x.Code, x.Id }).Build();
+//
+// // 自定义筛选器
+// var filterGroup = new FilterGroup
+// {
+//     Logic = FilterOperate.And,
+//     Filters =
+//     [
+//         new FilterCondition
+//         {
+//             Field = "name", Value = "Name110", Operator = FilterOperate.Contains
+//         },
+//
+//         // new FilterCondition
+//         // {
+//         //     Field = "Status", Value = "0,2", Operator = FilterOperate.In
+//         // }
+//     ]
+// };
+// var st = DateTime.Now;
+// var filter = LambdaExpressionParser.ParseConditions<SysAppInfo>(filterGroup);
+// Console.WriteLine($"LambdaExpressionParser:{(DateTime.Now - st).TotalMilliseconds}ms");
+//
+// var s = entities.Where(filter.Compile()).OrderBy("Status", ListSortDirection.Ascending).ThenBy("Sort", ListSortDirection.Descending);
+// Console.WriteLine($"{entities.Count}---{s.Count()}");
+// foreach (var item in s)
+// {
+//     Console.WriteLine(item.ToJson());
+// }
+// Console.ReadLine();
 
 
 

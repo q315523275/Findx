@@ -3,29 +3,29 @@ using DotNetCore.CAP.Internal;
 using Findx.Utilities;
 using NewLife.Data;
 using Yitter.IdGenerator;
-namespace Benchmark.App;
+namespace BenchmarkDotNetExercise;
 
-public class IdGenerator
+[MemoryDiagnoser]//记录内存分配情况
+public class GenerateSequentialId
 {
-    private const long CyclesCount = 1_000_000;
-    private static SnowflakeId _capSnowflakeId;
-    private static Snowflake _newLifeSnowflakeId;
-    private static SnowflakeIdUtility _findxSnowflakeId;
+    private static readonly SnowflakeId CapSnowflakeId;
+    private static readonly Snowflake NewLifeSnowflakeId;
+    private static readonly SnowflakeIdUtility FindxSnowflakeId;
     
-    static IdGenerator()
+    static GenerateSequentialId()
     {
         var options = new IdGeneratorOptions { WorkerIdBitLength = 10, SeqBitLength = 12 };
         YitIdHelper.SetIdGenerator(options);
-        _capSnowflakeId = new SnowflakeId();
-        _newLifeSnowflakeId = new Snowflake();
+        CapSnowflakeId = new SnowflakeId();
+        NewLifeSnowflakeId = new Snowflake();
         MassTransit.NewId.NextSequentialGuid();
-        _findxSnowflakeId = new SnowflakeIdUtility(46);
+        FindxSnowflakeId = new SnowflakeIdUtility(46);
         
         Console.WriteLine(Guid.NewGuid());
         Console.WriteLine(SequentialGuidUtility.Next(SequentialGuidType.AsString));
         Console.WriteLine($"Findx:" + SnowflakeIdUtility.Default().NextId());
         Console.WriteLine($"YitIdHelper:" + YitIdHelper.NextId());
-        Console.WriteLine($"NewLife.Snowflake:" + _newLifeSnowflakeId.NewId());
+        Console.WriteLine($"NewLife.Snowflake:" + NewLifeSnowflakeId.NewId());
     }
     
     [Benchmark]
@@ -37,24 +37,30 @@ public class IdGenerator
     [Benchmark]
     public void CAP_SnowflakeId()
     {
-        _capSnowflakeId.NextId();
+        CapSnowflakeId.NextId();
     }
     
     [Benchmark]
     public void NewLife_Snowflake()
     {
-        _newLifeSnowflakeId.NewId();
+        NewLifeSnowflakeId.NewId();
     }
     
     [Benchmark]
     public void Findx_SnowflakeId()
     {
-        _findxSnowflakeId.NextId();
+        FindxSnowflakeId.NextId();
     }
     
     [Benchmark]
     public void YitId_IdGenerator()
     {
         YitIdHelper.NextId();
+    }
+    
+    [Benchmark]
+    public void Guid_CreateVersion7()
+    {
+        Guid.CreateVersion7();
     }
 }

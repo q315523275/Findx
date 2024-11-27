@@ -1,8 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using Benchmark.App;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNetExercise;
 
 Console.WriteLine("Hello, World!");
 
-var summary = BenchmarkRunner.Run<IdGenerator>();
+var summary = BenchmarkRunner.Run<GenerateSequentialId>();
