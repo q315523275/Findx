@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Net.WebSockets;
-using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Extensions;
+using Findx.WebSocketCore.Abstractions;
 
 namespace Findx.WebSocketCore;
 
@@ -13,84 +15,84 @@ namespace Findx.WebSocketCore;
 public abstract class WebSocketHandlerBase
 {
     /// <summary>
-    ///     序列化工具
-    /// </summary>
-    private readonly IWebSocketSerializer _serializer;
-
-    /// <summary>
     ///     Ctor
     /// </summary>
-    /// <param name="clientManager"></param>
-    /// <param name="serializer"></param>
-    protected WebSocketHandlerBase(IWebSocketClientManager clientManager, IWebSocketSerializer serializer)
+    /// <param name="webSocketSessionManager"></param>
+    protected WebSocketHandlerBase(IWebSocketSessionManager webSocketSessionManager)
     {
-        ClientManager = clientManager;
-        _serializer = serializer;
+        WebSocketSessionManager = webSocketSessionManager;
     }
 
     /// <summary>
     ///     连接管理器
     /// </summary>
-    protected IWebSocketClientManager ClientManager { get; }
+    protected IWebSocketSessionManager WebSocketSessionManager { get; }
 
     /// <summary>
     ///     连接成功
     /// </summary>
-    /// <param name="client"></param>
+    /// <param name="session"></param>
     /// <param name="cancellationToken"></param>
-    public virtual async Task OnConnected(WebSocketClient client, CancellationToken cancellationToken = default)
+    public virtual async Task OnConnected(IWebSocketSession session, CancellationToken cancellationToken = default)
     {
-        ClientManager.AddClient(client);
+        WebSocketSessionManager.AddSession(session);
 
-        await SendMessageAsync(client, new WebSocketMessage<string> { Type = MessageType.ConnectionEvent, Data = $"{client.Id},{client.Name},{client.RemoteIp},{client.ServerIp}" }, cancellationToken).ConfigureAwait(false);
+        await SendMessageAsync(session, new RequestTextMessage($"user:{session.UserName} session:{session.Id} from {session.RemoteIpAddress}:{session.RemotePort}"), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     ///     关闭连接
     /// </summary>
-    /// <param name="client"></param>
+    /// <param name="session"></param>
     /// <param name="cancellationToken"></param>
-    public virtual async Task OnDisconnected(WebSocketClient client, CancellationToken cancellationToken = default)
+    public virtual async Task OnDisconnected(IWebSocketSession session, CancellationToken cancellationToken = default)
     {
-        await ClientManager.RemoveClientAsync(client, cancellationToken).ConfigureAwait(false);
+        await WebSocketSessionManager.RemoveSessionAsync(session, cancellationToken).ConfigureAwait(false);
+    }
+    
+    /// <summary>
+    ///     发送消息
+    /// </summary>
+    /// <param name="session"></param>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <exception cref="ArgumentException"></exception>
+    public async Task SendMessageAsync(IWebSocketSession session, RequestMessage message, CancellationToken cancellationToken = default)
+    {
+        ReadOnlyMemory<byte> payload;
+
+        switch (message)
+        {
+            case RequestTextMessage textMessage:
+                payload = MemoryMarshal.AsMemory<byte>(textMessage.Text.ToBytes());
+                break;
+            case RequestBinaryMessage binaryMessage:
+                payload = MemoryMarshal.AsMemory<byte>(binaryMessage.Data);
+                break;
+            case RequestBinarySegmentMessage segmentMessage:
+                payload = segmentMessage.Data.AsMemory();
+                break;
+            default:
+                throw new ArgumentException($"Unknown message type: {message.GetType()}");
+        }
+
+        await session.SendAsync(payload, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     ///     发送消息
     /// </summary>
-    /// <param name="client"></param>
+    /// <param name="userName"></param>
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
-    public async Task SendMessageAsync<T>(WebSocketClient client, WebSocketMessage<T> message, CancellationToken cancellationToken = default)
+    /// <exception cref="ArgumentException"></exception>
+    public async Task SendMessageAsync(string userName, RequestMessage message, CancellationToken cancellationToken = default)
     {
-        if (client.Client.State != WebSocketState.Open)
-            return;
-
-        try
+        var sessions = WebSocketSessionManager.GetSession(userName);
+        foreach (var session in sessions)
         {
-            var content = _serializer.Serialize(message);
-            var body = new ArraySegment<byte>(content, 0, content.Length);
-
-            await client.Client.SendAsync(body, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+            await SendMessageAsync(session, message, cancellationToken).ConfigureAwait(false);
         }
-        catch (WebSocketException e)
-        {
-            if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely) 
-                await OnDisconnected(client, cancellationToken);
-        }
-    }
-
-    /// <summary>
-    ///     发送消息
-    /// </summary>
-    /// <param name="id"></param>
-    /// <param name="message"></param>
-    /// <param name="cancellationToken"></param>
-    public async Task SendMessageAsync<T>(string id, WebSocketMessage<T> message, CancellationToken cancellationToken = default)
-    {
-        var client = ClientManager.GetClient(id);
-        if (client != null)
-            await SendMessageAsync(client, message, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -98,22 +100,21 @@ public abstract class WebSocketHandlerBase
     /// </summary>
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
-    public async Task SendMessageToAllAsync<T>(WebSocketMessage<T> message, CancellationToken cancellationToken = default)
+    public async Task SendMessageToAllAsync(RequestMessage message, CancellationToken cancellationToken = default)
     {
-        var allClients = ClientManager.GetAllClients();
-        if (allClients != null)
+        var allSessions = WebSocketSessionManager.GetAllSessions();
+        if (allSessions != null)
         {
-            foreach (var client in allClients)
+            foreach (var session in allSessions)
             {
                 try
                 {
-                    if (client.Client?.State == WebSocketState.Open)
-                        await SendMessageAsync(client, message, cancellationToken).ConfigureAwait(false);
+                    if (session?.State == WebSocketState.Open)
+                        await SendMessageAsync(session, message, cancellationToken).ConfigureAwait(false);
                 }
                 catch (WebSocketException e)
                 {
-                    if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
-                        await OnDisconnected(client, cancellationToken);
+                    if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely) await OnDisconnected(session, cancellationToken);
                 }
             }
         }
@@ -125,14 +126,14 @@ public abstract class WebSocketHandlerBase
     /// <param name="groupId"></param>
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
-    public async Task SendMessageToGroupAsync<T>(string groupId, WebSocketMessage<T> message, CancellationToken cancellationToken = default)
+    public async Task SendMessageToGroupAsync(string groupId, RequestMessage message, CancellationToken cancellationToken = default)
     {
-        var clients = ClientManager.GetAllClientsFromGroup(groupId);
-        if (clients != null)
+        var users = WebSocketSessionManager.GetAllUserFromGroup(groupId);
+        if (users != null)
         {
-            foreach (var socket in clients)
+            foreach (var user in users)
             {
-                await SendMessageAsync(socket, message, cancellationToken);
+                await SendMessageAsync(user, message, cancellationToken);
             }
         }
     }
@@ -143,15 +144,14 @@ public abstract class WebSocketHandlerBase
     /// <param name="groupId"></param>
     /// <param name="message"></param>
     /// <param name="excepts">不发送id</param>
-    public async Task SendMessageToGroupAsync<T>(string groupId, WebSocketMessage<T> message, params string[] excepts)
+    public async Task SendMessageToGroupAsync(string groupId, RequestMessage message, params string[] excepts)
     {
-        var clients = ClientManager.GetAllClientsFromGroup(groupId);
-        if (clients != null)
+        var users = WebSocketSessionManager.GetAllUserFromGroup(groupId);
+        if (users != null)
         {
-            foreach (var client in clients)
+            foreach (var user in users)
             {
-                if (!excepts.Contains(client))
-                    await SendMessageAsync(client, message);
+                if (!excepts.Contains(user)) await SendMessageAsync(user, message);
             }
         }
     }
@@ -160,23 +160,8 @@ public abstract class WebSocketHandlerBase
     ///     接收消息
     /// </summary>
     /// <param name="client"></param>
+    /// <param name="message"></param>
     /// <param name="result"></param>
-    /// <param name="receivedMessage"></param>
     /// <param name="cancellationToken"></param>
-    public virtual async Task ReceiveAsync(WebSocketClient client, WebSocketReceiveResult result, string receivedMessage, CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            await SendMessageAsync(client, new WebSocketMessage<string> { Type = MessageType.Text, Data = $"自动回复:{receivedMessage}" }, cancellationToken).ConfigureAwait(false);
-        }
-        catch (TargetParameterCountException)
-        {
-            await SendMessageAsync(client, new WebSocketMessage<string> { Type = MessageType.Error, Data = "does not take parameters!" }, cancellationToken).ConfigureAwait(false);
-        }
-
-        catch (ArgumentException)
-        {
-            await SendMessageAsync(client, new WebSocketMessage<string> { Type = MessageType.Error, Data = "takes different arguments!" }, cancellationToken).ConfigureAwait(false);
-        }
-    }
+    public abstract Task ReceiveAsync(IWebSocketSession client, ResponseMessage message, ValueWebSocketReceiveResult result, CancellationToken cancellationToken = default);
 }

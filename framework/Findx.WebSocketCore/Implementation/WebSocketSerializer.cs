@@ -1,10 +1,11 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using Findx.WebSocketCore.Abstractions;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.Options;
 
-namespace Findx.WebSocketCore;
+namespace Findx.WebSocketCore.Implementation;
 
 /// <summary>
 /// </summary>
@@ -49,7 +50,7 @@ public class WebSocketSerializer : IWebSocketSerializer
     /// <param name="serializedObject"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public T Deserialize<T>(Span<byte> serializedObject)
+    public T Deserialize<T>(ReadOnlySpan<byte> serializedObject)
     {
         return JsonSerializer.Deserialize<T>(serializedObject, _options.Value.SerializerOptions);
     }

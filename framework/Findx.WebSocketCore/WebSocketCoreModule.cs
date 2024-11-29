@@ -2,6 +2,8 @@
 using System.Reflection;
 using Findx.Extensions;
 using Findx.Modularity;
+using Findx.WebSocketCore.Abstractions;
+using Findx.WebSocketCore.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.WebSocketCore;
@@ -29,7 +31,7 @@ public class WebSocketCoreModule : StartupModule
     /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton<IWebSocketClientManager, WebSocketClientManager>();
+        services.AddSingleton<IWebSocketSessionManager, WebSocketSessionManager>();
         services.AddSingleton<IWebSocketSerializer, WebSocketSerializer>();
         services.AddSingleton<IWebSocketAuthorization, NullWebSocketAuthorization>();
 

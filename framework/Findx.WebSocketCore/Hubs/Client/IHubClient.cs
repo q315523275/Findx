@@ -50,12 +50,4 @@ public interface IHubClient
     /// </summary>
     /// <returns></returns>
     Task<CommonResult> ReStartAsync();
-
-    /// <summary>
-    ///     向服务器发送数据
-    /// </summary>
-    /// <param name="methodName">Hub方法名</param>
-    /// <param name="args">调用参数</param>
-    /// <returns></returns>
-    Task SendToHubAsync(string methodName, params object[] args);
 }

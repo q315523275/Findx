@@ -34,7 +34,6 @@
 
     <ItemGroup>
       <Folder Include="Cluster\" />
-      <Folder Include="Extensions\" />
     </ItemGroup>
 
 </Project>

@@ -1,7 +1,7 @@
 using Findx.AspNetCore.Extensions;
 using Findx.Configuration.Extensions;
 using Findx.Extensions;
-using Findx.WebSocketCore;
+using Findx.WebSocketCore.Extensions;
 using Microsoft.AspNetCore.WebSockets;
 using WebApplication1;
 
@@ -17,7 +17,7 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 app.UseJsonExceptionHandler();
-app.UseWebSockets().MapWebSocketManager("/ws", app.Services.GetRequiredService<WebSocketHandler>());
+app.UseWebSockets().MapWebSocket("/ws", app.Services.GetRequiredService<WebSocketHandler>());
 app.UseFindx();
 app.MapControllersWithAreaRoute();
 

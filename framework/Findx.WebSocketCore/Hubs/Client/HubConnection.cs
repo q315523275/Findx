@@ -1,18 +1,15 @@
 using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.IO;
 using System.Net.WebSockets;
-using System.Text;
-using System.Text.Json;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Locks;
-using Findx.Serialization;
-using Findx.WebSocketCore.Internal;
+using Findx.WebSocketCore.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
 
@@ -124,40 +121,45 @@ public class HubConnection: IAsyncDisposable
     /// <summary>
     ///     发送消息
     /// </summary>
-    /// <param name="data"></param>
+    /// <param name="message"></param>
     /// <param name="messageType"></param>
     /// <param name="endOfMessage"></param>
     /// <param name="cancellationToken"></param>
-    public virtual async Task SendAsync(ArraySegment<byte> data, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken = default)
+    public virtual async Task SendAsync(RequestMessage message, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken = default)
     {
-        await WebSocket.SendAsync(data, messageType, endOfMessage, cancellationToken);
+        ReadOnlyMemory<byte> payload;
+
+        switch (message)
+        {
+            case RequestTextMessage textMessage:
+                payload = MemoryMarshal.AsMemory<byte>(textMessage.Text.ToBytes());
+                break;
+            case RequestBinaryMessage binaryMessage:
+                payload = MemoryMarshal.AsMemory<byte>(binaryMessage.Data);
+                break;
+            case RequestBinarySegmentMessage segmentMessage:
+                payload = segmentMessage.Data.AsMemory();
+                break;
+            default:
+                throw new ArgumentException($"Unknown message type: {message.GetType()}");
+        }
+        
+        await WebSocket.SendAsync(payload, messageType, endOfMessage, cancellationToken);
     }
     
     /// <summary>
-    ///     发送消息
-    /// </summary>
-    /// <param name="data"></param>
-    /// <param name="messageType"></param>
-    /// <param name="endOfMessage"></param>
-    /// <param name="cancellationToken"></param>
-    public virtual async Task SendAsync(ReadOnlyMemory<byte> data, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken = default)
-    {
-        await WebSocket.SendAsync(data, messageType, endOfMessage, cancellationToken);
-    }
-
-    /// <summary>
     ///     消息接收委托方法
     /// </summary>
-    private Func<HubMessage, CancellationToken, Task> MessageReceived { set; get; }
+    private Func<ResponseMessage, CancellationToken, Task> MessageReceived { set; get; }
     
     /// <summary>
     ///     消息事件
     /// </summary>
     /// <param name="received"></param>
-    public void On<TMessage>(Func<TMessage, CancellationToken, Task> received) where TMessage: HubMessage
+    public void On(Func<ResponseMessage, CancellationToken, Task> received)
     {
-        // MessageReceived += received;
-        StartReceiveMessage();
+        MessageReceived += received;
+        StartListening();
     }
 
     #region Listen
@@ -167,7 +169,7 @@ public class HubConnection: IAsyncDisposable
     /// <summary>
     ///     接收消息
     /// </summary>
-    private void StartReceiveMessage()
+    private void StartListening()
     {
         if (_receivedCounter.IncrementAndGet() != 1) return;
         
@@ -181,52 +183,43 @@ public class HubConnection: IAsyncDisposable
                     continue;
                 }
 
-                var buffer = ArrayPool<byte>.Shared.Rent(8);
-                var bufferSegment = new ArraySegment<byte>(buffer);
+                // 4kb缓冲区大小
+                const int chunkSize = 100; //1024 * 4;
+                var bytes = ArrayPool<byte>.Shared.Rent(chunkSize);
+                var buffer = new Memory<byte>(bytes);
 
                 try
                 {
-                    var result = await WebSocket.ReceiveAsync(bufferSegment, _cts.Token).ConfigureAwait(false);
-                    
+                    var result = await WebSocket.ReceiveAsync(buffer, _cts.Token).ConfigureAwait(false);
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         State = HubConnectionState.Disconnected;
-                        Closed?.Invoke(new Exception($"{result.CloseStatus}_{result.CloseStatusDescription}"));
+                        Closed?.Invoke(new Exception($"被动通知关闭"));
                     }
                     else
                     {
-                        // 小于缓冲区,直接使用字节数组
+                        ResponseMessage message = null;
                         if (result.EndOfMessage)
                         {
-                            if (bufferSegment.Array != null)
-                            {
-                                await HandleMessageAsync(result, bufferSegment, _cts.Token);
-                            }
+                            if (result.Count > 0)
+                                message = ResponseMessage.BinaryMessage(buffer[..result.Count]);
                         }
                         else
                         {
-                            // 创建一个 MemoryStream 来收集所有分段的消息数据
-                            await using var ms = _memoryStreamPool.GetStream();
-
-                            // 将第一个片段写入 MemoryStream
-                            await ms.WriteAsync(bufferSegment.Array.AsMemory(bufferSegment.Offset, result.Count), _cts.Token);
-
+                            await using var ms = Pool.MemoryStream.Rent();
+                            await ms.WriteAsync(buffer[..result.Count], _cts.Token);
                             do
                             {
-                                result = await WebSocket.ReceiveAsync(bufferSegment, _cts.Token).ConfigureAwait(false);
-
-                                if (bufferSegment.Array != null)
-                                {
-                                    // 将后续片段写入 MemoryStream
-                                    await ms.WriteAsync(bufferSegment.Array.AsMemory(bufferSegment.Offset, result.Count), _cts.Token);
-                                }
+                                result = await WebSocket.ReceiveAsync(buffer, _cts.Token).ConfigureAwait(false);
+                                if (result.Count > 0) await ms.WriteAsync(buffer[..result.Count], _cts.Token);
                             } while (!result.EndOfMessage);
-
-                            // 重置 MemoryStream 位置
                             ms.Seek(0, SeekOrigin.Begin);
-
-                            await HandleMessageAsync(result, ms, _cts.Token);
+                            
+                            message = ResponseMessage.BinaryStreamMessage(ms);
                         }
+                        
+                        if (message != null)
+                            await MessageReceived.Invoke(message, _cts.Token);
                     }
                 }
                 catch (Exception ex)
@@ -235,7 +228,7 @@ public class HubConnection: IAsyncDisposable
                 }
                 finally
                 {
-                    ArrayPool<byte>.Shared.Return(buffer);
+                    ArrayPool<byte>.Shared.Return(bytes);
                 }
             }
         }, _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ConfigureAwait(false);
@@ -250,56 +243,6 @@ public class HubConnection: IAsyncDisposable
         State = WebSocket.State == WebSocketState.Open ? HubConnectionState.Connected : HubConnectionState.Disconnected;
                     
         if (State == HubConnectionState.Disconnected) Closed?.Invoke(ex);
-    }
-    
-    /// <summary>
-    ///     处理消息
-    /// </summary>
-    /// <param name="result"></param>
-    /// <param name="arraySegment"></param>
-    /// <param name="cancellationToken"></param>
-    private async Task HandleMessageAsync(WebSocketReceiveResult result, ArraySegment<byte> arraySegment, CancellationToken cancellationToken = default)
-    {
-        var rs = _serializer.Deserialize<HubMessage>(arraySegment.Array.AsSpan(arraySegment.Offset, result.Count));
-        switch (result.MessageType)
-        {
-            case WebSocketMessageType.Text when MessageReceived != null:
-                await MessageReceived.Invoke(rs, cancellationToken).ConfigureAwait(false);
-                break;
-            case WebSocketMessageType.Close:
-                State = HubConnectionState.Disconnected;
-                Closed?.Invoke(new Exception($"{result.CloseStatus}_{result.CloseStatusDescription}"));
-                break;
-            case WebSocketMessageType.Binary:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-        // await Task.CompletedTask;
-    }
-    
-    /// <summary>
-    ///     处理消息
-    /// </summary>
-    /// <param name="result"></param>
-    /// <param name="stream"></param>
-    /// <param name="cancellationToken"></param>
-    private async Task HandleMessageAsync(WebSocketReceiveResult result, Stream stream, CancellationToken cancellationToken = default)
-    {
-        var rs = _serializer.Deserialize<HubMessage>(stream);
-        switch (result.MessageType)
-        {
-            case WebSocketMessageType.Binary when MessageReceived != null:
-            case WebSocketMessageType.Text when MessageReceived != null:
-                await MessageReceived.Invoke(rs, cancellationToken).ConfigureAwait(false);
-                break;
-            case WebSocketMessageType.Close:
-                State = HubConnectionState.Disconnected;
-                Closed?.Invoke(new Exception($"{result.CloseStatus}_{result.CloseStatusDescription}"));
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
     }
     #endregion
     

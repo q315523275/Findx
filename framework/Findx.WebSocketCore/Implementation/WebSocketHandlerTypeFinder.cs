@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Findx.Reflection;
+using Findx.WebSocketCore.Abstractions;
 
-namespace Findx.WebSocketCore;
+namespace Findx.WebSocketCore.Implementation;
 
 /// <summary>
 ///     查找器

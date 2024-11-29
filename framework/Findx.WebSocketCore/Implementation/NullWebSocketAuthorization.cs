@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
+using Findx.WebSocketCore.Abstractions;
 using Microsoft.AspNetCore.Http;
 
-namespace Findx.WebSocketCore;
+namespace Findx.WebSocketCore.Implementation;
 
 /// <summary>
 ///     WebSocket鉴权

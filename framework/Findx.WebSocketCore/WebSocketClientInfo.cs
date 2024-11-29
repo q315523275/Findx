@@ -7,7 +7,7 @@ namespace Findx.WebSocketCore;
 /// <summary>
 ///     连接信息
 /// </summary>
-public class ClientInfo
+public class XClientInfo
 {
     /// <summary>
     ///     编号
@@ -48,7 +48,7 @@ public class ClientInfo
 /// <summary>
 ///     WebSocket连接信息
 /// </summary>
-public class WebSocketClient : ClientInfo
+public class WebSocketXClient : XClientInfo
 {
     /// <summary>
     ///     连接端

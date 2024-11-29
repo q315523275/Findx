@@ -5,7 +5,7 @@ using Findx.WebSocketCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
-namespace Findx.WebSocketCore;
+namespace Findx.WebSocketCore.Extensions;
 
 /// <summary>
 ///     扩展
@@ -18,7 +18,7 @@ public static class WebSocketCoreExtensions
     /// <param name="path"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
-    public static IApplicationBuilder MapWebSocketManager(this IApplicationBuilder app, PathString path, WebSocketHandlerBase handler)
+    public static IApplicationBuilder MapWebSocket(this IApplicationBuilder app, PathString path, WebSocketHandlerBase handler)
     {
         return app.Map(path, x => x.UseMiddleware<WebSocketMiddleware>(handler));
     }
@@ -26,7 +26,7 @@ public static class WebSocketCoreExtensions
     /// <summary>
     ///     获取客户端IP地址
     /// </summary>
-    public static string GetClientIp(this HttpContext context)
+    public static string GetRemoteIpAddress(this HttpContext context)
     {
         var ip = context.Request.Headers.GetOrDefault("X-Forwarded-For").SafeString().Split(',')[0];
         if (string.IsNullOrWhiteSpace(ip)) ip = context.Request.Headers.GetOrDefault("REMOTE_ADDR");

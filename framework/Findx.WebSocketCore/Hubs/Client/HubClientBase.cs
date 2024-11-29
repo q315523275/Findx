@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
@@ -108,17 +110,15 @@ public abstract class HubClientBase: IHubClient
     /// <summary>
     ///     发送消息
     /// </summary>
-    /// <param name="methodName"></param>
-    /// <param name="args"></param>
-    public virtual async Task SendToHubAsync(string methodName, params object[] args)
+    public virtual async Task SendAsync(RequestMessage message, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken = default)
     {
         await WaitForConnectedAsync();
-        // await HubConnection.InvokeCoreAsync(methodName, args);
+        HubConnection.SendAsync(message, messageType, endOfMessage, cancellationToken);
     }
     
     
     /// <summary>
-    /// 在连接关闭时触发
+    ///     在连接关闭时触发
     /// </summary>
     /// <param name="error">错误信息</param>
     /// <returns></returns>

@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Findx.WebSocketCore;
+namespace Findx.WebSocketCore.Abstractions;
 
 /// <summary>
 ///     序列化器
@@ -30,7 +30,7 @@ public interface IWebSocketSerializer
     /// <param name="serializedObject"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    T Deserialize<T>(Span<byte> serializedObject);
+    T Deserialize<T>(ReadOnlySpan<byte> serializedObject);
     
     /// <summary>
     ///     反序列化

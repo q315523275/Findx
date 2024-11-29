@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Buffers;
 using System.IO;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Findx.Utilities;
+using Findx.Security;
+using Findx.WebSocketCore.Abstractions;
+using Findx.WebSocketCore.Extensions;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.WebSocketCore.Middlewares;
@@ -55,88 +58,92 @@ public class WebSocketMiddleware
         
         // 控制连接
         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-        var webSocketClient = new WebSocketClient
+        var webSocketSession = new WebSocketSession(webSocket)
         {
-            Client = webSocket,
-            Id = context.Request.Query.TryGetValue("id", out var id) ? id : Guid.NewGuid().ToString(),
-            Name = context.Request.Query.TryGetValue("name", out var name) ? name : "未知",
-            Tag = context.Request.Query.TryGetValue("tag", out var tag) ? tag : "",
-            Environment = context.Request.Query.TryGetValue("environment", out var environment) ? environment : "",
-            RemoteIp = context.GetClientIp(),
-            ServerIp = HostUtility.ResolveHostAddress(HostUtility.ResolveHostName()),
-            LastHeartbeatTime = DateTime.Now
+            RemoteIpAddress = context.GetRemoteIpAddress(),
+            RemotePort = context.Connection.RemotePort,
+            UserName = context.User.Identity?.GetUserName() ?? "匿名"
         };
         
         // 无效
         // var cancellationToken = context.RequestAborted;
         var cts = new CancellationTokenSource();
-        await WebSocketHandler.OnConnected(webSocketClient, cts.Token).ConfigureAwait(false);
-        await ReceiveAsync(webSocketClient, cts.Token);
+        await WebSocketHandler.OnConnected(webSocketSession, cts.Token).ConfigureAwait(false);
+        await ReceiveAsync(webSocketSession, cts.Token);
         #if NET8_0_OR_GREATER
             await cts.CancelAsync(); 
         #else
             cts.Cancel();
         #endif
     }
-
-    private async Task ReceiveAsync(WebSocketClient xclient, CancellationToken cancellationToken = default)
+    
+    private async Task ReceiveAsync(IWebSocketSession session, CancellationToken cancellationToken = default)
     {
-        // 缓冲区大小
-        var buffer = new byte[128];
-        while (xclient.Client.State == WebSocketState.Open)
+        while (session.State == WebSocketState.Open)
         {
-            var arraySegment = new ArraySegment<byte>(buffer);
+            // 4kb缓冲区大小
+            const int chunkSize = 100; //1024 * 4;
+            var bytes = ArrayPool<byte>.Shared.Rent(chunkSize);
+            var buffer = new Memory<byte>(bytes);
+
             try
             {
-                string receiveMessage;
-                WebSocketReceiveResult result;
-                using (var ms = Pool.MemoryStream.Rent())
+                var result = await session.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
+                if (result.MessageType == WebSocketMessageType.Close)
                 {
-                    do
+                    await HandleAsync(session, null, result, cancellationToken);
+                    return;
+                }
+                else
+                {
+                    if (result.EndOfMessage)
                     {
-                        result = await xclient.Client.ReceiveAsync(arraySegment, cancellationToken).ConfigureAwait(false);
-                        if (arraySegment.Array != null)
-                            ms.Write(arraySegment.Array, arraySegment.Offset, result.Count);
-                    } while (!result.EndOfMessage);
-    
-                    // 使用固定 byte + MemoryStream方式读取内容,自动组合超过缓冲区内容
-                    xclient.LastHeartbeatTime = DateTime.Now;
-    
-                    ms.Seek(0, SeekOrigin.Begin);
-                    using (var reader = new StreamReader(ms, Encoding.UTF8))
+                        if (result.Count > 0)
+                        {
+                            var message = ResponseMessage.BinaryMessage(buffer[..result.Count]);
+                            await HandleAsync(session, message, result, cancellationToken);
+                        }
+                    }
+                    else
                     {
-                        #if !NET8_0_OR_GREATER
-                            receiveMessage = await reader.ReadToEndAsync().ConfigureAwait(false);
-                        #else
-                            receiveMessage = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
-                        #endif
+                        await using var ms = Pool.MemoryStream.Rent();
+                        await ms.WriteAsync(buffer[..result.Count], cancellationToken);
+                        do
+                        {
+                            result = await session.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
+                            if (result.Count > 0) await ms.WriteAsync(buffer[..result.Count], cancellationToken);
+                        } while (!result.EndOfMessage);
+                        ms.Seek(0, SeekOrigin.Begin);
+                        var message = ResponseMessage.BinaryStreamMessage(ms);
+                        await HandleAsync(session, message, result, cancellationToken);
                     }
                 }
-                
-                // 通过配置可以限定最大并行数量
-                HandleAsync(xclient, result, receiveMessage, cancellationToken).ConfigureAwait(false);
             }
             catch (WebSocketException e)
             {
-                if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely) 
-                    xclient.Client.Abort();
+                if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+                    session.CloseAsync(WebSocketCloseStatus.InternalServerError, "Connection closed prematurely", CancellationToken.None);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(bytes);
             }
         }
     
-        await WebSocketHandler.OnDisconnected(xclient, cancellationToken);
+        await WebSocketHandler.OnDisconnected(session, cancellationToken);
     }
 
-    private async Task HandleAsync(WebSocketClient client, WebSocketReceiveResult result, string msg, CancellationToken cancellationToken = default)
+    private async Task HandleAsync(IWebSocketSession session, ResponseMessage message, ValueWebSocketReceiveResult receiveResult, CancellationToken cancellationToken = default)
     {
-        if (result.MessageType == WebSocketMessageType.Text)
+        switch (receiveResult.MessageType)
         {
-            await WebSocketHandler.ReceiveAsync(client, result, msg, cancellationToken).ConfigureAwait(false);
-            return;
-        }
-
-        if (result.MessageType == WebSocketMessageType.Close)
-        {
-            await WebSocketHandler.OnDisconnected(client, cancellationToken).ConfigureAwait(false);
+            case WebSocketMessageType.Text or WebSocketMessageType.Binary:
+                await WebSocketHandler.ReceiveAsync(session, message, receiveResult, cancellationToken).ConfigureAwait(false);
+                return;
+            
+            case WebSocketMessageType.Close:
+                await WebSocketHandler.OnDisconnected(session, cancellationToken).ConfigureAwait(false);
+                break;
         }
     }
 }

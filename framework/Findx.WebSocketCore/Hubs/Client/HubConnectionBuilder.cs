@@ -1,4 +1,5 @@
 using Findx.Common;
+using Findx.WebSocketCore.Abstractions;
 
 namespace Findx.WebSocketCore.Hubs.Client;
 
