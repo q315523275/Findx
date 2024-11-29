@@ -20,6 +20,8 @@ using Findx.Expressions;
 using Findx.Extensions;
 using Findx.Reflection;
 using Findx.Utilities;
+using Findx.WebSocketCore;
+using Findx.WebSocketCore.Extensions;
 using Findx.WebSocketCore.Hubs.Client;
 using MassTransit;
 using Microsoft.Extensions.Options;
@@ -100,32 +102,19 @@ Console.WriteLine("Hello, World!");
 
 
 // webSocketClient测试
-// var webSocketClient = new XWebSocketClient("ws://127.0.0.1:10021/ws")
-// {
-//     MessageReceived = (session, message, _) =>
-//     {
-//         Console.WriteLine(message);
-//         return Task.CompletedTask;
-//     },
-//     OnClosed = () =>
-//     {
-//         Console.WriteLine("websocket closed");
-//         return Task.CompletedTask;
-//     },
-//     OnError = (message, ex) =>
-//     {
-//         Console.WriteLine("ex:" + ex.Message);
-//         return Task.CompletedTask;
-//     }
-// };
-// webSocketClient.Headers.Add("name", "控制台测试哦");
-// webSocketClient.StartAsync().Wait();
-// while (true)
-// {
-//     Console.WriteLine($"请输入websocket发送内容");
-//     var msg = Console.ReadLine();
-//     webSocketClient.SendAsync(msg).Wait();
-// }
+var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:10021/ws").Build();
+hubConnection.On(async (message, token) =>  
+{
+    var txt = await message.AsTextAsync(token);
+    Console.WriteLine($"Received {txt}");
+});
+await hubConnection.StartAsync();
+while (true)
+{
+    Console.WriteLine($"请输入websocket发送内容");
+    var msg = Console.ReadLine();
+    await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
+}
 
 
 // 配置中心测试

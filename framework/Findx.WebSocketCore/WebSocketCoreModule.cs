@@ -35,13 +35,11 @@ public class WebSocketCoreModule : StartupModule
         services.AddSingleton<IWebSocketSerializer, WebSocketSerializer>();
         services.AddSingleton<IWebSocketAuthorization, NullWebSocketAuthorization>();
 
-        var handlerTypeFinder =
-            services.GetOrAddTypeFinder<IWebSocketHandlerTypeFinder>(assemblyFinder =>
-                new WebSocketHandlerTypeFinder(assemblyFinder));
+        var handlerTypeFinder = services.GetOrAddTypeFinder<IWebSocketHandlerTypeFinder>(assemblyFinder => new WebSocketHandlerTypeFinder(assemblyFinder));
         var moduleTypes = handlerTypeFinder.FindAll();
         foreach (var type in moduleTypes)
-            if (type.GetTypeInfo().BaseType == typeof(WebSocketHandlerBase))
-                services.AddSingleton(type);
+            if (type.GetTypeInfo().BaseType == typeof(WebSocketHandlerBase)) services.AddSingleton(type);
+        
         return services;
     }
 }

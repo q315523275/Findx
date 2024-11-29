@@ -33,14 +33,12 @@ public class HubConnection: IAsyncDisposable
     /// </summary>
     /// <param name="url"></param>
     /// <param name="automaticReconnect">释放自动重连</param>
-    /// <param name="webSocketSerializer"></param>
-    public HubConnection(string url, bool automaticReconnect, IWebSocketSerializer webSocketSerializer)
+    public HubConnection(string url, bool automaticReconnect)
     {
         WebSocket = new ClientWebSocket();
         _cts = new CancellationTokenSource();
         
         _uri = new Uri(url);
-        _serializer = webSocketSerializer;
         if (automaticReconnect) HandleReconnect();
     }
 
@@ -73,11 +71,6 @@ public class HubConnection: IAsyncDisposable
     ///     使用 ClientWebSocket 通信
     /// </summary>
     protected ClientWebSocket WebSocket;
-    
-    /// <summary>
-    ///     序列化工具
-    /// </summary>
-    private readonly IWebSocketSerializer _serializer;
     
     /// <summary>
     ///     开始连接
@@ -184,7 +177,7 @@ public class HubConnection: IAsyncDisposable
                 }
 
                 // 4kb缓冲区大小
-                const int chunkSize = 100; //1024 * 4;
+                const int chunkSize = 1024 * 4;
                 var bytes = ArrayPool<byte>.Shared.Rent(chunkSize);
                 var buffer = new Memory<byte>(bytes);
 

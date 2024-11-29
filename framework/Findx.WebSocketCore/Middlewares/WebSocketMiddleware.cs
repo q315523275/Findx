@@ -82,7 +82,7 @@ public class WebSocketMiddleware
         while (session.State == WebSocketState.Open)
         {
             // 4kb缓冲区大小
-            const int chunkSize = 100; //1024 * 4;
+            const int chunkSize = 1024 * 4;
             var bytes = ArrayPool<byte>.Shared.Rent(chunkSize);
             var buffer = new Memory<byte>(bytes);
 
