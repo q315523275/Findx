@@ -109,7 +109,7 @@ namespace Findx.RabbitMQ
                 try
                 {
                     if (Queue.AutoAck)
-                        Channel.BasicNack(basicDeliverEventArgs.DeliveryTag, false, true);
+                        Channel.BasicAck(basicDeliverEventArgs.DeliveryTag, false);
 
                     if (FailedCallback != null)
                         await FailedCallback(Channel, basicDeliverEventArgs);

@@ -25,7 +25,7 @@ namespace Findx.Swagger;
 ///     Findx-Swagger文档模块
 /// </summary>
 [Description("Findx-Swagger文档模块")]
-public class SwaggerModule : MinimalModuleBase
+public class SwaggerModule : WebApplicationModuleBase
 {
     /// <summary>
     ///     配置

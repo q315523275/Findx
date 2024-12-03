@@ -113,10 +113,13 @@ namespace Findx.RabbitMQ
 
             if (parameterType == typeof(string)) return message;
 
-            if (parameterType.IsPrimitive && parameterType.IsValueType && parameterType != typeof(char))
+            if (parameterType.IsPrimitive && parameterType.IsValueType)
                 return Convert.ChangeType(message, parameterType);
 
-            return _serializer.Deserialize(message, parameterType);
+            if (message.IsJson()) 
+                return _serializer.Deserialize(message, parameterType);
+            
+            return default;
         }
 
         /// <summary>

@@ -36,7 +36,7 @@ public class SystemTextJsonSerializer : IJsonSerializer
     /// <param name="camelCase"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public T Deserialize<T>(ReadOnlySpan<char> json, bool camelCase = true)
+    public T Deserialize<T>(ReadOnlySpan<char> json, bool camelCase = false)
     {
         return JsonSerializer.Deserialize<T>(json, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions(camelCase));
     }
@@ -48,7 +48,7 @@ public class SystemTextJsonSerializer : IJsonSerializer
     /// <param name="type"></param>
     /// <param name="camelCase"></param>
     /// <returns></returns>
-    public object Deserialize(string json, Type type, bool camelCase = true)
+    public object Deserialize(string json, Type type, bool camelCase = false)
     {
         return JsonSerializer.Deserialize(json, type, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions(camelCase));
     }
@@ -60,7 +60,7 @@ public class SystemTextJsonSerializer : IJsonSerializer
     /// <param name="type"></param>
     /// <param name="camelCase"></param>
     /// <returns></returns>
-    public object Deserialize(ReadOnlySpan<char> json, Type type, bool camelCase = true)
+    public object Deserialize(ReadOnlySpan<char> json, Type type, bool camelCase = false)
     {
         return JsonSerializer.Deserialize(json, type, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions(camelCase));
     }

@@ -102,19 +102,19 @@ Console.WriteLine("Hello, World!");
 
 
 // webSocketClient测试
-var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:10021/ws").Build();
-hubConnection.On(async (message, token) =>  
-{
-    var txt = await message.AsTextAsync(token);
-    Console.WriteLine($"Received {txt}");
-});
-await hubConnection.StartAsync();
-while (true)
-{
-    Console.WriteLine($"请输入websocket发送内容");
-    var msg = Console.ReadLine();
-    await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
-}
+// var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:10021/ws").Build();
+// hubConnection.On(async (message, token) =>  
+// {
+//     var txt = await message.AsTextAsync(token);
+//     Console.WriteLine($"Received {txt}");
+// });
+// await hubConnection.StartAsync();
+// while (true)
+// {
+//     Console.WriteLine($"请输入websocket发送内容");
+//     var msg = Console.ReadLine();
+//     await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
+// }
 
 
 // 配置中心测试
@@ -629,3 +629,5 @@ while (true)
 // stopwatch.Stop();
 // Console.WriteLine($"发送消息耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
 // Console.ReadLine();
+
+

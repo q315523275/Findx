@@ -6,7 +6,7 @@ namespace Findx.AspNetCore;
 /// <summary>
 ///     AspNetCore模块基类
 /// </summary>
-public abstract class MinimalModuleBase : StartupModule
+public abstract class WebApplicationModuleBase : StartupModule
 {
     /// <summary>
     ///     应用AspNetCore的服务业务

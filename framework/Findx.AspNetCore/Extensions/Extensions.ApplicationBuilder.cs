@@ -51,63 +51,9 @@ public static partial class Extensions
     ///     注册请求日志中间件
     /// </summary>
     /// <param name="builder">应用程序生成器</param>
-    [Obsolete("Please use code UseFindx(this WebApplication app))")]
+    [Obsolete("Invalid. Please use code UseFindx(this WebApplication app))")]
     public static IApplicationBuilder UseFindx(this IApplicationBuilder builder)
     {
-        #region Findx图标
-
-        var defaultColor = Console.ForegroundColor;
-        Console.ForegroundColor = ConsoleColor.DarkMagenta;
-        Console.WriteLine(@"
-    #########################################################
-    ##       ___________.__            .___                ##
-    ##       \_   _____/|__| ____    __| _/__  ___         ##
-    ##        |    __)  |  |/    \  / __ |\  \/  /         ##
-    ##        |     \   |  |   |  \/ /_/ | >    <          ##
-    ##        \___  /   |__|___|  /\____ |/__/\_ \         ##
-    ##            \/            \/      \/      \/         ##
-    #########################################################");
-        Console.WriteLine();
-        Console.ForegroundColor = defaultColor;
-
-        #endregion
-
-        var provider = builder.ApplicationServices;
-        var logger = provider.GetLogger("ApplicationBuilderExtensions");
-        logger.LogInformation(0, "框架初始化开始");
-
-        // 打印框架启动日志
-        var startupLogger = provider.GetService<StartupLogger>();
-        startupLogger?.Print(provider);
-
-        var watch = Stopwatch.StartNew();
-        // 框架构建接口
-        var findxBuilder = provider.GetRequiredService<IFindxBuilder>();
-        var modules = findxBuilder.Modules;
-        logger.LogInformation("共有 {Count} 个模块需要初始化{Line}", modules.Count(), CommonUtility.Line);
-        // 所有模块初始化
-        foreach (var module in findxBuilder.Modules)
-        {
-            var jsTime = DateTime.Now;
-            var moduleType = module.GetType();
-            logger.LogInformation("正在初始化模块《{Description}》({ModuleTypeName})”", moduleType.GetDescription(), moduleType.Name);
-            if (module is AspNetCoreModuleBase aspNetCoreModule)
-                aspNetCoreModule.UseModule(builder);
-            else
-                module.UseModule(provider);
-            logger.LogInformation("模块《{Description}》({ModuleTypeName})” 初始化完成，耗时{TotalMilliseconds}ms", moduleType.GetDescription(), moduleType.Name, (DateTime.Now - jsTime).TotalMilliseconds);
-        }
-
-        // 所有模块停止委托注册
-        var hostApplicationLifetime = provider.GetService<IHostApplicationLifetime>();
-        hostApplicationLifetime?.ApplicationStopping.Register(() =>
-        {
-            foreach (var module in findxBuilder.Modules) module.OnShutdown(provider);
-        });
-
-        watch.Stop();
-        logger.LogInformation(0, "框架初始化完成，耗时:{ElapsedTotalMilliseconds}毫秒，进程编号:{ProcessId}{Line}", watch.Elapsed.TotalMilliseconds, Environment.ProcessId, CommonUtility.Line);
-
         return builder;
     }
 

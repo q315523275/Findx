@@ -91,8 +91,8 @@ public partial class Extensions
             var jsTime = DateTime.Now;
             var moduleType = module.GetType();
             logger.LogInformation("正在初始化模块《{Description}》({ModuleTypeName})”", moduleType.GetDescription(), moduleType.Name);
-            if (module is MinimalModuleBase minimalModule)
-                minimalModule.UseModule(app);
+            if (module is WebApplicationModuleBase webApplicationModule)
+                webApplicationModule.UseModule(app);
             else if (module is AspNetCoreModuleBase aspNetCoreModule)
                 aspNetCoreModule.UseModule(app);
             else

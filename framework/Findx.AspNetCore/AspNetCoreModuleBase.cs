@@ -1,4 +1,5 @@
-﻿using Findx.Modularity;
+﻿using System;
+using Findx.Modularity;
 using Microsoft.AspNetCore.Builder;
 
 namespace Findx.AspNetCore;
@@ -6,6 +7,7 @@ namespace Findx.AspNetCore;
 /// <summary>
 ///     AspNetCore模块基类
 /// </summary>
+[Obsolete("Please use WebApplicationModuleBase")]
 public abstract class AspNetCoreModuleBase : StartupModule
 {
     /// <summary>
