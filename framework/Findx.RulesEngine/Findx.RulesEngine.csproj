@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Authors>Findx</Authors>
+        <Company>Findx</Company>
+        <PackageVersion>11.1.2024.1204</PackageVersion>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
+        <Description>Microsoft.RulesEngine</Description>
+        <Copyright></Copyright>
+        <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Aliases="MicrosoftRulesEngine" Include="RulesEngine" Version="5.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Findx\Findx.csproj" />
+    </ItemGroup>
+
+</Project>

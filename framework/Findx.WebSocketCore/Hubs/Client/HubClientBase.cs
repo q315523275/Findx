@@ -152,8 +152,7 @@ public abstract class HubClientBase: IHubClient
     ///     重写以实现<see cref="HubConnection"/>通信监听
     /// </summary>
     /// <param name="connection">连接对象</param>
-    protected virtual void HubListenOn(HubConnection connection)
-    { }
+    protected virtual void HubListenOn(HubConnection connection) { }
 
     /// <summary>
     ///     等待通信连接通畅

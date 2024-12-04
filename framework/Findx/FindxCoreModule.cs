@@ -12,6 +12,7 @@ using Findx.Mapping;
 using Findx.Messaging;
 using Findx.Modularity;
 using Findx.Reflection;
+using Findx.RulesEngine;
 using Findx.Security;
 using Findx.Serialization;
 using Findx.Setting;
@@ -134,6 +135,9 @@ public class FindxCoreModule : StartupModule
         services.AddScoped<IApplicationEventHandler<AuditEntityEvent>, AuditEntityEventHandler>();
         services.AddSingleton<IAuditEntityReport, DefaultAuditEntityReport>();
 
+        // 规则引擎工厂
+        services.AddSingleton<IRulesEngineFactory, RulesEngineFactory>();
+            
         return services;
     }
 }

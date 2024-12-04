@@ -9,7 +9,6 @@ using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Locks;
-using Findx.WebSocketCore.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
 
@@ -20,13 +19,13 @@ namespace Findx.WebSocketCore.Hubs.Client;
 /// </summary>
 public class HubConnection: IAsyncDisposable
 {
+    private static readonly RecyclableMemoryStreamManager MemoryStreamPool = new();
+    
     private readonly AsyncLock _lock = new();
 
     private readonly CancellationTokenSource _cts;
     
     private readonly TimeSpan _reconnectInterval = TimeSpan.FromSeconds(5);
-
-    private readonly RecyclableMemoryStreamManager _memoryStreamPool = new();
 
     /// <summary>
     ///     Ctor
@@ -199,7 +198,7 @@ public class HubConnection: IAsyncDisposable
                         }
                         else
                         {
-                            await using var ms = Pool.MemoryStream.Rent();
+                            await using var ms = MemoryStreamPool.GetStream();
                             await ms.WriteAsync(buffer[..result.Count], _cts.Token);
                             do
                             {
