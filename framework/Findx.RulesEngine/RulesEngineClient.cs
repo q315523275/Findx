@@ -2,6 +2,7 @@ extern alias MicrosoftRulesEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.Exceptions;
 using Findx.Extensions;
@@ -34,25 +35,39 @@ public class RulesEngineClient: IRulesEngineClient
     {
         try
         {
-            if (ruleRaw.ToObject<Workflow>() == null)
-            {
-                return new ErrorResponse(new Error("illegal rules", "500"));
-            }
+            var workflow = ruleRaw.ToObject<Workflow>();
+            if (workflow == null)
+                return new ErrorResponse(new Error("rules.setting.error", "规则Json数据格式不匹配"));
+
+            if (workflow.WorkflowName.IsNullOrWhiteSpace())
+                return new ErrorResponse(new Error("rules.setting.error", "规则Json数据缺失规则名称"));
             
             return new OkResponse();
         }
         catch (Exception ex)
         {
             _logger?.LogWarning(ex, "检查规则引擎Json格式异常");
-            return new ErrorResponse(new Error(ex.Message, "catch"));
+            return new ErrorResponse(new Error(ex.Message, "规则引擎Json格式序列化异常"));
         }
     }
 
-    public async Task<Response> ExecuteAsync<TRequest>(string ruleRaw, TRequest data)
+    public Response RegisterRule(string ruleRaw)
     {
-        CheckAndAddRule(ruleRaw, out var workflow);
+        var workflow = ruleRaw.ToObject<Workflow>();
+        if (workflow == null)
+            return new ErrorResponse(new Error("rules.setting.error", "规则Json数据格式不匹配"));
 
-        var ruleResultTrees = await _rulesEngine.ExecuteAllRulesAsync(workflow!.WorkflowName, data);
+        if (workflow.WorkflowName.IsNullOrWhiteSpace())
+            return new ErrorResponse(new Error("rules.setting.error", "规则Json数据缺失规则名称"));
+
+        _rulesEngine.AddOrUpdateWorkflow(workflow);
+
+        return new OkResponse();
+    }
+
+    public async Task<Response> ExecuteAsync<TRequest>(string ruleName, TRequest data, CancellationToken cancellationToken = default)
+    {
+        var ruleResultTrees = await _rulesEngine.ExecuteAllRulesAsync(ruleName, data);
 
         var ruleResult = ruleResultTrees.Select(x => new RuleResult
         {
@@ -65,17 +80,24 @@ public class RulesEngineClient: IRulesEngineClient
         
         return new OkResponse<IEnumerable<RuleResult>>(ruleResult);
     }
-    
-    private void CheckAndAddRule(string ruleRaw, out Workflow workflow)
+
+    public bool RuleExists(string ruleName)
+    {
+        return _rulesEngine.ContainsWorkflow(ruleName);
+    }
+
+    public void RemoveRule(string ruleName)
+    {
+        _rulesEngine.RemoveWorkflow(ruleName);
+    }
+
+    public IEnumerable<string> GetRegisteredRules()
+    {
+        return _rulesEngine.GetAllRegisteredWorkflowNames();
+    }
+
+    public void ClearAllRules()
     {
         _rulesEngine.ClearWorkflows();
-        workflow = ruleRaw.ToObject<Workflow>();
-        if (workflow == null)
-            throw new FindxException("rules.setting.error", "执行规则引擎异常,请检查规则配置");
-
-        if (workflow.WorkflowName.IsNullOrWhiteSpace())
-            workflow.WorkflowName = SnowflakeIdUtility.Default().NextId().ToString();
-        
-        _rulesEngine.AddWorkflow(workflow);
     }
 }
