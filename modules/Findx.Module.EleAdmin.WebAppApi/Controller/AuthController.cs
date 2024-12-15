@@ -186,10 +186,10 @@ public class AuthController : AreaApiControllerBase
     [Description("查看账户信息")]
     [HttpGet("/api/auth/user")]
     [Authorize]
-    public new CommonResult User()
+    public async Task<CommonResult> UserAsync(CancellationToken cancellationToken)
     {
         var userId = _currentUser.UserId.To<Guid>();
-        var userInfo = _repo.First(x => x.Id == userId);
+        var userInfo = await _repo.FirstAsync(x => x.Id == userId, cancellationToken);
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
@@ -197,19 +197,16 @@ public class AuthController : AreaApiControllerBase
         var menuRepo = GetRepository<SysRoleMenuInfo>();
         var appRepo = GetRepository<SysAppInfo>();
 
-        var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id
-                , x => new RoleAuthDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }).DistinctBy(x => x.Id);
+        var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new RoleAuthDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
         // ReSharper disable once PossibleMultipleEnumeration
-        var roleIds = roles.Select(x => x.Id);
+        var roleIds = roles.DistinctBy(x => x.Id).Select(x => x.Id);
         // ReSharper disable once PossibleMultipleEnumeration
-        var menus = roleIds.Any()
-            ?
-            // ReSharper disable once PossibleMultipleEnumeration
-            menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuAuthDto { MenuId = x.MenuId })
+        var menus = roleIds.Any() ?
+            await menuRepo.SelectAsync(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuAuthDto { MenuId = x.MenuId }, cancellationToken: cancellationToken)
             : [];
 
         var appCodes = menus.Select(x => x.ApplicationCode).Distinct();
-        var appList = appRepo.Select(x => appCodes.Contains(x.Code), x => new AppSimplifyDto());
+        var appList = await appRepo.SelectAsync(x => appCodes.Contains(x.Code), x => new AppSimplifyDto(), cancellationToken: cancellationToken);
 
         var result = userInfo.MapTo<UserAuthDto>();
         // ReSharper disable once PossibleMultipleEnumeration
@@ -249,9 +246,9 @@ public class AuthController : AreaApiControllerBase
     ///     修改账户信息
     /// </summary>
     /// <returns></returns>
+    [Description("修改账户信息")]
     [HttpPut("/api/auth/user")]
     [Authorize]
-    [Description("修改账户信息")]
     public virtual async Task<CommonResult> SaveUserAsync([FromBody] SaveUserDto req, CancellationToken cancellationToken)
     {
         var principal = GetRequiredService<IPrincipal>();

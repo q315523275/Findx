@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Description>远端配置中心客户端</Description>
-        <PackageVersion>11.1.2024.1126</PackageVersion>
+        <Description>配置中心客户端</Description>
+        <PackageVersion>11.1.2024.1215</PackageVersion>
         <LangVersion>default</LangVersion>
         <Authors>Findx</Authors>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>

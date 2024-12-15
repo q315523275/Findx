@@ -11,8 +11,11 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <ProjectReference Include="..\..\framework\Findx.Security\Findx.Security.csproj" />
       <ProjectReference Include="..\Findx.Module.EleAdminPlus.Shared\Findx.Module.EleAdminPlus.Shared.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Findx.Security" Version="11.1.2024.1120" />
     </ItemGroup>
     
 </Project>

@@ -17,34 +17,34 @@ public class ClientCallBack : IClientCallBack
     ///     创建回调任务
     /// </summary>
     /// <param name="appId"></param>
-    /// <param name="reqId"></param>
-    /// <param name="clientIp"></param>
+    /// <param name="traceIdentifier"></param>
+    /// <param name="clientIpAddress"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public Task<ConfigDataChangeDto> NewCallBackTaskAsync(string appId, string reqId, string clientIp, int timeout)
+    public Task<ConfigDataChangeDto> NewCallBackTaskAsync(string appId, string traceIdentifier, string clientIpAddress, int timeout)
     {
         if (!_callBacks.ContainsKey(appId))
             _callBacks.TryAdd(appId, []);
 
-        if (_callBacks[appId].Any(x => x.ReqId == reqId))
-            throw new ArgumentException($"Client {reqId} callback already registered for '{appId}'", nameof(reqId));
+        if (_callBacks[appId].Any(x => x.TraceIdentifier == traceIdentifier))
+            throw new ArgumentException($"TraceIdentifier {traceIdentifier} callback already registered for '{appId}'", nameof(traceIdentifier));
 
         var source = new TaskCompletionSource<ConfigDataChangeDto>();
         var tokenSource = new CancellationTokenSource();
         var tokenRegister = tokenSource.Token.Register(() =>
         {
-            if (_callBacks.TryGetValue(appId, out var clients) && clients.Any(x => x.ReqId == reqId))
+            if (_callBacks.TryGetValue(appId, out var clients) && clients.Any(x => x.TraceIdentifier == traceIdentifier))
             {
-                clients.RemoveAll(x => x.ReqId == reqId);
+                clients.RemoveAll(x => x.TraceIdentifier == traceIdentifier);
                 if (!clients.Any()) _callBacks.TryRemove(appId, out _);
             }
 
             if (!source.Task.IsCompleted)
-                source.TrySetException(new TimeoutException($"Call {appId} client {reqId} timeout."));
+                source.TrySetException(new TimeoutException($"Call {appId} client {traceIdentifier} timeout."));
         });
 
-        _callBacks[appId].Add(new ClientCallBackInfo<ConfigDataChangeDto> { Task = source, ReqId = reqId, ReqTime = DateTime.Now, ClientIp = clientIp, CancellationTokenSource = tokenSource, CancellationTokenRegistration = tokenRegister });
+        _callBacks[appId].Add(new ClientCallBackInfo<ConfigDataChangeDto> { Task = source, TraceIdentifier = traceIdentifier, ClientIpAddress = clientIpAddress, CancellationTokenSource = tokenSource, CancellationTokenRegistration = tokenRegister });
 
         tokenSource.CancelAfter(timeout * 1000);
 
@@ -95,8 +95,7 @@ public class ClientCallBack : IClientCallBack
             client.CancellationTokenRegistration.Dispose();
             client.CancellationTokenSource.Dispose();
             
-            if (!client.Task.Task.IsCompleted)
-                client.Task.TrySetCanceled();
+            if (!client.Task.Task.IsCompleted) client.Task.TrySetCanceled();
         }
     }
 }

@@ -75,7 +75,7 @@ public abstract class WebSocketHandlerBase
             default:
                 throw new ArgumentException($"Unknown message type: {message.GetType()}");
         }
-
+        
         await session.SendAsync(payload, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
     }
 

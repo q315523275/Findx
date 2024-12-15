@@ -17,17 +17,12 @@ public class ClientCallBackInfo<T>
     /// <summary>
     ///     客户端请求编号
     /// </summary>
-    public string ReqId { set; get; }
-    
-    /// <summary>
-    ///     客户端请求时间
-    /// </summary>
-    public DateTime ReqTime  { set; get; }
+    public string TraceIdentifier { set; get; }
 
     /// <summary>
     ///     客户端Ip
     /// </summary>
-    public string ClientIp { set; get; }
+    public string ClientIpAddress { set; get; }
 
     /// <summary>
     ///     取消令牌

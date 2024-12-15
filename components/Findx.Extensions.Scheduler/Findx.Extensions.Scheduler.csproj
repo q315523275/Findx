@@ -10,11 +10,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1203" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1203" />
+      <Folder Include="Models\" />
     </ItemGroup>
 
 </Project>

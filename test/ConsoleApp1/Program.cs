@@ -118,7 +118,7 @@ Console.WriteLine("Hello, World!");
 
 
 // 配置中心测试
-// var client = new ConfigClient("1", "2", "dev", "http://106.54.160.19:10020", isRecover: true);
+// var client = new ConfigClient("1", "2", "dev", "http://localhost:9010", isRecovery: true);
 // client.OnConfigDataChange(x =>
 // {
 //     Console.WriteLine(x.ToJson());
@@ -128,6 +128,8 @@ Console.WriteLine("Hello, World!");
 // Console.WriteLine("开始配置监听");
 // Console.ReadLine();
 
+var sign = EncryptUtility.Md5By32($"findxtestdev0");
+Console.WriteLine($"/api/config?appId=findx&sign={sign}&environment=dev&version=0&load=false");
 
 // 实体扩展字段
 // var user = new User();

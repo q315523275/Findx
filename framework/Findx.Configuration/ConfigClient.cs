@@ -33,8 +33,8 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <param name="secret"></param>
     /// <param name="environment"></param>
     /// <param name="servers"></param>
-    /// <param name="isRecover"></param>
-    public ConfigClient(string appId, string secret, string environment, string servers, bool isRecover = false)
+    /// <param name="isRecovery"></param>
+    public ConfigClient(string appId, string secret, string environment, string servers, bool isRecovery = false)
     {
         Check.NotNullOrWhiteSpace(appId, nameof(appId));
         Check.NotNullOrWhiteSpace(secret, nameof(secret));
@@ -45,7 +45,7 @@ public class ConfigClient : IConfigClient, IDisposable
         AppSecret = secret;
         Environment = environment;
         Servers = servers;
-        IsRecover = isRecover;
+        IsRecovery = isRecovery;
 
         _nodeIndex = new AtomicInteger(0);
         _polling = new AtomicBoolean(false);
@@ -60,7 +60,7 @@ public class ConfigClient : IConfigClient, IDisposable
     ///     Ctor
     /// </summary>
     /// <param name="options"></param>
-    public ConfigClient(ConfigOptions options): this(options.AppId, options.Secret, options.Environment, options.Servers, options.IsRecover)
+    public ConfigClient(ConfigOptions options): this(options.AppId, options.Secret, options.Environment, options.Servers, options.IsRecovery)
     {
         Check.NotNull(options, nameof(options));
         if (options.Validate().Any())
@@ -92,7 +92,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <summary>
     ///     是否异常恢复
     /// </summary>
-    public bool IsRecover { get; }
+    public bool IsRecovery { get; }
 
     /// <summary>
     ///     客户端编号
@@ -161,10 +161,9 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <returns></returns>
     private string GenerateApiUrl()
     {
-        var reqId = Guid.NewGuid().ToString();
-        var sign = EncryptUtility.Md5By32($"{AppId}{AppSecret}{reqId}{Environment}{CurrentDataVersion}");
+        var sign = EncryptUtility.Md5By32($"{AppId}{AppSecret}{Environment}{CurrentDataVersion}");
         return
-            $"{CurrentServer}/api/config?appId={AppId}&sign={sign}&environment={Environment}&reqId={reqId}&version={CurrentDataVersion}&load={_requestException}";
+            $"{CurrentServer}/api/config?appId={AppId}&sign={sign}&environment={Environment}&version={CurrentDataVersion}&load={_requestException}";
     }
 
     /// <summary>
@@ -199,15 +198,16 @@ public class ConfigClient : IConfigClient, IDisposable
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 _requestException = false;
-                var body = await response.ReadAsStringAsync();
-                var configItem = ConvertToConfigItem(body);
+                
+                await using var stream = response.GetResponseStream();
+                var configItem = ConvertToConfigItem(stream);
+                
                 if (configItem.Any(x => x.Version > CurrentDataVersion))
                 {
                     // 更新配置
                     await AddOrUpdateConfigAsync(configItem);
                     // 保存备份配置
-                    if (IsRecover)
-                        await SaveObjectFileAsync("appsettings.ConfigCache.json", _data.Values);
+                    if (IsRecovery) await SaveObjectFileAsync("appsettings.ConfigCache.json", _data.Values);
                 }
 
                 // 监听更新
@@ -216,22 +216,21 @@ public class ConfigClient : IConfigClient, IDisposable
         }
         catch (Exception ex)
         {
-            // 首次请求异常但开启了容灾备份恢复
-            if (!_polling.Value && IsRecover)
+            if (!_polling.Value && IsRecovery)
             {
-                // 容灾恢复
+                // 首次请求异常但开启了容灾备份恢复
                 var rows = await GetFileObjectAsync<List<ConfigItemDto>>("appsettings.ConfigCache.json");
                 await AddOrUpdateConfigAsync(rows);
                 ConfigureUpdateListening();
             }
-            // 首次请求异常
             else if (!_polling.Value)
             {
+                // 首次请求异常
                 ex.ReThrow();
             }
-            // 循环中请求异常
             else
             {
+                // 循环中请求异常
                 _requestException = true;
 
                 // 循环存在异常时,进行60秒等待
@@ -284,7 +283,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// </summary>
     /// <param name="body"></param>
     /// <returns></returns>
-    private static List<ConfigItemDto> ConvertToConfigItem(string body)
+    private static List<ConfigItemDto> ConvertToConfigItem(Stream body)
     {
         return JsonSerializer.Deserialize<List<ConfigItemDto>>(body, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
     }
@@ -308,7 +307,7 @@ public class ConfigClient : IConfigClient, IDisposable
         try
         {
             var content = await File.ReadAllBytesAsync(file, cancellationToken);
-            return JsonSerializer.Deserialize<T>(content.AsSpan(), SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
+            return JsonSerializer.Deserialize<T>(content.AsSpan(), SystemTextJsonSerializerOptions.CreateJsonSerializerOptions(true));
         }
         catch (Exception)
         {
@@ -328,7 +327,7 @@ public class ConfigClient : IConfigClient, IDisposable
         Check.NotNull(path, nameof(path));
         Check.NotNull(obj, nameof(obj));
 
-        var content = JsonSerializer.SerializeToUtf8Bytes(obj, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
+        var content = JsonSerializer.SerializeToUtf8Bytes(obj, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions(true));
 
         path = path.NormalizePath();
         var file = Path.Combine(System.Environment.CurrentDirectory, path);

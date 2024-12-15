@@ -12,7 +12,7 @@ public class ConfigDataChangeEventHandler : IApplicationEventHandler<ConfigDataC
 {
     private readonly IClusterService _clusterService;
     private readonly IDumpService _dumpService;
-    private readonly IOptions<ConfigServiceOptions> _options;
+    private readonly IOptions<ConfigServerOptions> _options;
 
     /// <summary>
     ///     Ctor
@@ -20,7 +20,7 @@ public class ConfigDataChangeEventHandler : IApplicationEventHandler<ConfigDataC
     /// <param name="options"></param>
     /// <param name="dumpService"></param>
     /// <param name="clusterService"></param>
-    public ConfigDataChangeEventHandler(IOptions<ConfigServiceOptions> options, IDumpService dumpService, IClusterService clusterService)
+    public ConfigDataChangeEventHandler(IOptions<ConfigServerOptions> options, IDumpService dumpService, IClusterService clusterService)
     {
         _options = options;
         _dumpService = dumpService;

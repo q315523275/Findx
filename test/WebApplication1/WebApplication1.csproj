@@ -1,20 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>default</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Findx.Configuration" Version="11.1.2024.1126" />
+        <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1203" />
+        <PackageReference Include="Findx.Configuration" Version="11.1.2024.1215" />
+        <PackageReference Include="Findx.WebSocketCore" Version="11.1.2024.1203" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj" />
-        <ProjectReference Include="..\..\framework\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
     </ItemGroup>
 
 </Project>

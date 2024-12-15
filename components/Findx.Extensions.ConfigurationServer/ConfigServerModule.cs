@@ -12,7 +12,7 @@ namespace Findx.Extensions.ConfigurationServer;
 ///     配置服务模块
 /// </summary>
 [Description("Findx-配置中心服务端")]
-public class ConfigServiceModule : StartupModule
+public class ConfigServerModule : StartupModule
 {
     /// <summary>
     ///     等级
@@ -41,7 +41,7 @@ public class ConfigServiceModule : StartupModule
         var configuration = services.GetConfiguration();
 
         // 应用基础
-        services.Configure<ConfigServiceOptions>(configuration.GetSection("Findx:Config"));
+        services.Configure<ConfigServerOptions>(configuration.GetSection("Findx:Config"));
 
         return base.ConfigureServices(services);
     }

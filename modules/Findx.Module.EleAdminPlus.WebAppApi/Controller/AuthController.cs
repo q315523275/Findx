@@ -195,18 +195,14 @@ public class AuthController : AreaApiControllerBase
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
         var menuRepo = GetRepository<SysRoleMenuInfo, long>();
 
-        var roles = roleRepo.Select(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name })
-                            .DistinctBy(x => x.Id);
-        // ReSharper disable once PossibleMultipleEnumeration
-        var roleIds = roles.Select(x => x.Id);
-        // ReSharper disable once PossibleMultipleEnumeration
-        var menus = roleIds.Any() ?
-                // ReSharper disable once PossibleMultipleEnumeration
-                menuRepo.Select(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new UserAuthMenuDto { MenuId = x.MenuId }) : [];
+        var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
+        var roleIds = roles.DistinctBy(x => x.Id).Select(x => x.Id);
+        var menus = roleIds.Any() ? 
+            await menuRepo.SelectAsync(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new UserAuthMenuDto { MenuId = x.MenuId }, cancellationToken: cancellationToken) 
+            : [];
         
         var result = userInfo.MapTo<UserAuthDto>();
-        // ReSharper disable once PossibleMultipleEnumeration
-        result.Roles = roles;
+        result.Roles = roles.DistinctBy(x => x.Id);
         result.Authorities = menus.DistinctBy(x => x.MenuId).OrderBy(x => x.Sort);
 
         return CommonResult.Success(result);

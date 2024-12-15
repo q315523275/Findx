@@ -5,7 +5,7 @@ namespace Findx.Extensions.ConfigurationServer;
 /// <summary>
 ///     配置服务配置信息
 /// </summary>
-public class ConfigServiceOptions : IOptions<ConfigServiceOptions>
+public class ConfigServerOptions : IOptions<ConfigServerOptions>
 {
     /// <summary>
     ///     当前节点
@@ -20,5 +20,5 @@ public class ConfigServiceOptions : IOptions<ConfigServiceOptions>
     /// <summary>
     ///     this
     /// </summary>
-    public ConfigServiceOptions Value => this;
+    public ConfigServerOptions Value => this;
 }

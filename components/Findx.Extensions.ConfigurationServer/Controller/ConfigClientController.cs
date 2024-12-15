@@ -46,19 +46,18 @@ public class ConfigClientController : AreaApiControllerBase
     ///     获取配置
     /// </summary>
     /// <param name="appId">appId</param>
-    /// <param name="reqId">客户端编号</param>
     /// <param name="sign">签名</param>
     /// <param name="environment">环境变量</param>
     /// <param name="version">版本号</param>
     /// <param name="load"></param>
     [HttpGet, Description("获取配置")]
-    public async Task GetAsync([Required] string appId, [Required] string sign, [Required] string environment, [Required] string reqId, [Required] long version = 0, bool load = false)
+    public async Task GetAsync([Required] string appId, [Required] string sign, [Required] string environment, [Required] long version = 0, bool load = false)
     {
         var model = await _appRepo.FirstAsync(x => x.AppId == appId);
         Check.NotNull(model, nameof(model));
         
         // 验证签名
-        var verifySign = EncryptUtility.Md5By32($"{appId}{model.Secret}{reqId}{environment}{version}");
+        var verifySign = EncryptUtility.Md5By32($"{appId}{model.Secret}{environment}{version}");
         if (verifySign != sign)
         {
             Response.StatusCode = HttpStatusCode.Forbidden.To<int>();
@@ -79,7 +78,7 @@ public class ConfigClientController : AreaApiControllerBase
         try
         {
             // 注册变更监听 TaskCompletionSource
-            var res = await _clientCallBack.NewCallBackTaskAsync($"{appId}-{environment}", reqId, HttpContext.GetClientIp(), 30);
+            var res = await _clientCallBack.NewCallBackTaskAsync($"{appId}-{environment}", HttpContext.TraceIdentifier, HttpContext.GetClientIp(), 30);
             var rows = new List<ConfigDataChangeDto> { res };
             // 返回监听结果
             Response.ContentType = "application/json; charset=utf-8";
