@@ -51,10 +51,14 @@ public static class ResponseMessageExtensions
                 if (message.Stream != null)
                 {
                     using var reader = new StreamReader(message.Stream, Encoding.Default);
-                    return await reader.ReadToEndAsync();
+                    #if NET8_0_OR_GREATER
+                        return await reader.ReadToEndAsync(cancellationToken);
+                    #else
+                        return await reader.ReadToEndAsync();
+                    #endif
                 };
                 break;
         }
-        return default;
+        return string.Empty;
     }
 }

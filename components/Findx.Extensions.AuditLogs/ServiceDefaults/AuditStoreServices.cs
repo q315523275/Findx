@@ -16,7 +16,7 @@ public class AuditStoreServices: IAuditStore
     private readonly ILogger<AuditStoreServices> _logger;
     private readonly ICorrelationIdProvider _correlationIdProvider;
     private readonly IApplicationContext _applicationContext;
-    private readonly IKeyGenerator<Guid> _keyGenerator;
+    private readonly IKeyGenerator<long> _keyGenerator;
     private readonly IEventBus _eventBus;
 
     /// <summary>
@@ -27,7 +27,7 @@ public class AuditStoreServices: IAuditStore
     /// <param name="keyGenerator"></param>
     /// <param name="logger"></param>
     /// <param name="eventBus"></param>
-    public AuditStoreServices(ICorrelationIdProvider correlationIdProvider, IApplicationContext applicationContext, IKeyGenerator<Guid> keyGenerator, ILogger<AuditStoreServices> logger, IEventBus eventBus)
+    public AuditStoreServices(ICorrelationIdProvider correlationIdProvider, IApplicationContext applicationContext, IKeyGenerator<long> keyGenerator, ILogger<AuditStoreServices> logger, IEventBus eventBus)
     {
         _correlationIdProvider = correlationIdProvider;
         _applicationContext = applicationContext;

@@ -10,12 +10,12 @@ namespace Findx.Extensions.AuditLogs.Models;
 [Table("FindxSqlRawParameters")]
 [EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
 [Description("审计操作信息")]
-public class AuditSqlRawParameterInfo: EntityBase<Guid>
+public class AuditSqlRawParameterInfo: EntityBase<long>
 {
     /// <summary>
     ///     日志编号
     /// </summary>
-    public Guid SqlRawId { get; set; }
+    public long SqlRawId { get; set; }
     
     /// <summary>
     ///     获取或设置 参数名

@@ -7,11 +7,11 @@ namespace Findx.Extensions.AuditLogs.EventHandling;
 
 public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEvent>
 {
-    private readonly IRepository<AuditLogInfo> _auditLogRepo;
-    private readonly IRepository<AuditEntityInfo> _auditEntityRepo;
-    private readonly IRepository<AuditEntityPropertyInfo> _auditEntityPropertyRepo;
-    private readonly IRepository<AuditSqlRawInfo> _auditSqlRawRepo;
-    private readonly IRepository<AuditSqlRawParameterInfo> _auditSqlRawParameterRepo;
+    private readonly IRepository<AuditLogInfo, long> _auditLogRepo;
+    private readonly IRepository<AuditEntityInfo, long> _auditEntityRepo;
+    private readonly IRepository<AuditEntityPropertyInfo, long> _auditEntityPropertyRepo;
+    private readonly IRepository<AuditSqlRawInfo, long> _auditSqlRawRepo;
+    private readonly IRepository<AuditSqlRawParameterInfo, long> _auditSqlRawParameterRepo;
 
     /// <summary>
     ///     Ctor
@@ -21,7 +21,7 @@ public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEven
     /// <param name="auditEntityPropertyRepo"></param>
     /// <param name="auditSqlRawRepo"></param>
     /// <param name="auditSqlRawParameterRepo"></param>
-    public AuditLogSaveEventHandler(IRepository<AuditLogInfo> auditLogRepo, IRepository<AuditEntityInfo> auditEntityRepo, IRepository<AuditEntityPropertyInfo> auditEntityPropertyRepo, IRepository<AuditSqlRawInfo> auditSqlRawRepo, IRepository<AuditSqlRawParameterInfo> auditSqlRawParameterRepo)
+    public AuditLogSaveEventHandler(IRepository<AuditLogInfo, long> auditLogRepo, IRepository<AuditEntityInfo, long> auditEntityRepo, IRepository<AuditEntityPropertyInfo, long> auditEntityPropertyRepo, IRepository<AuditSqlRawInfo, long> auditSqlRawRepo, IRepository<AuditSqlRawParameterInfo, long> auditSqlRawParameterRepo)
     {
         _auditLogRepo = auditLogRepo;
         _auditEntityRepo = auditEntityRepo;

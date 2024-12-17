@@ -10,12 +10,12 @@ namespace Findx.Extensions.AuditLogs.Models;
 [Table("FindxEntityChanges")]
 [EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
 [Description("审计操作信息")]
-public class AuditEntityInfo: EntityBase<Guid>
+public class AuditEntityInfo: EntityBase<long>
 {
     /// <summary>
     ///     日志编号
     /// </summary>
-    public Guid AuditLogId { get; set; }
+    public long AuditLogId { get; set; }
     
     /// <summary>
     ///     获取或设置 数据编号

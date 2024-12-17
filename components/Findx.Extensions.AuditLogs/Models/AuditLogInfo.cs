@@ -10,7 +10,7 @@ namespace Findx.Extensions.AuditLogs.Models;
 [Table("FindxAuditLogs")]
 [EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
 [Description("审计操作信息")]
-public class AuditLogInfo: EntityBase<Guid>
+public class AuditLogInfo: EntityBase<long>
 {
     /// <summary>
     ///     应用名称
