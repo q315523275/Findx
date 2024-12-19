@@ -12,6 +12,11 @@ public abstract class FullAuditedBase<TUserKey> : IFullAudited<TUserKey> where T
     public virtual TUserKey? CreatorId { get; set; }
 
     /// <summary>
+    ///     创建人
+    /// </summary>
+    public virtual string Creator { get; set; }
+    
+    /// <summary>
     ///     创建时间
     /// </summary>
     public virtual DateTime? CreatedTime { get; set; }
@@ -21,6 +26,11 @@ public abstract class FullAuditedBase<TUserKey> : IFullAudited<TUserKey> where T
     /// </summary>
     public virtual TUserKey? LastUpdaterId { get; set; }
 
+    /// <summary>
+    ///     最后更新人
+    /// </summary>
+    public virtual string LastUpdater { get; set; }
+    
     /// <summary>
     ///     最后更新时间
     /// </summary>
@@ -40,6 +50,11 @@ public abstract class FullAuditedBase<TKey, TUserKey> : EntityBase<TKey>, IFullA
     public virtual TUserKey? CreatorId { get; set; }
 
     /// <summary>
+    ///     创建人
+    /// </summary>
+    public string Creator { get; set; }
+
+    /// <summary>
     ///     创建时间
     /// </summary>
     public virtual DateTime? CreatedTime { get; set; }
@@ -48,6 +63,11 @@ public abstract class FullAuditedBase<TKey, TUserKey> : EntityBase<TKey>, IFullA
     ///     最后更新人编号
     /// </summary>
     public virtual TUserKey? LastUpdaterId { get; set; }
+
+    /// <summary>
+    ///     最后更新人
+    /// </summary>
+    public virtual string LastUpdater { get; set; }
 
     /// <summary>
     ///     最后更新时间

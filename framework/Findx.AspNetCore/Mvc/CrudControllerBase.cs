@@ -116,8 +116,9 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     /// </summary>
     /// <param name="model">实体</param>
     /// <param name="request">入参</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected virtual Task AddBeforeAsync(TModel model, TCreateRequest request)
+    protected virtual Task AddBeforeAsync(TModel model, TCreateRequest request, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -128,7 +129,8 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     /// <param name="model">实体</param>
     /// <param name="request">入参</param>
     /// <param name="result">添加结果</param>
-    protected virtual Task AddAfterAsync(TModel model, TCreateRequest request, int result)
+    /// <param name="cancellationToken"></param>
+    protected virtual Task AddAfterAsync(TModel model, TCreateRequest request, int result, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -138,7 +140,8 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     /// </summary>
     /// <param name="model">修改参数</param>
     /// <param name="request">入参</param>
-    protected virtual Task EditBeforeAsync(TModel model, TUpdateRequest request)
+    /// <param name="cancellationToken"></param>
+    protected virtual Task EditBeforeAsync(TModel model, TUpdateRequest request, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -149,7 +152,8 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     /// <param name="model">修改参数</param>
     /// <param name="request">入参</param>
     /// <param name="result">处理结果</param>
-    protected virtual Task EditAfterAsync(TModel model, TUpdateRequest request, int result)
+    /// <param name="cancellationToken"></param>
+    protected virtual Task EditAfterAsync(TModel model, TUpdateRequest request, int result, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -158,7 +162,8 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     ///     删除前前操作
     /// </summary>
     /// <param name="req">id集合</param>
-    protected virtual Task DeleteBeforeAsync(List<TKey> req)
+    /// <param name="cancellationToken"></param>
+    protected virtual Task DeleteBeforeAsync(List<TKey> req, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -168,7 +173,8 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     /// </summary>
     /// <param name="req">id集合</param>
     /// <param name="total">删除成功条数</param>
-    protected virtual Task DeleteAfterAsync(List<TKey> req, int total)
+    /// <param name="cancellationToken"></param>
+    protected virtual Task DeleteAfterAsync(List<TKey> req, int total, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }
@@ -191,9 +197,6 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         Check.NotNull(request, nameof(request));
 
         var repo = GetRepository<TModel, TKey>();
-        var principal = GetService<IPrincipal>();
-        
-        Check.NotNull(repo, nameof(repo));
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
         UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
@@ -203,14 +206,18 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
 
         Check.NotNull(model, nameof(model));
 
-        model.CheckCreatedTime(); // 判断设置创建时间
-        model.CheckCreationAudited<TModel, TUserKey>(principal); // 判断设置创建人
-        model.CheckTenant(principal); // 判断设置租户值
-        model.SetEmptyKey(); // 判断设置ID值
+        // 判断设置创建时间
+        model.CheckCreatedTime();
+        // 判断设置创建人
+        model.CheckCreationAudited<TModel, TUserKey>(HttpContext.User);
+        // 判断设置租户值
+        model.CheckTenant(HttpContext.User);
+        // 判断设置ID值
+        model.SetEmptyKey(); 
 
-        await AddBeforeAsync(model, request);
+        await AddBeforeAsync(model, request, cancellationToken);
         var res = await repo.InsertAsync(model, cancellationToken);
-        await AddAfterAsync(model, request, res);
+        await AddAfterAsync(model, request, res, cancellationToken);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
     }
@@ -228,9 +235,6 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         Check.NotNull(request, nameof(request));
 
         var repo = GetRepository<TModel, TKey>();
-        var principal = GetService<IPrincipal>();
-
-        Check.NotNull(repo, nameof(repo));
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
         UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
@@ -243,19 +247,14 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         repo.Attach(model.Clone().As<TModel>());
         
         model = ToModelFromUpdateRequest(request, model);
-        if (model is IUpdateTime entity1)
-        {
-            entity1.LastUpdatedTime = DateTime.Now;
-        }
-        if (model is IUpdateAudited<TUserKey> entity2)
-        {
-            entity2.LastUpdaterId = principal?.Identity.GetUserId<TUserKey>() ?? default;
-            entity2.LastUpdatedTime = DateTime.Now; 
-        }
+        // 判断设置修改时间
+        model.CheckUpdateTime();
+        // 判断设置修改人
+        model.CheckUpdateAudited<TModel, TUserKey>(HttpContext.User);
         
-        await EditBeforeAsync(model, request);
+        await EditBeforeAsync(model, request, cancellationToken);
         var res = await repo.SaveAsync(model, cancellationToken: cancellationToken);
-        await EditAfterAsync(model, request, res);
+        await EditAfterAsync(model, request, res, cancellationToken);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.edit.error", "数据更新失败");
     }
@@ -271,20 +270,18 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
     public virtual async Task<CommonResult> DeleteAsync([FromBody] [MinLength(1)] List<TKey> request, CancellationToken cancellationToken = default)
     {
         Check.NotNull(request, nameof(request));
-        if (request.Count == 0)
-            return CommonResult.Fail("delete.not.count", "不存在删除数据");
+        
+        if (request.Count == 0) return CommonResult.Fail("delete.not.count", "不存在删除数据");
 
         var repo = GetRepository<TModel, TKey>();
-
-        Check.NotNull(repo, nameof(repo));
 
         var unitOfManager = GetService<IUnitOfWorkManager>();
         UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
         repo.UnitOfWork = UnitOfWork;
         
-        await DeleteBeforeAsync(request);
+        await DeleteBeforeAsync(request, cancellationToken);
         var total = await repo.DeleteAsync(x => request.Contains(x.Id), cancellationToken);
-        await DeleteAfterAsync(request, total);
+        await DeleteAfterAsync(request, total, cancellationToken);
 
         return CommonResult.Success($"共删除{total}条数据,失败{request.Count - total}条");
     }

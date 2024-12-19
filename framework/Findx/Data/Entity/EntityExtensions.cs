@@ -79,7 +79,10 @@ public static class EntityExtensions
         if (entity is ICreatedTime entity1)
         {
             if (!entity1.CreatedTime.HasValue || entity1.CreatedTime == default(DateTime))
+            {
                 entity1.CreatedTime = DateTime.Now;
+            }
+            
             return (TEntity)entity1;
         }
 
@@ -98,9 +101,17 @@ public static class EntityExtensions
     {
         if (entity is ICreationAudited<TUserKey> entity1)
         {
-            entity1.CreatorId = user?.Identity.GetUserId<TUserKey>() ?? default;
-            if (!entity1.CreatedTime.HasValue || entity1.CreatedTime == default(DateTime))
+            if (user is { Identity.IsAuthenticated: true })
+            {
+                entity1.CreatorId = user.Identity.GetUserId<TUserKey>();
+                entity1.Creator = user.Identity.GetNickname();
+            }
+
+            if (!entity1.CreatedTime.HasValue || entity1.CreatedTime.Value == default)
+            {
                 entity1.CreatedTime = DateTime.Now;
+            }
+            
             return (TEntity)entity1;
         }
 
@@ -117,8 +128,11 @@ public static class EntityExtensions
     {
         if (entity is IUpdateTime entity1)
         {
-            if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime == default(DateTime))
+            if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime.Value == default)
+            {
                 entity1.LastUpdatedTime = DateTime.Now;
+            }
+            
             return (TEntity)entity1;
         }
 
@@ -137,9 +151,17 @@ public static class EntityExtensions
     {
         if (entity is IUpdateAudited<TUserKey> entity1)
         {
-            entity1.LastUpdaterId = user?.Identity.GetUserId<TUserKey>() ?? default;
-            if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime == default(DateTime)) 
+            if (user is { Identity.IsAuthenticated: true })
+            {
+                entity1.LastUpdaterId = user.Identity.GetUserId<TUserKey>();
+                entity1.LastUpdater = user.Identity.GetNickname();
+            }
+
+            if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime.Value == default)
+            {
                 entity1.LastUpdatedTime = DateTime.Now;
+            }
+
             return (TEntity)entity1;
         }
 
@@ -159,6 +181,7 @@ public static class EntityExtensions
         if (user.Identity != null && entity is ITenant entity1 && user.Identity.IsAuthenticated && !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
         {
             entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId);
+            
             return (TEntity)entity1;
         }
 
@@ -179,6 +202,7 @@ public static class EntityExtensions
         if (entity is ITenant<TTenantKey> entity1)
         {
             entity1.TenantId = user?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<TTenantKey>() ?? default;
+            
             return (TEntity)entity1;
         }
 
@@ -196,12 +220,34 @@ public static class EntityExtensions
         var keyType = typeof(TKey);
         
         // 雪花长整形
-        if (typeof(long) == keyType && entity.Id.Equals(default(long)))
+        if (typeof(long) == keyType && entity.Id.Equals(0))
             entity.Id = ServiceLocator.GetService<IKeyGenerator<long>>().Create().CastTo<TKey>();
 
         // 有序Guid
         if (typeof(Guid) == keyType && entity.Id.CastTo<Guid>() == Guid.Empty)
             entity.Id = ServiceLocator.GetService<IKeyGenerator<Guid>>().Create().CastTo<TKey>();
+
+        return entity;
+    }
+    
+    
+    /// <summary>
+    ///     检测并执行<see cref="IDataOwner{TUserKey}" />接口的处理
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TUserKey"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    public static TEntity CheckOwner<TEntity, TUserKey>(this TEntity entity, IPrincipal user) where TEntity : IEntity where TUserKey : struct
+    {
+        if (entity is IDataOwner<TUserKey> entity1 && user is { Identity.IsAuthenticated: true })
+        {
+            entity1.OwnerId = user.Identity.GetUserId<TUserKey>();
+            entity1.Owner = user.Identity.GetNickname();
+
+            return (TEntity)entity1;
+        }
 
         return entity;
     }

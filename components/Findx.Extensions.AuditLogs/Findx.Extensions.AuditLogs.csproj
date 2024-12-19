@@ -5,7 +5,7 @@
         <Nullable>disable</Nullable>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
-        <Version>11.1.2024.1215</Version>
+        <Version>11.1.2024.1225</Version>
         <Description>Findx审计日志保存扩展模块</Description>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>

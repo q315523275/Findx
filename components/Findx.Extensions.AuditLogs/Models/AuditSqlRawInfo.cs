@@ -7,7 +7,7 @@ namespace Findx.Extensions.AuditLogs.Models;
 /// <summary>
 ///     执行Sql审计信息
 /// </summary>
-[Table("FindxSqlRaw")]
+[Table("findx_sql_raw")]
 [EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
 [Description("审计操作信息")]
 public class AuditSqlRawInfo: EntityBase<long>

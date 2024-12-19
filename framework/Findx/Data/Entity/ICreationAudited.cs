@@ -7,7 +7,12 @@
 public interface ICreationAudited<TUser> : ICreatedTime where TUser : struct
 {
 	/// <summary>
-	///     更新用户
+	///     创建用户编号
 	/// </summary>
 	TUser? CreatorId { get; set; }
+	
+	/// <summary>
+	///     创建用户
+	/// </summary>
+	string Creator { get; set; }
 }

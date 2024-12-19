@@ -7,7 +7,7 @@ namespace Findx.Extensions.AuditLogs.Models;
 /// <summary>
 ///     审计日志方法信息
 /// </summary>
-[Table("FindxAuditLogActions")]
+[Table("findx_audit_log_actions")]
 [EntityExtension(DataSource = "AuditLog", DisableAuditing = true)]
 [Description("审计操作方法信息")]
 public class AuditLogActionInfo: EntityBase<long>
