@@ -15,6 +15,7 @@
     </ItemGroup>
     
     <ItemGroup>
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1226" />
       <PackageReference Include="Findx.Security" Version="11.1.2024.1120" />
     </ItemGroup>
     
