@@ -19,7 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="SixLabors.Fonts" Version="2.0.6" />
+      <PackageReference Include="SixLabors.Fonts" Version="2.0.7" />
       <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
     </ItemGroup>
     

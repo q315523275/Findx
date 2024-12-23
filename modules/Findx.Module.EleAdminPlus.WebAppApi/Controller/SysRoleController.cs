@@ -87,17 +87,16 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         var repo = GetRepository<SysRoleInfo, long>();
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
         var keyGenerator = GetRequiredService<IKeyGenerator<long>>();
-        var principal = GetService<IPrincipal>();
 
         var model = ToModelFromCreateRequest(req);
         model.CheckCreatedTime();
-        model.CheckCreationAudited<SysRoleInfo, long>(principal);
-        model.CheckTenant(principal);
+        model.CheckCreationAudited<SysRoleInfo, long>(HttpContext.User);
+        model.CheckTenant(HttpContext.User);
         model.SetEmptyKey();
         
-        await AddBeforeAsync(model, req);
+        await AddBeforeAsync(model, req, cancellationToken);
         var result = await repo.InsertAsync(model, cancellationToken);
-        await AddAfterAsync(model, req, result);
+        await AddAfterAsync(model, req, result, cancellationToken);
         
         var menuList = req.MenuIds.Select(x => new SysRoleMenuInfo { Id = keyGenerator.Create(), MenuId = x, RoleId = model.Id });
         if (menuList.Any()) await roleMenuRepo.InsertAsync(menuList, cancellationToken);
@@ -115,7 +114,6 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         var repo = GetRepository<SysRoleInfo, long>();
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
         var keyGenerator = GetRequiredService<IKeyGenerator<long>>();
-        var principal = GetService<IPrincipal>();
         
         var model = await repo.GetAsync(req.Id, cancellationToken);
         if (model == null) 
@@ -123,16 +121,13 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         
         repo.Attach(model.Clone().As<SysRoleInfo>());
         model = ToModelFromUpdateRequest(req, model);
-        if (model is IUpdateAudited<long> entity2)
-        {
-            entity2.LastUpdaterId = principal?.Identity.GetUserId<long>() ?? default;
-            entity2.LastUpdatedTime = DateTime.Now; 
-        }
-        model.CheckTenant(principal);
+        model.CheckUpdateTime();
+        model.CheckUpdateAudited<SysRoleInfo, long>(HttpContext.User);
+        model.CheckTenant(HttpContext.User);
         
-        await EditBeforeAsync(model, req);
+        await EditBeforeAsync(model, req, cancellationToken);
         var res = await repo.SaveAsync(model, cancellationToken: cancellationToken);
-        await EditAfterAsync(model, req, res);
+        await EditAfterAsync(model, req, res, cancellationToken);
         
         var menuList = req.MenuIds.Select(x => new SysRoleMenuInfo { Id = keyGenerator.Create(), MenuId = x, RoleId = model.Id });
         await roleMenuRepo.DeleteAsync(x => x.RoleId == model.Id, cancellationToken);
@@ -151,13 +146,13 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         var repo = GetRepository<SysRoleInfo, long>();
         var roleOrgRepo = GetRepository<SysRoleOrgInfo, long>();
         var keyGenerator = GetRequiredService<IKeyGenerator<long>>();
-        var service = GetService<IPrincipal>();
         
         var model = await repo.GetAsync(req.Id, cancellationToken);
         if (model == null) return CommonResult.Fail("not.exist", "未能查到相关信息");
+        
         repo.Attach(model.Clone().As<SysRoleInfo>());
         model = req.MapTo(model);
-        model.CheckUpdateAudited<SysRoleInfo, long>(service);
+        model.CheckUpdateAudited<SysRoleInfo, long>(HttpContext.User);
         model.OrgJson = req.OrgIds.ToJson();
         await repo.SaveAsync(model, cancellationToken: cancellationToken);
         
@@ -169,16 +164,17 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
         
         return CommonResult.Success();
     }
-    
+
     /// <summary>
     ///     添加完成之后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="request"></param>
     /// <param name="result"></param>
-    protected override async Task AddAfterAsync(SysRoleInfo model, RoleSaveDto request, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task AddAfterAsync(SysRoleInfo model, RoleSaveDto request, int result, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 
     /// <summary>
@@ -187,9 +183,10 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// <param name="model"></param>
     /// <param name="request"></param>
     /// <param name="result"></param>
-    protected override async Task EditAfterAsync(SysRoleInfo model, RoleSaveDto request, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task EditAfterAsync(SysRoleInfo model, RoleSaveDto request, int result, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 
     /// <summary>
@@ -197,15 +194,16 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// </summary>
     /// <param name="req"></param>
     /// <param name="total"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task DeleteAfterAsync(List<long> req, int total)
+    protected override async Task DeleteAfterAsync(List<long> req, int total, CancellationToken cancellationToken = default)
     {
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
         var roleOrgRepo = GetRepository<SysRoleOrgInfo, long>();
 
-        await roleMenuRepo.DeleteAsync(x => req.Contains(x.RoleId));
-        await roleOrgRepo.DeleteAsync(x => req.Contains(x.RoleId));
+        await roleMenuRepo.DeleteAsync(x => req.Contains(x.RoleId), cancellationToken);
+        await roleOrgRepo.DeleteAsync(x => req.Contains(x.RoleId), cancellationToken);
         
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 }

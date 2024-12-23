@@ -220,7 +220,7 @@ public static class EntityExtensions
         var keyType = typeof(TKey);
         
         // 雪花长整形
-        if (typeof(long) == keyType && entity.Id.Equals(0))
+        if (typeof(long) == keyType && entity.Id.Equals(default(long))) 
             entity.Id = ServiceLocator.GetService<IKeyGenerator<long>>().Create().CastTo<TKey>();
 
         // 有序Guid

@@ -100,20 +100,21 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
 
         return CommonResult.Success(orgList.OrderBy(x => x.Sort));
     }
-    
-    
+
+
     /// <summary>
     ///     设置角色对应菜单
     /// </summary>
     /// <param name="roleId"></param>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPut("menu/{roleId}"), Description("系统-设置角色菜单")]
-    public async Task<CommonResult> MenuAsync(Guid roleId, [FromBody] List<Guid> req)
+    public async Task<CommonResult> MenuAsync(Guid roleId, [FromBody] List<Guid> req, CancellationToken cancellationToken = default)
     {
         var keyGenerator = GetRequiredService<IKeyGenerator<Guid>>();
         var repo = GetRequiredService<IRepository<SysRoleMenuInfo>>();
-        await repo.DeleteAsync(x => x.RoleId == roleId);
+        await repo.DeleteAsync(x => x.RoleId == roleId, cancellationToken);
         var list = req.Select(x => new SysRoleMenuInfo
         {
             Id = keyGenerator.Create(),
@@ -121,7 +122,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
             RoleId = roleId
         });
         // ReSharper disable once PossibleMultipleEnumeration
-        if (list.Any()) await repo.InsertAsync(list);
+        if (list.Any()) await repo.InsertAsync(list, cancellationToken);
 
         return CommonResult.Success();
     }
@@ -136,13 +137,12 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
         var repo = GetRepository<SysRoleInfo, Guid>();
         var roleOrgRepo = GetRepository<SysRoleOrgInfo, Guid>();
         var keyGenerator = GetRequiredService<IKeyGenerator<Guid>>();
-        var service = GetService<IPrincipal>();
         
         var model = await repo.GetAsync(req.Id, cancellationToken);
         if (model == null) return CommonResult.Fail("not.exist", "未能查到相关信息");
         repo.Attach(model.Clone().As<SysRoleInfo>());
         model = req.MapTo(model);
-        model.CheckUpdateAudited<SysRoleInfo, long>(service);
+        model.CheckUpdateAudited<SysRoleInfo, long>(HttpContext.User);
         model.OrgJson = req.OrgIds.ToJson();
         await repo.SaveAsync(model, cancellationToken: cancellationToken);
         
@@ -154,16 +154,17 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
         
         return CommonResult.Success();
     }
-    
+
     /// <summary>
     ///     添加完成之后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="request"></param>
     /// <param name="result"></param>
-    protected override async Task AddAfterAsync(SysRoleInfo model, RoleSaveDto request, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task AddAfterAsync(SysRoleInfo model, RoleSaveDto request, int result, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 
     /// <summary>
@@ -172,9 +173,10 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
     /// <param name="model"></param>
     /// <param name="request"></param>
     /// <param name="result"></param>
-    protected override async Task EditAfterAsync(SysRoleInfo model, RoleSaveDto request, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task EditAfterAsync(SysRoleInfo model, RoleSaveDto request, int result, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 
     /// <summary>
@@ -182,15 +184,16 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
     /// </summary>
     /// <param name="req"></param>
     /// <param name="total"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task DeleteAfterAsync(List<Guid> req, int total)
+    protected override async Task DeleteAfterAsync(List<Guid> req, int total, CancellationToken cancellationToken = default)
     {
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, Guid>();
         var roleOrgRepo = GetRepository<SysRoleOrgInfo, Guid>();
 
-        await roleMenuRepo.DeleteAsync(x => req.Contains(x.RoleId));
-        await roleOrgRepo.DeleteAsync(x => req.Contains(x.RoleId));
+        await roleMenuRepo.DeleteAsync(x => req.Contains(x.RoleId), cancellationToken);
+        await roleOrgRepo.DeleteAsync(x => req.Contains(x.RoleId), cancellationToken);
         
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 }

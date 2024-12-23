@@ -27,11 +27,12 @@ public class SysAppController : CrudControllerBase<SysAppInfo, AppSaveDto, AppQu
     /// </summary>
     /// <param name="model"></param>
     /// <param name="saveDto"></param>
+    /// <param name="cancellationToken"></param>
     /// <exception cref="FindxException"></exception>
-    protected override async Task AddBeforeAsync(SysAppInfo model, AppSaveDto saveDto)
+    protected override async Task AddBeforeAsync(SysAppInfo model, AppSaveDto saveDto, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysAppInfo>();
-        var isExist = await repo.ExistAsync(x => x.Name == model.Name || x.Code == model.Code);
+        var isExist = await repo.ExistAsync(x => x.Name == model.Name || x.Code == model.Code, cancellationToken);
         if (isExist) throw new FindxException("500", "已存在同名或同编码应用");
     }
 
@@ -40,20 +41,21 @@ public class SysAppController : CrudControllerBase<SysAppInfo, AppSaveDto, AppQu
     /// </summary>
     /// <param name="model"></param>
     /// <param name="saveDto"></param>
+    /// <param name="cancellationToken"></param>
     /// <exception cref="FindxException"></exception>
-    protected override async Task EditBeforeAsync(SysAppInfo model, AppSaveDto saveDto)
+    protected override async Task EditBeforeAsync(SysAppInfo model, AppSaveDto saveDto, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysAppInfo>();
-        var isExist = await repo.ExistAsync(x => (x.Name == model.Name || x.Code == model.Code) && x.Id != model.Id);
+        var isExist = await repo.ExistAsync(x => (x.Name == model.Name || x.Code == model.Code) && x.Id != model.Id, cancellationToken);
         if (isExist) throw new FindxException("500", "已存在同名或同编码应用");
-        var old = await repo.FirstAsync(x => x.Id == saveDto.Id);
+        var old = await repo.FirstAsync(x => x.Id == saveDto.Id, cancellationToken);
         if (old.Code != saveDto.Code)
         {
             var repoMenu = GetRepository<SysMenuInfo>();
-            await repoMenu.UpdateColumnsAsync(x => new SysMenuInfo { ApplicationCode = saveDto.Code, ApplicationName = saveDto.Name }, x => x.ApplicationCode == old.Code);
+            await repoMenu.UpdateColumnsAsync(x => new SysMenuInfo { ApplicationCode = saveDto.Code, ApplicationName = saveDto.Name }, x => x.ApplicationCode == old.Code, cancellationToken);
 
             var repoRole = GetRepository<SysRoleInfo>();
-            await repoRole.UpdateColumnsAsync(x => new SysRoleInfo { ApplicationCode = saveDto.Code, ApplicationName = saveDto.Name }, x => x.ApplicationCode == old.Code);
+            await repoRole.UpdateColumnsAsync(x => new SysRoleInfo { ApplicationCode = saveDto.Code, ApplicationName = saveDto.Name }, x => x.ApplicationCode == old.Code, cancellationToken);
         }
     }
 

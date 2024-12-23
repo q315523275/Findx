@@ -51,16 +51,17 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSaveDto, OrgQu
             .Build();
         return whereExp;
     }
-    
+
     /// <summary>
     ///     添加完成之后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="request"></param>
     /// <param name="result"></param>
-    protected override async Task AddAfterAsync(SysOrgInfo model, OrgSaveDto request, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task AddAfterAsync(SysOrgInfo model, OrgSaveDto request, int result, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 
     /// <summary>
@@ -69,31 +70,34 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSaveDto, OrgQu
     /// <param name="model"></param>
     /// <param name="request"></param>
     /// <param name="result"></param>
-    protected override async Task EditAfterAsync(SysOrgInfo model, OrgSaveDto request, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task EditAfterAsync(SysOrgInfo model, OrgSaveDto request, int result, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 
     /// <summary>
     ///     删除前校验
     /// </summary>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task DeleteBeforeAsync(List<Guid> req)
+    protected override async Task DeleteBeforeAsync(List<Guid> req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysOrgInfo>();
-        var isExist = await repo.ExistAsync(x => req.Contains(x.ParentId));
+        var isExist = await repo.ExistAsync(x => req.Contains(x.ParentId), cancellationToken);
         if (isExist) throw new FindxException("500", "请先删除下属机构,再删除选中机构");
     }
-    
+
     /// <summary>
     ///     删除完成之后
     /// </summary>
     /// <param name="req"></param>
     /// <param name="total"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task DeleteAfterAsync(List<Guid> req, int total)
+    protected override async Task DeleteAfterAsync(List<Guid> req, int total, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 }

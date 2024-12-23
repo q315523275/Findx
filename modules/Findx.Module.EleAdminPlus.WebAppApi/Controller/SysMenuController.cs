@@ -31,16 +31,17 @@ public class SysMenuController : CrudControllerBase<SysMenuInfo, MenuDto, MenuSa
         menuQueryDto.PageSize = 9999;
         return base.ListAsync(menuQueryDto, cancellationToken);
     }
-    
+
     /// <summary>
     ///     删除前校验
     /// </summary>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task DeleteBeforeAsync(List<long> req)
+    protected override async Task DeleteBeforeAsync(List<long> req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysMenuInfo, long>();
-        var isExist = await repo.ExistAsync(x => req.Contains(x.ParentId));
+        var isExist = await repo.ExistAsync(x => req.Contains(x.ParentId), cancellationToken);
         if (isExist) throw new FindxException("500", "请先删除子集菜单,再删除选中菜单");
     }
 }

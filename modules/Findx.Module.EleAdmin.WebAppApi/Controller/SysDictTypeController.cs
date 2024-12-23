@@ -23,11 +23,12 @@ public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, DictTyp
     ///     删除前校验
     /// </summary>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task DeleteBeforeAsync(List<Guid> req)
+    protected override async Task DeleteBeforeAsync(List<Guid> req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysDictDataInfo>();
-        var isExist = await repo.ExistAsync(x => req.Contains(x.TypeId));
+        var isExist = await repo.ExistAsync(x => req.Contains(x.TypeId), cancellationToken);
         if (isExist) throw new FindxException("500", "请先删除字典数据,再删除字典类型");
     }
 }

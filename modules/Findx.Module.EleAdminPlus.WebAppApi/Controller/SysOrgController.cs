@@ -98,11 +98,12 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDt
     ///     删除前校验
     /// </summary>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task DeleteBeforeAsync(List<long> req)
+    protected override async Task DeleteBeforeAsync(List<long> req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysOrgInfo, long>();
-        var isExist = await repo.ExistAsync(x => req.Contains(x.ParentId));
+        var isExist = await repo.ExistAsync(x => req.Contains(x.ParentId), cancellationToken);
         if (isExist) throw new FindxException("500", "请先删除下属机构,再删除选中机构");
     }
 
@@ -112,9 +113,10 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDt
     /// <param name="model"></param>
     /// <param name="request"></param>
     /// <param name="result"></param>
-    protected override async Task AddAfterAsync(SysOrgInfo model, OrgSaveDto request, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task AddAfterAsync(SysOrgInfo model, OrgSaveDto request, int result, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 
     /// <summary>
@@ -123,9 +125,10 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDt
     /// <param name="model"></param>
     /// <param name="request"></param>
     /// <param name="result"></param>
-    protected override async Task EditAfterAsync(SysOrgInfo model, OrgSaveDto request, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task EditAfterAsync(SysOrgInfo model, OrgSaveDto request, int result, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 
     /// <summary>
@@ -133,9 +136,10 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDt
     /// </summary>
     /// <param name="req"></param>
     /// <param name="total"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task DeleteAfterAsync(List<long> req, int total)
+    protected override async Task DeleteAfterAsync(List<long> req, int total, CancellationToken cancellationToken = default)
     {
-        await _cache.RemoveAsync(_cacheKey);
+        await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
 }

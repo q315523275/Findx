@@ -148,12 +148,13 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
-    protected override async Task AddBeforeAsync(SysUserInfo model, UserAddDto req)
+    /// <param name="cancellationToken"></param>
+    protected override async Task AddBeforeAsync(SysUserInfo model, UserAddDto req, CancellationToken cancellationToken = default)
     {
         if (!req.Password.IsNullOrWhiteSpace()) 
             model.Password = EncryptUtility.Md5By32(req.Password);
         model.RoleJson = JsonSerializer.Serialize(req.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
-        await base.AddBeforeAsync(model, req);
+        await base.AddBeforeAsync(model, req, cancellationToken);
     }
 
     /// <summary>
@@ -162,22 +163,23 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="model"></param>
     /// <param name="req"></param>
     /// <param name="result"></param>
-    protected override async Task AddAfterAsync(SysUserInfo model, UserAddDto req, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task AddAfterAsync(SysUserInfo model, UserAddDto req, int result, CancellationToken cancellationToken = default)
     {
         if (result > 0)
         {
             var repo = GetRequiredService<IRepository<SysUserInfo>>();
             var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
 
-            var user = await repo.FirstAsync(x => x.UserName == req.UserName);
+            var user = await repo.FirstAsync(x => x.UserName == req.UserName, cancellationToken);
             if (user != null)
             {
                 var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = user.Id });
-                await roleRepo.InsertAsync(list);
+                await roleRepo.InsertAsync(list, cancellationToken);
             }
         }
 
-        await base.AddAfterAsync(model, req, result);
+        await base.AddAfterAsync(model, req, result, cancellationToken);
     }
 
     /// <summary>
@@ -185,28 +187,30 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// </summary>
     /// <param name="model"></param>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override Task EditBeforeAsync(SysUserInfo model, UserEditDto request)
+    protected override Task EditBeforeAsync(SysUserInfo model, UserEditDto request, CancellationToken cancellationToken = default)
     {
         model.RoleJson = JsonSerializer.Serialize(request.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
-        return base.EditBeforeAsync(model, request);
+        return base.EditBeforeAsync(model, request, cancellationToken);
     }
-    
+
     /// <summary>
     ///     编辑后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
     /// <param name="result"></param>
-    protected override async Task EditAfterAsync(SysUserInfo model, UserEditDto req, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task EditAfterAsync(SysUserInfo model, UserEditDto req, int result, CancellationToken cancellationToken = default)
     {
         if (result > 0)
         {
             var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
 
             var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id });
-            await roleRepo.DeleteAsync(x => x.UserId == model.Id);
-            await roleRepo.InsertAsync(list);
+            await roleRepo.DeleteAsync(x => x.UserId == model.Id, cancellationToken);
+            await roleRepo.InsertAsync(list, cancellationToken);
         }
     }
 }

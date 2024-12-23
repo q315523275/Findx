@@ -157,12 +157,13 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
-    protected override async Task AddBeforeAsync(SysUserInfo model, UserCreateDto req)
+    /// <param name="cancellationToken"></param>
+    protected override async Task AddBeforeAsync(SysUserInfo model, UserCreateDto req, CancellationToken cancellationToken = default)
     {
         if (!req.Password.IsNullOrWhiteSpace())
             model.Password = EncryptUtility.Md5By32(req.Password);
         model.RoleJson = JsonSerializer.Serialize(req.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
-        await base.AddBeforeAsync(model, req);
+        await base.AddBeforeAsync(model, req, cancellationToken);
     }
 
     /// <summary>
@@ -183,16 +184,17 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="model"></param>
     /// <param name="req"></param>
     /// <param name="result"></param>
-    protected override async Task AddAfterAsync(SysUserInfo model, UserCreateDto req, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task AddAfterAsync(SysUserInfo model, UserCreateDto req, int result, CancellationToken cancellationToken = default)
     {
         if (result > 0)
         {
             var userRoleRepo = UnitOfWork.GetRepository<SysUserRoleInfo, long>();
             var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id });
-            await userRoleRepo.DeleteAsync(x => x.UserId == model.Id);
-            await userRoleRepo.InsertAsync(list);
+            await userRoleRepo.DeleteAsync(x => x.UserId == model.Id, cancellationToken);
+            await userRoleRepo.InsertAsync(list, cancellationToken);
         }
-        await base.AddAfterAsync(model, req, result);
+        await base.AddAfterAsync(model, req, result, cancellationToken);
     }
 
     /// <summary>
@@ -200,11 +202,12 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// </summary>
     /// <param name="model"></param>
     /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override Task EditBeforeAsync(SysUserInfo model, UserEditDto request)
+    protected override Task EditBeforeAsync(SysUserInfo model, UserEditDto request, CancellationToken cancellationToken = default)
     {
         model.RoleJson = JsonSerializer.Serialize(request.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
-        return base.EditBeforeAsync(model, request);
+        return base.EditBeforeAsync(model, request, cancellationToken);
     }
 
     /// <summary>
@@ -218,22 +221,23 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     {
         return base.EditAsync(request, cancellationToken);
     }
-    
+
     /// <summary>
     ///     编辑后
     /// </summary>
     /// <param name="model"></param>
     /// <param name="req"></param>
     /// <param name="result"></param>
-    protected override async Task EditAfterAsync(SysUserInfo model, UserEditDto req, int result)
+    /// <param name="cancellationToken"></param>
+    protected override async Task EditAfterAsync(SysUserInfo model, UserEditDto req, int result, CancellationToken cancellationToken = default)
     {
         if (result > 0)
         {
             var userRoleRepo = UnitOfWork.GetRepository<SysUserRoleInfo, long>();
             var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id });
-            await userRoleRepo.DeleteAsync(x => x.UserId == model.Id);
-            await userRoleRepo.InsertAsync(list);
+            await userRoleRepo.DeleteAsync(x => x.UserId == model.Id, cancellationToken);
+            await userRoleRepo.InsertAsync(list, cancellationToken);
         }
-        await base.EditAfterAsync(model, req, result);
+        await base.EditAfterAsync(model, req, result, cancellationToken);
     }
 }
