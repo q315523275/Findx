@@ -212,6 +212,10 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         model.CheckCreationAudited<TModel, TUserKey>(HttpContext.User);
         // 判断设置租户值
         model.CheckTenant(HttpContext.User);
+        // 判断设置部门机构
+        model.CheckOrg<TModel, TUserKey>(HttpContext.User);
+        // 判断设置拥有者
+        model.CheckOwner<TModel, TUserKey>(HttpContext.User);
         // 判断设置ID值
         model.SetEmptyKey(); 
 

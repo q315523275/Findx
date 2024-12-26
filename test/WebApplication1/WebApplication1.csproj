@@ -9,7 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1203" />
-        <PackageReference Include="Findx.Configuration" Version="11.1.2024.1215" />
+        <PackageReference Include="Findx.Configuration" Version="11.1.2024.1226" />
         <PackageReference Include="Findx.WebSocketCore" Version="11.1.2024.1203" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
     </ItemGroup>

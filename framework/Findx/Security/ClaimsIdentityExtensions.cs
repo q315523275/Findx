@@ -104,7 +104,7 @@ public static class ClaimsIdentityExtensions
     }
 
     /// <summary>
-    ///     获取昵称
+    ///     获取租户Id
     /// </summary>
     public static string GetTenantId(this IIdentity identity)
     {
@@ -112,6 +112,50 @@ public static class ClaimsIdentityExtensions
         return identity is not ClaimsIdentity claimsIdentity
             ? null
             : claimsIdentity.FindFirst(ClaimTypes.TenantId)?.Value;
+    }
+    
+    /// <summary>
+    ///     获取租户Id
+    /// </summary>
+    public static T GetTenantId<T>(this IIdentity identity)
+    {
+        Check.NotNull(identity, nameof(identity));
+        if (identity is not ClaimsIdentity claimsIdentity) return default;
+        var value = claimsIdentity.FindFirst(ClaimTypes.TenantId)?.Value;
+        return value == null ? default : value.CastTo<T>();
+    }
+    
+    /// <summary>
+    ///     获取机构Id
+    /// </summary>
+    public static string GetOrgId(this IIdentity identity)
+    {
+        Check.NotNull(identity, nameof(identity));
+        return identity is not ClaimsIdentity claimsIdentity
+            ? null
+            : claimsIdentity.FindFirst(ClaimTypes.OrgId)?.Value;
+    }
+    
+    /// <summary>
+    ///     获取机构Id
+    /// </summary>
+    public static T GetOrgId<T>(this IIdentity identity)
+    {
+        Check.NotNull(identity, nameof(identity));
+        if (identity is not ClaimsIdentity claimsIdentity) return default;
+        var value = claimsIdentity.FindFirst(ClaimTypes.OrgId)?.Value;
+        return value == null ? default : value.CastTo<T>();
+    }
+    
+    /// <summary>
+    ///     获取机构名称
+    /// </summary>
+    public static string GetOrgName(this IIdentity identity)
+    {
+        Check.NotNull(identity, nameof(identity));
+        return identity is not ClaimsIdentity claimsIdentity
+            ? null
+            : claimsIdentity.FindFirst(ClaimTypes.OrgName)?.Value;
     }
 
     /// <summary>

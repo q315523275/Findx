@@ -82,10 +82,8 @@ public static class EntityExtensions
             {
                 entity1.CreatedTime = DateTime.Now;
             }
-            
             return (TEntity)entity1;
         }
-
         return entity;
     }
 
@@ -106,12 +104,10 @@ public static class EntityExtensions
                 entity1.CreatorId = user.Identity.GetUserId<TUserKey>();
                 entity1.Creator = user.Identity.GetNickname();
             }
-
             if (!entity1.CreatedTime.HasValue || entity1.CreatedTime.Value == default)
             {
                 entity1.CreatedTime = DateTime.Now;
             }
-            
             return (TEntity)entity1;
         }
 
@@ -128,14 +124,9 @@ public static class EntityExtensions
     {
         if (entity is IUpdateTime entity1)
         {
-            if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime.Value == default)
-            {
-                entity1.LastUpdatedTime = DateTime.Now;
-            }
-            
+            entity1.LastUpdatedTime = DateTime.Now;
             return (TEntity)entity1;
         }
-
         return entity;
     }
 
@@ -156,15 +147,9 @@ public static class EntityExtensions
                 entity1.LastUpdaterId = user.Identity.GetUserId<TUserKey>();
                 entity1.LastUpdater = user.Identity.GetNickname();
             }
-
-            if (!entity1.LastUpdatedTime.HasValue || entity1.LastUpdatedTime.Value == default)
-            {
-                entity1.LastUpdatedTime = DateTime.Now;
-            }
-
+            entity1.LastUpdatedTime = DateTime.Now;
             return (TEntity)entity1;
         }
-
         return entity;
     }
 
@@ -178,13 +163,11 @@ public static class EntityExtensions
     /// <returns></returns>
     public static TEntity CheckTenant<TEntity>(this TEntity entity, IPrincipal user) where TEntity : IEntity
     {
-        if (user.Identity != null && entity is ITenant entity1 && user.Identity.IsAuthenticated && !user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).IsNullOrWhiteSpace())
+        if (user.Identity != null && entity is ITenant entity1 && user is { Identity.IsAuthenticated: true })
         {
             entity1.TenantId = user.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId);
-            
             return (TEntity)entity1;
         }
-
         return entity;
     }
 
@@ -199,16 +182,52 @@ public static class EntityExtensions
     public static TEntity CheckTenant<TEntity, TTenantKey>(this TEntity entity, IPrincipal user) where TEntity : IEntity where TTenantKey : struct
     {
         // ReSharper disable once SuspiciousTypeConversion.Global
-        if (entity is ITenant<TTenantKey> entity1)
+        if (entity is ITenant<TTenantKey> entity1 && user is { Identity.IsAuthenticated: true })
         {
-            entity1.TenantId = user?.Identity.GetClaimValueFirstOrDefault(ClaimTypes.TenantId).CastTo<TTenantKey>() ?? default;
-            
+            entity1.TenantId = user.Identity.GetTenantId<TTenantKey>();
             return (TEntity)entity1;
         }
-
         return entity;
     }
-
+    
+    /// <summary>
+    ///     检测并执行<see cref="IDataOwner{TUserKey}" />接口的处理
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TUserKey"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    public static TEntity CheckOwner<TEntity, TUserKey>(this TEntity entity, IPrincipal user) where TEntity : IEntity where TUserKey : struct
+    {
+        if (entity is IDataOwner<TUserKey> entity1 && user is { Identity.IsAuthenticated: true })
+        {
+            entity1.OwnerId = user.Identity.GetUserId<TUserKey>();
+            entity1.Owner = user.Identity.GetNickname();
+            return (TEntity)entity1;
+        }
+        return entity;
+    }
+    
+    /// <summary>
+    ///     检测并执行<see cref="IDataOwner{TUserKey}" />接口的处理
+    /// </summary>
+    /// <typeparam name="TEntity"></typeparam>
+    /// <typeparam name="TOrgKey"></typeparam>
+    /// <param name="entity"></param>
+    /// <param name="user"></param>
+    /// <returns></returns>
+    public static TEntity CheckOrg<TEntity, TOrgKey>(this TEntity entity, IPrincipal user) where TEntity : IEntity where TOrgKey : struct
+    {
+        if (entity is IDataDepartment<TOrgKey> entity1 && user is { Identity.IsAuthenticated: true })
+        {
+            entity1.OrgId = user.Identity.GetOrgId<TOrgKey>();
+            entity1.OrgName = user.Identity.GetOrgName();
+            return (TEntity)entity1;
+        }
+        return entity;
+    }
+    
     /// <summary>
     ///     设置实体id默认值
     /// </summary>
@@ -226,28 +245,6 @@ public static class EntityExtensions
         // 有序Guid
         if (typeof(Guid) == keyType && entity.Id.CastTo<Guid>() == Guid.Empty)
             entity.Id = ServiceLocator.GetService<IKeyGenerator<Guid>>().Create().CastTo<TKey>();
-
-        return entity;
-    }
-    
-    
-    /// <summary>
-    ///     检测并执行<see cref="IDataOwner{TUserKey}" />接口的处理
-    /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
-    /// <typeparam name="TUserKey"></typeparam>
-    /// <param name="entity"></param>
-    /// <param name="user"></param>
-    /// <returns></returns>
-    public static TEntity CheckOwner<TEntity, TUserKey>(this TEntity entity, IPrincipal user) where TEntity : IEntity where TUserKey : struct
-    {
-        if (entity is IDataOwner<TUserKey> entity1 && user is { Identity.IsAuthenticated: true })
-        {
-            entity1.OwnerId = user.Identity.GetUserId<TUserKey>();
-            entity1.Owner = user.Identity.GetNickname();
-
-            return (TEntity)entity1;
-        }
 
         return entity;
     }

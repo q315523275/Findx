@@ -212,7 +212,7 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
         // 替换新的追踪实体
         _attachDict[key] = entity;
         
-        return await UpdateColumnsAsync(dic, cancellationToken);
+        return dic.Count > 1 ? await UpdateColumnsAsync(dic, cancellationToken) : 1;
     }
     
     #endregion

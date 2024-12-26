@@ -281,7 +281,7 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         
         _attachDict[key] = entity;
         
-        return UpdateColumns(dic);
+        return dic.Count > 1 ? UpdateColumns(dic) : 1;
     }
 
     #endregion
