@@ -256,7 +256,7 @@ public class AuthController : AreaApiControllerBase
     ///     修改账户头像
     /// </summary>
     /// <returns></returns>
-    [HttpPut("/api/auth/user/avatar"), Authorize, Description("修改账户头像")]
+    [HttpPut("/api/auth/user/avatar"), Authorize, DisableAuditing, Description("修改账户头像")]
     public virtual async Task<CommonResult> SaveUserAvatarAsync([FromBody] SaveUserAvatarDto req, CancellationToken cancellationToken)
     {
         var principal = GetRequiredService<IPrincipal>();

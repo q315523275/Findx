@@ -33,6 +33,11 @@ public class UserQueryDto : PageBase
     public Guid? OrgId { set; get; }
 
     /// <summary>
+    ///     机构编号集合
+    /// </summary>
+    public List<Guid> OrgIds { set; get; } = [];
+
+    /// <summary>
     ///     员工编号
     /// </summary>
     public string EmployeeNumber { get; set; }

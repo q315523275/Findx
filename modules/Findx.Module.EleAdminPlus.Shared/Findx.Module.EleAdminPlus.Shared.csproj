@@ -6,12 +6,12 @@
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>11.1.2024.1226</Version>
+        <Version>11.1.2024.1227</Version>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1226" />
-      <PackageReference Include="Findx.FreeSql" Version="11.1.2024.1226" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1227" />
+      <PackageReference Include="Findx.FreeSql" Version="11.1.2024.1227" />
     </ItemGroup>
     
 </Project>

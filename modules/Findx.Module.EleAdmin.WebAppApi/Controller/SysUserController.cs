@@ -49,11 +49,12 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     protected override Expression<Func<SysUserInfo, bool>> CreateWhereExpression(UserQueryDto req)
     {
         var whereExp = PredicateBuilder.New<SysUserInfo>()
-            .AndIf(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
-            .AndIf(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-            .AndIf(req.Sex.HasValue, x => x.Sex == req.Sex)
-            .AndIf(req.OrgId.HasValue, x => x.OrgId == req.OrgId)
-            .Build();
+                                       .AndIf(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
+                                       .AndIf(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
+                                       .AndIf(req.Sex.HasValue, x => x.Sex == req.Sex)
+                                       .AndIf(req.OrgId.HasValue, x => x.OrgId == req.OrgId)
+                                       .AndIf(req.OrgIds?.Count > 0, x => req.OrgIds.Contains(x.OrgId.Value))
+                                       .Build();
         return whereExp;
     }
 
