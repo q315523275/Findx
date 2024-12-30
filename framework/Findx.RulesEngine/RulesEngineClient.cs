@@ -7,8 +7,10 @@ using System.Threading.Tasks;
 using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Responses;
+using Findx.RulesEngine.Actions;
 using Findx.Utilities;
 using Microsoft.Extensions.Logging;
+using MicrosoftRulesEngine::RulesEngine.Actions;
 using MicrosoftRulesEngine::RulesEngine.Models;
 
 namespace Findx.RulesEngine;
@@ -28,7 +30,14 @@ public class RulesEngineClient: IRulesEngineClient
     public RulesEngineClient(ILogger<RulesEngineClient> logger)
     {
         _logger = logger;
-        _rulesEngine = new MicrosoftRulesEngine::RulesEngine.RulesEngine(Array.Empty<Workflow>());
+        var settings = new ReSettings
+        {
+            CustomActions = new Dictionary<string, Func<ActionBase>>
+            {
+                { "FixedValue", () => new FixedValueAction() }
+            }
+        };
+        _rulesEngine = new MicrosoftRulesEngine::RulesEngine.RulesEngine(Array.Empty<Workflow>(), settings);
     }
 
     public Response Verify(string ruleRaw)

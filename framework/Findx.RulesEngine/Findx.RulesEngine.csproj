@@ -3,11 +3,10 @@
     <PropertyGroup>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>11.1.2024.1205</PackageVersion>
+        <PackageVersion>11.1.2024.1230</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <Description>Microsoft.RulesEngine</Description>
-        <Copyright></Copyright>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
