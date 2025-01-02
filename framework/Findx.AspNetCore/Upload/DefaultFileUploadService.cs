@@ -39,8 +39,7 @@ internal class DefaultFileUploadService : IFileUploadService
     /// </summary>
     /// <param name="param">参数</param>
     /// <param name="cancellationToken">取消令牌</param>
-    public async Task<IEnumerable<FileSpec>> UploadAsync(MultipleFileUploadParam param,
-        CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<FileSpec>> UploadAsync(MultipleFileUploadParam param, CancellationToken cancellationToken = default)
     {
         if (param.FormFiles == null || !param.FormFiles.Any())
             if (param.Request.Form.Files.Any())
@@ -72,8 +71,7 @@ internal class DefaultFileUploadService : IFileUploadService
     /// <param name="formFile">表单文件</param>
     /// <param name="savePath">保存路径</param>
     /// <param name="cancellationToken">取消令牌</param>
-    public async Task<string> SaveWithMd5Async(IFormFile formFile, string savePath,
-        CancellationToken cancellationToken = default)
+    public async Task<string> SaveWithMd5Async(IFormFile formFile, string savePath, CancellationToken cancellationToken = default)
     {
         await using var stream = new FileStream(savePath, FileMode.Create);
         var md5 = Md5(stream);
@@ -88,8 +86,7 @@ internal class DefaultFileUploadService : IFileUploadService
     /// <param name="relativePath">相对路径</param>
     /// <param name="rootPath">根路径</param>
     /// <param name="cancellationToken">取消令牌</param>
-    private async Task<FileSpec> SaveAsync(IFormFile formFile, string relativePath, string rootPath,
-        CancellationToken cancellationToken = default)
+    private async Task<FileSpec> SaveAsync(IFormFile formFile, string relativePath, string rootPath, CancellationToken cancellationToken = default)
     {
         var date = DateTime.Now;
 
@@ -103,13 +100,17 @@ internal class DefaultFileUploadService : IFileUploadService
 
         // 文件信息
         var fileInfo = new FileSpec(path, size, name, id.ToString()) { SaveName = saveName };
+        
         // 全目录
         var fullDir = Path.Combine(rootPath, pathDir);
+        
         // 创建文件夹
         DirectoryUtility.CreateIfNotExists(fullDir);
+        
         // 文件全路径
         var fullPath = Path.Combine(fullDir, saveName);
         fileInfo.Md5 = await SaveWithMd5Async(formFile, fullPath, cancellationToken);
+        
         return fileInfo;
     }
 

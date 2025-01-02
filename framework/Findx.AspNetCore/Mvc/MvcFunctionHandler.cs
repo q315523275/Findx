@@ -52,6 +52,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
         // 耗时大致20毫秒左右
         var result = new List<MvcFunction>();
         var controllerActionList = _actionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>();
+        
         // Controller循环
         foreach (var item in controllerActionList)
         {

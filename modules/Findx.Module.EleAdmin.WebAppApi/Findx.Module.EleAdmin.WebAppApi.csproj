@@ -3,7 +3,7 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <PackageVersion>11.1.2024.1227</PackageVersion>
+        <PackageVersion>11.1.2025.102</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <RootNamespace>Findx.Module.EleAdmin</RootNamespace>
@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2024.1227" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.102" />
       <PackageReference Include="Findx.Security" Version="11.1.2024.1120" />
     </ItemGroup>
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
@@ -45,57 +44,28 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     where TKey : IEquatable<TKey>
 {
     /// <summary>
-    ///     构建动态过滤条件
+    ///     构建查询条件
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    protected virtual IEnumerable<FilterCondition> BuildFilterCondition(TQueryParameter req)
+    protected virtual Expression<Func<TModel, bool>> CreateWhereExpression(TQueryParameter req)
     {
-        var reqType = req.GetType();
-        var propertyDynamicGetter = new PropertyDynamicGetter<TQueryParameter>();
-        
-        // 属性标记查询字段
-        var queryFields = SingletonDictionary<Type, Dictionary<PropertyInfo, QueryFieldAttribute>>.Instance.GetOrAdd(reqType, () =>
-        {
-            var fieldDict = new Dictionary<PropertyInfo, QueryFieldAttribute>();
-            var queryFieldProperties = reqType.GetProperties().Where(x => x.HasAttribute<QueryFieldAttribute>());
-            foreach (var propertyInfo in queryFieldProperties)
-            {
-                fieldDict[propertyInfo] = propertyInfo.GetAttribute<QueryFieldAttribute>();
-            }
-            return fieldDict;
-        });
-        
-        // 标记字段计算
-        foreach (var fieldInfo in queryFields)
-        {
-            var value = propertyDynamicGetter.GetPropertyValue(req, fieldInfo.Key.Name).CastTo<string>();
-            if (value.IsNotNullOrWhiteSpace())
-                yield return new FilterCondition { Field = fieldInfo.Value?.Name?? fieldInfo.Key.Name, Operator = fieldInfo.Value?.FilterOperate?? FilterOperate.Equal, Value = value };
-        }
-    }
-    
-    /// <summary>
-    ///     构建查询条件
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    protected virtual Expression<Func<TModel, bool>> CreateWhereExpression(TQueryParameter request)
-    {
-        var filters = BuildFilterCondition(request);
-        return filters != null && filters.Any() ? LambdaExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And }) : null;
+        var filters = req.BuildFilterCondition();
+        return filters != null && filters.Any()
+            ? LambdaExpressionParser.ParseConditions<TModel>(new FilterGroup { Filters = filters, Logic = FilterOperate.And })
+            : null;
     }
 
     /// <summary>
     ///     构建查询排序
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="req"></param>
     /// <returns></returns>
-    protected virtual IEnumerable<OrderByParameter<TModel>> CreateOrderExpression(TQueryParameter request)
+    protected virtual IEnumerable<OrderByParameter<TModel>> CreateOrderExpression(TQueryParameter req)
     {
         var orderExp = SortConditionBuilder.New<TModel>();
 
-        if (request is SortCondition sortCondition && sortCondition.SortField.IsNotNullOrWhiteSpace())
+        if (req is SortCondition sortCondition && sortCondition.SortField.IsNotNullOrWhiteSpace())
             orderExp.Order(sortCondition.SortField, sortCondition.SortDirection);
         
         if (typeof(TModel).IsAssignableTo(typeof(ISort)))
@@ -109,23 +79,23 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// <summary>
     ///     查询数据
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="req"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("page")]
     [Description("分页")]
-    public virtual async Task<CommonResult<PageResult<List<TListDto>>>> PageAsync([FromQuery] TQueryParameter request, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult<PageResult<List<TListDto>>>> PageAsync([FromQuery] TQueryParameter req, CancellationToken cancellationToken = default)
     {
-        Check.NotNull(request, nameof(request));
+        Check.NotNull(req, nameof(req));
 
         var repo = GetRepository<TModel, TKey>();
 
         Check.NotNull(repo, nameof(repo));
         
-        var whereExpression = CreateWhereExpression(request);
-        var orderByExpression = CreateOrderExpression(request);
+        var whereExpression = CreateWhereExpression(req);
+        var orderByExpression = CreateOrderExpression(req);
         
-        var result = await repo.PagedAsync<TListDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var result = await repo.PagedAsync<TListDto>(req.PageNo, req.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(result);
     }
@@ -133,25 +103,25 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// <summary>
     ///     查询列表数据
     /// </summary>
-    /// <param name="request"></param>
+    /// <param name="req"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("list")]
     [Description("列表")]
-    public virtual async Task<CommonResult<List<TListDto>>> ListAsync([FromQuery] TQueryParameter request, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult<List<TListDto>>> ListAsync([FromQuery] TQueryParameter req, CancellationToken cancellationToken = default)
     {
-        Check.NotNull(request, nameof(request));
+        Check.NotNull(req, nameof(req));
         // 默认条数提升到99条
-        if (request.PageSize == 20) 
-            request.PageSize = 99;
+        if (req.PageSize == 20) 
+            req.PageSize = 999;
         
         var repo = GetRepository<TModel, TKey>();
         Check.NotNull(repo, nameof(repo));
 
-        var whereExpression = CreateWhereExpression(request);
-        var orderByExpression = CreateOrderExpression(request);
+        var whereExpression = CreateWhereExpression(req);
+        var orderByExpression = CreateOrderExpression(req);
 
-        var list = await repo.TopAsync<TListDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var list = await repo.TopAsync<TListDto>(req.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(list);
     }

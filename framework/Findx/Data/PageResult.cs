@@ -37,7 +37,7 @@ public class PageResult<TList>
     /// <summary>
     ///     总记录数
     /// </summary>
-    public int TotalRows { get; }
+    public int TotalRows { get; set; }
 
     /// <summary>
     ///     分页数据
