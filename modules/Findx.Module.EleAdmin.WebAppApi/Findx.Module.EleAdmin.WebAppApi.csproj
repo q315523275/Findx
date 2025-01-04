@@ -11,12 +11,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Findx.Module.EleAdmin.Shared\Findx.Module.EleAdmin.Shared.csproj"/>
+      <PackageReference Include="Findx.Security" Version="11.1.2024.1120" />
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.102" />
-      <PackageReference Include="Findx.Security" Version="11.1.2024.1120" />
+      <ProjectReference Include="..\Findx.Module.EleAdmin.Mvc\Findx.Module.EleAdmin.Mvc.csproj" />
     </ItemGroup>
 
 </Project>

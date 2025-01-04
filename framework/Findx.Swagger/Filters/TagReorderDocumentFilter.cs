@@ -2,10 +2,10 @@
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace Findx.Swagger;
+namespace Findx.Swagger.Filters;
 
 /// <summary>
-///     标签过滤器
+///     标签重排过滤器
 /// </summary>
 public class TagReorderDocumentFilter : IDocumentFilter
 {

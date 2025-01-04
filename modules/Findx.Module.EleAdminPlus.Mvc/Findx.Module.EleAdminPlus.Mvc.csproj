@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <TargetFrameworks>net9.0;net6.0;net8.0</TargetFrameworks>
+        <LangVersion>default</LangVersion>
+        <Version>11.1.2025.102</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.102" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Findx.Module.EleAdminPlus.Shared\Findx.Module.EleAdminPlus.Shared.csproj" />
+    </ItemGroup>
+
+</Project>

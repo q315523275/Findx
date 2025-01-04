@@ -7,13 +7,11 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Expressions;
-using Findx.Mapping;
+using Findx.Module.EleAdminPlus.Mvc.Filters;
 using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
-using Findx.Module.EleAdminPlus.Shared.Mvc.Filters;
 using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
-using Findx.Serialization;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -29,7 +27,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [Route("api/[area]/user")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-用户"), Description("系统-用户")]
-public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCreateDto, UserEditDto, UserPageQueryDto, long, long>
+public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto, UserCreateDto, UserEditDto, UserPageQueryDto, long, long>
 {
     private readonly IKeyGenerator<long> _keyGenerator;
     private readonly IWorkContext _workContext;
@@ -71,14 +69,14 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [DataScopeLimiter, IpAddressLimiter]
-    public override async Task<CommonResult<PageResult<List<UserDto>>>> PageAsync(UserPageQueryDto request, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult<PageResult<List<UserSimplifyDto>>>> PageAsync(UserPageQueryDto request, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysUserInfo, long>();
 
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
-        var res = await repo.PagedAsync<UserDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(res);
     }
@@ -90,14 +88,14 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserDto, UserCr
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [DataScopeLimiter, IpAddressLimiter]
-    public override async Task<CommonResult<List<UserDto>>> ListAsync(UserPageQueryDto request, CancellationToken cancellationToken = new())
+    public override async Task<CommonResult<List<UserSimplifyDto>>> ListAsync(UserPageQueryDto request, CancellationToken cancellationToken = new())
     {
         var repo = GetRepository<SysUserInfo, long>();
 
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
-        var res = await repo.TopAsync<UserDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var res = await repo.TopAsync<UserSimplifyDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
         
         return CommonResult.Success(res);
     }

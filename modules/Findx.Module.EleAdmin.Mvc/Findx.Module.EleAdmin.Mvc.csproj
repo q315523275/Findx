@@ -1,21 +1,20 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <LangVersion>default</LangVersion>
+        <TargetFrameworks>net9.0;net6.0;net8.0</TargetFrameworks>
         <Version>11.1.2025.102</Version>
-        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
-        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
-    
+
     <ItemGroup>
-      <PackageReference Include="Findx.Security" Version="11.1.2024.1120" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.102" />
     </ItemGroup>
-    
+
     <ItemGroup>
-      <ProjectReference Include="..\Findx.Module.EleAdminPlus.Mvc\Findx.Module.EleAdminPlus.Mvc.csproj" />
+      <ProjectReference Include="..\Findx.Module.EleAdmin.Shared\Findx.Module.EleAdmin.Shared.csproj" />
     </ItemGroup>
-    
+
 </Project>

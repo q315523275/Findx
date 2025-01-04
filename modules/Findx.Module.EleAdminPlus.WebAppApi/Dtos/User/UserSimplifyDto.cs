@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
 /// <summary>
 ///     用户Dto模型
 /// </summary>
-public class UserDto : IResponse
+public class UserSimplifyDto : IResponse
 {
     /// <summary>
     ///     编号

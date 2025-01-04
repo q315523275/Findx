@@ -6,7 +6,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Swagger在线文档组件,优化中文展示</Description>
-        <PackageVersion>11.1.2024.1203</PackageVersion>
+        <PackageVersion>11.1.2025.104</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>

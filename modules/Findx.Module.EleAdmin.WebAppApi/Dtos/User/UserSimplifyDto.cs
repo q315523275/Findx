@@ -94,6 +94,11 @@ public class UserSimplifyDto : IResponse
     public DateTime? CreatedTime { get; set; }
 
     /// <summary>
+    ///     冗余角色
+    /// </summary>
+    public string RoleJson { get; set; }
+    
+    /// <summary>
     ///     角色集合
     /// </summary>
     public virtual IEnumerable<SysRoleInfo> Roles { get; set; }

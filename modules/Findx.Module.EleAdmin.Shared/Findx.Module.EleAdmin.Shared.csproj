@@ -6,9 +6,10 @@
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Version>11.1.2025.102</Version>
+        <Authors />
+        <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
     </PropertyGroup>
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.102" />
       <PackageReference Include="Findx.FreeSql" Version="11.1.2024.1227" />
     </ItemGroup>
 

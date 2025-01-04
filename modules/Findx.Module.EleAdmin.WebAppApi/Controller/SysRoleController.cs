@@ -41,22 +41,6 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
     }
 
     /// <summary>
-    ///     构建查询条件
-    /// </summary>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    protected override Expression<Func<SysRoleInfo, bool>> CreateWhereExpression(RoleQueryDto request)
-    {
-        var whereExp = PredicateBuilder.New<SysRoleInfo>()
-            .AndIf(!request.Name.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Name))
-            .AndIf(!request.Code.IsNullOrWhiteSpace(), x => x.Code.Contains(request.Code))
-            .AndIf(!request.Comments.IsNullOrWhiteSpace(), x => x.Comments.Contains(request.Comments))
-            .AndIf(!request.ApplicationCode.IsNullOrWhiteSpace(), x => x.ApplicationCode == request.ApplicationCode)
-            .Build();
-        return whereExp;
-    }
-
-    /// <summary>
     ///     查询角色对应菜单
     /// </summary>
     /// <param name="roleId"></param>
@@ -69,14 +53,9 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
         var menuRepo = GetRequiredService<IRepository<SysMenuInfo>>();
 
         var menuIdArray = repo.Select(x => x.RoleId == roleId, x => x.MenuId).Distinct();
-        var menuList = applicationCode.IsNullOrWhiteSpace()
-            ? menuRepo.Select<RoleMenuSimplifyDto>()
-            : menuRepo.Select<RoleMenuSimplifyDto>(x => x.ApplicationCode == applicationCode);
+        var menuList = applicationCode.IsNullOrWhiteSpace() ? menuRepo.Select<RoleMenuSimplifyDto>() : menuRepo.Select<RoleMenuSimplifyDto>(x => x.ApplicationCode == applicationCode);
 
-        menuList.ForEach(x =>
-        {
-            if (menuIdArray.Contains(x.Id)) x.Checked = true;
-        });
+        menuList.ForEach(x => { x.Checked = menuIdArray.Contains(x.Id); });
 
         return CommonResult.Success(menuList.OrderBy(x => x.Sort));
     }

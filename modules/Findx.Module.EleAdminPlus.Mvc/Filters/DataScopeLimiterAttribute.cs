@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Findx.Module.EleAdmin.Shared.Mvc.Filters;
+namespace Findx.Module.EleAdminPlus.Mvc.Filters;
 
 /// <summary>
 ///     数据范围限定器

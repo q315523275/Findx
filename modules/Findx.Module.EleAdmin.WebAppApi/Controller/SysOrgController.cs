@@ -2,11 +2,15 @@
 using System.Linq.Expressions;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
+using Findx.Data;
 using Findx.Exceptions;
 using Findx.Expressions;
 using Findx.Extensions;
 using Findx.Module.EleAdmin.Dtos.Org;
+using Findx.Module.EleAdmin.Mvc.Filters;
+using Findx.Module.EleAdmin.Shared.Enum;
 using Findx.Module.EleAdmin.Shared.Models;
+using Findx.Module.EleAdmin.Shared.ServiceDefaults;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +27,7 @@ namespace Findx.Module.EleAdmin.Controller;
 [ApiExplorerSettings(GroupName = "eleAdmin"), Tags("系统-机构"), Description("系统-机构")]
 public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSaveDto, OrgQueryDto, Guid, Guid>
 {
+    private readonly IWorkContext _workContext;
     private readonly ICache _cache;
     private readonly string _cacheKey;
 
@@ -31,8 +36,10 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSaveDto, OrgQu
     /// </summary>
     /// <param name="currentUser"></param>
     /// <param name="cacheFactory"></param>
-    public SysOrgController(ICurrentUser currentUser, ICacheFactory cacheFactory)
+    /// <param name="workContext"></param>
+    public SysOrgController(ICurrentUser currentUser, ICacheFactory cacheFactory, IWorkContext workContext)
     {
+        _workContext = workContext;
         _cacheKey = $"EleAdmin:Org:{currentUser.TenantId}";
         _cache = cacheFactory.Create(CacheType.DefaultMemory);
     }
@@ -45,11 +52,28 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSaveDto, OrgQu
     /// <returns></returns>
     protected override Expression<Func<SysOrgInfo, bool>> CreateWhereExpression(OrgQueryDto request)
     {
+        var user = _workContext.GetCurrentUser();
         var whereExp = PredicateBuilder.New<SysOrgInfo>()
-            .AndIf(request.Pid != null && request.Pid != Guid.Empty, x => x.ParentId == request.Pid)
-            .AndIf(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords))
-            .Build();
+                                       .AndIf(request.Pid != null && request.Pid != Guid.Empty, x => x.ParentId == request.Pid)
+                                       .AndIf(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords))
+                                       .AndIf(_workContext.DataScope is DataScope.Custom, x => _workContext.OrgIds.Contains(x.Id))
+                                       .AndIf(_workContext.DataScope is DataScope.Subs, x => _workContext.OrgIds.Contains(x.Id))
+                                       .AndIf(_workContext.DataScope is DataScope.Department, x => x.Id == user.OrgId.Value)
+                                       .AndIf(_workContext.DataScope is DataScope.Oneself, x => x.Id == user.OrgId.Value)
+                                       .Build();
         return whereExp;
+    }
+
+    /// <summary>
+    ///     分页查询
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [DataScopeLimiter, IpAddressLimiter]
+    public override Task<CommonResult<PageResult<List<SysOrgInfo>>>> PageAsync(OrgQueryDto request, CancellationToken cancellationToken = default)
+    {
+        return base.PageAsync(request, cancellationToken);
     }
 
     /// <summary>

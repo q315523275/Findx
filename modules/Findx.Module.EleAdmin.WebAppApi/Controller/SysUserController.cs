@@ -3,12 +3,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Text.Json;
 using Findx.AspNetCore.Mvc;
+using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Expressions;
 using Findx.Extensions;
 using Findx.Module.EleAdmin.Dtos.User;
+using Findx.Module.EleAdmin.Mvc.Filters;
+using Findx.Module.EleAdmin.Shared.Enum;
 using Findx.Module.EleAdmin.Shared.Models;
-using Findx.Module.EleAdmin.Shared.Mvc.Filters;
 using Findx.Module.EleAdmin.Shared.ServiceDefaults;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -29,33 +31,35 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
 {
     private readonly IKeyGenerator<Guid> _keyGenerator;
     private readonly IOptions<JsonOptions> _jsonOptions;
+    private readonly IWorkContext _workContext;
 
     /// <summary>
     /// Ctor
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <param name="jsonOptions"></param>
-    public SysUserController(IKeyGenerator<Guid> keyGenerator, IOptions<JsonOptions> jsonOptions)
+    /// <param name="workContext"></param>
+    public SysUserController(IKeyGenerator<Guid> keyGenerator, IOptions<JsonOptions> jsonOptions, IWorkContext workContext)
     {
         _keyGenerator = keyGenerator;
         _jsonOptions = jsonOptions;
+        _workContext = workContext;
     }
 
     /// <summary>
-    ///     构建查询条件
+    ///     构建数据范围表达式
     /// </summary>
-    /// <param name="req"></param>
+    /// <param name="defaultWhere"></param>
     /// <returns></returns>
-    protected override Expression<Func<SysUserInfo, bool>> CreateWhereExpression(UserQueryDto req)
+    private Expression<Func<SysUserInfo, bool>> BuildDataScopeWhereExpression(Expression<Func<SysUserInfo, bool>> defaultWhere)
     {
-        var whereExp = PredicateBuilder.New<SysUserInfo>()
-                                       .AndIf(!req.UserName.IsNullOrWhiteSpace(), x => x.UserName.Contains(req.UserName))
-                                       .AndIf(!req.Nickname.IsNullOrWhiteSpace(), x => x.Nickname.Contains(req.Nickname))
-                                       .AndIf(req.Sex.HasValue, x => x.Sex == req.Sex)
-                                       .AndIf(req.OrgId.HasValue, x => x.OrgId == req.OrgId)
-                                       .AndIf(req.OrgIds?.Count > 0, x => req.OrgIds.Contains(x.OrgId.Value))
-                                       .Build();
-        return whereExp;
+        var user = _workContext.GetCurrentUser();
+        var exp = PredicateBuilder.New<SysUserInfo>()
+                                  .AndIf(_workContext.DataScope is DataScope.Custom, x => _workContext.OrgIds.Contains(x.OrgId.Value))
+                                  .AndIf(_workContext.DataScope is DataScope.Subs, x => _workContext.OrgIds.Contains(x.OrgId.Value))
+                                  .AndIf(_workContext.DataScope is DataScope.Department, x => x.OrgId == user.OrgId.Value)
+                                  .AndIf(_workContext.DataScope is DataScope.Oneself, x => x.Id == user.UserId);
+        return defaultWhere == null ? exp.Build() : exp.And(defaultWhere).Build();
     }
 
     /// <summary>
@@ -67,17 +71,12 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     [DataScopeLimiter, IpAddressLimiter]
     public override async Task<CommonResult<PageResult<List<UserSimplifyDto>>>> PageAsync(UserQueryDto request, CancellationToken cancellationToken = default)
     {
-        var repo = GetRepository<SysUserInfo>();
-        var roleRepo = GetRepository<SysUserRoleInfo>();
-
-        var whereExpression = CreateWhereExpression(request);
+        var repo = GetRepository<SysUserInfo, Guid>();
+        
+        var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
         var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
-        var ids = res.Rows.Select(x => x.Id).Distinct();
-        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
-        foreach (var item in res.Rows)
-            item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => x.RoleInfo);
 
         return CommonResult.Success(res);
     }
@@ -122,26 +121,25 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     [Description("检查是否存在")]
     public CommonResult Existence([Required] string field, [Required] string value, Guid id)
     {
-        var whereExp = PredicateBuilder.New<SysUserInfo>()
-            .AndIf(field == "userName", x => x.UserName == value)
-            .And(x => x.Id != id)
-            .Build();
-        var repo = GetRepository<SysUserInfo>();
+        var filterGroup = new FilterGroup
+        {
+            Logic = FilterOperate.And,
+            Filters = [
+                new FilterCondition { Field = field, Value = value, Operator = FilterOperate.Equal },
+                new FilterCondition { Field = "Id", Value = id.ToString(), Operator = FilterOperate.NotEqual }
+            ]
+        };
+        var whereExp = LambdaExpressionParser.ParseConditions<SysUserInfo>(filterGroup);
+        var repo = GetRepository<SysUserInfo, Guid>();
         return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
-    }
-
-    /// <summary>
-    ///     详情查询后
-    /// </summary>
-    /// <param name="model"></param>
-    /// <param name="simplifyDto"></param>
-    /// <returns></returns>
-    protected override Task DetailAfterAsync(SysUserInfo model, UserSimplifyDto simplifyDto)
-    {
-        var roleRepo = GetRepository<SysUserRoleInfo>();
-        var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && x.UserId == model.Id);
-        simplifyDto.Roles = roles.Where(x => x.RoleInfo != null).Select(x => x.RoleInfo);
-        return Task.CompletedTask;
+        
+        
+        // var whereExp = PredicateBuilder.New<SysUserInfo>()
+        //     .AndIf(field == "userName", x => x.UserName == value)
+        //     .And(x => x.Id != id)
+        //     .Build();
+        // var repo = GetRepository<SysUserInfo>();
+        // return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
     }
 
     /// <summary>
@@ -157,6 +155,32 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
         model.RoleJson = JsonSerializer.Serialize(req.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
         await base.AddBeforeAsync(model, req, cancellationToken);
     }
+    
+    /// <summary>
+    ///     详情查询后
+    /// </summary>
+    /// <param name="model"></param>
+    /// <param name="simplifyDto"></param>
+    /// <returns></returns>
+    protected override Task DetailAfterAsync(SysUserInfo model, UserSimplifyDto simplifyDto)
+    {
+        var roleRepo = GetRepository<SysUserRoleInfo>();
+        var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && x.UserId == model.Id);
+        simplifyDto.Roles = roles.Where(x => x.RoleInfo != null).Select(x => x.RoleInfo);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    ///     插入中
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [Transactional(EntityType = typeof(SysUserInfo))]
+    public override Task<CommonResult> AddAsync(UserAddDto request, CancellationToken cancellationToken = default)
+    {
+        return base.AddAsync(request, cancellationToken);
+    }
 
     /// <summary>
     ///     插入后
@@ -169,17 +193,11 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     {
         if (result > 0)
         {
-            var repo = GetRequiredService<IRepository<SysUserInfo>>();
-            var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
-
-            var user = await repo.FirstAsync(x => x.UserName == req.UserName, cancellationToken);
-            if (user != null)
-            {
-                var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = user.Id });
-                await roleRepo.InsertAsync(list, cancellationToken);
-            }
+            var userRoleRepo = UnitOfWork.GetRepository<SysUserRoleInfo, Guid>();
+            var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id });
+            await userRoleRepo.DeleteAsync(x => x.UserId == model.Id, cancellationToken);
+            await userRoleRepo.InsertAsync(list, cancellationToken);
         }
-
         await base.AddAfterAsync(model, req, result, cancellationToken);
     }
 
@@ -197,6 +215,18 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     }
 
     /// <summary>
+    ///     编辑执行
+    /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [Transactional(EntityType = typeof(SysUserInfo))]
+    public override Task<CommonResult> EditAsync(UserEditDto request, CancellationToken cancellationToken = default)
+    {
+        return base.EditAsync(request, cancellationToken);
+    }
+
+    /// <summary>
     ///     编辑后
     /// </summary>
     /// <param name="model"></param>
@@ -207,11 +237,11 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     {
         if (result > 0)
         {
-            var roleRepo = GetRequiredService<IRepository<SysUserRoleInfo>>();
-
+            var userRoleRepo = UnitOfWork.GetRepository<SysUserRoleInfo, Guid>();
             var list = req.Roles.Select(x => new SysUserRoleInfo { Id = _keyGenerator.Create(), RoleId = x.Id, UserId = model.Id });
-            await roleRepo.DeleteAsync(x => x.UserId == model.Id, cancellationToken);
-            await roleRepo.InsertAsync(list, cancellationToken);
+            await userRoleRepo.DeleteAsync(x => x.UserId == model.Id, cancellationToken);
+            await userRoleRepo.InsertAsync(list, cancellationToken);
         }
+        await base.EditAfterAsync(model, req, result, cancellationToken);
     }
 }

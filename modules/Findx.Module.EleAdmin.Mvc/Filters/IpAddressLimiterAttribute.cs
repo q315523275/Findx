@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Findx.Module.EleAdmin.Shared.Mvc.Filters;
+namespace Findx.Module.EleAdmin.Mvc.Filters;
 
 /// <summary>
 ///     Ip地址限定器

@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Findx.Module.EleAdminPlus.Shared.Mvc.Filters;
+namespace Findx.Module.EleAdminPlus.Mvc.Filters;
 
 /// <summary>
 ///     EleAdminPlus全局过滤器
@@ -20,7 +20,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Mvc.Filters;
 public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
 {
     /// <summary>
-    ///     
+    ///     过滤器执行
     /// </summary>
     /// <param name="context"></param>
     /// <param name="next"></param>

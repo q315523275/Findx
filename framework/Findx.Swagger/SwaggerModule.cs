@@ -1,11 +1,14 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using Findx.AspNetCore;
 using Findx.Extensions;
 using Findx.Modularity;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 #if NET9_0_OR_GREATER
 using Findx.Swagger.Transformers;
@@ -17,6 +20,7 @@ using System.IO;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using Findx.Swagger.Filters;
 #endif
 
 namespace Findx.Swagger;
@@ -68,6 +72,20 @@ public class SwaggerModule : WebApplicationModuleBase
                             document.Servers = endpoint.Servers?.Select(x => new OpenApiServer { Url = x.Url, Description = x.Description }).ToArray();
                             return Task.CompletedTask;
                         });
+                        // options.AddSchemaTransformer((schema, context, _) =>
+                        // {
+                        //     if (context.JsonTypeInfo.Type.IsEnum)
+                        //     {
+                        //         schema.Enum.Clear();
+                        //         foreach (var name in Enum.GetNames(context.JsonTypeInfo.Type))
+                        //         {
+                        //             var enumValue = Enum.Parse(context.JsonTypeInfo.Type, name);
+                        //             // Todo 如果经常使用,可以进行一些性能优化
+                        //             schema.Enum.Add(new OpenApiString($"{name}({enumValue.GetType().GetField(name).GetDescription()})={enumValue.CastTo<int>()}"));
+                        //         }
+                        //     }
+                        //     return Task.CompletedTask;
+                        // });
                     });
                 }
             }
@@ -85,7 +103,7 @@ public class SwaggerModule : WebApplicationModuleBase
                 AddXmlComments(options);
 
                 // 添加过滤器
-                // AddDocumentFilter(options);
+                AddDocumentFilter(options);
 
                 // 添加权限
                 AddSecurity(options);
@@ -198,6 +216,9 @@ public class SwaggerModule : WebApplicationModuleBase
     // ReSharper disable once UnusedMember.Local
     private static void AddDocumentFilter(SwaggerGenOptions options)
     {
+        // 枚举注释
+        options.SchemaFilter<EnumSchemaFilter>();
+        // 标签重排
         options.DocumentFilter<TagReorderDocumentFilter>();
     }
 
@@ -208,6 +229,7 @@ public class SwaggerModule : WebApplicationModuleBase
     // ReSharper disable once UnusedMember.Local
     private static void AddActionTag(SwaggerGenOptions options)
     {
+        // 自定义维护标签数据
         options.TagActionsBy(description =>
         {
             var tagAttribute = description.ActionDescriptor.EndpointMetadata.OfType<TagsAttribute>().FirstOrDefault();

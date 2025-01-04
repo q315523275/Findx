@@ -6,6 +6,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.DependencyInjection;
+using Findx.Expressions;
 using Findx.WebHost.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -134,5 +135,16 @@ public class RepoController : ApiControllerBase
             }
         }
         return keyGenerator.Create();
+    }
+
+    /// <summary>
+    ///     高级查询
+    /// </summary>
+    /// <param name="req"></param>
+    /// <returns></returns>
+    [HttpPost("filter")]
+    public CommonResult Filter([FromBody] FilterGroup req)
+    {
+        return CommonResult.Success();
     }
 }
