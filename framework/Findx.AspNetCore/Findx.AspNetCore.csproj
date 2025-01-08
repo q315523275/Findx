@@ -7,7 +7,7 @@
         <Description>限速、限流、防重提交、内网限定、请求策略、动态API、上传、MVC扩展等</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>11.1.2025.102</PackageVersion>
+        <PackageVersion>11.1.2025.108</PackageVersion>
         <LangVersion>default</LangVersion>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
@@ -30,6 +30,18 @@
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
         <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="..\..\images\logo.png">
+        <Pack>True</Pack>
+        <PackagePath></PackagePath>
+        <Link>logo.png</Link>
+      </None>
+      <None Update="logo.png">
+        <Pack>True</Pack>
+        <PackagePath></PackagePath>
+      </None>
     </ItemGroup>
     
 </Project>

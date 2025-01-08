@@ -4,7 +4,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>RabbitMQ功能增强,属性标注消费、连接池管理、自定义消费等</Description>
-        <PackageVersion>11.1.2024.1203</PackageVersion>
+        <PackageVersion>11.1.2025.108</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>

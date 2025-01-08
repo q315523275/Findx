@@ -5,7 +5,7 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <LangVersion>default</LangVersion>
-        <PackageVersion>11.1.2024.1120</PackageVersion>
+        <PackageVersion>11.1.2025.108</PackageVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>
     
@@ -19,8 +19,8 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="SixLabors.Fonts" Version="2.0.7" />
-      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.4" />
+      <PackageReference Include="SixLabors.Fonts" Version="2.0.8" />
+      <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="2.1.5" />
     </ItemGroup>
     
 </Project>
