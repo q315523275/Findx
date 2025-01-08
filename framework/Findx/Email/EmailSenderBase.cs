@@ -24,8 +24,7 @@ public abstract class EmailSenderBase : IEmailSender
     /// <param name="token"></param>
     public virtual async Task SendAsync(string to, string subject, string body, bool isBodyHtml = true, CancellationToken token = default)
     {
-        await SendAsync(new MailMessage { To = { to }, Subject = subject, Body = body, IsBodyHtml = isBodyHtml },
-            token: token);
+        await SendAsync(new MailMessage { To = { to }, Subject = subject, Body = body, IsBodyHtml = isBodyHtml }, token: token);
     }
 
     /// <summary>
@@ -37,8 +36,7 @@ public abstract class EmailSenderBase : IEmailSender
     /// <param name="body"></param>
     /// <param name="isBodyHtml"></param>
     /// <param name="token"></param>
-    public virtual async Task SendAsync(string from, string to, string subject, string body, bool isBodyHtml = true,
-        CancellationToken token = default)
+    public virtual async Task SendAsync(string from, string to, string subject, string body, bool isBodyHtml = true, CancellationToken token = default)
     {
         await SendAsync(new MailMessage(from, to, subject, body) { IsBodyHtml = isBodyHtml }, token: token);
     }
@@ -58,10 +56,39 @@ public abstract class EmailSenderBase : IEmailSender
     /// <summary>
     ///     发送
     /// </summary>
+    /// <param name="messages"></param>
+    /// <param name="normalize"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public virtual async Task SendAsync(IEnumerable<MailMessage> messages, bool normalize = true, CancellationToken token = default)
+    {
+        if (normalize)
+        {
+            foreach (var message in messages)
+            {
+                NormalizeMail(message);
+            }
+        }
+
+        await SendEmailAsync(messages, token);
+    }
+
+    /// <summary>
+    ///     发送
+    /// </summary>
     /// <param name="mail"></param>
     /// <param name="token"></param>
     /// <returns></returns>
     protected abstract Task SendEmailAsync(MailMessage mail, CancellationToken token = default);
+    
+    /// <summary>
+    ///     发送
+    /// </summary>
+    /// <param name="messages"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    protected abstract Task SendEmailAsync(IEnumerable<MailMessage> messages, CancellationToken token = default);
 
     /// <summary>
     ///     规范电子邮件报文

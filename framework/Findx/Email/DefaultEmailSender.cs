@@ -42,4 +42,21 @@ public class DefaultEmailSender : EmailSenderBase
         await client.SendMailAsync(mail, token);
         _logger.LogDebug("发送邮件到“{JoinAsString}”，标题：{MailSubject}", mail.To.JoinAsString(","), mail.Subject);
     }
+
+    /// <summary>
+    ///     发送
+    /// </summary>
+    /// <param name="messages"></param>
+    /// <param name="token"></param>
+    protected override async Task SendEmailAsync(IEnumerable<MailMessage> messages, CancellationToken token = default)
+    {
+        using var client = new SmtpClient(EmailSenderOptions.Host, EmailSenderOptions.Port);
+        client.EnableSsl = EmailSenderOptions.EnableSsl;
+        client.UseDefaultCredentials = false;
+        client.Credentials = new NetworkCredential(EmailSenderOptions.UserName, EmailSenderOptions.Password);
+        foreach (var message in messages)
+        {
+            await client.SendMailAsync(message, token);
+        }
+    }
 }

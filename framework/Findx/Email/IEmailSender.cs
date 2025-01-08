@@ -32,8 +32,16 @@ public interface IEmailSender
     /// <summary>
     ///     发送邮件
     /// </summary>
-    /// <param name="mail">邮件消息</param>
+    /// <param name="message">邮件消息</param>
     /// <param name="normalize">是否规范化邮件，如果是，则设置发件人地址/名称并使邮件编码为UTF-8</param>
     /// <param name="token"></param>
-    Task SendAsync(MailMessage mail, bool normalize = true, CancellationToken token = default);
+    Task SendAsync(MailMessage message, bool normalize = true, CancellationToken token = default);
+    
+    /// <summary>
+    ///     发送邮件
+    /// </summary>
+    /// <param name="messages">邮件消息集合</param>
+    /// <param name="normalize">是否规范化邮件，如果是，则设置发件人地址/名称并使邮件编码为UTF-8</param>
+    /// <param name="token"></param>
+    Task SendAsync(IEnumerable<MailMessage> messages, bool normalize = true, CancellationToken token = default);
 }

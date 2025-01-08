@@ -52,7 +52,7 @@ public abstract class FullAuditedBase<TKey, TUserKey> : EntityBase<TKey>, IFullA
     /// <summary>
     ///     创建人
     /// </summary>
-    public string Creator { get; set; }
+    public virtual string Creator { get; set; }
 
     /// <summary>
     ///     创建时间
