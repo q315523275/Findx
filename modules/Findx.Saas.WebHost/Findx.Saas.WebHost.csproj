@@ -8,13 +8,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Findx.Guids.NewId" Version="11.1.2024.1120" />
-        <PackageReference Include="Findx.ImageSharp" Version="11.1.2024.1120" />
-        <PackageReference Include="Findx.Mapster" Version="11.1.2024.1120" />
-        <PackageReference Include="Findx.NLog" Version="11.1.2024.1120" />
-        <PackageReference Include="Findx.Swagger" Version="11.1.2025.104" />
-        <PackageReference Include="Findx.WebSocketCore" Version="11.1.2024.1203" />
-        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.5.102" />
+        <PackageReference Include="Findx.Guids.NewId" Version="11.1.2025.108" />
+        <PackageReference Include="Findx.ImageSharp" Version="11.1.2025.108" />
+        <PackageReference Include="Findx.Mapster" Version="11.1.2025.108" />
+        <PackageReference Include="Findx.NLog" Version="11.1.2025.108" />
+        <PackageReference Include="Findx.Swagger" Version="11.1.2025.108" />
+        <PackageReference Include="Findx.WebSocketCore" Version="11.1.2025.108" />
+        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.5.103" />
     </ItemGroup>
 
     <ItemGroup>
