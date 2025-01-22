@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.Discovery.Abstractions;
 
@@ -17,14 +18,16 @@ public interface ILoadBalancer
     /// <summary>
     ///     解析服务实例
     /// </summary>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IServiceEndPoint> ResolveServiceEndPointAsync();
+    Task<IServiceEndPoint> ResolveServiceEndPointAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     更新实例状态
     /// </summary>
     /// <param name="serviceEndPoint"></param>
     /// <param name="responseTime"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime);
+    Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime, CancellationToken cancellationToken = default);
 }

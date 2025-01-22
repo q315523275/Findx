@@ -76,9 +76,10 @@ public class RLock : IAsyncDisposable
     ///     续期操作
     /// </summary>
     /// <param name="lockExtension"></param>
-    public async Task RenewAsync(TimeSpan lockExtension)
+    /// <param name="cancellationToken"></param>
+    public async Task RenewAsync(TimeSpan lockExtension, CancellationToken cancellationToken = default)
     {
-        await _lock.RenewAsync(Resource, LockId, lockExtension);
+        await _lock.RenewAsync(Resource, LockId, lockExtension, cancellationToken);
 
         RenewalCount++;
         
@@ -88,16 +89,16 @@ public class RLock : IAsyncDisposable
     /// <summary>
     ///     释放锁
     /// </summary>
-    public async Task ReleaseAsync()
+    public async Task ReleaseAsync(CancellationToken cancellationToken = default)
     {
         if (_isReleased)
             return;
 
         _isReleased = true;
 
-        await _lock.ReleaseAsync(Resource, LockId);
+        await _lock.ReleaseAsync(Resource, LockId, cancellationToken);
 
-        _timer?.Stop();
+        _timer?.Stop(cancellationToken);
         _timer = null;
     }
 

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
@@ -30,9 +32,9 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("snowflakeId")]
-    public string SnowflakeId()
+    public long SnowflakeId()
     {
-        return SnowflakeIdUtility.Default().NextId().ToString();
+        return SnowflakeIdUtility.Default().NextId();
     }
 
     /// <summary>
@@ -51,24 +53,25 @@ public class CommonController : ApiControllerBase
     /// </summary>
     /// <param name="converter"></param>
     /// <param name="text"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("textToPdf")]
-    public async Task<IActionResult> TextToPdf([FromServices] IPdfConverter converter, [Required] string text)
+    public async Task<IActionResult> TextToPdfAsync([FromServices] IPdfConverter converter, [Required] string text, CancellationToken cancellationToken)
     {
-        var res = await converter.ConvertAsync(text);
+        var res = await converter.ConvertAsync(text, cancellationToken);
         return File(res, "application/pdf");
     }
 
     /// <summary>
-    ///     Log4Net日志示例接口
+    ///     日志组件示例接口
     /// </summary>
     /// <param name="logger"></param>
     /// <returns></returns>
-    [HttpGet("log4Net")]
-    public CommonResult Log4Net([FromServices] ILogger<CommonController> logger)
+    [HttpGet("log")]
+    public CommonResult Log([FromServices] ILogger<CommonController> logger)
     {
-        logger.LogInformation("这是一条Log4Net正常日志信息");
-        logger.LogError("这是一条Log4Net异常日志信息");
+        logger.LogInformation("这是一条日志组件正常日志信息");
+        logger.LogError("这是一条日志组件异常日志信息");
         return CommonResult.Success();
     }
 
@@ -82,31 +85,32 @@ public class CommonController : ApiControllerBase
         // await Task.Delay(50);
         // return "1";
         var exp = new Exception("自定义异常");
-        //logger.LogError(exp, string.Empty);
+        // logger.LogError(exp, string.Empty);
         throw exp;
     }
 
     /// <summary>
-    ///     异常
+    ///     超时
     /// </summary>
     /// <returns></returns>
-    [HttpGet("exception/timeout")]
-    public async Task<string> Exception_Timeout()
+    [HttpGet("timeout")]
+    public async Task<string> TimeoutAsync(CancellationToken cancellationToken)
     {
         Console.WriteLine($"{DateTime.Now} - 耗时接口");
-        await Task.Delay(3000);
-        return "1";
+        await Task.Delay(3000, cancellationToken);
+        return DateTime.Now.ToString(CultureInfo.InvariantCulture);
     }
 
     /// <summary>
     ///     查询调度任务列表
     /// </summary>
     /// <param name="storage"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("jobs")]
-    public async Task<object> QueryJobs([FromServices] IJobStorage storage)
+    public async Task<object> JobsAsync([FromServices] IJobStorage storage, CancellationToken cancellationToken)
     {
-        return await storage.GetJobsAsync();
+        return await storage.GetJobsAsync(cancellationToken);
     }
 
     /// <summary>
@@ -164,11 +168,12 @@ public class CommonController : ApiControllerBase
     ///     命令执行
     /// </summary>
     /// <param name="command"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("cmd")]
-    public async Task<object> Cmd([Required] string command)
+    public async Task<object> CmdAsync([Required] string command, CancellationToken cancellationToken)
     {
-        return await ProcessX.StartAsync(command).ToTask();
+        return await ProcessX.StartAsync(command).ToTask(cancellationToken);
     }
 
     /// <summary>
@@ -192,8 +197,7 @@ public class CommonController : ApiControllerBase
     {
         return ors.ToSnakeCase();
     }
-
-
+    
     /// <summary>
     ///     网络Ping
     /// </summary>

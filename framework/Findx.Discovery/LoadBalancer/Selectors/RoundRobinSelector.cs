@@ -36,7 +36,7 @@ public class RoundRobinSelector : ILoadBalancer
     /// 获取实例
     /// </summary>
     /// <returns></returns>
-    public async Task<IServiceEndPoint> ResolveServiceEndPointAsync()
+    public async Task<IServiceEndPoint> ResolveServiceEndPointAsync(CancellationToken cancellationToken = default)
     {
         var services = await _services.Invoke();
 
@@ -58,8 +58,9 @@ public class RoundRobinSelector : ILoadBalancer
     /// </summary>
     /// <param name="serviceEndPoint"></param>
     /// <param name="responseTime"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime)
+    public Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }

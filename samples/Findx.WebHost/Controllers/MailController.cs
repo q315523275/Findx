@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Email;
@@ -22,13 +23,13 @@ public class MailController : ApiControllerBase
     /// <param name="mailAddress"></param>
     /// <param name="subject"></param>
     /// <param name="body"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Description("发送示例邮件")]
     [HttpGet("send")]
-    public async Task<string> EmailSend([FromServices] IEmailSender sender, [Required] string mailAddress,
-        [Required] string subject, [Required] string body)
+    public async Task<string> EmailSend([FromServices] IEmailSender sender, [Required] string mailAddress, [Required] string subject, [Required] string body, CancellationToken cancellationToken)
     {
-        await sender.SendAsync(mailAddress, subject, body, false);
+        await sender.SendAsync(mailAddress, subject, body, false, cancellationToken);
         return "ok";
     }
 }

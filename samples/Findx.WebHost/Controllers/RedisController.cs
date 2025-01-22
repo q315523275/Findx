@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Locks;
@@ -23,15 +24,16 @@ public class RedisController : ApiControllerBase
     ///     Geo
     /// </summary>
     /// <param name="redisClientProvider"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("geo")]
-    public async Task<string> Geo([FromServices] IRedisClientProvider redisClientProvider)
+    public async Task<string> Geo([FromServices] IRedisClientProvider redisClientProvider, CancellationToken cancellationToken)
     {
         var redisClient = redisClientProvider.CreateClient();
 
-        await redisClient.GeoAddAsync("cin.oms_geo", new List<(double longitude, double latitude, string member)> { (118.763709, 32.106839, "1") });
+        await redisClient.GeoAddAsync("cin.oms_geo", new List<(double longitude, double latitude, string member)> { (118.763709, 32.106839, "1") }, cancellationToken);
 
-        await redisClient.SortedSetRemoveAsync("cin.oms_geo", new List<string> { "1" });
+        await redisClient.ZRemAsync("cin.oms_geo", new List<string> { "1" }, cancellationToken);
 
         return DateTime.Now.ToString(CultureInfo.InvariantCulture);
     }
@@ -40,14 +42,15 @@ public class RedisController : ApiControllerBase
     ///     锁
     /// </summary>
     /// <param name="redisClientProvider"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("lock_verify_value")]
-    public async Task<string> LockVerifyValue([FromServices] IRedisClientProvider redisClientProvider)
+    public async Task<string> LockVerifyValue([FromServices] IRedisClientProvider redisClientProvider, CancellationToken cancellationToken)
     {
         var redisClient = redisClientProvider.CreateClient();
 
-        var lockResult = await redisClient.LockTakeAsync("lock_verify_value", 1, TimeSpan.FromSeconds(30));
-        var unlockResult = await redisClient.LockReleaseAsync("lock_verify_value", 2);
+        var lockResult = await redisClient.LockAsync("lock_verify_value", "1", TimeSpan.FromSeconds(30), cancellationToken);
+        var unlockResult = await redisClient.LockReleaseAsync("lock_verify_value", "2", cancellationToken);
 
         return $"{lockResult}|{unlockResult}";
     }
@@ -57,20 +60,21 @@ public class RedisController : ApiControllerBase
     /// </summary>
     /// <param name="provider"></param>
     /// <param name="lockType"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("renewLock")]
-    public async Task<string> AutoLiveLock([FromServices] ILockFactory provider, [Required] string lockType)
+    public async Task<string> AutoLiveLock([FromServices] ILockFactory provider, [Required] string lockType, CancellationToken cancellationToken)
     {
         var @lock = provider.Create(lockType);
 
-        var fetlock = await @lock.AcquireAsync("test_renew_lock", renew: true);
+        var fetlock = await @lock.AcquireAsync("test_renew_lock", renew: true, cancellationToken: cancellationToken);
 
         if (!fetlock.IsLocked())
             return "未拿到锁";
 
         try
         {
-            await Task.Delay(26 * 1000);
+            await Task.Delay(26 * 1000, cancellationToken);
         }
         finally
         {

@@ -31,14 +31,16 @@ public static class Extensions
 
         var rLock = await @lock.AcquireAsync(key, span);
         if (rLock.IsLocked())
+        {
             try
             {
-                executeAction();
+                await executeAction();
             }
             finally
             {
                 await rLock.ReleaseAsync();
             }
+        }
     }
 
     /// <summary>
@@ -57,8 +59,9 @@ public static class Extensions
             return defaultValue;
 
         var rLock = await @lock.AcquireAsync(key, span);
-        if (!rLock.IsLocked()) 
-            return defaultValue;
+        
+        if (!rLock.IsLocked()) return defaultValue;
+        
         try
         {
             return await executeAction();

@@ -16,8 +16,8 @@ public interface IRedisSerializer
     /// <summary>
     ///     反序列化
     /// </summary>
-    /// <param name="serializedObject"></param>
+    /// <param name="str"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    T Deserialize<T>(string serializedObject);
+    T Deserialize<T>(string str);
 }

@@ -1,7 +1,6 @@
-﻿namespace Findx.RabbitMQ
+﻿namespace Findx.RabbitMQ;
+
+public interface IRabbitMqPublisher
 {
-    public interface IRabbitMqPublisher
-    {
-        void Publish(object obj, string exchangeName, string exchangeType, string routingKey, bool durable = false, bool autoDelete = false);
-    }
+    void Publish(object obj, string exchangeName, string exchangeType, string routingKey, bool durable = false, bool autoDelete = false);
 }

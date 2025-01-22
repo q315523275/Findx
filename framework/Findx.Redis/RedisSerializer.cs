@@ -2,7 +2,7 @@
 
 namespace Findx.Redis
 {
-    public class RedisJsonSerializer : IRedisSerializer
+    public class RedisSerializer : IRedisSerializer
     {
         public T Deserialize<T>(string serializedObject)
         {

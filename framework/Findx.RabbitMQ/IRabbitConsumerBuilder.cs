@@ -1,10 +1,9 @@
-﻿namespace Findx.RabbitMQ
+﻿namespace Findx.RabbitMQ;
+
+public interface IRabbitConsumerBuilder
 {
-    public interface IRabbitConsumerBuilder
-    {
-        /// <summary>
-        ///     构建消费者
-        /// </summary>
-        void Build();
-    }
+    /// <summary>
+    ///     构建消费者
+    /// </summary>
+    void Build();
 }

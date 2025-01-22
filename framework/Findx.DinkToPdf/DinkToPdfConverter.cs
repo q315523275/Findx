@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Findx.DinkToPdf.Contracts;
 using Findx.DinkToPdf.Documents;
 using Findx.DinkToPdf.Settings;
@@ -11,12 +12,22 @@ public class DinkToPdfConverter : IPdfConverter
 {
     private readonly IConverter _converter;
 
+    /// <summary>
+    ///     Ctor
+    /// </summary>
+    /// <param name="converter"></param>
     public DinkToPdfConverter(IConverter converter)
     {
         _converter = converter;
     }
 
-    public Task<byte[]> ConvertAsync(string htmlString)
+    /// <summary>
+    ///     转换
+    /// </summary>
+    /// <param name="htmlString"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<byte[]> ConvertAsync(string htmlString, CancellationToken cancellationToken = default)
     {
         var doc = new HtmlToPdfDocument
         {

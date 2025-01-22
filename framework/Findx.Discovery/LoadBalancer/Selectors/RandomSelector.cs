@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.Discovery.Abstractions;
 using Findx.Utilities;
@@ -37,7 +38,7 @@ public class RandomSelector : ILoadBalancer
     /// 获取服务
     /// </summary>
     /// <returns></returns>
-    public async Task<IServiceEndPoint> ResolveServiceEndPointAsync()
+    public async Task<IServiceEndPoint> ResolveServiceEndPointAsync(CancellationToken cancellationToken = default)
     {
         var services = await _services.Invoke();
 
@@ -57,8 +58,9 @@ public class RandomSelector : ILoadBalancer
     /// </summary>
     /// <param name="serviceEndPoint"></param>
     /// <param name="responseTime"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime)
+    public Task UpdateStatsAsync(IServiceEndPoint serviceEndPoint, TimeSpan responseTime, CancellationToken cancellationToken = default)
     {
         return Task.CompletedTask;
     }

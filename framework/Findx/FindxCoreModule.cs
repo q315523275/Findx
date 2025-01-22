@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using Findx.Caching;
-using Findx.Caching.InMemory;
 using Findx.Data;
 using Findx.Email;
 using Findx.Events;

@@ -68,8 +68,7 @@ public class PermissionController : ApiControllerBase
     [HttpGet("actions2")]
     public CommonResult ActionList2([FromServices] IApiDescriptionGroupCollectionProvider apiDescriptionsProvider)
     {
-        var actions = apiDescriptionsProvider.ApiDescriptionGroups.Items
-            .SelectMany(group => group.Items);
+        var actions = apiDescriptionsProvider.ApiDescriptionGroups.Items.SelectMany(group => group.Items);
         return CommonResult.Success(actions);
     }
 

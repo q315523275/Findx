@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Messaging;
@@ -20,12 +21,13 @@ public class MessageController : ApiControllerBase
     ///     消息发送(CQRS)示例接口
     /// </summary>
     /// <param name="dispatcher"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("request")]
-    public async Task<string> MessageSend([FromServices] IMessageDispatcher dispatcher)
+    public async Task<string> MessageSend([FromServices] IMessageDispatcher dispatcher, CancellationToken cancellationToken)
     {
         var orderId = SnowflakeIdUtility.Default().NextId();
-        var res = await dispatcher.SendAsync(new CancelOrderCommand(orderId.ToString()));
+        var res = await dispatcher.SendAsync(new CancelOrderCommand(orderId.ToString()), cancellationToken);
         return $"orderId:{orderId},result:{res}";
     }
 
@@ -33,11 +35,12 @@ public class MessageController : ApiControllerBase
     ///     消息通知示例接口
     /// </summary>
     /// <param name="context"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("notify")]
-    public async Task<string> MessageNotify([FromServices] IMessageDispatcher context)
+    public async Task<string> MessageNotify([FromServices] IMessageDispatcher context, CancellationToken cancellationToken)
     {
-        await context.PublishAsync(new PayedOrderCommand(SnowflakeIdUtility.Default().NextId()));
+        await context.PublishAsync(new PayedOrderCommand(SnowflakeIdUtility.Default().NextId()), cancellationToken);
         return "ok";
     }
 }

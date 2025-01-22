@@ -3,66 +3,65 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
-namespace Findx.RabbitMQ
+namespace Findx.RabbitMQ;
+
+public class ConnectionPool : IConnectionPool
 {
-    public class ConnectionPool : IConnectionPool
+    private bool _isDisposed;
+
+    public ConnectionPool(IOptions<FindxRabbitMqOptions> options)
     {
-        private bool _isDisposed;
+        Options = options.Value;
+        Connections = new ConcurrentDictionary<string, Lazy<IConnection>>();
+    }
 
-        public ConnectionPool(IOptions<FindxRabbitMqOptions> options)
+    protected FindxRabbitMqOptions Options { get; }
+
+    protected ConcurrentDictionary<string, Lazy<IConnection>> Connections { get; }
+
+    public virtual IConnection Get(string connectionName = null)
+    {
+        connectionName ??= RabbitMqConnections.DefaultConnectionName;
+
+        try
         {
-            Options = options.Value;
-            Connections = new ConcurrentDictionary<string, Lazy<IConnection>>();
+            var lazyConnection = Connections.GetOrAdd(
+                connectionName, key => new Lazy<IConnection>(() =>
+                {
+                    var connection = Options.Connections.GetOrDefault(key);
+                    var hostnames = connection.HostName.TrimEnd(';').Split(';');
+                    // Handle Rabbit MQ Cluster.
+                    return hostnames.Length == 1
+                        ? connection.CreateConnection()
+                        : connection.CreateConnection(hostnames);
+                })
+            );
+
+            return lazyConnection.Value;
         }
-
-        protected FindxRabbitMqOptions Options { get; }
-
-        protected ConcurrentDictionary<string, Lazy<IConnection>> Connections { get; }
-
-        public virtual IConnection Get(string connectionName = null)
+        catch (Exception)
         {
-            connectionName ??= RabbitMqConnections.DefaultConnectionName;
+            Connections.TryRemove(connectionName, out _);
+            throw;
+        }
+    }
 
+    public void Dispose()
+    {
+        if (_isDisposed) return;
+
+        _isDisposed = true;
+
+        foreach (var connection in Connections.Values)
             try
             {
-                var lazyConnection = Connections.GetOrAdd(
-                    connectionName, key => new Lazy<IConnection>(() =>
-                    {
-                        var connection = Options.Connections.GetOrDefault(key);
-                        var hostnames = connection.HostName.TrimEnd(';').Split(';');
-                        // Handle Rabbit MQ Cluster.
-                        return hostnames.Length == 1
-                            ? connection.CreateConnection()
-                            : connection.CreateConnection(hostnames);
-                    })
-                );
-
-                return lazyConnection.Value;
+                connection.Value.Dispose();
             }
-            catch (Exception)
+            catch
             {
-                Connections.TryRemove(connectionName, out _);
-                throw;
+                // ignored
             }
-        }
 
-        public void Dispose()
-        {
-            if (_isDisposed) return;
-
-            _isDisposed = true;
-
-            foreach (var connection in Connections.Values)
-                try
-                {
-                    connection.Value.Dispose();
-                }
-                catch
-                {
-                    // ignored
-                }
-
-            Connections.Clear();
-        }
+        Connections.Clear();
     }
 }

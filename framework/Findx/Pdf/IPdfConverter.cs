@@ -11,6 +11,7 @@ public interface IPdfConverter
     ///     Html字符串转换为Pdf二进制数据
     /// </summary>
     /// <param name="htmlString"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<byte[]> ConvertAsync(string htmlString);
+    Task<byte[]> ConvertAsync(string htmlString, CancellationToken cancellationToken = default);
 }

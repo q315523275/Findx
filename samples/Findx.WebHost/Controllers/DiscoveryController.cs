@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
@@ -24,27 +25,29 @@ public class DiscoveryController : ApiControllerBase
     /// </summary>
     /// <param name="client"></param>
     /// <param name="serviceName"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("list")]
-    public async Task<CommonResult> Discovery([FromServices] IDiscoveryClient client, [Required] string serviceName)
+    public async Task<CommonResult> DiscoveryAsync([FromServices] IDiscoveryClient client, [Required] string serviceName, CancellationToken cancellationToken)
     {
-        var all = await client.GetAllEndPointsAsync();
-        var list = await client.GetServiceEndPointsAsync(serviceName);
+        var all = await client.GetAllEndPointsAsync(cancellationToken: cancellationToken);
+        var list = await client.GetServiceEndPointsAsync(serviceName, cancellationToken: cancellationToken);
         return CommonResult.Success(new { AllInstances = all, Instances = list, client.ProviderName });
     }
 
     /// <summary>
     ///     服务发现+负载查询示例接口
     /// </summary>
-    /// <param name="client"></param>
     /// <param name="loadBalancer"></param>
     /// <param name="serviceName"></param>
+    /// <param name="loadBalancerType"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("balancer")]
-    public async Task<CommonResult> LoadBalancer([FromServices] IDiscoveryClient client, [FromServices] ILoadBalancerProvider loadBalancer, [Required] string serviceName, string loadBalancerType = "Random")
+    public async Task<CommonResult> LoadBalancerAsync([FromServices] ILoadBalancerProvider loadBalancer, [Required] string serviceName, string loadBalancerType = "Random", CancellationToken cancellationToken = default)
     {
         var balancer = await loadBalancer.GetAsync(serviceName, loadBalancerType.To<LoadBalancerType>());
-        var instance = await balancer.ResolveServiceEndPointAsync();
+        var instance = await balancer.ResolveServiceEndPointAsync(cancellationToken);
 
         return CommonResult.Success(new { Instance = instance, LoadBalancer = balancer.Name.ToString() });
     }

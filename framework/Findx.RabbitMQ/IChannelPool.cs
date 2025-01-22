@@ -1,7 +1,6 @@
-﻿namespace Findx.RabbitMQ
+﻿namespace Findx.RabbitMQ;
+
+public interface IChannelPool
 {
-    public interface IChannelPool
-    {
-        IChannelAccessor Acquire(string channelName = null, string connectionName = null);
-    }
+    IChannelAccessor Acquire(string channelName = null, string connectionName = null);
 }

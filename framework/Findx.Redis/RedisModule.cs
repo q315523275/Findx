@@ -55,13 +55,13 @@ namespace Findx.Redis
             });
 
             // 存储序列化
-            services.AddSingleton<IRedisSerializer, RedisJsonSerializer>();
+            services.AddSingleton<IRedisSerializer, RedisSerializer>();
 
             // 分布式锁
-            services.AddSingleton<ILock, RedisDistributedLock>();
+            services.AddSingleton<ILock, RedisLock>();
 
             // 缓存实现
-            services.AddSingleton<ICache, RedisCacheProvider>();
+            services.AddSingleton<ICache, RedisCache>();
 
             return services;
         }

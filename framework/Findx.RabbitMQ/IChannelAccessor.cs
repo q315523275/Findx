@@ -1,12 +1,11 @@
 ﻿using System;
 using RabbitMQ.Client;
 
-namespace Findx.RabbitMQ
-{
-    public interface IChannelAccessor : IDisposable
-    {
-        IModel Channel { get; }
+namespace Findx.RabbitMQ;
 
-        string Name { get; }
-    }
+public interface IChannelAccessor : IDisposable
+{
+    IModel Channel { get; }
+
+    string Name { get; }
 }

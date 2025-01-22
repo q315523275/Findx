@@ -31,13 +31,14 @@ public class LocalCacheLock : LockBase, IServiceNameAware
     /// </summary>
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
-    public override async Task ReleaseAsync(string resource, string lockId)
+    /// <param name="cancellationToken"></param>
+    public override async Task ReleaseAsync(string resource, string lockId, CancellationToken cancellationToken = default)
     {
-        var v = await _cache.GetAsync<string>(GenerateNewLockKey(resource));
-        if (v.IsNullOrWhiteSpace() || v != lockId)
-            return;
+        var v = await _cache.GetAsync<string>(GenerateNewLockKey(resource), cancellationToken);
+        
+        if (v.IsNullOrWhiteSpace() || v != lockId) return;
 
-        await _cache.RemoveAsync(GenerateNewLockKey(resource));
+        await _cache.RemoveAsync(GenerateNewLockKey(resource), cancellationToken);
     }
 
     /// <summary>
@@ -46,11 +47,15 @@ public class LocalCacheLock : LockBase, IServiceNameAware
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
-    public override async Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires)
+    /// <param name="cancellationToken"></param>
+    public override async Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires, CancellationToken cancellationToken = default)
     {
-        var v = await _cache.GetAsync<string>(GenerateNewLockKey(resource));
-        if (!v.IsNullOrWhiteSpace() && v == lockId)
-            await _cache.AddAsync(GenerateNewLockKey(resource), lockId, timeUntilExpires);
+        var v = await _cache.GetAsync<string>(GenerateNewLockKey(resource), cancellationToken);
+        
+        if (v.IsNotNullOrWhiteSpace() && v == lockId)
+        {
+            await _cache.AddAsync(GenerateNewLockKey(resource), lockId, timeUntilExpires, cancellationToken);
+        }
     }
 
     /// <summary>
@@ -59,9 +64,10 @@ public class LocalCacheLock : LockBase, IServiceNameAware
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected override async Task<bool> TryLockAsync(string resource, string lockId, TimeSpan timeUntilExpires)
+    protected override async Task<bool> TryLockAsync(string resource, string lockId, TimeSpan timeUntilExpires, CancellationToken cancellationToken = default)
     {
-        return await _cache.TryAddAsync(GenerateNewLockKey(resource), lockId, timeUntilExpires);
+        return await _cache.TryAddAsync(GenerateNewLockKey(resource), lockId, timeUntilExpires, cancellationToken);
     }
 }

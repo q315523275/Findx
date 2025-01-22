@@ -16,6 +16,11 @@ namespace Findx.WebHost.Controllers;
 public class MapperController: ApiControllerBase
 {
 
+    /// <summary>
+    ///     测试
+    /// </summary>
+    /// <param name="req"></param>
+    /// <returns></returns>
     [HttpPost("test")]
     public CommonResult Test([FromBody] UserDto req)
     {

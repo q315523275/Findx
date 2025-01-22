@@ -1,11 +1,12 @@
 ﻿using Findx.Reflection;
 
-namespace Findx.RabbitMQ
+namespace Findx.RabbitMQ;
+
+public class RabbitConsumerFinder : AttributeTypeFinderBase<RabbitListenerAttribute>, IRabbitConsumerFinder
 {
-    public class RabbitConsumerFinder : AttributeTypeFinderBase<RabbitListenerAttribute>, IRabbitConsumerFinder
-    {
-        public RabbitConsumerFinder(IAppDomainAssemblyFinder appDomainAssemblyFinder) : base(appDomainAssemblyFinder)
-        {
-        }
-    }
+    /// <summary>
+    ///     Ctor
+    /// </summary>
+    /// <param name="appDomainAssemblyFinder"></param>
+    public RabbitConsumerFinder(IAppDomainAssemblyFinder appDomainAssemblyFinder) : base(appDomainAssemblyFinder) { }
 }

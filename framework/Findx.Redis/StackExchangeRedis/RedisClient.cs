@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using StackExchange.Redis;
+using When = Findx.Common.When;
 
 namespace Findx.Redis.StackExchangeRedis;
 
@@ -23,46 +25,9 @@ public class RedisClient : IRedisClient
     }
 
     public string Name { get; }
-
-    #region Public
-
-    /// <summary>
-    ///     清除key
-    /// </summary>
-    public void FlushDb()
-    {
-        var endPoints = _cache.Multiplexer.GetEndPoints();
-
-        foreach (var endPoint in endPoints) _cache.Multiplexer.GetServer(endPoint).FlushDatabase(_cache.Database);
-    }
-
-    /// <summary>
-    ///     清除key
-    /// </summary>
-    public async Task FlushDbAsync()
-    {
-        var endPoints = _cache.Multiplexer.GetEndPoints();
-
-        foreach (var endpoint in endPoints)
-            await _cache.Multiplexer.GetServer(endpoint).FlushDatabaseAsync(_cache.Database);
-    }
-
-    /// <summary>
-    ///     清除当前db的所有数据
-    /// </summary>
-    public void Clear()
-    {
-        DeleteKeyWithKeyPrefix("*");
-    }
-
-    /// <summary>
-    ///     清除当前db的所有数据
-    /// </summary>
-    public Task ClearAsync()
-    {
-        return DeleteKeyWithKeyPrefixAsync("*");
-    }
-
+    
+    #region Keys
+    
     /// <summary>
     ///     执行redis命令
     /// </summary>
@@ -118,34 +83,27 @@ public class RedisClient : IRedisClient
         return res;
     }
 
-    #endregion Public
-
-    #region Keys
-
-    /// <summary>
-    ///     查找当前命名前缀下共有多少个Key
-    /// </summary>
-    /// <returns></returns>
-    public int KeyCount()
-    {
-        return CalcuteKeyCount("*");
-    }
-
     /// <summary>
     ///     查找键名
     /// </summary>
     /// <param name="pattern">匹配项</param>
+    /// <param name="count"></param>
     /// <returns>匹配上的所有键名</returns>
-    public IEnumerable<string> SearchKeys(string pattern)
+    public IEnumerable<string> SearchKeys(string pattern, int? count)
     {
         var endpoints = _connection?.GetEndPoints();
 
-        if (endpoints == null || !endpoints.Any())
-            return null;
-
-        return _connection.GetServer(endpoints.First()).Keys(pattern: pattern).Select(r => (string)r);
+        if (_connection == null || endpoints == null || endpoints.Length == 0) 
+            yield break;
+        
+        var server = _connection.GetServer(endpoints[0]);
+        var keys = server.Keys(pattern: pattern, pageSize: count ?? 250);
+        foreach (var key in keys)
+        {
+            yield return key;
+        }
     }
-
+    
     /// <summary>
     ///     查看缓存时间
     /// </summary>
@@ -161,8 +119,9 @@ public class RedisClient : IRedisClient
     ///     查看缓存时间
     /// </summary>
     /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<long> TtlAsync(string key)
+    public async Task<long> TtlAsync(string key, CancellationToken cancellationToken = default)
     {
         var ts = await _cache.KeyTimeToLiveAsync(key);
         return ts.HasValue ? (long)ts.Value.TotalSeconds : -1;
@@ -182,8 +141,9 @@ public class RedisClient : IRedisClient
     ///     判断是否存在当前的Key
     /// </summary>
     /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<bool> ExistsAsync(string key)
+    public async Task<bool> ExistsAsync(string key, CancellationToken cancellationToken = default)
     {
         return await _cache.KeyExistsAsync(key);
     }
@@ -204,30 +164,9 @@ public class RedisClient : IRedisClient
     /// </summary>
     /// <param name="key"></param>
     /// <param name="expiry"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<bool> ExpireAsync(string key, TimeSpan expiry)
-    {
-        return await _cache.KeyExpireAsync(key, expiry);
-    }
-
-    /// <summary>
-    ///     设置key的失效时间
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="expiry"></param>
-    /// <returns></returns>
-    public bool Expire(string key, DateTime expiry)
-    {
-        return _cache.KeyExpire(key, expiry);
-    }
-
-    /// <summary>
-    ///     设置key的失效时间
-    /// </summary>
-    /// <param name="key"></param>
-    /// <param name="expiry"></param>
-    /// <returns></returns>
-    public async Task<bool> ExpireAsync(string key, DateTime expiry)
+    public async Task<bool> ExpireAsync(string key, TimeSpan expiry, CancellationToken cancellationToken = default)
     {
         return await _cache.KeyExpireAsync(key, expiry);
     }
@@ -246,8 +185,9 @@ public class RedisClient : IRedisClient
     ///     移除当前key
     /// </summary>
     /// <param name="key"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<bool> RemoveAsync(string key)
+    public async Task<bool> RemoveAsync(string key, CancellationToken cancellationToken = default)
     {
         return await _cache.KeyDeleteAsync(key);
     }
@@ -256,222 +196,85 @@ public class RedisClient : IRedisClient
     ///     移除全部key
     /// </summary>
     /// <param name="keys"></param>
-    public void RemoveAll(IEnumerable<string> keys)
+    public long RemoveAll(IEnumerable<string> keys)
     {
-        foreach (var key in keys) Remove(key);
+        return _cache.KeyDelete(keys.Select(x => new RedisKey(x)).ToArray());
     }
 
     /// <summary>
     ///     移除全部key
     /// </summary>
     /// <param name="keys"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task RemoveAllAsync(IEnumerable<string> keys)
+    public async Task<long> RemoveAllAsync(IEnumerable<string> keys, CancellationToken cancellationToken = default)
     {
-        foreach (var key in keys) await RemoveAsync(key);
+        return await _cache.KeyDeleteAsync(keys.Select(x => new RedisKey(x)).ToArray());
     }
-
-    /// <summary>
-    ///     计算当前prefix开头的key总数
-    /// </summary>
-    /// <param name="prefix">key前缀</param>
-    /// <returns></returns>
-    public int CalcuteKeyCount(string prefix)
-    {
-        var retVal = _cache.ScriptEvaluate("return table.getn(redis.call('keys', ARGV[1]))",
-            values: new RedisValue[] { prefix });
-        if (retVal.IsNull) return 0;
-        return (int)retVal;
-    }
-
-    /// <summary>
-    ///     删除以当前prefix开头的所有key缓存
-    /// </summary>
-    /// <param name="prefix">key前缀</param>
-    public void DeleteKeyWithKeyPrefix(string prefix)
-    {
-        _cache.ScriptEvaluate(@"
-                local keys = redis.call('keys', ARGV[1])
-                for i=1,#keys,5000 do
-                redis.call('del', unpack(keys, i, math.min(i+4999, #keys)))
-                end", values: new RedisValue[] { prefix });
-    }
-
-    /// <summary>
-    ///     删除以当前prefix开头的所有key缓存
-    /// </summary>
-    /// <param name="prefix">key前缀</param>
-    public async Task DeleteKeyWithKeyPrefixAsync(string prefix)
-    {
-        await _cache.ScriptEvaluateAsync(@"
-                local keys = redis.call('keys', ARGV[1])
-                for i=1,#keys,5000 do
-                redis.call('del', unpack(keys, i, math.min(i+4999, #keys)))
-                end", values: new RedisValue[] { prefix });
-    }
-
+    
     #endregion Keys
 
     #region StringSet(字符操作)
 
+    private StackExchange.Redis.When ConvertToWhen(When when)
+    {
+        switch (when)
+        {
+            default:
+            case When.Always:
+                return StackExchange.Redis.When.Always;
+            case When.Exists:
+                return StackExchange.Redis.When.Exists;
+            case When.NotExists:
+                return StackExchange.Redis.When.NotExists;
+        }
+    }
+    
     /// <summary>
     ///     设置string键值
     /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
     /// <param name="value">值</param>
-    /// <param name="whenNotExists">key不存在时设置</param>
+    /// <param name="expiration"></param>
+    /// <param name="when">key不存在时设置</param>
     /// <returns>成功返回true</returns>
-    public bool StringSet<T>(string key, T value, bool whenNotExists = false)
+    public bool StringSet(string key, string value, TimeSpan? expiration = null, When when = When.Always)
     {
-        var objBytes = _serializer.Serialize(value);
-        if (whenNotExists)
-            _cache.StringSet(key, objBytes, when: When.NotExists);
-        return _cache.StringSet(key, objBytes);
+        return _cache.StringSet(key, value, expiration, ConvertToWhen(when));
     }
 
     /// <summary>
     ///     设置string键值
     /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
     /// <param name="value">值</param>
-    /// <param name="whenNotExists">key不存在时设置</param>
+    /// <param name="expiration"></param>
+    /// <param name="when">key不存在时设置</param>
     /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    public async Task<bool> StringSetAsync<T>(string key, T value, bool whenNotExists = false, CancellationToken cancellationToken = default)
+    public async Task<bool> StringSetAsync(string key, string value, TimeSpan? expiration = null, When when = When.Always, CancellationToken cancellationToken = default)
     {
-        var objBytes = _serializer.Serialize(value);
-        if (whenNotExists)
-            await _cache.StringSetAsync(key, objBytes, when: When.NotExists);
-        return await _cache.StringSetAsync(key, objBytes);
+        return await _cache.StringSetAsync(key, value, expiration, ConvertToWhen(when));
     }
-
-    /// <summary>
-    ///     设置string键值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="value">值</param>
-    /// <param name="expiresIn">过期间隔</param>
-    /// <param name="whenNotExists">key不存在时设置</param>
-    /// <returns>成功返回true</returns>
-    public bool StringSet<T>(string key, T value, TimeSpan expiresIn, bool whenNotExists = false)
-    {
-        var objBytes = _serializer.Serialize(value);
-        if (whenNotExists)
-            _cache.StringSet(key, objBytes, expiresIn, when: When.NotExists);
-        return _cache.StringSet(key, objBytes, expiresIn);
-    }
-
-    /// <summary>
-    ///     设置string键值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="value">值</param>
-    /// <param name="expiresIn">过期间隔</param>
-    /// <param name="whenNotExists">key不存在时设置</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>成功返回true</returns>
-    public async Task<bool> StringSetAsync<T>(string key, T value, TimeSpan expiresIn, bool whenNotExists = false, CancellationToken cancellationToken = default)
-    {
-        var objBytes = _serializer.Serialize(value);
-        if (whenNotExists)
-            await _cache.StringSetAsync(key, objBytes, expiresIn, when: When.NotExists);
-        return await _cache.StringSetAsync(key, objBytes, expiresIn);
-    }
-
-    /// <summary>
-    ///     设置string键值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="value">值</param>
-    /// <param name="expiresAt">过期时间</param>
-    /// <param name="whenNotExists">key不存在时设置</param>
-    /// <returns>成功返回true</returns>
-    public bool StringSet<T>(string key, T value, DateTimeOffset expiresAt, bool whenNotExists = false)
-    {
-        var objBytes = _serializer.Serialize(value);
-        var expiration = expiresAt.Subtract(DateTimeOffset.Now);
-        if (whenNotExists)
-            _cache.StringSet(key, objBytes, expiration, when: When.NotExists);
-        return _cache.StringSet(key, objBytes, expiration);
-    }
-
-    /// <summary>
-    ///     设置string键值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="value">值</param>
-    /// <param name="expiresAt">过期时间</param>
-    /// <param name="whenNotExists">key不存在时设置</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>成功返回true</returns>
-    public async Task<bool> StringSetAsync<T>(string key, T value, DateTimeOffset expiresAt, bool whenNotExists = false, CancellationToken cancellationToken = default)
-    {
-        var objBytes = _serializer.Serialize(value);
-        var expiration = expiresAt.Subtract(DateTimeOffset.Now);
-        if (whenNotExists)
-            await _cache.StringSetAsync(key, objBytes, expiration, when: When.NotExists);
-        return await _cache.StringSetAsync(key, objBytes, expiration);
-    }
-
-    /// <summary>
-    ///     批量设置string键值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="items">键值列表</param>
-    /// <returns>成功返回true</returns>
-    public bool StringSetAll<T>(IList<Tuple<string, T>> items)
-    {
-        var values = items
-            .Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
-
-        return _cache.StringSet(values);
-    }
-
-    /// <summary>
-    ///     批量设置string键值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="items">键值列表</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>成功返回true</returns>
-    public async Task<bool> StringSetAllAsync<T>(IList<Tuple<string, T>> items, CancellationToken cancellationToken = default)
-    {
-        var values = items
-            .Select(m => new KeyValuePair<RedisKey, RedisValue>(m.Item1, _serializer.Serialize(m.Item2))).ToArray();
-
-        return await _cache.StringSetAsync(values);
-    }
-
+    
     /// <summary>
     ///     string获取值
     /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
     /// <returns></returns>
-    public T StringGet<T>(string key)
+    public string StringGet(string key)
     {
-        var valuesBytes = _cache.StringGet(key);
-        if (!valuesBytes.HasValue) return default;
-        return _serializer.Deserialize<T>(valuesBytes);
+        return _cache.StringGet(key);
     }
 
     /// <summary>
     ///     string获取值
     /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">key</param>
     /// <param name="cancellationToken"></param>
-    public async Task<T> StringGetAsync<T>(string key, CancellationToken cancellationToken = default)
+    public async Task<string> StringGetAsync(string key, CancellationToken cancellationToken = default)
     {
-        var valuesBytes = await _cache.StringGetAsync(key);
-        if (!valuesBytes.HasValue) return default;
-        return _serializer.Deserialize<T>(valuesBytes);
+        return await _cache.StringGetAsync(key);
     }
 
     /// <summary>
@@ -480,7 +283,7 @@ public class RedisClient : IRedisClient
     /// <param name="key">键名</param>
     /// <param name="value">增长数量</param>
     /// <returns>累加后的值</returns>
-    public long StringIncrement(string key, long value = 1)
+    public long IncrBy(string key, long value = 1)
     {
         return _cache.StringIncrement(key, value);
     }
@@ -492,7 +295,7 @@ public class RedisClient : IRedisClient
     /// <param name="value">增长数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns>累加后的值</returns>
-    public async Task<long> StringIncrementAsync(string key, long value = 1, CancellationToken cancellationToken = default)
+    public async Task<long> IncrByAsync(string key, long value = 1, CancellationToken cancellationToken = default)
     {
         return await _cache.StringIncrementAsync(key, value);
     }
@@ -503,7 +306,7 @@ public class RedisClient : IRedisClient
     /// <param name="key">键名</param>
     /// <param name="value">增长数量</param>
     /// <returns>累加后的值</returns>
-    public double StringIncrementDouble(string key, double value)
+    public double IncrByFloat(string key, double value)
     {
         return _cache.StringIncrement(key, value);
     }
@@ -515,7 +318,7 @@ public class RedisClient : IRedisClient
     /// <param name="value">增长数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns>累加后的值</returns>
-    public async Task<double> StringIncrementDoubleAsync(string key, double value, CancellationToken cancellationToken = default)
+    public async Task<double> IncrByFloatAsync(string key, double value, CancellationToken cancellationToken = default)
     {
         return await _cache.StringIncrementAsync(key, value);
     }
@@ -526,7 +329,7 @@ public class RedisClient : IRedisClient
     /// <param name="key">键名</param>
     /// <param name="value">减少数量</param>
     /// <returns>递减后的值</returns>
-    public long StringDecrement(string key, long value = 1)
+    public long DecrBy(string key, long value = 1)
     {
         return _cache.StringDecrement(key, value);
     }
@@ -538,7 +341,7 @@ public class RedisClient : IRedisClient
     /// <param name="value">减少数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns>递减后的值</returns>
-    public async Task<long> StringDecrementAsync(string key, long value = 1, CancellationToken cancellationToken = default)
+    public async Task<long> DecrByAsync(string key, long value = 1, CancellationToken cancellationToken = default)
     {
         return await _cache.StringDecrementAsync(key, value);
     }
@@ -549,7 +352,7 @@ public class RedisClient : IRedisClient
     /// <param name="key">键名</param>
     /// <param name="value">减少数量</param>
     /// <returns>递减后的值</returns>
-    public double StringDecrementDouble(string key, double value)
+    public double DecrByFloat(string key, double value)
     {
         return _cache.StringDecrement(key, value);
     }
@@ -561,7 +364,7 @@ public class RedisClient : IRedisClient
     /// <param name="value">减少数量</param>
     /// <param name="cancellationToken"></param>
     /// <returns>递减后的值</returns>
-    public async Task<double> StringDecrementDoubleAsync(string key, double value, CancellationToken cancellationToken = default)
+    public async Task<double> DecrByFloatAsync(string key, double value, CancellationToken cancellationToken = default)
     {
         return await _cache.StringDecrementAsync(key, value);
     }
@@ -571,11 +374,186 @@ public class RedisClient : IRedisClient
     #region Hash(哈希操作)
 
     /// <summary>
+    ///     设置一个hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="hashField">hash的键值</param>
+    /// <param name="value">值</param>
+    /// <param name="when"></param>
+    /// <returns></returns>
+    public bool HSet(string key, string hashField, string value, When when = When.Always)
+    {
+        return _cache.HashSet(key, hashField, value, ConvertToWhen(when));
+    }
+
+    /// <summary>
+    ///     设置一个hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="hashField">hash的键值</param>
+    /// <param name="value">值</param>
+    /// <param name="when"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> HSetAsync(string key, string hashField, string value, When when = When.Always, CancellationToken cancellationToken = default)
+    {
+        return await _cache.HashSetAsync(key, hashField, value, ConvertToWhen(when));
+    }
+    
+    /// <summary>
+    ///     批量设置hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="values">键值对</param>
+    /// <param name="expiration"></param>
+    // ReSharper disable once InconsistentNaming
+    public bool HMSet(string key, Dictionary<string, string> values, TimeSpan? expiration = null)
+    {
+        var entries = values.Select(kv => new HashEntry(kv.Key, kv.Value));
+        _cache.HashSet(key, entries.ToArray());
+        return !expiration.HasValue || _cache.KeyExpire(key, expiration);
+    }
+
+    /// <summary>
+    ///     批量设置hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="values">键值对</param>
+    /// <param name="expiration"></param>
+    /// <param name="cancellationToken"></param>
+    public async Task<bool> HMSetAsync(string key, Dictionary<string, string> values, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
+    {
+        var entries = values.Select(kv => new HashEntry(kv.Key, kv.Value));
+        await _cache.HashSetAsync(key, entries.ToArray());
+        return !expiration.HasValue || await _cache.KeyExpireAsync(key, expiration);
+    }
+    
+    /// <summary>
+    ///     获取一个hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="hashField">hash键</param>
+    /// <returns></returns>
+    public string HGet(string key, string hashField)
+    {
+        return _cache.HashGet(key, hashField);
+    }
+
+    /// <summary>
+    ///     获取一个hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="hashField">hash键</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<string> HGetAsync(string key, string hashField, CancellationToken cancellationToken = default)
+    {
+        return await _cache.HashGetAsync(key, hashField);
+    }
+    
+    /// <summary>
+    ///     获取hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="hashFields">hash键组合</param>
+    /// <returns></returns>
+    // ReSharper disable once InconsistentNaming
+    public Dictionary<string, string> HMGet(string key, IList<string> hashFields)
+    {
+        var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var redisValues = _cache.HashGet(key, hashFields.Select(x => (RedisValue)x).ToArray());
+        for (var i = 0; i < hashFields.Count; i++)
+        {
+            if (!dict.ContainsKey(hashFields[i]))
+            {
+                dict.Add(hashFields[i], redisValues[i]);
+            }
+        }
+        return dict;
+    }
+
+    /// <summary>
+    ///     获取hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="hashFields">hash键组合</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    // ReSharper disable once InconsistentNaming
+    public async Task<Dictionary<string, string>> HMGetAsync(string key, IList<string> hashFields, CancellationToken cancellationToken = default)
+    {
+        var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var redisValues = await _cache.HashGetAsync(key, hashFields.Select(x => (RedisValue)x).ToArray());
+        for (var i = 0; i < hashFields.Count; i++)
+        {
+            if (!dict.ContainsKey(hashFields[i]))
+            {
+                dict.Add(hashFields[i], redisValues[i]);
+            }
+        }
+        return dict;
+    }
+    
+    /// <summary>
+    ///     获取全部hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <returns></returns>
+    public Dictionary<string, string> HGetAll(string key)
+    {
+        var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var redisValues = _cache.HashGetAll(key);
+        foreach (var redisValue in redisValues)
+        {
+            dict.Add(redisValue.Name, redisValue.Value);
+        }
+        return dict;
+    }
+
+    /// <summary>
+    ///     获取全部hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<Dictionary<string, string>> HGetAllAsync(string key, CancellationToken cancellationToken = default)
+    {
+        var dict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var redisValues = await _cache.HashGetAllAsync(key);
+        foreach (var redisValue in redisValues)
+        {
+            dict.Add(redisValue.Name, redisValue.Value);
+        }
+        return dict;
+    }
+    
+    /// <summary>
+    ///     获取全部hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <returns></returns>
+    public IEnumerable<string> HVals(string key)
+    {
+        return _cache.HashValues(key).Select(x => x.ToString());
+    }
+
+    /// <summary>
+    ///     获取全部hash值
+    /// </summary>
+    /// <param name="key">key</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<string>> HValsAsync(string key, CancellationToken cancellationToken = default)
+    {
+        return (await _cache.HashValuesAsync(key)).Select(m => m.ToString());
+    }
+    
+    /// <summary>
     ///     获取所有的Hash键
     /// </summary>
     /// <param name="key">key</param>
     /// <returns></returns>
-    public IEnumerable<string> HashKeys(string key)
+    public IEnumerable<string> HKeys(string key)
     {
         return _cache.HashKeys(key).Select(x => x.ToString());
     }
@@ -585,179 +563,9 @@ public class RedisClient : IRedisClient
     /// </summary>
     /// <param name="key">key</param>
     /// <returns></returns>
-    public long HashLength(string key)
+    public long HLen(string key)
     {
         return _cache.HashLength(key);
-    }
-
-    /// <summary>
-    ///     设置一个hash值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="hashField">hash的键值</param>
-    /// <param name="value">值</param>
-    /// <returns></returns>
-    public bool HashSet<T>(string key, string hashField, T value)
-    {
-        return _cache.HashSet(key, hashField, _serializer.Serialize(value));
-    }
-
-    /// <summary>
-    ///     设置一个hash值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="hashField">hash的键值</param>
-    /// <param name="value">值</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<bool> HashSetAsync<T>(string key, string hashField, T value, CancellationToken cancellationToken = default)
-    {
-        var objBytes = _serializer.Serialize(value);
-        return await _cache.HashSetAsync(key, hashField, objBytes);
-    }
-
-    /// <summary>
-    ///     批量设置hash值
-    /// </summary>
-    /// <typeparam name="T">值类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="values">键值对</param>
-    public void HashSet<T>(string key, Dictionary<string, T> values)
-    {
-        var entries = values.Select(kv => new HashEntry(kv.Key, _serializer.Serialize(kv.Value)));
-
-        _cache.HashSet(key, entries.ToArray());
-    }
-
-    /// <summary>
-    ///     批量设置hash值
-    /// </summary>
-    /// <typeparam name="T">值类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="values">键值对</param>
-    /// <param name="cancellationToken"></param>
-    public async Task HashSetAsync<T>(string key, Dictionary<string, T> values, CancellationToken cancellationToken = default)
-    {
-        var entries = values.Select(kv => new HashEntry(kv.Key, _serializer.Serialize(kv.Value)));
-        await _cache.HashSetAsync(key, entries.ToArray());
-    }
-
-    /// <summary>
-    ///     获取一个hash值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="hashField">hash键</param>
-    /// <returns></returns>
-    public T HashGet<T>(string key, string hashField)
-    {
-        var redisValue = _cache.HashGet(key, hashField);
-
-        return redisValue.HasValue ? _serializer.Deserialize<T>(redisValue) : default;
-    }
-
-    /// <summary>
-    ///     获取一个hash值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="hashField">hash键</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<T> HashGetAsync<T>(string key, string hashField, CancellationToken cancellationToken = default)
-    {
-        var redisValue = await _cache.HashGetAsync(key, hashField);
-
-        return redisValue.HasValue ? _serializer.Deserialize<T>(redisValue) : default;
-    }
-
-    /// <summary>
-    ///     获取hash值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="hashFields">hash键组合</param>
-    /// <returns></returns>
-    public Dictionary<string, T> HashGet<T>(string key, IEnumerable<string> hashFields)
-    {
-        var result = new Dictionary<string, T>();
-        foreach (var hashField in hashFields)
-        {
-            var value = HashGet<T>(key, hashField);
-            result.Add(key, value);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    ///     获取hash值
-    /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="hashFields">hash键组合</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<Dictionary<string, T>> HashGetAsync<T>(string key, IEnumerable<string> hashFields, CancellationToken cancellationToken = default)
-    {
-        var result = new Dictionary<string, T>();
-        foreach (var hashField in hashFields)
-        {
-            var value = await HashGetAsync<T>(key, hashField, cancellationToken);
-            result.Add(key, value);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    ///     获取全部hash值
-    /// </summary>
-    /// <typeparam name="T">值类型</typeparam>
-    /// <param name="key">key</param>
-    /// <returns></returns>
-    public Dictionary<string, T> HashGetAll<T>(string key)
-    {
-        return _cache.HashGetAll(key)
-            .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
-    }
-
-    /// <summary>
-    ///     获取全部hash值
-    /// </summary>
-    /// <typeparam name="T">值类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<Dictionary<string, T>> HashGetAllAsync<T>(string key, CancellationToken cancellationToken = default)
-    {
-        return (await _cache.HashGetAllAsync(key))
-            .ToDictionary(x => x.Name.ToString(), x => _serializer.Deserialize<T>(x.Value), StringComparer.Ordinal);
-    }
-
-    /// <summary>
-    ///     获取全部hash值
-    /// </summary>
-    /// <typeparam name="T">值类型</typeparam>
-    /// <param name="key">key</param>
-    /// <returns></returns>
-    public IEnumerable<T> HashValues<T>(string key)
-    {
-        return _cache.HashValues(key).Select(m => _serializer.Deserialize<T>(m));
-    }
-
-    /// <summary>
-    ///     获取全部hash值
-    /// </summary>
-    /// <typeparam name="T">值类型</typeparam>
-    /// <param name="key">key</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<IEnumerable<T>> HashValuesAsync<T>(string key, CancellationToken cancellationToken = default)
-    {
-        return (await _cache.HashValuesAsync(key)).Select(m => _serializer.Deserialize<T>(m));
     }
 
     /// <summary>
@@ -766,7 +574,7 @@ public class RedisClient : IRedisClient
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
     /// <returns></returns>
-    public bool HashExists(string key, string hashField)
+    public bool HExists(string key, string hashField)
     {
         return _cache.HashExists(key, hashField);
     }
@@ -778,7 +586,7 @@ public class RedisClient : IRedisClient
     /// <param name="hashField">hash键</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<bool> HashExistsAsync(string key, string hashField, CancellationToken cancellationToken = default)
+    public async Task<bool> HExistsAsync(string key, string hashField, CancellationToken cancellationToken = default)
     {
         return await _cache.HashExistsAsync(key, hashField);
     }
@@ -789,7 +597,7 @@ public class RedisClient : IRedisClient
     /// <param name="key">key</param>
     /// <param name="hashField">hash键</param>
     /// <returns></returns>
-    public bool HashDelete(string key, string hashField)
+    public bool HDel(string key, string hashField)
     {
         return _cache.HashDelete(key, hashField);
     }
@@ -801,7 +609,7 @@ public class RedisClient : IRedisClient
     /// <param name="hashField">hash键</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<bool> HashDeleteAsync(string key, string hashField, CancellationToken cancellationToken = default)
+    public async Task<bool> HDelAsync(string key, string hashField, CancellationToken cancellationToken = default)
     {
         return await _cache.HashDeleteAsync(key, hashField);
     }
@@ -810,10 +618,13 @@ public class RedisClient : IRedisClient
     ///     删除hash键
     /// </summary>
     /// <param name="key">key</param>
-    /// <param name="hashFields">hash键集合</param>
+    /// <param name="hashFields">hash键集合,为空则删除整个hash</param>
     /// <returns></returns>
-    public long HashDelete(string key, IEnumerable<string> hashFields)
+    public long HDel(string key, IEnumerable<string> hashFields)
     {
+        if (hashFields == null || !hashFields.Any())
+            return _cache.KeyDelete(key) ? 1 : 0;
+        
         return _cache.HashDelete(key, hashFields.Select(x => (RedisValue)x).ToArray());
     }
 
@@ -821,11 +632,14 @@ public class RedisClient : IRedisClient
     ///     删除hash键
     /// </summary>
     /// <param name="key">key</param>
-    /// <param name="hashFields">hash键集合</param>
+    /// <param name="hashFields">hash键集合,为空则删除整个hash</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<long> HashDeleteAsync(string key, IEnumerable<string> hashFields, CancellationToken cancellationToken = default)
+    public async Task<long> HDelAsync(string key, IEnumerable<string> hashFields, CancellationToken cancellationToken = default)
     {
+        if (hashFields == null || !hashFields.Any())
+            return await _cache.KeyDeleteAsync(key) ? 1 : 0;
+        
         return await _cache.HashDeleteAsync(key, hashFields.Select(x => (RedisValue)x).ToArray());
     }
 
@@ -836,7 +650,7 @@ public class RedisClient : IRedisClient
     /// <param name="hashField">hash键</param>
     /// <param name="value">递增值</param>
     /// <returns></returns>
-    public long HashIncrement(string key, string hashField, long value = 1)
+    public long HIncrBy(string key, string hashField, long value = 1)
     {
         return _cache.HashIncrement(key, hashField, value);
     }
@@ -849,7 +663,7 @@ public class RedisClient : IRedisClient
     /// <param name="value">递增值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<long> HashIncrementAsync(string key, string hashField, long value = 1, CancellationToken cancellationToken = default)
+    public async Task<long> HIncrByAsync(string key, string hashField, long value = 1, CancellationToken cancellationToken = default)
     {
         return await _cache.HashIncrementAsync(key, hashField, value);
     }
@@ -861,7 +675,7 @@ public class RedisClient : IRedisClient
     /// <param name="hashField">hash键</param>
     /// <param name="value">递减值</param>
     /// <returns></returns>
-    public long HashDecrement(string key, string hashField, long value = 1)
+    public long HDecr(string key, string hashField, long value = 1)
     {
         return _cache.HashDecrement(key, hashField, value);
     }
@@ -874,7 +688,7 @@ public class RedisClient : IRedisClient
     /// <param name="value">递减值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<long> HashDecrementAsync(string key, string hashField, long value = 1, CancellationToken cancellationToken = default)
+    public async Task<long> HDecrAsync(string key, string hashField, long value = 1, CancellationToken cancellationToken = default)
     {
         return await _cache.HashDecrementAsync(key, hashField, value);
     }
@@ -886,7 +700,7 @@ public class RedisClient : IRedisClient
     /// <param name="hashField">hash键</param>
     /// <param name="value">递增值</param>
     /// <returns></returns>
-    public double HashIncrementDouble(string key, string hashField, double value)
+    public double HIncrByFloat(string key, string hashField, double value)
     {
         return _cache.HashIncrement(key, hashField, value);
     }
@@ -899,7 +713,7 @@ public class RedisClient : IRedisClient
     /// <param name="value">递增值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<double> HashIncrementDoubleAsync(string key, string hashField, double value, CancellationToken cancellationToken = default)
+    public async Task<double> HIncrByFloatAsync(string key, string hashField, double value, CancellationToken cancellationToken = default)
     {
         return await _cache.HashIncrementAsync(key, hashField, value);
     }
@@ -911,7 +725,7 @@ public class RedisClient : IRedisClient
     /// <param name="hashField">hash键</param>
     /// <param name="value">递减值</param>
     /// <returns></returns>
-    public double HashDecrementDouble(string key, string hashField, double value)
+    public double HDecrByFloat(string key, string hashField, double value)
     {
         return _cache.HashDecrement(key, hashField, value);
     }
@@ -924,7 +738,7 @@ public class RedisClient : IRedisClient
     /// <param name="value">递减值</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<double> HashDecrementDoubleAsync(string key, string hashField, double value, CancellationToken cancellationToken = default)
+    public async Task<double> HDecrByFloatAsync(string key, string hashField, double value, CancellationToken cancellationToken = default)
     {
         return await _cache.HashDecrementAsync(key, hashField, value);
     }
@@ -936,64 +750,63 @@ public class RedisClient : IRedisClient
     /// <summary>
     ///     获取一个锁
     /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">键名</param>
     /// <param name="value">值</param>
     /// <param name="expiry">过期时间</param>
     /// <returns>成功返回true</returns>
-    public bool LockTake<T>(string key, T value, TimeSpan expiry)
+    public bool Lock(string key, string value, TimeSpan expiry)
     {
-        var objBytes = _serializer.Serialize(value);
-        return _cache.LockTake(key, objBytes, expiry);
+        return _cache.LockTake(key, value, expiry);
     }
 
     /// <summary>
     ///     异步获取一个锁
     /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">键名</param>
     /// <param name="value">值</param>
     /// <param name="expiry">过期时间</param>
     /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    public async Task<bool> LockTakeAsync<T>(string key, T value, TimeSpan expiry, CancellationToken cancellationToken = default)
+    public async Task<bool> LockAsync(string key, string value, TimeSpan expiry, CancellationToken cancellationToken = default)
     {
-        var objBytes = _serializer.Serialize(value);
-        return await _cache.LockTakeAsync(key, objBytes, expiry);
+        return await _cache.LockTakeAsync(key, value, expiry);
     }
 
     /// <summary>
     ///     释放一个锁
     /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">键名</param>
     /// <param name="value">值</param>
     /// <returns>成功返回true</returns>
-    public bool LockRelease<T>(string key, T value)
+    public bool LockRelease(string key, string value)
     {
-        var objBytes = _serializer.Serialize(value);
-        return _cache.LockRelease(key, objBytes);
+        return _cache.LockRelease(key, value);
     }
 
     /// <summary>
     ///     异步释放一个锁
     /// </summary>
-    /// <typeparam name="T">值的类型</typeparam>
     /// <param name="key">键名</param>
     /// <param name="value">值</param>
     /// <param name="cancellationToken"></param>
     /// <returns>成功返回true</returns>
-    public async Task<bool> LockReleaseAsync<T>(string key, T value, CancellationToken cancellationToken = default)
+    public async Task<bool> LockReleaseAsync(string key, string value, CancellationToken cancellationToken = default)
     {
-        var objBytes = _serializer.Serialize(value);
-        return await _cache.LockReleaseAsync(key, objBytes);
+        return await _cache.LockReleaseAsync(key, value);
     }
 
     #endregion lock
 
     #region List(集合操作)
 
-    public T ListGetByIndex<T>(string cacheKey, long index)
+    /// <summary>
+    ///     获取列表中某个位置的元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="index"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T LIndex<T>(string cacheKey, long index)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1001,66 +814,26 @@ public class RedisClient : IRedisClient
         return _serializer.Deserialize<T>(bytes);
     }
 
-    public long ListLength(string cacheKey)
+    /// <summary>
+    ///     列表中的元素个数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <returns></returns>
+    public long LLen(string cacheKey)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         return _cache.ListLength(cacheKey);
     }
-
-    public T ListLeftPop<T>(string cacheKey)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var bytes = _cache.ListLeftPop(cacheKey);
-        return _serializer.Deserialize<T>(bytes);
-    }
-
-    public long ListLeftPush<T>(string cacheKey, IList<T> cacheValues)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-        Check.NotNull(cacheValues, nameof(cacheValues));
-
-        var len = _cache.ListLeftPush(cacheKey,
-            cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
-        return len;
-    }
-
-    public IEnumerable<T> ListRange<T>(string cacheKey, long start, long stop)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var bytes = _cache.ListRange(cacheKey, start, stop);
-        foreach (var item in bytes)
-            yield return _serializer.Deserialize<T>(item);
-    }
-
-    public long ListRemove<T>(string cacheKey, long count, T cacheValue)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var bytes = _serializer.Serialize(cacheValue);
-        return _cache.ListRemove(cacheKey, bytes, count);
-    }
-
-    public bool ListSetByIndex<T>(string cacheKey, long index, T cacheValue)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var bytes = _serializer.Serialize(cacheValue);
-        _cache.ListSetByIndex(cacheKey, index, bytes);
-        return true;
-    }
-
-    public bool ListTrim(string cacheKey, long start, long stop)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        _cache.ListTrim(cacheKey, start, stop);
-        return true;
-    }
-
-    public long ListLeftPush<T>(string cacheKey, T cacheValue)
+    
+    /// <summary>
+    ///     将一个值插入到列表头部
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long LPush<T>(string cacheKey, T cacheValue)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1068,25 +841,147 @@ public class RedisClient : IRedisClient
         return _cache.ListLeftPush(cacheKey, bytes);
     }
 
-    public long ListInsertBefore<T>(string cacheKey, T pivot, T cacheValue)
+    /// <summary>
+    ///     将多个值插入到列表头部
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long LPush<T>(string cacheKey, IList<T> cacheValues)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+        Check.NotNull(cacheValues, nameof(cacheValues));
+
+        var redisValues = cacheValues.Select(item => (RedisValue)_serializer.Serialize(item)).ToArray();
+        return _cache.ListLeftPush(cacheKey, redisValues);
+    }
+    
+    /// <summary>
+    ///     移出并获取列表的第一个元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T LPop<T>(string cacheKey)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var bytes = _cache.ListLeftPop(cacheKey);
+        return _serializer.Deserialize<T>(bytes);
+    }
+    
+    /// <summary>
+    ///     获取列表指定范围内的元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="start"></param>
+    /// <param name="stop"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> LRange<T>(string cacheKey, long start, long stop)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var bytes = _cache.ListRange(cacheKey, start, stop);
+        foreach (var item in bytes) yield return _serializer.Deserialize<T>(item);
+    }
+
+    /// <summary>
+    ///     根据参数 COUNT 的值，移除列表中与参数 VALUE 相等的元素。
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="count">等于0删除所有,大于0从表头开始向表尾搜索删除最多count个与value相等的项,小于0从表尾开始向表头搜索删除最多count个与value相等的项</param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns>删除的数量</returns>
+    public long LRem<T>(string cacheKey, long count, T cacheValue)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var bytes = _serializer.Serialize(cacheValue);
+        return _cache.ListRemove(cacheKey, bytes, count);
+    }
+
+    /// <summary>
+    ///     通过索引设置列表元素的值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="index"></param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public bool LSet<T>(string cacheKey, long index, T cacheValue)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var bytes = _serializer.Serialize(cacheValue);
+        _cache.ListSetByIndex(cacheKey, index, bytes);
+        
+        return true;
+    }
+
+    /// <summary>
+    ///     对一个列表进行修剪(trim)
+    /// </summary>
+    /// <remarks>让列表只保留指定区间内的元素，不在指定区间之内的元素都将被删除</remarks>
+    /// <param name="cacheKey"></param>
+    /// <param name="start"></param>
+    /// <param name="stop"></param>
+    /// <returns></returns>
+    public bool LTrim(string cacheKey, long start, long stop)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        _cache.ListTrim(cacheKey, start, stop);
+        
+        return true;
+    }
+
+    /// <summary>
+    ///     在 pivot 元素前面插入一个元素 value
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="pivot"></param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long LInsertBefore<T>(string cacheKey, T pivot, T cacheValue)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         var pivotBytes = _serializer.Serialize(pivot);
         var cacheValueBytes = _serializer.Serialize(cacheValue);
+        
         return _cache.ListInsertBefore(cacheKey, pivotBytes, cacheValueBytes);
     }
 
-    public long ListInsertAfter<T>(string cacheKey, T pivot, T cacheValue)
+    /// <summary>
+    ///     在 pivot 元素的后面插入一个元素 value
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="pivot"></param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long LInsertAfter<T>(string cacheKey, T pivot, T cacheValue)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         var pivotBytes = _serializer.Serialize(pivot);
         var cacheValueBytes = _serializer.Serialize(cacheValue);
+        
         return _cache.ListInsertAfter(cacheKey, pivotBytes, cacheValueBytes);
     }
 
-    public long ListRightPush<T>(string cacheKey, T cacheValue)
+    /// <summary>
+    ///     从列表的右侧插入值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long RPush<T>(string cacheKey, T cacheValue)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1094,17 +989,30 @@ public class RedisClient : IRedisClient
         return _cache.ListRightPush(cacheKey, bytes);
     }
 
-    public long ListRightPush<T>(string cacheKey, IList<T> cacheValues)
+    /// <summary>
+    ///     从列表的右侧插入多个值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long RPush<T>(string cacheKey, IList<T> cacheValues)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(cacheValues, nameof(cacheValues));
 
-        var len = _cache.ListRightPush(cacheKey,
-            cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
-        return len;
+        var redisValues = cacheValues.Select(item => (RedisValue)_serializer.Serialize(item)).ToArray();
+
+        return _cache.ListRightPush(cacheKey, redisValues);
     }
 
-    public T ListRightPop<T>(string cacheKey)
+    /// <summary>
+    ///     移出并获取列表的最后一个元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T RPop<T>(string cacheKey)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1112,7 +1020,15 @@ public class RedisClient : IRedisClient
         return _serializer.Deserialize<T>(bytes);
     }
 
-    public async Task<T> ListGetByIndexAsync<T>(string cacheKey, long index, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     获取列表中某个位置的元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="index"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<T> LIndexAsync<T>(string cacheKey, long index, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1120,22 +1036,28 @@ public class RedisClient : IRedisClient
         return _serializer.Deserialize<T>(bytes);
     }
 
-    public async Task<long> ListLengthAsync(string cacheKey, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     列表中的元素个数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> LLenAsync(string cacheKey, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         return await _cache.ListLengthAsync(cacheKey);
     }
 
-    public async Task<T> ListLeftPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var bytes = await _cache.ListLeftPopAsync(cacheKey);
-        return _serializer.Deserialize<T>(bytes);
-    }
-
-    public async Task<long> ListLeftPushAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     从列表的左侧插入值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> LPushAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1143,25 +1065,47 @@ public class RedisClient : IRedisClient
         return await _cache.ListLeftPushAsync(cacheKey, bytes);
     }
 
-    public async Task<long> ListLeftPushAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     从列表的左侧插入多个值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> LPushAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(cacheValues, nameof(cacheValues));
 
-        var len = await _cache.ListLeftPushAsync(cacheKey,
-            cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
-        return len;
+        var redisValues = cacheValues.Select(item => (RedisValue)_serializer.Serialize(item)).ToArray();
+        return await _cache.ListLeftPushAsync(cacheKey, redisValues);
     }
-
-    public async Task<T> ListRightPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
+    
+    /// <summary>
+    ///     从列表的左侧取出一个值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<T> LPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-        var bytes = await _cache.ListRightPopAsync(cacheKey);
+        var bytes = await _cache.ListLeftPopAsync(cacheKey);
         return _serializer.Deserialize<T>(bytes);
     }
-
-    public async Task<long> ListRightPushAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
+    
+    /// <summary>
+    ///     从列表的右侧插入值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> RPushAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1169,17 +1113,49 @@ public class RedisClient : IRedisClient
         return await _cache.ListRightPushAsync(cacheKey, bytes);
     }
 
-    public async Task<long> ListRightPushAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     从列表的右侧插入多个值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> RPushAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(cacheValues, nameof(cacheValues));
 
-        var len = await _cache.ListRightPushAsync(cacheKey,
-            cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
-        return len;
+        var redisValues = cacheValues.Select(item => (RedisValue)_serializer.Serialize(item)).ToArray();
+
+        return await _cache.ListRightPushAsync(cacheKey, redisValues);
     }
 
-    public async Task<IEnumerable<T>> ListRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<T> RPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var bytes = await _cache.ListRightPopAsync(cacheKey);
+        return _serializer.Deserialize<T>(bytes);
+    }
+
+    /// <summary>
+    ///     取出列表中的值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="start"></param>
+    /// <param name="stop"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<IEnumerable<T>> LRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1192,7 +1168,16 @@ public class RedisClient : IRedisClient
         return list;
     }
 
-    public async Task<long> ListRemoveAsync<T>(string cacheKey, long count, T cacheValue, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     删除列表中的一个元素,可设置要删除的数量,返回删除的数量
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="count"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> LRemAsync<T>(string cacheKey, long count, T cacheValue, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1200,38 +1185,77 @@ public class RedisClient : IRedisClient
         return await _cache.ListRemoveAsync(cacheKey, bytes, count);
     }
 
-    public async Task<bool> ListSetByIndexAsync<T>(string cacheKey, long index, T cacheValue, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     设置列表中某个位置的元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="index"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<bool> LSetAsync<T>(string cacheKey, long index, T cacheValue, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         var bytes = _serializer.Serialize(cacheValue);
         await _cache.ListSetByIndexAsync(cacheKey, index, bytes);
+        
         return true;
     }
 
-    public async Task<bool> ListTrimAsync(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     按指定范围裁剪列表
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="start"></param>
+    /// <param name="stop"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> LTrimAsync(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         await _cache.ListTrimAsync(cacheKey, start, stop);
+        
         return true;
     }
 
-    public async Task<long> ListInsertBeforeAsync<T>(string cacheKey, T pivot, T cacheValue, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     在 pivot 元素前面插入一个元素 value
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="pivot"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> LInsertBeforeAsync<T>(string cacheKey, T pivot, T cacheValue, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         var pivotBytes = _serializer.Serialize(pivot);
         var cacheValueBytes = _serializer.Serialize(cacheValue);
+        
         return await _cache.ListInsertBeforeAsync(cacheKey, pivotBytes, cacheValueBytes);
     }
 
-    public async Task<long> ListInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     在 pivot 元素的后面插入一个元素 value
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="pivot"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> LInsertAfterAsync<T>(string cacheKey, T pivot, T cacheValue, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         var pivotBytes = _serializer.Serialize(pivot);
         var cacheValueBytes = _serializer.Serialize(cacheValue);
+        
         return await _cache.ListInsertAfterAsync(cacheKey, pivotBytes, cacheValueBytes);
     }
 
@@ -1239,7 +1263,15 @@ public class RedisClient : IRedisClient
 
     #region Set(数组操作)
 
-    public long SetAdd<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null)
+    /// <summary>
+    ///     向集合中添加一个元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <param name="expiration"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long SAdd<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(cacheValues, nameof(cacheValues));
@@ -1251,25 +1283,41 @@ public class RedisClient : IRedisClient
         return len;
     }
 
-    public long SetLength(string cacheKey)
+    /// <summary>
+    ///     返回指定key集合中的元素数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <returns></returns>
+    public long SCard(string cacheKey)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-        var len = _cache.SetLength(cacheKey);
-        return len;
+        return _cache.SetLength(cacheKey);
     }
 
-    public bool SetContains<T>(string cacheKey, T cacheValue)
+    /// <summary>
+    ///     判断集合中是否存在元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public bool SIsMember<T>(string cacheKey, T cacheValue)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         var bytes = _serializer.Serialize(cacheValue);
 
-        var flag = _cache.SetContains(cacheKey, bytes);
-        return flag;
+        return  _cache.SetContains(cacheKey, bytes);
     }
 
-    public IEnumerable<T> SetMembers<T>(string cacheKey)
+    /// <summary>
+    ///     返回集合中的所有元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> SMembers<T>(string cacheKey)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             
@@ -1277,16 +1325,15 @@ public class RedisClient : IRedisClient
         foreach (var item in bytes) 
             yield return _serializer.Deserialize<T>(item);
     }
-
-    public T SetPop<T>(string cacheKey)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var bytes = _cache.SetPop(cacheKey);
-        return _serializer.Deserialize<T>(bytes);
-    }
-
-    public IEnumerable<T> SetRandomMembers<T>(string cacheKey, int count = 1)
+    
+    /// <summary>
+    ///     从集合中随机返回一个元素(不删除集合中的元素)
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="count"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> SRandMembers<T>(string cacheKey, int count = 1)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
             
@@ -1295,7 +1342,29 @@ public class RedisClient : IRedisClient
             yield return _serializer.Deserialize<T>(item);
     }
 
-    public long SetRemove<T>(string cacheKey, IList<T> cacheValues = null)
+    /// <summary>
+    ///     从集合中随机取出一个元素(会删除集合中的元素)
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public T SPop<T>(string cacheKey)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var bytes = _cache.SetPop(cacheKey);
+        
+        return _serializer.Deserialize<T>(bytes);
+    }
+    
+    /// <summary>
+    ///     从集合中移除一堆元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long SRem<T>(string cacheKey, IList<T> cacheValues = null)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1303,8 +1372,7 @@ public class RedisClient : IRedisClient
 
         if (cacheValues != null && cacheValues.Any())
         {
-            len = _cache.SetRemove(cacheKey,
-                cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            len = _cache.SetRemove(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
         }
         else
         {
@@ -1315,28 +1383,49 @@ public class RedisClient : IRedisClient
         return len;
     }
 
-    public async Task<long> SetAddAsync<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     向集合中添加一个元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <param name="expiration"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> SAddAsync<T>(string cacheKey, IList<T> cacheValues, TimeSpan? expiration = null, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(cacheValues, nameof(cacheValues));
 
-        var len = await _cache.SetAddAsync(cacheKey,
-            cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+        var len = await _cache.SetAddAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
 
         if (expiration.HasValue) await _cache.KeyExpireAsync(cacheKey, expiration.Value);
 
         return len;
     }
 
-    public async Task<long> SetLengthAsync(string cacheKey, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     返回指定key集合中的元素数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> SCardAsync(string cacheKey, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var len = await _cache.SetLengthAsync(cacheKey);
-        return len;
+        
+        return await _cache.SetLengthAsync(cacheKey);
     }
 
-    public async Task<bool> SetContainsAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     判断集合中是否存在元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<bool> SIsMemberAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1346,7 +1435,14 @@ public class RedisClient : IRedisClient
         return flag;
     }
 
-    public async Task<IEnumerable<T>> SetMembersAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     返回集合中的所有元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<IEnumerable<T>> SMembersAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1359,7 +1455,14 @@ public class RedisClient : IRedisClient
         return list;
     }
 
-    public async Task<T> SetPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     从集合中随机取出一个元素(会删除集合中的元素)
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<T> SPopAsync<T>(string cacheKey, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1368,7 +1471,15 @@ public class RedisClient : IRedisClient
         return _serializer.Deserialize<T>(bytes);
     }
 
-    public async Task<IEnumerable<T>> SetRandomMembersAsync<T>(string cacheKey, int count = 1, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     从集合中随机返回一个元素(不删除集合中的元素)
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="count"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<IEnumerable<T>> SRandMembersAsync<T>(string cacheKey, int count = 1, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1381,15 +1492,22 @@ public class RedisClient : IRedisClient
         return list;
     }
 
-    public async Task<long> SetRemoveAsync<T>(string cacheKey, IList<T> cacheValues = null, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     从集合中移除一堆元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> SRemAsync<T>(string cacheKey, IList<T> cacheValues = null, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         long len;
         if (cacheValues != null && cacheValues.Any())
         {
-            len = await _cache.SetRemoveAsync(cacheKey,
-                cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
+            len = await _cache.SetRemoveAsync(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
         }
         else
         {
@@ -1404,17 +1522,28 @@ public class RedisClient : IRedisClient
 
     #region Sorted Set(有序数组)
 
-    public long SortedSetAdd<T>(string cacheKey, Dictionary<T, double> cacheValues)
+    /// <summary>
+    ///     向有序集合添加一个或多个成员，或者更新已存在成员的分数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long ZAdd<T>(string cacheKey, Dictionary<T, double> cacheValues)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-        var len = _cache.SortedSetAdd(cacheKey,
-            cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray());
-
-        return len;
+        var values = cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray();
+        
+        return _cache.SortedSetAdd(cacheKey, values);
     }
 
-    public long SortedSetLength(string cacheKey)
+    /// <summary>
+    ///     获取有序集合的成员数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <returns></returns>
+    public long ZCard(string cacheKey)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1422,15 +1551,42 @@ public class RedisClient : IRedisClient
         return len;
     }
 
-    public long SortedSetLengthByValue(string cacheKey, double min, double max)
+    /// <summary>
+    ///     计算在有序集合中指定区间分数的成员数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
+    public long ZCount(string cacheKey, double min, double max)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-        var len = _cache.SortedSetLengthByValue(cacheKey, min, max);
-        return len;
+        return _cache.SortedSetLength(cacheKey, min, max);
     }
 
-    public double SortedSetIncrement(string cacheKey, string field, double val = 1)
+    /// <summary>
+    ///     在有序集合中计算指定字典区间内成员数量
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
+    public long ZLexCount(string cacheKey, string min, string max)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        return _cache.SortedSetLengthByValue(cacheKey, min, max);
+    }
+    
+    /// <summary>
+    ///     对有序集合中的某个元素增加一个分值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="field"></param>
+    /// <param name="val"></param>
+    /// <returns></returns>
+    public double ZIncrBy(string cacheKey, string field, double val = 1)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNullOrWhiteSpace(field, nameof(field));
@@ -1439,15 +1595,15 @@ public class RedisClient : IRedisClient
         return value;
     }
 
-    public long SortedSetLengthByValue(string cacheKey, string min, string max)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var len = _cache.SortedSetLengthByValue(cacheKey, min, max);
-        return len;
-    }
-
-    public IEnumerable<T> SortedSetRangeByRank<T>(string cacheKey, long start, long stop)
+    /// <summary>
+    ///     通过索引区间返回有序集合指定区间内的成员
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="start"></param>
+    /// <param name="stop"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> ZRange<T>(string cacheKey, long start, long stop)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1456,82 +1612,185 @@ public class RedisClient : IRedisClient
             yield return _serializer.Deserialize<T>(item);
     }
 
-    public long? SortedSetRank<T>(string cacheKey, T cacheValue)
+    /// <summary>
+    ///     通过分数返回有序集合指定区间内的成员
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="count"></param>
+    /// <param name="offset"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public IEnumerable<T> ZRangeByScore<T>(string cacheKey, double min, double max, long count = -1, long offset = 0)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var bytes = _cache.SortedSetRangeByScore(cacheKey, min, max, take: count, skip: offset);
+        foreach (var item in bytes) 
+            yield return _serializer.Deserialize<T>(item);
+    }
+
+    /// <summary>
+    ///     返回有序集合中指定成员的索引
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long? ZRank<T>(string cacheKey, T cacheValue)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         var bytes = _serializer.Serialize(cacheValue);
 
-        var index = _cache.SortedSetRank(cacheKey, bytes);
-
-        return index;
+        return _cache.SortedSetRank(cacheKey, bytes);
     }
 
-    public long SortedSetRemove<T>(string cacheKey, IList<T> cacheValues)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var len = _cache.SortedSetRemove(cacheKey,
-            cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
-
-        return len;
-    }
-
-    public double? SortedSetScore<T>(string cacheKey, T cacheValue)
+    /// <summary>
+    ///     返回有序集合中指定元素的分值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public double? ZScore<T>(string cacheKey, T cacheValue)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
         var bytes = _serializer.Serialize(cacheValue);
 
-        var score = _cache.SortedSetScore(cacheKey, bytes);
-
-        return score;
+        return _cache.SortedSetScore(cacheKey, bytes);
     }
-
-    public async Task<long> SortedSetAddAsync<T>(string cacheKey, Dictionary<T, double> cacheValues, CancellationToken cancellationToken = default)
+    
+    /// <summary>
+    ///     移除有序集合中的多个元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public long ZRem<T>(string cacheKey, IList<T> cacheValues)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-        var len = await _cache.SortedSetAddAsync(cacheKey,
-            cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x.Key), x.Value)).ToArray());
-
-        return len;
+        return _cache.SortedSetRemove(cacheKey, cacheValues.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
     }
 
-    public async Task<long> SortedSetLengthAsync(string cacheKey, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     移除有序集合中给定的排名区间的所有成员
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="star"></param>
+    /// <param name="stop"></param>
+    /// <returns></returns>
+    public long ZRemRangeByRank(string cacheKey, long star, long stop)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+        
+        return _cache.SortedSetRemoveRangeByRank(cacheKey, star, stop);
+    }
+
+    /// <summary>
+    ///     移除有序集合中给定的分数区间的所有成员
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <returns></returns>
+    public long ZRemRangeByScore(string cacheKey, double min, double max)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+        
+        return _cache.SortedSetRemoveRangeByScore(cacheKey, min, max);
+    }
+    
+    /// <summary>
+    ///     添加一个元素到有序集合中,如果集合中存在 则会修改其对应的分值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> ZAddAsync<T>(string cacheKey, Dictionary<T, double> cacheValues, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-        var len = await _cache.SortedSetLengthAsync(cacheKey);
-        return len;
+        var redisValues = cacheValues.Select(x => new SortedSetEntry(_serializer.Serialize(x), x.Value)).ToArray();
+
+        return await _cache.SortedSetAddAsync(cacheKey, redisValues);
     }
 
-    public async Task<long> SortedSetLengthByValueAsync(string cacheKey, double min, double max, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     获取有序集合的成员数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> ZCardAsync(string cacheKey, CancellationToken cancellationToken = default)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+        
+        return await _cache.SortedSetLengthAsync(cacheKey);
+    }
+
+    /// <summary>
+    ///     计算在有序集合中指定区间分数的成员数
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> ZCountAsync(string cacheKey, double min, double max, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
-        var len = await _cache.SortedSetLengthByValueAsync(cacheKey, min, max);
-        return len;
+        return await _cache.SortedSetLengthAsync(cacheKey, min, max);
     }
 
-    public async Task<double> SortedSetIncrementAsync(string cacheKey, string field, double val = 1, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     在有序集合中计算指定字典区间内成员数量
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> ZLexCountAsync(string cacheKey, string min, string max, CancellationToken cancellationToken = default)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+        
+        return await _cache.SortedSetLengthByValueAsync(cacheKey, min, max);
+    }
+    
+    /// <summary>
+    ///     有序集合中对指定成员的分数加上增量 increment
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="field"></param>
+    /// <param name="val"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<double> ZIncrByAsync(string cacheKey, string field, double val = 1, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNullOrWhiteSpace(field, nameof(field));
-
-        var value = await _cache.SortedSetIncrementAsync(cacheKey, field, val);
-        return value;
+        
+        return await _cache.SortedSetIncrementAsync(cacheKey, field, val);
     }
 
-    public async Task<long> SortedSetLengthByValueAsync(string cacheKey, string min, string max, CancellationToken cancellationToken = default)
-    {
-        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
-
-        var len = await _cache.SortedSetLengthByValueAsync(cacheKey, min, max);
-        return len;
-    }
-
-    public async Task<IEnumerable<T>> SortedSetRangeByRankAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     通过索引区间返回有序集合指定区间内的成员
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="start"></param>
+    /// <param name="stop"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<IEnumerable<T>> ZRangeAsync<T>(string cacheKey, long start, long stop, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1544,7 +1803,39 @@ public class RedisClient : IRedisClient
         return list;
     }
 
-    public async Task<long?> SortedSetRankAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     通过分数返回有序集合指定区间内的成员
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="start"></param>
+    /// <param name="stop"></param>
+    /// <param name="count"></param>
+    /// <param name="offset"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<IEnumerable<T>> ZRangeByScoreAsync<T>(string cacheKey, double start, double stop, long count = 0, long offset = 0, CancellationToken cancellationToken = default)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var list = new List<T>();
+
+        var bytes = await _cache.SortedSetRangeByScoreAsync(cacheKey, start, stop, skip: offset, take: count);
+
+        foreach (var item in bytes) list.Add(_serializer.Deserialize<T>(item));
+
+        return list;
+    }
+
+    /// <summary>
+    ///     返回有序集合中指定成员的索引
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long?> ZRankAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1555,7 +1846,32 @@ public class RedisClient : IRedisClient
         return index;
     }
 
-    public async Task<long> SortedSetRemoveAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     返回有序集中，成员的分数值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValue"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<double?> ZScoreAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+
+        var bytes = _serializer.Serialize(cacheValue);
+
+        return await _cache.SortedSetScoreAsync(cacheKey, bytes);
+    }
+    
+    /// <summary>
+    ///     移除有序集合中的多个元素
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="cacheValues"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<long> ZRemAsync<T>(string cacheKey, IList<T> cacheValues, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -1563,69 +1879,119 @@ public class RedisClient : IRedisClient
 
         foreach (var item in cacheValues) bytes.Add(_serializer.Serialize(item));
 
-        var len = await _cache.SortedSetRemoveAsync(cacheKey, bytes.ToArray());
-
-        return len;
+        return await _cache.SortedSetRemoveAsync(cacheKey, bytes.ToArray());
     }
 
-    public async Task<double?> SortedSetScoreAsync<T>(string cacheKey, T cacheValue, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     移除有序集合中给定的排名区间的所有成员
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="star"></param>
+    /// <param name="stop"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> ZRemRangeByRankAsync(string cacheKey, long star, long stop, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+        
+        return await _cache.SortedSetRemoveRangeByRankAsync(cacheKey, star, stop);
+    }
 
-        var bytes = _serializer.Serialize(cacheValue);
-
-        var score = await _cache.SortedSetScoreAsync(cacheKey, bytes);
-
-        return score;
+    /// <summary>
+    ///     移除有序集合中给定的分数区间的所有成员
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> ZRemRangeByScoreAsync(string cacheKey, double min, double max, CancellationToken cancellationToken = default)
+    {
+        Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
+        
+        return await _cache.SortedSetRemoveRangeByScoreAsync(cacheKey, min, max);
     }
 
     #endregion
 
     #region Geo(经纬度操作)
 
+    /// <summary>
+    ///     添加地理位置的坐标
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="values"></param>
+    /// <returns></returns>
     public long GeoAdd(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(values, nameof(values));
 
-        var res = _cache.GeoAdd(cacheKey,
-            values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray());
-        return res;
+        var redisValues = values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray();
+        
+        return _cache.GeoAdd(cacheKey, redisValues);
     }
 
-    public async Task<long> GeoAddAsync(string cacheKey,
-        IEnumerable<(double longitude, double latitude, string member)> values, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     添加地理位置的坐标
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="values"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> GeoAddAsync(string cacheKey, IEnumerable<(double longitude, double latitude, string member)> values, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(values, nameof(values));
 
-        var res = await _cache.GeoAddAsync(cacheKey,
-            values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray());
-        return res;
+        var redisValues = values.Select(x => new GeoEntry(x.longitude, x.latitude, x.member)).ToArray();
+        
+        return await _cache.GeoAddAsync(cacheKey, redisValues);
     }
 
-    public double? GeoDistance(string cacheKey, string member1, string member2, string unit = "m")
+    /// <summary>
+    ///     计算两个位置之间的距离
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="member1"></param>
+    /// <param name="member2"></param>
+    /// <param name="unit"></param>
+    /// <returns></returns>
+    public double? GeoDist(string cacheKey, string member1, string member2, string unit = "m")
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNullOrWhiteSpace(member1, nameof(member1));
         Check.NotNullOrWhiteSpace(member2, nameof(member2));
         Check.NotNullOrWhiteSpace(unit, nameof(unit));
-
-        var res = _cache.GeoDistance(cacheKey, member1, member2, GetGeoUnit(unit));
-        return res;
+        
+        return _cache.GeoDistance(cacheKey, member1, member2, GetGeoUnit(unit));
     }
 
-    public async Task<double?> GeoDistanceAsync(string cacheKey, string member1, string member2, string unit = "m", CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     计算两个位置之间的距离
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="member1"></param>
+    /// <param name="member2"></param>
+    /// <param name="unit"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<double?> GeoDistAsync(string cacheKey, string member1, string member2, string unit = "m", CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNullOrWhiteSpace(member1, nameof(member1));
         Check.NotNullOrWhiteSpace(member2, nameof(member2));
         Check.NotNullOrWhiteSpace(unit, nameof(unit));
-
-        var res = await _cache.GeoDistanceAsync(cacheKey, member1, member2, GetGeoUnit(unit));
-        return res;
+        
+        return await _cache.GeoDistanceAsync(cacheKey, member1, member2, GetGeoUnit(unit));
     }
 
+    /// <summary>
+    ///     返回一个或多个位置对象的 geo hash 值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="members"></param>
+    /// <returns></returns>
     public string[] GeoHash(string cacheKey, IEnumerable<string> members)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1634,6 +2000,13 @@ public class RedisClient : IRedisClient
         return _cache.GeoHash(cacheKey, members.Select(x => (RedisValue)x).ToArray());
     }
 
+    /// <summary>
+    ///     返回一个或多个位置对象的 geo hash 值
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="members"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<string[]> GeoHashAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1642,7 +2015,13 @@ public class RedisClient : IRedisClient
         return await _cache.GeoHashAsync(cacheKey, members.Select(x => (RedisValue)x).ToArray());
     }
 
-    public IEnumerable<(decimal longitude, decimal latitude)?> GeoPosition(string cacheKey, IEnumerable<string> members)
+    /// <summary>
+    ///     获取地理位置的坐标
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="members"></param>
+    /// <returns></returns>
+    public IEnumerable<(decimal longitude, decimal latitude)?> GeoPos(string cacheKey, IEnumerable<string> members)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(members, nameof(members));
@@ -1658,7 +2037,14 @@ public class RedisClient : IRedisClient
         }
     }
 
-    public async Task<IEnumerable<(decimal longitude, decimal latitude)?>> GeoPositionAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     获取地理位置的坐标
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="members"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<(decimal longitude, decimal latitude)?>> GeoPosAsync(string cacheKey, IEnumerable<string> members, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(members, nameof(members));
@@ -1676,8 +2062,17 @@ public class RedisClient : IRedisClient
         return tuple;
     }
 
-    public IEnumerable<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius,
-        string unit = "m", int count = -1, string order = "asc")
+    /// <summary>
+    ///     根据用户给定的经纬度坐标来获取指定范围内的地理位置集合
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="member"></param>
+    /// <param name="radius"></param>
+    /// <param name="unit"></param>
+    /// <param name="count"></param>
+    /// <param name="order"></param>
+    /// <returns></returns>
+    public IEnumerable<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius, string unit = "m", int count = -1, ListSortDirection order = ListSortDirection.Ascending)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(member, nameof(member));
@@ -1687,8 +2082,18 @@ public class RedisClient : IRedisClient
             yield return (item.Member, item.Distance);
     }
 
-    public async Task<IEnumerable<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member,
-        double radius, string unit = "m", int count = -1, string order = "asc", CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     根据用户给定的经纬度坐标来获取指定范围内的地理位置集合
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="member"></param>
+    /// <param name="radius"></param>
+    /// <param name="unit"></param>
+    /// <param name="count"></param>
+    /// <param name="order"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<IEnumerable<(string member, double? distance)>> GeoRadiusAsync(string cacheKey, string member, double radius, string unit = "m", int count = -1, ListSortDirection order = ListSortDirection.Ascending, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(member, nameof(member));
@@ -1726,12 +2131,12 @@ public class RedisClient : IRedisClient
         return geoUnit;
     }
 
-    private Order GetGeoOrder(string order)
+    private Order GetGeoOrder(ListSortDirection order)
     {
         Order geoOrder;
         switch (order)
         {
-            case "desc":
+            case ListSortDirection.Descending:
                 geoOrder = Order.Descending;
                 break;
             default:
@@ -1746,43 +2151,73 @@ public class RedisClient : IRedisClient
 
     #region HyperLogLog()
 
-    public bool HyperLogLogAdd<T>(string cacheKey, IEnumerable<T> values)
+    /// <summary>
+    ///     添加指定元素到 HyperLogLog 中
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="values"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public bool PfAdd<T>(string cacheKey, IEnumerable<T> values)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(values, nameof(values));
 
-        var res = _cache.HyperLogLogAdd(cacheKey,
-            values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
-        return res;
+        var redisValues = values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray();
+        
+        return _cache.HyperLogLogAdd(cacheKey, redisValues);
     }
 
-    public async Task<bool> HyperLogLogAddAsync<T>(string cacheKey, IEnumerable<T> values, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     添加指定元素到 HyperLogLog 中
+    /// </summary>
+    /// <param name="cacheKey"></param>
+    /// <param name="values"></param>
+    /// <param name="cancellationToken"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public async Task<bool> PfAddAsync<T>(string cacheKey, IEnumerable<T> values, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
         Check.NotNull(values, nameof(values));
 
-        var res = await _cache.HyperLogLogAddAsync(cacheKey,
-            values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray());
-        return res;
+        var redisValues = values.Select(x => (RedisValue)_serializer.Serialize(x)).ToArray();
+        
+        return await _cache.HyperLogLogAddAsync(cacheKey, redisValues);
     }
 
-    public long HyperLogLogLength(IEnumerable<string> cacheKeys)
+    /// <summary>
+    ///     返回给定 HyperLogLog 的基数估算值
+    /// </summary>
+    /// <param name="cacheKeys"></param>
+    /// <returns></returns>
+    public long PfCount(IEnumerable<string> cacheKeys)
     {
         Check.NotNull(cacheKeys, nameof(cacheKeys));
-
-        var res = _cache.HyperLogLogLength(cacheKeys.Select(x => (RedisKey)x).ToArray());
-        return res;
+        
+        return _cache.HyperLogLogLength(cacheKeys.Select(x => (RedisKey)x).ToArray());
     }
 
-    public async Task<long> HyperLogLogLengthAsync(IEnumerable<string> cacheKeys, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     返回给定 HyperLogLog 的基数估算值
+    /// </summary>
+    /// <param name="cacheKeys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<long> PfCountAsync(IEnumerable<string> cacheKeys, CancellationToken cancellationToken = default)
     {
         Check.NotNull(cacheKeys, nameof(cacheKeys));
-
-        var res = await _cache.HyperLogLogLengthAsync(cacheKeys.Select(x => (RedisKey)x).ToArray());
-        return res;
+        
+        return await _cache.HyperLogLogLengthAsync(cacheKeys.Select(x => (RedisKey)x).ToArray());
     }
 
-    public bool HyperLogLogMerge(string destKey, IEnumerable<string> sourceKeys)
+    /// <summary>
+    ///     将多个 HyperLogLog 合并为一个 HyperLogLog
+    /// </summary>
+    /// <param name="destKey"></param>
+    /// <param name="sourceKeys"></param>
+    /// <returns></returns>
+    public bool PfMerge(string destKey, IEnumerable<string> sourceKeys)
     {
         Check.NotNullOrWhiteSpace(destKey, nameof(destKey));
         Check.NotNull(sourceKeys, nameof(sourceKeys));
@@ -1791,7 +2226,14 @@ public class RedisClient : IRedisClient
         return true;
     }
 
-    public async Task<bool> HyperLogLogMergeAsync(string destKey, IEnumerable<string> sourceKeys, CancellationToken cancellationToken = default)
+    /// <summary>
+    ///     将多个 HyperLogLog 合并为一个 HyperLogLog
+    /// </summary>
+    /// <param name="destKey"></param>
+    /// <param name="sourceKeys"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> PfMergeAsync(string destKey, IEnumerable<string> sourceKeys, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(destKey, nameof(destKey));
         Check.NotNull(sourceKeys, nameof(sourceKeys));

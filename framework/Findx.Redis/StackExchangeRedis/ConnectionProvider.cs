@@ -72,7 +72,7 @@ namespace Findx.Redis.StackExchangeRedis
             {
                 Connections.TryRemove(connectionName, out _);
                 ex.ReThrow();
-                return default;
+                return null;
             }
         }
 

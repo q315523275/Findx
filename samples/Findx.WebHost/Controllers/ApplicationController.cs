@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
 using Findx.Builders;
@@ -88,7 +89,7 @@ public class ApplicationController : ApiControllerBase
     /// <returns></returns>
     [HttpGet("metrics")]
     [Description("系统指标")]
-    public async Task<CommonResult> Metrics([FromServices] IApplicationContext app)
+    public async Task<CommonResult> Metrics([FromServices] IApplicationContext app, CancellationToken cancellationToken)
     {
         var dict = new Dictionary<string, object>
         {
@@ -118,7 +119,7 @@ public class ApplicationController : ApiControllerBase
         var networkSpeed = SizeInfo.Get(network.Speed);
         var v1 = CpuHelper.GetCpuTime();
 
-        await Task.Delay(1000);
+        await Task.Delay(1000, cancellationToken);
 
         var cpuValue = CpuHelper.CalculateCpuLoad(v1, CpuHelper.GetCpuTime());
         dict.Add("Cpu", $"{(int)(cpuValue * 100)} %");
@@ -175,8 +176,8 @@ public class ApplicationController : ApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpGet("functions")]
-    public async Task<CommonResult> Functions([FromServices] IFunctionStore<MvcFunction> store)
+    public async Task<CommonResult> Functions([FromServices] IFunctionStore<MvcFunction> store, CancellationToken cancellationToken)
     {
-        return CommonResult.Success(await store.QueryFromDatabaseAsync());
+        return CommonResult.Success(await store.QueryFromDatabaseAsync(cancellationToken));
     }
 }

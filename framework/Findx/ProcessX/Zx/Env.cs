@@ -16,6 +16,9 @@ public static class Env
     /// </summary>
     public static bool Verbose { get; set; } = true;
 
+    /// <summary>
+    ///     私有shell命令数据
+    /// </summary>
     private static string? _shell;
     
     /// <summary>
@@ -44,12 +47,16 @@ public static class Env
                     }
                 }
             }
-
             return _shell;
         }
         set => _shell = value;
     }
 
+    /// <summary>
+    ///     使用shell
+    /// </summary>
+    public static bool UseShell { get; set; } = true;
+    
     /// <summary>
     ///     终止令牌源
     /// </summary>
@@ -70,12 +77,16 @@ public static class Env
     /// </summary>
     public static string? WorkingDirectory { get; set; }
 
-    private static readonly Lazy<IDictionary<string, string>> _envvars = new(() => new Dictionary<string, string>());
+    /// <summary>
+    ///     私有变量信息
+    /// </summary>
+    // ReSharper disable once InconsistentNaming
+    private static readonly Lazy<IDictionary<string, string>> _envVars = new(() => new Dictionary<string, string>());
 
     /// <summary>
     ///     环境变量
     /// </summary>
-    public static IDictionary<string, string> EnvVars => _envvars.Value;
+    public static IDictionary<string, string> EnvVars => _envVars.Value;
 
     /// <summary>
     ///     请求
@@ -150,7 +161,7 @@ public static class Env
     public static async Task<(string StdOut, string StdError)> WithTimeout2(FormattableString command, int seconds)
     {
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(seconds));
-        return (await ProcessStartAsync(EscapeFormattableString.Escape(command), cts.Token));
+        return await ProcessStartAsync(EscapeFormattableString.Escape(command), cts.Token);
     }
 
     /// <summary>
@@ -174,7 +185,7 @@ public static class Env
     public static async Task<(string StdOut, string StdError)> WithTimeout2(FormattableString command, TimeSpan timeSpan)
     {
         using var cts = new CancellationTokenSource(timeSpan);
-        return (await ProcessStartAsync(EscapeFormattableString.Escape(command), cts.Token));
+        return await ProcessStartAsync(EscapeFormattableString.Escape(command), cts.Token);
     }
 
     /// <summary>
@@ -196,7 +207,7 @@ public static class Env
     /// <returns></returns>
     public static async Task<(string StdOut, string StdError)> WithCancellation2(FormattableString command, CancellationToken cancellationToken)
     {
-        return (await ProcessStartAsync(EscapeFormattableString.Escape(command), cancellationToken));
+        return await ProcessStartAsync(EscapeFormattableString.Escape(command), cancellationToken);
     }
 
     /// <summary>
@@ -332,7 +343,7 @@ public static class Env
     /// </summary>
     /// <param name="value"></param>
     /// <param name="color"></param>
-    public static void Log(object? value, ConsoleColor? color = default)
+    public static void Log(object? value, ConsoleColor? color = null)
     {
         if (color != null)
         {
@@ -368,7 +379,7 @@ public static class Env
     /// <returns></returns>
     private static async Task<(string StdOut, string StdError)> ProcessStartAsync(string command, CancellationToken cancellationToken, bool forceSilent = false)
     {
-        var cmd = Shell + " \"" + command + "\"";
+        var cmd = UseShell ? Shell + " \"" + command + "\"" : command;
         var sbOut = new StringBuilder();
         var sbError = new StringBuilder();
 
@@ -435,6 +446,7 @@ public static class Env
     private static async Task<(string[] StdOut, string[] StdError)> ProcessStartListAsync(string command, CancellationToken cancellationToken, bool forceSilent = false)
     {
         var cmd = Shell + " \"" + command + "\"";
+        
         var sbOut = new List<string>();
         var sbError = new List<string>();
 

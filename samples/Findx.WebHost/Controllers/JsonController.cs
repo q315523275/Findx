@@ -38,22 +38,22 @@ public class JsonController: ApiControllerBase
     }
     
     /// <summary>
-    ///     反序列化-类型
-    /// </summary>
-    /// <returns></returns>
-    [HttpPost("deserializeType")]
-    public CommonResult Deserialize(string json)
-    {
-        return CommonResult.Success(_jsonSerializer.Deserialize(json, typeof(TestNewsInfo)));
-    }
-    
-    /// <summary>
     ///     反序列化-泛型
     /// </summary>
     /// <returns></returns>
     [HttpPost("deserialize")]
-    public CommonResult Deserialize2(string json)
+    public CommonResult Deserialize(string json)
     {
         return CommonResult.Success(_jsonSerializer.Deserialize<TestNewsInfo>(json));
+    }
+    
+    /// <summary>
+    ///     反序列化-类型
+    /// </summary>
+    /// <returns></returns>
+    [HttpPost("deserializeType")]
+    public CommonResult DeserializeType(string json)
+    {
+        return CommonResult.Success(_jsonSerializer.Deserialize(json, typeof(TestNewsInfo)));
     }
 }

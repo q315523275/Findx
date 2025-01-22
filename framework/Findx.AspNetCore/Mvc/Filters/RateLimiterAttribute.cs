@@ -35,6 +35,11 @@ public class RateLimiterAttribute : ActionFilterAttribute
     public int Limit { get; set; } = 30;
 
     /// <summary>
+    ///     是否分布式
+    /// </summary>
+    public bool IsDistributed { set; get; } = false;
+    
+    /// <summary>
     ///     限速类型
     /// </summary>
     public RateLimitType Type { get; set; } = RateLimitType.Ip;
@@ -52,16 +57,12 @@ public class RateLimiterAttribute : ActionFilterAttribute
         // 本地缓存相当于是字典，存储使用均为同一个对象
         // 如果使用分布式缓存，需做好计数器
 
-        var cache = context.HttpContext.RequestServices.GetRequiredService<ICacheFactory>().Create(CacheType.DefaultMemory);
+        var cacheFactory = context.HttpContext.RequestServices.GetRequiredService<ICacheFactory>();
+        var cacheType = IsDistributed ? CacheType.DefaultRedis : CacheType.DefaultMemory;
+        var cache = cacheFactory.Create(cacheType);
         var rateLimitKey = GetRateLimitKey(context);
-        var atomic = await cache.GetAsync<AtomicInteger>(rateLimitKey);
-        if (atomic == default)
-        {
-            atomic = new AtomicInteger(Limit);
-            await cache.AddAsync(rateLimitKey, atomic, TimeSpanUtility.ToTimeSpan(Period));
-        }
-
-        if (atomic.DecrementAndGet() < 0)
+        var rateLimitValue = await cache.IncrementAsync(rateLimitKey, expire: TimeSpanUtility.ToTimeSpan(Period));
+        if (rateLimitValue > Limit)
             context.Result = new JsonResult(CommonResult.Fail("429", "Frequent network requests"));
         else
             await next();

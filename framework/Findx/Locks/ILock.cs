@@ -16,16 +16,16 @@ public interface ILock
     /// <param name="renew"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<RLock> AcquireAsync(string resource, TimeSpan? timeUntilExpires = null, bool isWait = false,
-        bool renew = false, CancellationToken cancellationToken = default);
+    Task<RLock> AcquireAsync(string resource, TimeSpan? timeUntilExpires = null, bool isWait = false, bool renew = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     释放锁
     /// </summary>
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task ReleaseAsync(string resource, string lockId);
+    Task ReleaseAsync(string resource, string lockId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     更新锁时间，自动续期
@@ -33,6 +33,7 @@ public interface ILock
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires);
+    Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires, CancellationToken cancellationToken = default);
 }

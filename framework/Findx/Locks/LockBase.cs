@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Findx.Extensions;
+using Findx.Utilities;
 
 namespace Findx.Locks;
 
@@ -60,12 +61,12 @@ public abstract class LockBase : ILock
             await Task.Delay(delayAmount, cancellationToken);
 
             Thread.Yield();
+            
         } while (!cancellationToken.IsCancellationRequested);
 
         return !gotLock
             ? null
-            : new RLock(resource, lockId, this, timeUntilExpires.Value, renew,
-                timeUntilExpires.Value.TotalMilliseconds.To<int>() / 3);
+            : new RLock(resource, lockId, this, timeUntilExpires.Value, renew, timeUntilExpires.Value.TotalMilliseconds.To<int>() / 3);
     }
 
     /// <summary>
@@ -73,8 +74,9 @@ public abstract class LockBase : ILock
     /// </summary>
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public abstract Task ReleaseAsync(string resource, string lockId);
+    public abstract Task ReleaseAsync(string resource, string lockId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     锁续期
@@ -82,8 +84,9 @@ public abstract class LockBase : ILock
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public abstract Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires);
+    public abstract Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     创建锁标识
@@ -110,6 +113,7 @@ public abstract class LockBase : ILock
     /// <param name="resource"></param>
     /// <param name="lockId"></param>
     /// <param name="timeUntilExpires"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected abstract Task<bool> TryLockAsync(string resource, string lockId, TimeSpan timeUntilExpires);
+    protected abstract Task<bool> TryLockAsync(string resource, string lockId, TimeSpan timeUntilExpires, CancellationToken cancellationToken = default);
 }

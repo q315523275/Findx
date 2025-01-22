@@ -2,25 +2,33 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 
-namespace Findx.RabbitMQ
+namespace Findx.RabbitMQ;
+
+/// <summary>
+///     消费者构建工作者
+/// </summary>
+public class RabbitConsumerBuildWorker : BackgroundService
 {
+    private readonly IRabbitConsumerBuilder _builder;
+
     /// <summary>
-    ///     消费者构建工作者
+    ///     Ctor
     /// </summary>
-    public class RabbitConsumerBuildWorker : BackgroundService
+    /// <param name="builder"></param>
+    public RabbitConsumerBuildWorker(IRabbitConsumerBuilder builder)
     {
-        private readonly IRabbitConsumerBuilder _builder;
+        _builder = builder;
+    }
 
-        public RabbitConsumerBuildWorker(IRabbitConsumerBuilder builder)
-        {
-            _builder = builder;
-        }
+    /// <summary>
+    ///    构建执行
+    /// </summary>
+    /// <param name="stoppingToken"></param>
+    /// <returns></returns>
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        _builder.Build();
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            _builder.Build();
-
-            return Task.CompletedTask;
-        }
+        return Task.CompletedTask;
     }
 }

@@ -2,7 +2,7 @@
 using Findx.Common;
 using Findx.Threading;
 
-namespace Findx.Caching.InMemory;
+namespace Findx.Caching;
 
 /// <summary>
 ///     内存缓存
@@ -38,7 +38,7 @@ public class InMemoryCache : ICache, IDisposable
         _cache = new ConcurrentDictionary<string, CacheItem>();
 
         Timer = timer;
-        Timer.Period = 1000 * 120; // 120 sec.
+        Timer.Period = 1000 * 100; // 120 sec.
         Timer.Elapsed = Timer_Elapsed;
         Timer.RunOnStart = false;
         Timer.Start();
@@ -83,7 +83,7 @@ public class InMemoryCache : ICache, IDisposable
     ///     名称
     /// </summary>
     public string Name => CacheType.DefaultMemory;
-
+    
     /// <summary>
     ///     判断缓存是否存在
     /// </summary>
@@ -194,14 +194,21 @@ public class InMemoryCache : ICache, IDisposable
     public bool TryAdd<T>(string key, T value)
     {
         Check.NotNull(key, nameof(key));
-        
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
 
-        _cache.AddOrUpdate(key, new CacheItem(value), (_, oldItem) => { oldItem.Set(value); return oldItem; });
-        
-        Interlocked.Increment(ref _writes);
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return false;
 
-        return true;
+        _cache.Remove(key, out var cacheValue);
+        cacheValue?.Set(value);
+        cacheValue ??= new CacheItem(value);
+        
+        if (_cache.TryAdd(key, cacheValue))
+        {
+            Interlocked.Increment(ref _writes);
+            return true;
+        }
+        
+        return false;
     }
 
     /// <summary>
@@ -209,20 +216,27 @@ public class InMemoryCache : ICache, IDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="absoluteExpiration"></param>
+    /// <param name="expire"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public bool TryAdd<T>(string key, T value, TimeSpan absoluteExpiration)
+    public bool TryAdd<T>(string key, T value, TimeSpan expire)
     {
         Check.NotNull(key, nameof(key));
         
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return false;
 
-        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        _cache.Remove(key, out var cacheValue);
+        cacheValue?.Set(value, expire);
+        cacheValue ??= new CacheItem(value, expire);
         
-        Interlocked.Increment(ref _writes);
-
-        return true;
+        if (_cache.TryAdd(key, cacheValue))
+        {
+            Interlocked.Increment(ref _writes);
+            return true;
+        }
+        
+        return false;
     }
 
     /// <summary>
@@ -230,20 +244,27 @@ public class InMemoryCache : ICache, IDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="absoluteExpiration"></param>
+    /// <param name="expire"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public bool TryAdd<T>(string key, T value, DateTime absoluteExpiration)
+    public bool TryAdd<T>(string key, T value, DateTime expire)
     {
         Check.NotNull(key, nameof(key));
-        
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
 
-        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
-        
-        Interlocked.Increment(ref _writes);
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return false;
 
-        return true;
+        _cache.Remove(key, out var cacheValue);
+        cacheValue?.Set(value, expire);
+        cacheValue ??= new CacheItem(value, expire);
+        
+        if (_cache.TryAdd(key, cacheValue))
+        {
+            Interlocked.Increment(ref _writes);
+            return true;
+        }
+        
+        return false;
     }
 
     /// <summary>
@@ -257,14 +278,21 @@ public class InMemoryCache : ICache, IDisposable
     public bool TryAdd<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions)
     {
         Check.NotNull(key, nameof(key));
-        
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return false;
 
-        _cache.AddOrUpdate(key, new CacheItem(value, slidingExpirationOptions), (_, oldItem) => { oldItem.Set(value, slidingExpirationOptions); return oldItem; });
-        
-        Interlocked.Increment(ref _writes);
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return false;
 
-        return true;
+        _cache.Remove(key, out var cacheValue);
+        cacheValue?.Set(value, slidingExpirationOptions);
+        cacheValue ??= new CacheItem(value, slidingExpirationOptions);
+        
+        if (_cache.TryAdd(key, cacheValue))
+        {
+            Interlocked.Increment(ref _writes);
+            return true;
+        }
+        
+        return false;
     }
     
     /// <summary>
@@ -278,14 +306,21 @@ public class InMemoryCache : ICache, IDisposable
     public Task<bool> TryAddAsync<T>(string key, T value, CancellationToken cancellationToken = default)
     {
         Check.NotNull(key, nameof(key));
-        
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return Task.FromResult(false);
 
-        _cache.AddOrUpdate(key, new CacheItem(value), (_, oldItem) => { oldItem.Set(value); return oldItem; });
-        
-        Interlocked.Increment(ref _writes);
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return Task.FromResult(false);
 
-        return Task.FromResult(true);
+        _cache.Remove(key, out var cacheValue);
+        cacheValue?.Set(value);
+        cacheValue ??= new CacheItem(value);
+        
+        if (_cache.TryAdd(key, cacheValue))
+        {
+            Interlocked.Increment(ref _writes);
+            return Task.FromResult(true);
+        }
+        
+        return Task.FromResult(false);
     }
 
     /// <summary>
@@ -293,21 +328,28 @@ public class InMemoryCache : ICache, IDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="absoluteExpiration"></param>
+    /// <param name="expire"></param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public Task<bool> TryAddAsync<T>(string key, T value, TimeSpan absoluteExpiration, CancellationToken cancellationToken = default)
+    public Task<bool> TryAddAsync<T>(string key, T value, TimeSpan expire, CancellationToken cancellationToken = default)
     {
         Check.NotNull(key, nameof(key));
-        
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return Task.FromResult(false);
 
-        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
-        
-        Interlocked.Increment(ref _writes);
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return Task.FromResult(false);
 
-        return Task.FromResult(true);
+        _cache.Remove(key, out var cacheValue);
+        cacheValue?.Set(value, expire);
+        cacheValue ??= new CacheItem(value, expire);
+        
+        if (_cache.TryAdd(key, cacheValue))
+        {
+            Interlocked.Increment(ref _writes);
+            return Task.FromResult(true);
+        }
+        
+        return Task.FromResult(false);
     }
 
     /// <summary>
@@ -315,21 +357,28 @@ public class InMemoryCache : ICache, IDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="absoluteExpiration"></param>
+    /// <param name="expire"></param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public Task<bool> TryAddAsync<T>(string key, T value, DateTime absoluteExpiration, CancellationToken cancellationToken = default)
+    public Task<bool> TryAddAsync<T>(string key, T value, DateTime expire, CancellationToken cancellationToken = default)
     {
         Check.NotNull(key, nameof(key));
         
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return Task.FromResult(false);
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return Task.FromResult(false);
 
-        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        _cache.Remove(key, out var cacheValue);
+        cacheValue?.Set(value, expire);
+        cacheValue ??= new CacheItem(value, expire);
         
-        Interlocked.Increment(ref _writes);
-
-        return Task.FromResult(true);
+        if (_cache.TryAdd(key, cacheValue))
+        {
+            Interlocked.Increment(ref _writes);
+            return Task.FromResult(true);
+        }
+        
+        return Task.FromResult(false);
     }
 
     /// <summary>
@@ -345,13 +394,20 @@ public class InMemoryCache : ICache, IDisposable
     {
         Check.NotNull(key, nameof(key));
         
-        if (_cache.TryGetValue(key, out var item) && !item.Expired) return Task.FromResult(false);
+        if (_cache.TryGetValue(key, out var item) && !item.Expired)
+            return Task.FromResult(false);
 
-        _cache.AddOrUpdate(key, new CacheItem(value, slidingExpirationOptions), (_, oldItem) => { oldItem.Set(value, slidingExpirationOptions); return oldItem; });
+        _cache.Remove(key, out var cacheValue);
+        cacheValue?.Set(value, slidingExpirationOptions);
+        cacheValue ??= new CacheItem(value, slidingExpirationOptions);
         
-        Interlocked.Increment(ref _writes);
-
-        return Task.FromResult(true);
+        if (_cache.TryAdd(key, cacheValue))
+        {
+            Interlocked.Increment(ref _writes);
+            return Task.FromResult(true);
+        }
+        
+        return Task.FromResult(false);
     }
 
         
@@ -375,15 +431,15 @@ public class InMemoryCache : ICache, IDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="absoluteExpiration"></param>
+    /// <param name="expire"></param>
     /// <typeparam name="T"></typeparam>
-    public void Add<T>(string key, T value, TimeSpan absoluteExpiration)
+    public void Add<T>(string key, T value, TimeSpan expire)
     {
         Check.NotNull(key, nameof(key));
 
         Interlocked.Increment(ref _writes);
 
-        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) => { oldItem.Set(value, expire); return oldItem; });
     }
 
     /// <summary>
@@ -391,15 +447,15 @@ public class InMemoryCache : ICache, IDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="absoluteExpiration"></param>
+    /// <param name="expire"></param>
     /// <typeparam name="T"></typeparam>
-    public void Add<T>(string key, T value, DateTime absoluteExpiration)
+    public void Add<T>(string key, T value, DateTime expire)
     {
         Check.NotNull(key, nameof(key));
 
         Interlocked.Increment(ref _writes);
 
-        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) => { oldItem.Set(value, expire); return oldItem; });
     }
 
     /// <summary>
@@ -442,17 +498,17 @@ public class InMemoryCache : ICache, IDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="absoluteExpiration"></param>
+    /// <param name="expire"></param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public Task AddAsync<T>(string key, T value, TimeSpan absoluteExpiration, CancellationToken cancellationToken = default)
+    public Task AddAsync<T>(string key, T value, TimeSpan expire, CancellationToken cancellationToken = default)
     {
         Check.NotNull(key, nameof(key));
 
         Interlocked.Increment(ref _writes);
 
-        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) => { oldItem.Set(value, expire); return oldItem; });
         
         return Task.CompletedTask;
     }
@@ -462,17 +518,17 @@ public class InMemoryCache : ICache, IDisposable
     /// </summary>
     /// <param name="key"></param>
     /// <param name="value"></param>
-    /// <param name="absoluteExpiration"></param>
+    /// <param name="expire"></param>
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public Task AddAsync<T>(string key, T value, DateTime absoluteExpiration, CancellationToken cancellationToken = default)
+    public Task AddAsync<T>(string key, T value, DateTime expire, CancellationToken cancellationToken = default)
     {
         Check.NotNull(key, nameof(key));
 
         Interlocked.Increment(ref _writes);
 
-        _cache.AddOrUpdate(key, new CacheItem(value, absoluteExpiration), (_, oldItem) => { oldItem.Set(value, absoluteExpiration); return oldItem; });
+        _cache.AddOrUpdate(key, new CacheItem(value, expire), (_, oldItem) => { oldItem.Set(value, expire); return oldItem; });
         
         return Task.CompletedTask;
     }
@@ -505,25 +561,6 @@ public class InMemoryCache : ICache, IDisposable
     {
         _cache.TryRemove(key, out _);
     }
-
-    /// <summary>
-    ///     根据缓存前缀移除缓存
-    /// </summary>
-    /// <param name="prefix"></param>
-    public void RemoveByPrefix(string prefix)
-    {
-        foreach (var item in _cache)
-            if (item.Key.StartsWith(prefix))
-                Remove(item.Key);
-    }
-
-    /// <summary>
-    ///     清空缓存
-    /// </summary>
-    public void Clear()
-    {
-        _cache.Clear();
-    }
     
     /// <summary>
     ///     移除缓存
@@ -541,31 +578,95 @@ public class InMemoryCache : ICache, IDisposable
     }
 
     /// <summary>
-    ///     根据前缀移除缓存
+    ///     获取 或 添加 缓存项
     /// </summary>
-    /// <param name="prefix"></param>
-    /// <param name="token"></param>
+    /// <param name="key"></param>
+    /// <param name="valueFactory"></param>
+    /// <param name="expire"></param>
     /// <returns></returns>
-    public Task RemoveByPrefixAsync(string prefix, CancellationToken token = default)
+    private CacheItem GetOrAddItem(string key, Func<string, object> valueFactory, TimeSpan? expire)
     {
-        foreach (var item in _cache)
-            if (item.Key.StartsWith(prefix))
-                Remove(item.Key);
-        return Task.CompletedTask;
+        CacheItem item;
+        do
+        {
+            if (_cache.TryGetValue(key, out item) && item != null)
+            {
+                if (!item.Expired) return item;
+
+                if (expire.HasValue)
+                    item.Set(valueFactory(key), expire.Value);
+                else
+                    item.Set(valueFactory(key));
+                
+                return item;
+            }
+
+            item = expire.HasValue ? new CacheItem(valueFactory(key), expire.Value) : new CacheItem(valueFactory(key));
+            
+        } while (!_cache.TryAdd(key, item));
+
+        Interlocked.Increment(ref _writes);
+        
+        return item;
+    }
+    
+    /// <summary>
+    ///     累加，原子操作
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
+    /// <returns></returns>
+    public long Increment(string key, long value = 1, TimeSpan? expire = null)
+    {
+        var item = GetOrAddItem(key, _ => new AtomicLong(), expire);
+        var atomicLong = item.Visit() as AtomicLong;
+        return atomicLong?.AddAndGet(value)?? 0;
     }
 
     /// <summary>
-    ///     清空缓存
+    ///     递减，原子操作
     /// </summary>
-    /// <param name="token"></param>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
     /// <returns></returns>
-    public Task ClearAsync(CancellationToken token = default)
+    public long Decrement(string key, long value = 1, TimeSpan? expire = null)
     {
-        _cache.Clear();
-        return Task.CompletedTask;
+        var item = GetOrAddItem(key, _ => new AtomicLong(), expire);
+        var atomicLong = item.Visit() as AtomicLong;
+        return atomicLong?.AddAndGet(-value)?? 0;
     }
 
+    /// <summary>
+    ///     累加，原子操作
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public Task<long> IncrementAsync(string key, long value = 1, TimeSpan? expire = null, CancellationToken token = default)
+    {
+        var item = GetOrAddItem(key, _ => new AtomicLong(), expire);
+        var atomicLong = item.Visit() as AtomicLong;
+        return Task.FromResult(atomicLong?.AddAndGet(value)?? 0);
+    }
 
+    /// <summary>
+    ///     递减，原子操作
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="expire"></param>
+    /// <param name="token"></param>
+    /// <returns></returns>
+    public Task<long> DecrementAsync(string key, long value = 1, TimeSpan? expire = null, CancellationToken token = default)
+    {
+        var item = GetOrAddItem(key, _ => new AtomicLong(), expire);
+        var atomicLong = item.Visit() as AtomicLong;
+        return Task.FromResult(atomicLong?.AddAndGet(-value)?? 0);
+    }
 
     /// <summary>
     ///     释放

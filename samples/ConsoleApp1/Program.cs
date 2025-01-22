@@ -13,7 +13,6 @@ using System.Text;
 using ConsoleApp1;
 using CsvHelper;
 using Findx;
-using Findx.Caching.InMemory;
 using Findx.Configuration;
 using Findx.Data;
 using Findx.Expressions;
@@ -250,127 +249,127 @@ Console.WriteLine("Hello, World!");
 
 
 // 有序Id
-Console.WriteLine(Guid.NewGuid());
-Console.WriteLine(SequentialGuidUtility.Next(SequentialGuidType.AsString));
-var snowflakeId = SnowflakeIdUtility.Default().NextId();
-Console.WriteLine($"Findx:" + snowflakeId);
-var options = new IdGeneratorOptions { WorkerIdBitLength = 10, SeqBitLength = 12 };
-YitIdHelper.SetIdGenerator(options);
-Console.WriteLine($"YitIdHelper:" + YitIdHelper.NextId());
-var newLifeSnowflakeId = new Snowflake();
-Console.WriteLine($"NewLife.Snowflake:" + newLifeSnowflakeId.NewId());
-Console.WriteLine($"Ulid.NewUlid:" + Ulid.NewUlid());
-
-Console.WriteLine();
-Console.WriteLine("有序Id生成预热结束");
-Console.WriteLine();
-
-var cyclesCount = 1_000_000;
-var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
-
-var watch = Stopwatch.StartNew();
-for (var i = 0; i < cyclesCount; i++)
-{
-    Guid.NewGuid();
-}
-watch.Stop();
-Console.WriteLine($"原生NewGuid执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (var i = 0; i < cyclesCount; i++)
-{
-    SequentialGuidUtility.Next(SequentialGuidType.AsString);
-}
-watch.Stop();
-Console.WriteLine($"Abp有序Guid执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (var i = 0; i < cyclesCount; i++)
-{
-    NewId.NextSequentialGuid();
-}
-watch.Stop();
-Console.WriteLine($"NewId有序Guid执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (var i = 0; i < cyclesCount; i++)
-{
-    SnowflakeIdUtility.Default().NextId();
-}
-watch.Stop();
-Console.WriteLine($"Findx.Snowflake执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (var i = 0; i < cyclesCount; i++)
-{
-    newLifeSnowflakeId.NewId();
-}
-watch.Stop();
-Console.WriteLine($"NewLife.Snowflake执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (var i = 0; i < cyclesCount; i++)
-{
-    YitIdHelper.NextId();
-}
-watch.Stop();
-Console.WriteLine($"YitIdHelper.NextId()执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-watch.Restart();
-for (var i = 0; i < cyclesCount; i++)
-{
-    Ulid.NewUlid();
-}
-watch.Stop();
-Console.WriteLine($"Ulid.NewUlid()执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
-
-
-
-// 重复验证
-Console.WriteLine();
-var repeatList = new long[cyclesCount];;
-Parallel.For(0, cyclesCount, i =>
-{
-    repeatList[i] = SnowflakeIdUtility.Default().NextId();
-});
-Console.WriteLine($"并行{cyclesCount}执行,有序Id-SnowflakeIdUtility是否有重复:{repeatList.Distinct().Count() != cyclesCount}");
-
-var repeatList2 = new Guid[cyclesCount];;
-Parallel.For(0, cyclesCount, i =>
-{
-    repeatList2[i] = NewId.NextSequentialGuid();
-});
-Console.WriteLine($"并行{cyclesCount}执行,有序Id-NewId是否有重复:{repeatList2.Distinct().Count() != cyclesCount}");
-
-var repeatList3= new long[cyclesCount];;
-Parallel.For(0, cyclesCount, i =>
-{
-    repeatList3[i] = YitIdHelper.NextId();
-});
-Console.WriteLine($"并行{cyclesCount}执行,有序Id-YitIdHelper是否有重复:{repeatList3.Distinct().Count() != cyclesCount}");
-
-// 连续性
-Console.WriteLine();
-Console.WriteLine($"生成{cyclesCount}个Id检查是否是连续Guid......如有重复将进行行打印...");
-var sequentialList = new List<long>();
-for (var i = 0; i < cyclesCount; i++)
-{
-    sequentialList.Add(SnowflakeIdUtility.Default().NextId());
-}
-var newGuids = sequentialList.OrderBy(x => x).ToList();
-for (var i = 0; i < cyclesCount; i++)
-{
-    if (newGuids[i] != sequentialList[i])
-        Console.WriteLine($"发现非连续:{newGuids[i]} != {sequentialList[i]}");
-}
-Console.WriteLine($"有序Id连续检查结果打印结束.");
-
-Console.WriteLine();
-Console.WriteLine("雪花id 1829316827960315904 反解析...");
-SnowflakeIdUtility.TryParse(1829316827960315904, out var timestamp, out var wid, out var sequence);
-Console.WriteLine(timestamp.ToString(CultureInfo.InvariantCulture));
-Console.WriteLine(wid);
-Console.WriteLine(sequence);
+// Console.WriteLine(Guid.NewGuid());
+// Console.WriteLine(SequentialGuidUtility.Next(SequentialGuidType.AsString));
+// var snowflakeId = SnowflakeIdUtility.Default().NextId();
+// Console.WriteLine($"Findx:" + snowflakeId);
+// var options = new IdGeneratorOptions { WorkerIdBitLength = 10, SeqBitLength = 12 };
+// YitIdHelper.SetIdGenerator(options);
+// Console.WriteLine($"YitIdHelper:" + YitIdHelper.NextId());
+// var newLifeSnowflakeId = new Snowflake();
+// Console.WriteLine($"NewLife.Snowflake:" + newLifeSnowflakeId.NewId());
+// Console.WriteLine($"Ulid.NewUlid:" + Ulid.NewUlid());
+//
+// Console.WriteLine();
+// Console.WriteLine("有序Id生成预热结束");
+// Console.WriteLine();
+//
+// var cyclesCount = 1_000_000;
+// var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
+//
+// var watch = Stopwatch.StartNew();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     Guid.NewGuid();
+// }
+// watch.Stop();
+// Console.WriteLine($"原生NewGuid执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     SequentialGuidUtility.Next(SequentialGuidType.AsString);
+// }
+// watch.Stop();
+// Console.WriteLine($"Abp有序Guid执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     NewId.NextSequentialGuid();
+// }
+// watch.Stop();
+// Console.WriteLine($"NewId有序Guid执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     SnowflakeIdUtility.Default().NextId();
+// }
+// watch.Stop();
+// Console.WriteLine($"Findx.Snowflake执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     newLifeSnowflakeId.NewId();
+// }
+// watch.Stop();
+// Console.WriteLine($"NewLife.Snowflake执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     YitIdHelper.NextId();
+// }
+// watch.Stop();
+// Console.WriteLine($"YitIdHelper.NextId()执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+// watch.Restart();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     Ulid.NewUlid();
+// }
+// watch.Stop();
+// Console.WriteLine($"Ulid.NewUlid()执行{cyclesCount}次耗时:{watch.Elapsed.TotalMilliseconds}ms");
+//
+//
+//
+// // 重复验证
+// Console.WriteLine();
+// var repeatList = new long[cyclesCount];;
+// Parallel.For(0, cyclesCount, i =>
+// {
+//     repeatList[i] = SnowflakeIdUtility.Default().NextId();
+// });
+// Console.WriteLine($"并行{cyclesCount}执行,有序Id-SnowflakeIdUtility是否有重复:{repeatList.Distinct().Count() != cyclesCount}");
+//
+// var repeatList2 = new Guid[cyclesCount];;
+// Parallel.For(0, cyclesCount, i =>
+// {
+//     repeatList2[i] = NewId.NextSequentialGuid();
+// });
+// Console.WriteLine($"并行{cyclesCount}执行,有序Id-NewId是否有重复:{repeatList2.Distinct().Count() != cyclesCount}");
+//
+// var repeatList3= new long[cyclesCount];;
+// Parallel.For(0, cyclesCount, i =>
+// {
+//     repeatList3[i] = YitIdHelper.NextId();
+// });
+// Console.WriteLine($"并行{cyclesCount}执行,有序Id-YitIdHelper是否有重复:{repeatList3.Distinct().Count() != cyclesCount}");
+//
+// // 连续性
+// Console.WriteLine();
+// Console.WriteLine($"生成{cyclesCount}个Id检查是否是连续Guid......如有重复将进行行打印...");
+// var sequentialList = new List<long>();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     sequentialList.Add(SnowflakeIdUtility.Default().NextId());
+// }
+// var newGuids = sequentialList.OrderBy(x => x).ToList();
+// for (var i = 0; i < cyclesCount; i++)
+// {
+//     if (newGuids[i] != sequentialList[i])
+//         Console.WriteLine($"发现非连续:{newGuids[i]} != {sequentialList[i]}");
+// }
+// Console.WriteLine($"有序Id连续检查结果打印结束.");
+//
+// Console.WriteLine();
+// Console.WriteLine("雪花id 1829316827960315904 反解析...");
+// SnowflakeIdUtility.TryParse(1829316827960315904, out var timestamp, out var wid, out var sequence);
+// Console.WriteLine(timestamp.ToString(CultureInfo.InvariantCulture));
+// Console.WriteLine(wid);
+// Console.WriteLine(sequence);
 
 
 // Json表达式解析
