@@ -1132,7 +1132,7 @@ public class RedisClient : IRedisClient
     }
 
     /// <summary>
-    ///     
+    ///     从列表的左侧取出一个值
     /// </summary>
     /// <param name="cacheKey"></param>
     /// <param name="cancellationToken"></param>
