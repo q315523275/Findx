@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
-namespace Findx.Extensions.WorkflowCore.Models;
+namespace Findx.Extensions.WorkflowCore.Entity;
 
 /// <summary>
 ///     实体基类

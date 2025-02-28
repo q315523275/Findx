@@ -59,7 +59,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
                                   .AndIf(_workContext.DataScope is DataScope.Subs, x => _workContext.OrgIds.Contains(x.OrgId.Value))
                                   .AndIf(_workContext.DataScope is DataScope.Department, x => x.OrgId == user.OrgId.Value)
                                   .AndIf(_workContext.DataScope is DataScope.Oneself, x => x.Id == user.UserId);
-        return defaultWhere == null ? exp.Build() : exp.And(defaultWhere).Build();
+        return defaultWhere == null ? exp.Build() : exp?.And(defaultWhere)?.Build();
     }
 
     /// <summary>
@@ -72,12 +72,17 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     public override async Task<CommonResult<PageResult<List<UserSimplifyDto>>>> PageAsync(UserQueryDto request, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysUserInfo, Guid>();
+        var roleRepo = GetRepository<SysUserRoleInfo, Guid>();
         
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
         var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
-
+        var ids = res.Rows.Select(x => x.Id).Distinct();
+        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
+        foreach (var item in res.Rows)
+            item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => new UserRoleSimplifyDto { Id = x.RoleInfo.Id, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name });
+        
         return CommonResult.Success(res);
     }
 
@@ -132,14 +137,6 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
         var whereExp = LambdaExpressionParser.ParseConditions<SysUserInfo>(filterGroup);
         var repo = GetRepository<SysUserInfo, Guid>();
         return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
-        
-        
-        // var whereExp = PredicateBuilder.New<SysUserInfo>()
-        //     .AndIf(field == "userName", x => x.UserName == value)
-        //     .And(x => x.Id != id)
-        //     .Build();
-        // var repo = GetRepository<SysUserInfo>();
-        // return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
     }
 
     /// <summary>
@@ -166,7 +163,8 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     {
         var roleRepo = GetRepository<SysUserRoleInfo>();
         var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && x.UserId == model.Id);
-        simplifyDto.Roles = roles.Where(x => x.RoleInfo != null).Select(x => x.RoleInfo);
+        simplifyDto.Roles = roles.Where(x => x.RoleInfo != null).Select(x => new UserRoleSimplifyDto { Id = x.RoleInfo.Id, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name });
+        
         return Task.CompletedTask;
     }
 

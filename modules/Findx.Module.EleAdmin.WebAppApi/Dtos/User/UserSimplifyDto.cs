@@ -101,5 +101,5 @@ public class UserSimplifyDto : IResponse
     /// <summary>
     ///     角色集合
     /// </summary>
-    public virtual IEnumerable<SysRoleInfo> Roles { get; set; }
+    public virtual IEnumerable<UserRoleSimplifyDto> Roles { get; set; }
 }

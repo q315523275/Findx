@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 using Findx.Extensions.WorkflowCore.Enums;
 
-namespace Findx.Extensions.WorkflowCore.Models;
+namespace Findx.Extensions.WorkflowCore.Entity;
 
 /// <summary>
 ///     流程定义表
@@ -11,7 +11,7 @@ namespace Findx.Extensions.WorkflowCore.Models;
 [Table("flw_process")]
 [EntityExtension(DataSource = "Workflow")]
 [Description("流程定义表")]
-public class ProcessInfo: FullEntityBase, ISort, ITenant
+public class FlwProcessInfo: FullEntityBase, ICloneable<FlwProcessInfo>, ISort, ITenant
 {
     /// <summary>
     ///     流程编码
@@ -72,4 +72,13 @@ public class ProcessInfo: FullEntityBase, ISort, ITenant
     ///     租户
     /// </summary>
     public string TenantId { get; set; }
+
+    /// <summary>
+    ///     克隆
+    /// </summary>
+    /// <returns></returns>
+    public new FlwProcessInfo Clone()
+    {
+        return MemberwiseClone() as FlwProcessInfo;
+    }
 }

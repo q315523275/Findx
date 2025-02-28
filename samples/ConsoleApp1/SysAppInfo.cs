@@ -27,6 +27,11 @@ public record SysAppInfo
     public CommonStatus Status { get; set; }
 
     /// <summary>
+    ///     机构编号
+    /// </summary>
+    public Guid? OrgId { set; get; }
+    
+    /// <summary>
     ///     是否删除
     /// </summary>
     public bool IsDeleted { get; set; }

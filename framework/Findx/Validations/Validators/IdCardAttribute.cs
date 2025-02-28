@@ -7,7 +7,7 @@ namespace System.ComponentModel.DataAnnotations;
 /// <summary>
 ///     身份证验证
 /// </summary>
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
 public class IdCardAttribute : ValidationAttribute
 {
     /// <summary>

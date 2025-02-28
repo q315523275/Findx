@@ -7,7 +7,7 @@ namespace System.ComponentModel.DataAnnotations;
 /// <summary>
 ///     Url地址验证
 /// </summary>
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
 public class HttpUrlAddressAttribute : ValidationAttribute
 {
     /// <summary>

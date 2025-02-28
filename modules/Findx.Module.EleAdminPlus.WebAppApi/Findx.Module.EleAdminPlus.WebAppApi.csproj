@@ -4,7 +4,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <LangVersion>default</LangVersion>
-        <Version>11.1.2025.102</Version>
+        <Version>11.1.2025.228</Version>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>

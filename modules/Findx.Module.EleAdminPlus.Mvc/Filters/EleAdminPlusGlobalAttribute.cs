@@ -65,6 +65,7 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
             {
                 // 默认数据范围
                 workContext.SetDataScope(DataScope.Oneself);
+                
                 // 根据角色控制数据范围
                 if (userRoleList.Any())
                 {
@@ -93,7 +94,9 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
         stopWatch.Stop();
         logger.LogDebug("EleAdminPlusGlobal前置WorkContext计算耗时:{StopWatchElapsedMilliseconds}ms", stopWatch.ElapsedMilliseconds);
         stopWatch.Start();
+        
         await next();
+        
         stopWatch.Stop();
         logger.LogDebug("EleAdminPlusGlobal执行完成耗时:{StopWatchElapsedMilliseconds}ms", stopWatch.ElapsedMilliseconds);
     }

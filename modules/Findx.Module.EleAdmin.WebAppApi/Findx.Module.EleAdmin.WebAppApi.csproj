@@ -11,10 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.Security" Version="11.1.2025.108" />
-    </ItemGroup>
-
-    <ItemGroup>
+      <ProjectReference Include="..\..\framework\Findx.Security\Findx.Security.csproj" />
       <ProjectReference Include="..\Findx.Module.EleAdmin.Mvc\Findx.Module.EleAdmin.Mvc.csproj" />
     </ItemGroup>
 

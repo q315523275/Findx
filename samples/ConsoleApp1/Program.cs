@@ -17,6 +17,10 @@ using Findx.Configuration;
 using Findx.Data;
 using Findx.Expressions;
 using Findx.Extensions;
+using Findx.Machine;
+using Findx.Machine.Cpu;
+using Findx.Machine.Memory;
+using Findx.Machine.Network;
 using Findx.Reflection;
 using Findx.Utilities;
 using Findx.WebSocketCore;
@@ -127,8 +131,10 @@ Console.WriteLine("Hello, World!");
 // Console.WriteLine("开始配置监听");
 // Console.ReadLine();
 
+
 // var sign = EncryptUtility.Md5By32($"findxtestdev0");
 // Console.WriteLine($"/api/config?appId=findx&sign={sign}&environment=dev&version=0&load=false");
+
 
 // 实体扩展字段
 // var user = new User();
@@ -631,4 +637,6 @@ Console.WriteLine("Hello, World!");
 // Console.WriteLine($"发送消息耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
 // Console.ReadLine();
 
+var ai = new SysAppInfo { OrgId = Guid.Parse("3a067a31-b7b2-3c48-b770-a987a73c93c3") };
 
+Console.WriteLine(ai.OrgId.To<string>());

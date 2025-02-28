@@ -38,7 +38,7 @@ public class DefaultWorkContext: IWorkContext, IScopeDependency
                 OrgName = _currentUser.FindClaim(Const.Default.OrgNameKey)?.Value
             };
         }
-        return default;
+        return null;
     }
 
     /// <summary>

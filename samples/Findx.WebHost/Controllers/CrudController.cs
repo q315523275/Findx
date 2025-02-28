@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Mvc;
@@ -25,7 +26,7 @@ public class CrudController : CrudControllerBase<TestNewsInfo, TestNewsInfo, Que
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Transactional]
-    public override Task<CommonResult> DeleteAsync(List<int> request, CancellationToken cancellationToken = default)
+    public override Task<CommonResult> DeleteAsync([MinLength(1)] List<int> request, CancellationToken cancellationToken = default)
     {
         return base.DeleteAsync(request, cancellationToken);
     }

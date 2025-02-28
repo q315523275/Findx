@@ -578,6 +578,21 @@ public class InMemoryCache : ICache, IDisposable
     }
 
     /// <summary>
+    ///     移除缓存
+    /// </summary>
+    /// <param name="prefix"></param>
+    public void RemoveByPrefix(string prefix)
+    {
+        foreach (var item in _cache)
+        {
+            if (item.Key.StartsWith(prefix))
+            {
+                _cache.TryRemove(item.Key, out _);
+            }
+        }
+    }
+    
+    /// <summary>
     ///     获取 或 添加 缓存项
     /// </summary>
     /// <param name="key"></param>

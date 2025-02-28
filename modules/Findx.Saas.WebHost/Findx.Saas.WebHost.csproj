@@ -4,16 +4,10 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>default</LangVersion>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Findx.Guids.NewId" Version="11.1.2025.108" />
-        <PackageReference Include="Findx.ImageSharp" Version="11.1.2025.108" />
-        <PackageReference Include="Findx.Mapster" Version="11.1.2025.108" />
-        <PackageReference Include="Findx.NLog" Version="11.1.2025.108" />
-        <PackageReference Include="Findx.Swagger" Version="11.1.2025.108" />
-        <PackageReference Include="Findx.WebSocketCore" Version="11.1.2025.108" />
         <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.5.103" />
     </ItemGroup>
 
@@ -24,6 +18,11 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\framework\Findx.Guids.NewId\Findx.Guids.NewId.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.ImageSharp\Findx.ImageSharp.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.Swagger\Findx.Swagger.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
       <ProjectReference Include="..\Findx.Module.EleAdmin.WebAppApi\Findx.Module.EleAdmin.WebAppApi.csproj" />
     </ItemGroup>
     

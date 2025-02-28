@@ -7,7 +7,7 @@ namespace System.ComponentModel.DataAnnotations;
 /// <summary>
 ///     中文验证
 /// </summary>
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter, AllowMultiple = false)]
 public class ChineseAttribute : ValidationAttribute
 {
     /// <summary>

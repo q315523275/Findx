@@ -37,6 +37,7 @@ public class AuthController : AreaApiControllerBase
 
     private readonly bool _enabledCaptcha;
     private readonly bool _useAbpJwt;
+    
     private readonly IOptions<JwtOptions> _options;
     private readonly IRepository<SysLoginRecordInfo, long> _loginRecordRepo;
     private readonly IRepository<SysUserInfo, long> _userRepo;
@@ -164,6 +165,7 @@ public class AuthController : AreaApiControllerBase
             { ClaimTypes.OrgId, accountInfo.OrgId.SafeString() },
             { ClaimTypes.OrgName, accountInfo.OrgName.SafeString() }
         };
+        
         // 兼容AbpJwt
         if (_useAbpJwt)
         {
@@ -171,6 +173,7 @@ public class AuthController : AreaApiControllerBase
             payload[System.Security.Claims.ClaimTypes.Name] = accountInfo.UserName.SafeString();
             payload[System.Security.Claims.ClaimTypes.GivenName] = accountInfo.Nickname.SafeString();
         }
+        
         // 角色id及编号
         var roles = JsonSerializer.Deserialize<List<RoleDto>>(accountInfo.RoleJson ?? "[]", options: _jsonOptions.Value.JsonSerializerOptions);
         payload[ClaimTypes.RoleIds] = roles.Select(x => x.Id).Distinct().JoinAsString(",");

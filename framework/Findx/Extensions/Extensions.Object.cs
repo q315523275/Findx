@@ -56,10 +56,10 @@ public static partial class Extensions
         if (conversionType.IsNullableType()) conversionType = conversionType.GetUnNullableType();
 
         if (conversionType.IsEnum) return (T)Enum.Parse(conversionType, obj.ToString() ?? string.Empty);
-
+        
         if (conversionType == typeof(Guid))
             return (T)TypeDescriptor.GetConverter(conversionType).ConvertFromInvariantString(obj.ToString());
-
+        
         return (T)Convert.ChangeType(obj, conversionType, CultureInfo.InvariantCulture);
     }
 
@@ -74,19 +74,18 @@ public static partial class Extensions
         if (value == null) 
             return null;
 
-        if (value.GetType() == conversionType)
-            return value;
+        var valueType = value.GetType();
+        if (valueType == conversionType) return value;
         
-        if (conversionType.IsNullableType()) 
-            conversionType = conversionType.GetUnNullableType();
+        if (conversionType.IsNullableType()) conversionType = conversionType.GetUnNullableType();
         
-        if (conversionType.IsEnum) 
-            return Enum.Parse(conversionType, value.ToString() ?? string.Empty);
+        if (conversionType.IsEnum) return Enum.Parse(conversionType, value.ToString() ?? string.Empty);
         
-        if (conversionType == typeof(Guid)) 
-            return Guid.Parse(value.ToString() ?? string.Empty);
+        if (conversionType == typeof(Guid)) return Guid.Parse(value.ToString() ?? string.Empty);
         
-        return Convert.ChangeType(value, conversionType);
+        if (conversionType == typeof(string)) return value.ToString();
+        
+        return Convert.ChangeType(value, conversionType, CultureInfo.InvariantCulture);
     }
 
     /// <summary>

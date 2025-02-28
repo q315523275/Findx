@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
-namespace Findx.Extensions.WorkflowCore.Models;
+namespace Findx.Extensions.WorkflowCore.Entity;
 
 /// <summary>
 ///     任务表
@@ -10,7 +10,7 @@ namespace Findx.Extensions.WorkflowCore.Models;
 [Table("flw_process")]
 [EntityExtension(DataSource = "Workflow")]
 [Description("任务表")]
-public class TaskInfo: FullEntityBase
+public class FlwTaskInfo: FullEntityBase
 {
     
 }

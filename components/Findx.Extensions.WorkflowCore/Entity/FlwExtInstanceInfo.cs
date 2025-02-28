@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 using Findx.Extensions.WorkflowCore.Enums;
 
-namespace Findx.Extensions.WorkflowCore.Models;
+namespace Findx.Extensions.WorkflowCore.Entity;
 
 /// <summary>
 ///     扩展流程实例表
@@ -11,17 +11,17 @@ namespace Findx.Extensions.WorkflowCore.Models;
 [Table("flw_instance_ext")]
 [EntityExtension(DataSource = "Workflow")]
 [Description("扩展流程实例表")]
-public class InstanceExtInfo: EntityBase<long>
+public class FlwExtInstanceInfo: EntityBase<long>
 {
-    /// <summary>
-    ///     流程定义ID
-    /// </summary>
-    public long ProcessId { get; set; }
-    
     /// <summary>
     ///     程实例ID
     /// </summary>
     public long InstanceId { get; set; }
+    
+    /// <summary>
+    ///     流程定义ID
+    /// </summary>
+    public long ProcessId { get; set; }
     
     /// <summary>
     ///     流程名称

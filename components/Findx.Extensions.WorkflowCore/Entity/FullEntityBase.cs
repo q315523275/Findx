@@ -1,11 +1,11 @@
 using Findx.Data;
 
-namespace Findx.Extensions.WorkflowCore.Models;
+namespace Findx.Extensions.WorkflowCore.Entity;
 
 /// <summary>
 ///     全量属性实体基类
 /// </summary>
-public abstract class FullEntityBase: EntityBase, IDataOwner<long>
+public abstract class FullEntityBase: EntityBase, IDataOwner<long>, IDataDepartment<long>
 {
     /// <summary>
     ///     机构Id

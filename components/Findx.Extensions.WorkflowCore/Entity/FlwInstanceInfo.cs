@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
-namespace Findx.Extensions.WorkflowCore.Models;
+namespace Findx.Extensions.WorkflowCore.Entity;
 
 /// <summary>
 ///     流程实例表
@@ -10,7 +10,7 @@ namespace Findx.Extensions.WorkflowCore.Models;
 [Table("flw_instance")]
 [EntityExtension(DataSource = "Workflow")]
 [Description("流程实例表")]
-public class InstanceInfo: FullEntityBase
+public class FlwInstanceInfo: FullEntityBase
 {
     /// <summary>
     ///     流程定义ID

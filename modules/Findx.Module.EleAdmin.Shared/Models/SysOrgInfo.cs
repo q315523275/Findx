@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdmin.Shared.Models;
 /// </summary>
 [Table(Name = "sys_org")]
 [EntityExtension(DataSource = "system")]
-public class SysOrgInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant, IResponse
+public class SysOrgInfo : FullAuditedBase<Guid, Guid>, ISort, ISoftDeletable, ITenant, IResponse
 {
     /// <summary>
     ///     机构id

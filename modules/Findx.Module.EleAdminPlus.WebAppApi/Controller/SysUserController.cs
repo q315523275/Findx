@@ -72,12 +72,17 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     public override async Task<CommonResult<PageResult<List<UserSimplifyDto>>>> PageAsync(UserPageQueryDto request, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysUserInfo, long>();
-
+        var roleRepo = GetRepository<SysUserRoleInfo, long>();
+        
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
         var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
-
+        var ids = res.Rows.Select(x => x.Id).Distinct();
+        var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
+        foreach (var item in res.Rows)
+            item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => new UserRoleSimplifyDto { Id = x.RoleInfo.Id, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name });
+        
         return CommonResult.Success(res);
     }
 
@@ -165,7 +170,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     }
 
     /// <summary>
-    ///     插入中
+    ///     插入
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
@@ -209,7 +214,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     }
 
     /// <summary>
-    ///     编辑执行
+    ///     编辑
     /// </summary>
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
