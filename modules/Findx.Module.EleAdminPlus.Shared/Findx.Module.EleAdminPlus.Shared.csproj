@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.FreeSql" Version="11.1.2025.122" />
+      <PackageReference Include="Findx.FreeSql" Version="11.1.2025.315" />
     </ItemGroup>
     
 </Project>

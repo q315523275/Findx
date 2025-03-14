@@ -20,7 +20,7 @@ namespace Findx.Extensions.ConfigurationServer.Controller;
 [Area("findx")]
 [Route("api/config")]
 [ApiExplorerSettings(GroupName = "config"), Tags("配置服务-客户端服务"), Description("配置服务-客户端服务")]
-public class ConfigClientController : AreaApiControllerBase
+public class ConfigController : AreaApiControllerBase
 {
     private readonly IRepository<AppInfo, long> _appRepo;
     private readonly IRepository<ConfigDataInfo, long> _configRepo;
@@ -34,7 +34,7 @@ public class ConfigClientController : AreaApiControllerBase
     /// <param name="appRepo"></param>
     /// <param name="configRepo"></param>
     /// <param name="serializer"></param>
-    public ConfigClientController(IClientCallBack clientCallBack, IRepository<AppInfo, long> appRepo, IRepository<ConfigDataInfo, long> configRepo, IObjectSerializer serializer)
+    public ConfigController(IClientCallBack clientCallBack, IRepository<AppInfo, long> appRepo, IRepository<ConfigDataInfo, long> configRepo, IObjectSerializer serializer)
     {
         _clientCallBack = clientCallBack;
         _appRepo = appRepo;

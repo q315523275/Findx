@@ -5,13 +5,14 @@
         <Nullable>disable</Nullable>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
-        <Version>11.1.2025.102</Version>
+        <Version>11.1.2025.315</Version>
         <Description>Findx审计日志保存扩展模块</Description>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx" Version="11.1.2025.123" />
+      <PackageReference Include="Findx" Version="11.1.2025.315" />
     </ItemGroup>
 
 </Project>

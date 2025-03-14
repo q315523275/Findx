@@ -11,7 +11,7 @@
     </PropertyGroup>
     
     <ItemGroup>
-      <PackageReference Include="Findx.Security" Version="11.1.2025.108" />
+      <PackageReference Include="Findx.Security" Version="11.1.2025.315" />
     </ItemGroup>
     
     <ItemGroup>

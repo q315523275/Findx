@@ -19,10 +19,10 @@ namespace Findx.Extensions.ConfigurationServer.Controller;
 ///     配置服务-管理
 /// </summary>
 [Area("findx")]
-[Route("api/config/mgr")]
+[Route("api/config/setting")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "config"), Tags("配置服务-管理"), Description("配置服务-管理")]
-public class ConfigMgrController : AreaApiControllerBase
+public class SettingController : AreaApiControllerBase
 {
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly IRepository<ConfigHistoryInfo, long> _historyRepo;
@@ -38,7 +38,7 @@ public class ConfigMgrController : AreaApiControllerBase
     /// <param name="configDataRepo"></param>
     /// <param name="eventBus"></param>
     /// <param name="principal"></param>
-    public ConfigMgrController(IUnitOfWorkManager unitOfWorkManager, IRepository<ConfigHistoryInfo, long> historyRepo, IRepository<ConfigDataInfo, long> configDataRepo, IEventBus eventBus, IPrincipal principal)
+    public SettingController(IUnitOfWorkManager unitOfWorkManager, IRepository<ConfigHistoryInfo, long> historyRepo, IRepository<ConfigDataInfo, long> configDataRepo, IEventBus eventBus, IPrincipal principal)
     {
         _unitOfWorkManager = unitOfWorkManager;
         _historyRepo = historyRepo;
@@ -109,7 +109,7 @@ public class ConfigMgrController : AreaApiControllerBase
                                        .Build();
         var orderExp = SortConditionBuilder.New<ConfigHistoryInfo>().OrderByDescending(x => x.Version).Build();
         
-        var rows = await _historyRepo.SelectAsync(whereExpression: whereExp, orderParameters: orderExp);
+        var rows = await _historyRepo.SelectAsync(whereExpression: whereExp, sortConditions: orderExp);
         
         return CommonResult.Success(rows);
     }

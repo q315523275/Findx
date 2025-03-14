@@ -43,7 +43,6 @@ public class AuthController : AreaApiControllerBase
     private readonly IRepository<SysLoginRecordInfo> _recordRepo;
     private readonly IRepository<SysUserInfo> _repo;
     private readonly IJwtTokenBuilder _tokenBuilder;
-    private readonly IOptions<JsonOptions> _jsonOptions;
 
     /// <summary>
     ///     Ctor
@@ -56,9 +55,8 @@ public class AuthController : AreaApiControllerBase
     /// <param name="recordRepo"></param>
     /// <param name="settingProvider"></param>
     /// <param name="keyGenerator"></param>
-    /// <param name="jsonOptions"></param>
     public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo,
-        ISettingProvider settingProvider, IKeyGenerator<Guid> keyGenerator, IOptions<JsonOptions> jsonOptions)
+        ISettingProvider settingProvider, IKeyGenerator<Guid> keyGenerator)
     {
         _tokenBuilder = tokenBuilder;
         _options = options;
@@ -67,7 +65,7 @@ public class AuthController : AreaApiControllerBase
         _repo = repo;
         _recordRepo = recordRepo;
         _keyGenerator = keyGenerator;
-        _jsonOptions = jsonOptions;
+
         _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdmin:EnabledCaptcha");
         _useAbpJwt = settingProvider.GetValue<bool>("Modules:EleAdmin:UseAbpJwt");
     }
@@ -76,10 +74,11 @@ public class AuthController : AreaApiControllerBase
     ///     账号密码登录
     /// </summary>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Description("登录"), EndpointName("登录")]
     [HttpPost("/api/login")]
-    public async Task<CommonResult> Login([FromBody] LoginDto req)
+    public async Task<CommonResult> LoginAsync([FromBody] LoginDto req, CancellationToken cancellationToken)
     {
         var cache = _cacheFactory.Create(CacheType.DefaultMemory);
 
@@ -94,7 +93,7 @@ public class AuthController : AreaApiControllerBase
         if (errorCount >= 5)
             return CommonResult.Fail("50509", "密码错误次数超出限制");
 
-        var accountInfo = await _repo.FirstAsync(it => it.UserName == req.UserName && it.TenantId == req.TenantId);
+        var accountInfo = await _repo.FirstAsync(it => it.UserName == req.UserName && it.TenantId == req.TenantId, cancellationToken);
         // 验证账号是否存在
         if (accountInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
@@ -123,7 +122,7 @@ public class AuthController : AreaApiControllerBase
         {
             // 增加错误次数
             errorCount++;
-            await cache.AddAsync(errorCacheKey, errorCount, TimeSpan.FromMinutes(15));
+            await cache.AddAsync(errorCacheKey, errorCount, TimeSpan.FromMinutes(15), cancellationToken);
             loginLog.Comments = $"账号密码错误,剩余重试次数{5 - errorCount}次";
             fail = CommonResult.Fail("D1000", loginLog.Comments);
         }
@@ -137,21 +136,21 @@ public class AuthController : AreaApiControllerBase
 
         // 清空验证码
         if (_enabledCaptcha)
-            await cache.RemoveAsync(cacheKey);
+            await cache.RemoveAsync(cacheKey, cancellationToken);
 
         // 登录失败
         if (fail != null)
         {
             loginLog.LoginType = 1;
-            await _recordRepo.InsertAsync(loginLog);
+            await _recordRepo.InsertAsync(loginLog, cancellationToken);
             return fail;
         }
 
         // 登录成功
         loginLog.LoginType = 0;
         loginLog.Comments = "登录成功";
-        await _recordRepo.InsertAsync(loginLog);
-        await cache.RemoveAsync(errorCacheKey);
+        await _recordRepo.InsertAsync(loginLog, cancellationToken);
+        await cache.RemoveAsync(errorCacheKey, cancellationToken);
 
         // token票据
         var payload = new Dictionary<string, string>
@@ -170,8 +169,10 @@ public class AuthController : AreaApiControllerBase
             payload[System.Security.Claims.ClaimTypes.Name] = accountInfo.UserName.SafeString();
             payload[System.Security.Claims.ClaimTypes.GivenName] = accountInfo.Nickname.SafeString();
         }
+        
         // 角色id及编号
-        var roles = JsonSerializer.Deserialize<List<UserRoleSimplifyDto>>(accountInfo.RoleJson ?? "[]", options: _jsonOptions.Value.JsonSerializerOptions);
+        var roleRepo = GetRepository<SysUserRoleInfo>();
+        var roles = await roleRepo.SelectAsync(x => x.UserId == accountInfo.Id && x.RoleId == x.RoleInfo.Id, x => new UserRoleSimplifyDto { Id = x.RoleId, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name }, cancellationToken: cancellationToken);
         payload[ClaimTypes.RoleIds] = roles.Select(x => x.Id).Distinct().JoinAsString(",");
         payload[ClaimTypes.Role] = roles.Select(x => x.Code).Distinct().JoinAsString(",");
 

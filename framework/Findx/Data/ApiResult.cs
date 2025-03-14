@@ -6,12 +6,12 @@ namespace Findx.Data;
 ///     泛型通用结果
 /// </summary>
 /// <typeparam name="TData"></typeparam>
-public class CommonResult<TData> : CommonResult
+public class ApiResult<TData> : ApiResult
 {
     /// <summary>
     ///     Ctor
     /// </summary>
-    public CommonResult() { }
+    public ApiResult() { }
 
     /// <summary>
     ///     Ctor
@@ -19,7 +19,7 @@ public class CommonResult<TData> : CommonResult
     /// <param name="code"></param>
     /// <param name="msg"></param>
     /// <param name="data"></param>
-    public CommonResult(string code, string msg, TData data) : base(code, msg)
+    public ApiResult(string code, string msg, TData data) : base(code, msg)
     {
         Data = data;
     }
@@ -34,14 +34,14 @@ public class CommonResult<TData> : CommonResult
 /// <summary>
 ///     通用结果
 /// </summary>
-public class CommonResult
+public class ApiResult
 {
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="code"></param>
     /// <param name="msg"></param>
-    public CommonResult(string code, string msg)
+    public ApiResult(string code, string msg)
     {
         Code = code;
         Msg = msg;
@@ -50,7 +50,7 @@ public class CommonResult
     /// <summary>
     ///     Ctor
     /// </summary>
-    public CommonResult() { }
+    public ApiResult() { }
 
     /// <summary>
     ///     编码
@@ -68,9 +68,9 @@ public class CommonResult
     ///     成功
     /// </summary>
     /// <returns></returns>
-    public static CommonResult Success()
+    public static ApiResult Success()
     {
-        return new CommonResult("0000", "操作成功");
+        return new ApiResult("0000", "操作成功");
     }
 
     /// <summary>
@@ -78,9 +78,9 @@ public class CommonResult
     /// </summary>
     /// <param name="msg"></param>
     /// <returns></returns>
-    public static CommonResult Success(string msg)
+    public static ApiResult Success(string msg)
     {
-        return new CommonResult("0000", msg);
+        return new ApiResult("0000", msg);
     }
 
     /// <summary>
@@ -89,9 +89,9 @@ public class CommonResult
     /// <typeparam name="TData"></typeparam>
     /// <param name="data"></param>
     /// <returns></returns>
-    public static CommonResult<TData> Success<TData>(TData data)
+    public static ApiResult<TData> Success<TData>(TData data)
     {
-        return new CommonResult<TData>("0000", "操作成功", data);
+        return new ApiResult<TData>("0000", "操作成功", data);
     }
 
     /// <summary>
@@ -101,9 +101,9 @@ public class CommonResult
     /// <param name="data"></param>
     /// <param name="msg"></param>
     /// <returns></returns>
-    public static CommonResult<TData> Success<TData>(TData data, string msg)
+    public static ApiResult<TData> Success<TData>(TData data, string msg)
     {
-        return new CommonResult<TData>("0000", msg, data);
+        return new ApiResult<TData>("0000", msg, data);
     }
 
     /// <summary>
@@ -111,9 +111,9 @@ public class CommonResult
     ///     <para>默认:code="500"</para>
     /// </summary>
     /// <returns></returns>
-    public static CommonResult Fail()
+    public static ApiResult Fail()
     {
-        return new CommonResult("500", "失败");
+        return new ApiResult("500", "失败");
     }
 
     /// <summary>
@@ -121,9 +121,9 @@ public class CommonResult
     /// </summary>
     /// <typeparam name="TData"></typeparam>
     /// <returns></returns>
-    public static CommonResult<TData> Fail<TData>()
+    public static ApiResult<TData> Fail<TData>()
     {
-        return new CommonResult<TData>("500", "失败", default);
+        return new ApiResult<TData>("500", "失败", default);
     }
 
     /// <summary>
@@ -132,9 +132,9 @@ public class CommonResult
     /// <param name="code">编码</param>
     /// <param name="msg">描述</param>
     /// <returns></returns>
-    public static CommonResult Fail(string code, string msg)
+    public static ApiResult Fail(string code, string msg)
     {
-        return new CommonResult(code, msg);
+        return new ApiResult(code, msg);
     }
 
     /// <summary>
@@ -144,9 +144,9 @@ public class CommonResult
     /// <param name="code"></param>
     /// <param name="msg"></param>
     /// <returns></returns>
-    public static CommonResult<TData> Fail<TData>(string code, string msg)
+    public static ApiResult<TData> Fail<TData>(string code, string msg)
     {
-        return new CommonResult<TData>(code, msg, default);
+        return new ApiResult<TData>(code, msg, default);
     }
 
     /// <summary>
@@ -157,24 +157,8 @@ public class CommonResult
     /// <param name="msg"></param>
     /// <param name="data"></param>
     /// <returns></returns>
-    public static CommonResult<TData> Fail<TData>(string code, string msg, TData data)
+    public static ApiResult<TData> Fail<TData>(string code, string msg, TData data)
     {
-        return new CommonResult<TData>(code, msg, data);
-    }
-}
-
-/// <summary>
-///     扩展
-/// </summary>
-public static class CommonResultExt
-{
-    /// <summary>
-    ///     是否成功
-    /// </summary>
-    /// <param name="result"></param>
-    /// <returns></returns>
-    public static bool IsSuccess(this CommonResult result)
-    {
-        return result.Code == "0000";
+        return new ApiResult<TData>(code, msg, data);
     }
 }

@@ -77,7 +77,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
-        var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
         var ids = res.Rows.Select(x => x.Id).Distinct();
         var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
         foreach (var item in res.Rows)

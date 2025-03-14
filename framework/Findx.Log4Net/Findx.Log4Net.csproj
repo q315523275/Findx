@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>11.1.2025.108</Version>
+        <Version>11.1.2025.315</Version>
         <Description>Log4Net日志组件包</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="log4net" Version="3.0.3" />
+        <PackageReference Include="log4net" Version="3.0.4" />
     </ItemGroup>
 
     <ItemGroup>

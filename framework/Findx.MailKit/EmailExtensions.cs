@@ -35,7 +35,7 @@ public static class EmailExtensions
         }
 
         // ReSharper disable once CoVariantArrayConversion
-        var message = new MimeMessage(headers.ToArray());
+        var message = new MimeMessage(headers);
         MimeEntity body = null;
         if (mail.Sender != null)
             message.Sender = mail.Sender.ToMailboxAddress();

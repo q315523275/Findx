@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.122" />
-      <PackageReference Include="Findx.Module.EleAdminPlus.Shared" Version="11.1.2025.102" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.315" />
+      <PackageReference Include="Findx.Module.EleAdminPlus.Shared" Version="11.1.2025.228" />
     </ItemGroup>
 
     <ItemGroup>

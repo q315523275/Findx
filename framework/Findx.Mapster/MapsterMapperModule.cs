@@ -7,58 +7,57 @@ using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace Findx.Mapster
+namespace Findx.Mapster;
+
+/// <summary>
+///     Findx-对象映射模块
+/// </summary>
+[Description("Findx-对象映射模块")]
+public class MapsterMapperModule : StartupModule
 {
     /// <summary>
-    ///     Findx-对象映射模块
+    ///     模块等级
     /// </summary>
-    [Description("Findx-对象映射模块")]
-    public class MapsterMapperModule : StartupModule
+    public override ModuleLevel Level => ModuleLevel.Framework;
+
+    /// <summary>
+    ///     模块排序
+    /// </summary>
+    public override int Order => 80;
+
+    /// <summary>
+    ///     配置模块服务
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
-        /// <summary>
-        ///     模块等级
-        /// </summary>
-        public override ModuleLevel Level => ModuleLevel.Framework;
+        services.AddSingleton<IMapper, MapsterMapper>();
+        return services;
+    }
 
-        /// <summary>
-        ///     模块排序
-        /// </summary>
-        public override int Order => 80;
+    /// <summary>
+    ///     启用模块
+    /// </summary>
+    /// <param name="provider"></param>
+    public override void UseModule(IServiceProvider provider)
+    {
+        var option = provider.GetService<IOptions<MappingOptions>>();
 
-        /// <summary>
-        ///     配置模块服务
-        /// </summary>
-        /// <param name="services"></param>
-        /// <returns></returns>
-        public override IServiceCollection ConfigureServices(IServiceCollection services)
-        {
-            services.AddSingleton<IMapper, MapsterMapper>();
-            return services;
-        }
+        // 设置不区分大小写
+        if (option is { Value.IgnoreCase: true })
+            TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
 
-        /// <summary>
-        ///     启用模块
-        /// </summary>
-        /// <param name="provider"></param>
-        public override void UseModule(IServiceProvider provider)
-        {
-            var option = provider.GetService<IOptions<MappingOptions>>();
+        // 设置忽略Null值映射
+        if (option is { Value.IgnoreNullValues: true })
+            TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
 
-            // 设置不区分大小写
-            if (option is { Value.IgnoreCase: true })
-                TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
-
-            // 设置忽略Null值映射
-            if (option is { Value.IgnoreNullValues: true })
-                TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
-
-            // 设置指定属性的字段映射
-            TypeAdapterConfig.GlobalSettings.Default.IgnoreAttribute(typeof(IgnoreMappingAttribute));
-            TypeAdapterConfig<string, DateTime?>.NewConfig().MapWith(src => src.IsNotNullOrWhiteSpace() ? null : DateTime.Parse(src));
+        // 设置指定属性的字段映射
+        TypeAdapterConfig.GlobalSettings.Default.IgnoreAttribute(typeof(IgnoreMappingAttribute));
+        TypeAdapterConfig<string, DateTime?>.NewConfig().MapWith(src => src.IsNotNullOrWhiteSpace() ? null : DateTime.Parse(src));
             
-            MapperExtensions.SetMapper(provider.GetRequiredService<IMapper>());
+        MapperExtensions.SetMapper(provider.GetRequiredService<IMapper>());
 
-            base.UseModule(provider);
-        }
+        base.UseModule(provider);
     }
 }

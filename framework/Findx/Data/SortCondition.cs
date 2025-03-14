@@ -8,21 +8,19 @@ namespace Findx.Data;
 ///     排序参数
 /// </summary>
 /// <typeparam name="TEntity"></typeparam>
-public class OrderByParameter<TEntity>
+public class SortCondition<TEntity>
 {
     /// <summary>
     ///     Ctor
     /// </summary>
-    public OrderByParameter()
-    {
-    }
+    public SortCondition() { }
     
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="field"></param>
     /// <param name="sortDirection"></param>
-    public OrderByParameter(string field, ListSortDirection sortDirection = ListSortDirection.Ascending)
+    public SortCondition(string field, ListSortDirection sortDirection = ListSortDirection.Ascending)
     {
         dynamic keySelector = CollectionPropertySorter<TEntity>.GetKeySelector(field);
         Conditions = keySelector;

@@ -50,7 +50,7 @@ public class ModelController: AreaApiControllerBase
     /// </summary>
     /// <param name="request"></param>
     /// <returns></returns>
-    private IEnumerable<OrderByParameter<FlwProcessInfo>> CreateOrderExpression(ModelQueryDto request)
+    private IEnumerable<SortCondition<FlwProcessInfo>> CreateOrderExpression(ModelQueryDto request)
     {
         var orderExp = SortConditionBuilder.New<FlwProcessInfo>();
         if (request is SortCondition sortCondition && sortCondition.SortField.IsNotNullOrWhiteSpace())
@@ -72,7 +72,7 @@ public class ModelController: AreaApiControllerBase
         var whereExpression = CreateWhereExpression(req);
         var orderByExpression = CreateOrderExpression(req);
         
-        var rs = await repo.PagedAsync<ModelSimplifyDto>(req.PageNo, req.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var rs = await repo.PagedAsync<ModelSimplifyDto>(req.PageNo, req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(rs);
     }

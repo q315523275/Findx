@@ -303,15 +303,15 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
             .WithTransaction(UnitOfWork?.Transaction).First();
     }
 
-    public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
+    public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null)
     {
         var queryable = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
@@ -320,15 +320,15 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return queryable.WithTransaction(UnitOfWork?.Transaction).ToList();
     }
 
-    public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
+    public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null)
     {
         var select = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             select.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     select.OrderBy(item.Conditions);
                 else
@@ -339,15 +339,15 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return select.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
     }
     
-    public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
+    public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
@@ -356,15 +356,15 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToList();
     }
 
-    public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null)
+    public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
@@ -381,43 +381,43 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     #region 分页
     
-    public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, bool returnCount = true)
+    public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool isReturnTotal = true)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
                     queryable.OrderByDescending(item.Conditions);
 
         var result = queryable.WithTransaction(UnitOfWork?.Transaction)
-                              .CountIf(returnCount, out var totalRows)
+                              .CountIf(isReturnTotal, out var totalRows)
                               .Page(pageNumber, pageSize)
                               .ToList();
 
         return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
     }
 
-    public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, bool returnCount = true)
+    public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool isReturnTotal = true)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
                     queryable.OrderByDescending(item.Conditions);
 
-        queryable.CountIf(returnCount, out var totalRows).Page(pageNumber, pageSize);
+        queryable.CountIf(isReturnTotal, out var totalRows).Page(pageNumber, pageSize);
 
         var result = selectExpression == null
             ? queryable.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>()

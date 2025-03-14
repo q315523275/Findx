@@ -12,7 +12,7 @@ public class ExpressionSorter<T>
     /// <summary>
     ///     排序集合
     /// </summary>
-    private readonly List<OrderByParameter<T>> _orderList = [];
+    private readonly List<SortCondition<T>> _orderList = [];
 
     /// <summary>
     ///     正序
@@ -21,7 +21,7 @@ public class ExpressionSorter<T>
     /// <returns></returns>
     public ExpressionSorter<T> OrderBy(Expression<Func<T, object>> expression)
     {
-        _orderList.Add(new OrderByParameter<T> { Conditions = expression, SortDirection = ListSortDirection.Ascending });
+        _orderList.Add(new SortCondition<T> { Conditions = expression, SortDirection = ListSortDirection.Ascending });
         return this;
     }
     
@@ -32,7 +32,7 @@ public class ExpressionSorter<T>
     /// <returns></returns>
     public ExpressionSorter<T> OrderBy(string field)
     {
-        _orderList.Add(new OrderByParameter<T>(field, ListSortDirection.Ascending));
+        _orderList.Add(new SortCondition<T>(field, ListSortDirection.Ascending));
         return this;
     }
 
@@ -67,7 +67,7 @@ public class ExpressionSorter<T>
     /// <returns></returns>
     public ExpressionSorter<T> OrderByDescending(Expression<Func<T, object>> expression)
     {
-        _orderList.Add(new OrderByParameter<T> { Conditions = expression, SortDirection = ListSortDirection.Descending });
+        _orderList.Add(new SortCondition<T> { Conditions = expression, SortDirection = ListSortDirection.Descending });
         return this;
     }
     
@@ -78,7 +78,7 @@ public class ExpressionSorter<T>
     /// <returns></returns>
     public ExpressionSorter<T> OrderByDescending(string field)
     {
-        _orderList.Add(new OrderByParameter<T>(field, ListSortDirection.Descending));
+        _orderList.Add(new SortCondition<T>(field, ListSortDirection.Descending));
         return this;
     }
 
@@ -186,7 +186,7 @@ public class ExpressionSorter<T>
     ///     返回排序集合
     /// </summary>
     /// <returns></returns>
-    public List<OrderByParameter<T>> Build()
+    public List<SortCondition<T>> Build()
     {
         return _orderList;
     }

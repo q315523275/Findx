@@ -77,7 +77,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
-        var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
         var ids = res.Rows.Select(x => x.Id).Distinct();
         var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
         foreach (var item in res.Rows)
@@ -100,7 +100,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
-        var res = await repo.TopAsync<UserSimplifyDto>(request.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var res = await repo.TopAsync<UserSimplifyDto>(request.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
         
         return CommonResult.Success(res);
     }
@@ -155,6 +155,21 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
         return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
     }
 
+    /// <summary>
+    ///     详情查询后
+    /// </summary>
+    /// <param name="model"></param>
+    /// <param name="simplifyDto"></param>
+    /// <returns></returns>
+    protected override Task DetailAfterAsync(SysUserInfo model, UserSimplifyDto simplifyDto)
+    {
+        var roleRepo = GetRepository<SysUserRoleInfo, long>();
+        var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && x.UserId == model.Id);
+        simplifyDto.Roles = roles.Where(x => x.RoleInfo != null).Select(x => new UserRoleSimplifyDto { Id = x.RoleInfo.Id, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name });
+        
+        return Task.CompletedTask;
+    }
+    
     /// <summary>
     ///     插入前
     /// </summary>

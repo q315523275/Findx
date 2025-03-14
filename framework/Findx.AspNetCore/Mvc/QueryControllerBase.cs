@@ -61,7 +61,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="req"></param>
     /// <returns></returns>
-    protected virtual IEnumerable<OrderByParameter<TModel>> CreateOrderExpression(TQueryParameter req)
+    protected virtual IEnumerable<SortCondition<TModel>> CreateOrderExpression(TQueryParameter req)
     {
         var orderExp = SortConditionBuilder.New<TModel>();
 
@@ -77,7 +77,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     }
 
     /// <summary>
-    ///     查询数据
+    ///     查询分页数据
     /// </summary>
     /// <param name="req"></param>
     /// <param name="cancellationToken"></param>
@@ -95,7 +95,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreateWhereExpression(req);
         var orderByExpression = CreateOrderExpression(req);
         
-        var result = await repo.PagedAsync<TListDto>(req.PageNo, req.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var result = await repo.PagedAsync<TListDto>(req.PageNo, req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(result);
     }
@@ -121,7 +121,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreateWhereExpression(req);
         var orderByExpression = CreateOrderExpression(req);
 
-        var list = await repo.TopAsync<TListDto>(req.PageSize, whereExpression, orderParameters: orderByExpression, cancellationToken: cancellationToken);
+        var list = await repo.TopAsync<TListDto>(req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(list);
     }

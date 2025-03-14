@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <PackageVersion>11.1.2025.108</PackageVersion>
+        <PackageVersion>11.1.2025.315</PackageVersion>
         <Description>Caslte DynamicProxy</Description>
         <LangVersion>default</LangVersion>
         <Authors>Findx</Authors>
@@ -13,7 +13,7 @@
         <None Remove="Castle.Core.AsyncInterceptor" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Castle.Core" Version="5.1.1" />
+        <PackageReference Include="Castle.Core" Version="5.2.1" />
         <PackageReference Include="Castle.Core.AsyncInterceptor" Version="2.1.0" />
     </ItemGroup>
     <ItemGroup>

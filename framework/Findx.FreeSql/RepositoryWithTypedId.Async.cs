@@ -222,27 +222,31 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
     public Task<TEntity> GetAsync(TKey key, CancellationToken cancellationToken = default)
     {
         return _fsql.Select<TEntity>(key).AsTable(AsTableSelectValueInternal)
-            .WithTransaction(UnitOfWork?.Transaction).FirstAsync(cancellationToken);
+                    .WithTransaction(UnitOfWork?.Transaction)
+                    .FirstAsync(cancellationToken);
     }
 
     public Task<TEntity> FirstAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
     {
         if (whereExpression == null)
             return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
-                .WithTransaction(UnitOfWork?.Transaction).FirstAsync(cancellationToken);
+                        .WithTransaction(UnitOfWork?.Transaction)
+                        .FirstAsync(cancellationToken);
+        
         return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression)
-            .WithTransaction(UnitOfWork?.Transaction).FirstAsync(cancellationToken);
+                    .WithTransaction(UnitOfWork?.Transaction)
+                    .FirstAsync(cancellationToken);
     }
 
-    public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
+    public Task<List<TEntity>> SelectAsync(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
@@ -251,15 +255,15 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
         return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync(cancellationToken);
     }
 
-    public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
+    public Task<List<TObject>> SelectAsync<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, CancellationToken cancellationToken = default)
     {
         var select = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             select.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     select.OrderBy(item.Conditions);
                 else
@@ -267,18 +271,19 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
 
         if (selectExpression == null)
             return select.WithTransaction(UnitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
+        
         return select.WithTransaction(UnitOfWork?.Transaction).ToListAsync(selectExpression, cancellationToken);
     }
 
-    public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
+    public Task<List<TEntity>> TopAsync(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
@@ -287,15 +292,15 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
         return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToListAsync(cancellationToken);
     }
 
-    public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, CancellationToken cancellationToken = default)
+    public Task<List<TObject>> TopAsync<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
@@ -305,6 +310,7 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
 
         if (selectExpression == null)
             return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync<TObject>(cancellationToken);
+        
         return queryable.WithTransaction(UnitOfWork?.Transaction).ToListAsync(selectExpression, cancellationToken);
     }
 
@@ -312,50 +318,51 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
 
     #region 分页
     
-    public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, bool returnCount = true, CancellationToken cancellationToken = default)
+    public async Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool isReturnTotal = true, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
                     queryable.OrderByDescending(item.Conditions);
 
-        var result = await queryable.WithTransaction(UnitOfWork?.Transaction).CountIf(returnCount, out var totalRows)
-            .Page(pageNumber, pageSize).ToListAsync(cancellationToken);
+        var result = await queryable.WithTransaction(UnitOfWork?.Transaction).CountIf(isReturnTotal, out var totalRows)
+                                    .Page(pageNumber, pageSize)
+                                    .ToListAsync(cancellationToken);
 
         return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
     }
     
-    public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<OrderByParameter<TEntity>> orderParameters = null, bool returnCount = true, CancellationToken cancellationToken = default)
+    public async Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool isReturnTotal = true, CancellationToken cancellationToken = default)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
         if (whereExpression != null)
             queryable.Where(whereExpression);
 
-        if (orderParameters != null)
-            foreach (var item in orderParameters)
+        if (sortConditions != null)
+            foreach (var item in sortConditions)
                 if (item.SortDirection == ListSortDirection.Ascending)
                     queryable.OrderBy(item.Conditions);
                 else
                     queryable.OrderByDescending(item.Conditions);
 
-        queryable.CountIf(returnCount, out var totalRows).Page(pageNumber, pageSize);
+        queryable.CountIf(isReturnTotal, out var totalRows).Page(pageNumber, pageSize);
 
         List<TObject> result;
 
         if (selectExpression == null)
             result = await queryable.WithTransaction(UnitOfWork?.Transaction)
-                .ToListAsync<TObject>(cancellationToken);
+                                    .ToListAsync<TObject>(cancellationToken);
         else
             result = await queryable.WithTransaction(UnitOfWork?.Transaction)
-                .ToListAsync(selectExpression, cancellationToken);
+                                    .ToListAsync(selectExpression, cancellationToken);
 
         return new PageResult<List<TObject>>(pageNumber, pageSize, (int)totalRows, result);
     }

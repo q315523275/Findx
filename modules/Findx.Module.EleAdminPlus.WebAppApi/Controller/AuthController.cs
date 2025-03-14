@@ -11,6 +11,7 @@ using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Auth;
 using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
+using Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
 using Findx.Security;
 using Findx.Security.Authentication.Jwt;
 using Findx.Setting;
@@ -175,11 +176,13 @@ public class AuthController : AreaApiControllerBase
         }
         
         // 角色id及编号
-        var roles = JsonSerializer.Deserialize<List<RoleDto>>(accountInfo.RoleJson ?? "[]", options: _jsonOptions.Value.JsonSerializerOptions);
+        var roleRepo = GetRepository<SysUserRoleInfo, long>();
+        var roles = await roleRepo.SelectAsync(x => x.UserId == accountInfo.Id && x.RoleId == x.RoleInfo.Id, x => new UserRoleSimplifyDto { Id = x.RoleId, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name }, cancellationToken: cancellationToken);
         payload[ClaimTypes.RoleIds] = roles.Select(x => x.Id).Distinct().JoinAsString(",");
         payload[ClaimTypes.Role] = roles.Select(x => x.Code).Distinct().JoinAsString(",");
         
         var token = await _tokenBuilder.CreateAsync(payload, _options.Value);
+        
         return CommonResult.Success(new { access_token = "Bearer " + token.AccessToken });
     }
 

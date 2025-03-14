@@ -5,7 +5,7 @@
         <Nullable>disable</Nullable>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>11.1.2025.108</PackageVersion>
+        <PackageVersion>11.1.2025.315</PackageVersion>
         <Description>基于System.Net.WebSockets的服务端与客户端,可扩展为分布式WebSockets服务</Description>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
