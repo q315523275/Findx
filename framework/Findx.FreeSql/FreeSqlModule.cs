@@ -278,10 +278,11 @@ public class FreeSqlModule : StartupModule
         if (!option.AuditEntity) return;
         
         var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
-        if (auditEntityReport != null && e.Value != null && !e.Column.CsName.Equals("id", StringComparison.OrdinalIgnoreCase))
+        Console.WriteLine(auditEntityReport != null);
+        if (auditEntityReport != null && e.Value != null && !e.Column.CsName.Equals("Id", StringComparison.OrdinalIgnoreCase))
         {
             string entityId;
-            if (e.Object is Dictionary<string, object> dic && dic.TryGetValue("id", out var id))
+            if (e.Object is Dictionary<string, object> dic && dic.TryGetValue("Id", out var id))
                 entityId = id.ToString();
             else
                 entityId = fsql.GetEntityKeyString(e.Object.GetType(), e.Object, false);

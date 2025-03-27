@@ -60,7 +60,6 @@ public static partial class Extensions
         
         var nullableConverter = new NullableConverter(type);
         return nullableConverter.UnderlyingType;
-
     }
 
     /// <summary>

@@ -17,6 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddFindx().AddModules();
 builder.Services.AddControllers()
        .AddMvcFilter<FindxGlobalAttribute>()
+       .AddMvcFilter<AuditOperationAttribute>()
        .AddMvcFilter<EleAdminGlobalAttribute>()
        .AddJsonOptions(options =>
        {

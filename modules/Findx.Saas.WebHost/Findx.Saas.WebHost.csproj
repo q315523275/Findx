@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\components\Findx.Extensions.AuditLogs\Findx.Extensions.AuditLogs.csproj" />
       <ProjectReference Include="..\..\framework\Findx.Guids.NewId\Findx.Guids.NewId.csproj" />
       <ProjectReference Include="..\..\framework\Findx.ImageSharp\Findx.ImageSharp.csproj" />
       <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj" />

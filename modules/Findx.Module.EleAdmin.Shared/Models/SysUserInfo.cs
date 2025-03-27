@@ -114,5 +114,6 @@ public class SysUserInfo : FullAuditedBase<Guid, Guid>, ISoftDeletable, ITenant,
     /// <summary>
     ///     冗余角色Json
     /// </summary>
+    [Column(StringLength = 5140)]
     public string RoleJson { get; set; }
 }

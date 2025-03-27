@@ -59,6 +59,7 @@ public class PropertyDynamicGetter<T>
         var switchExpression = Expression.Switch(nameParamExpression, defaultBodyExpression, switchCases.ToArray());
         var blockExpression = Expression.Block(typeof(object), [variableExpression], switchExpression);
         var lambdaExpression = Expression.Lambda<Func<T, string, object>>(blockExpression, objParamExpression, nameParamExpression);
+        
         return lambdaExpression.Compile();
     }
 }

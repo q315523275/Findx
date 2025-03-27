@@ -637,6 +637,5 @@ Console.WriteLine("Hello, World!");
 // Console.WriteLine($"发送消息耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
 // Console.ReadLine();
 
-var ai = new SysAppInfo { OrgId = Guid.Parse("3a067a31-b7b2-3c48-b770-a987a73c93c3") };
-
-Console.WriteLine(ai.OrgId.To<string>());
+// var ai = new SysAppInfo { OrgId = Guid.Parse("3a067a31-b7b2-3c48-b770-a987a73c93c3") };
+// Console.WriteLine(ai.OrgId.CastTo<string>());

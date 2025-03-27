@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using Findx.Utilities;
 
 namespace Findx.Extensions;
 
@@ -12,10 +13,12 @@ public partial class Extensions
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static string ToDescription(this Enum value)
+    public static string ToDescription<T>(this T value) where T: Enum
     {
-        var type = value.GetType();
-        var member = type.GetMember(value.ToString()).FirstOrDefault();
-        return member != null ? member.GetDescription() : value.ToString();
+        return EnumUtility<T>.GetDescription(value);
+        
+        // var type = value.GetType();
+        // var member = type.GetMember(value.ToString()).FirstOrDefault();
+        // return member != null ? member.GetDescription() : value.ToString();
     }
 }

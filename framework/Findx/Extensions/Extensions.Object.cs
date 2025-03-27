@@ -41,6 +41,7 @@ public static partial class Extensions
 
     /// <summary>
     ///     使用<see cref="Convert.ChangeType(object, System.Type)" />方法将给定的对象转换为值类型。
+    ///     CastTo
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="obj"></param>
@@ -75,6 +76,7 @@ public static partial class Extensions
             return null;
 
         var valueType = value.GetType();
+        
         if (valueType == conversionType) return value;
         
         if (conversionType.IsNullableType()) conversionType = conversionType.GetUnNullableType();
@@ -96,8 +98,15 @@ public static partial class Extensions
     /// <returns> 转化后的指定类型的对象，转化失败引发异常。 </returns>
     public static T CastTo<T>(this object value)
     {
-        if (value == null) 
+        if (value == null)
+        {
             return default;
+        }
+        
+        if (value.GetType() == typeof(T))
+        {
+            return (T)value;
+        }
         
         var result = CastTo(value, typeof(T));
         
@@ -171,7 +180,7 @@ public static partial class Extensions
     [Obsolete("Obsolete")]
     public static T DeepClone<T>(this T obj) where T : class
     {
-        if (obj == null) return default;
+        if (obj == null) return null;
         if (!typeof(T).HasAttribute<SerializableAttribute>())
             throw new NotSupportedException($"当前对象未标记特性“{typeof(SerializableAttribute)}”，无法进行DeepClone操作");
         var formatter = new BinaryFormatter();

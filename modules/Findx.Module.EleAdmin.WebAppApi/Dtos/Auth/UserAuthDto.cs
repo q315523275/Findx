@@ -110,9 +110,9 @@ public class RoleAuthDto
     public string RoleCode { get; set; }
 
     /// <summary>
-    ///     备注
+    ///     应用编号
     /// </summary>
-    public string Comments { get; set; }
+    public string ApplicationCode { get; set; }
 }
 
 /// <summary>

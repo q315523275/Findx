@@ -55,8 +55,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="recordRepo"></param>
     /// <param name="settingProvider"></param>
     /// <param name="keyGenerator"></param>
-    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo,
-        ISettingProvider settingProvider, IKeyGenerator<Guid> keyGenerator)
+    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo> repo, IRepository<SysLoginRecordInfo> recordRepo, ISettingProvider settingProvider, IKeyGenerator<Guid> keyGenerator)
     {
         _tokenBuilder = tokenBuilder;
         _options = options;
@@ -183,30 +182,35 @@ public class AuthController : AreaApiControllerBase
     /// <summary>
     ///     查看账户信息
     /// </summary>
+    /// <param name="applicationCode">应用编号</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Description("查看账户信息")]
     [HttpGet("/api/auth/user")]
     [Authorize]
-    public async Task<CommonResult> UserAsync(CancellationToken cancellationToken)
+    public async Task<CommonResult> UserAsync(string applicationCode, CancellationToken cancellationToken)
     {
+        //  用户信息
         var userId = _currentUser.UserId.To<Guid>();
         var userInfo = await _repo.FirstAsync(x => x.Id == userId, cancellationToken);
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
+        //  仓储
         var roleRepo = GetRepository<SysUserRoleInfo>();
         var menuRepo = GetRepository<SysRoleMenuInfo>();
         var appRepo = GetRepository<SysAppInfo>();
-
-        var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new RoleAuthDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
-        // ReSharper disable once PossibleMultipleEnumeration
-        var roleIds = roles.DistinctBy(x => x.Id).Select(x => x.Id);
-        // ReSharper disable once PossibleMultipleEnumeration
-        var menus = roleIds.Any() ?
-            await menuRepo.SelectAsync(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuAuthDto { MenuId = x.MenuId }, cancellationToken: cancellationToken)
+        
+        var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new RoleAuthDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name, ApplicationCode = x.RoleInfo.ApplicationCode }, cancellationToken: cancellationToken);
+        //  ReSharper disable once PossibleMultipleEnumeration
+        var applicationRoleIds = roles.WhereIf(applicationCode.IsNotNullOrWhiteSpace(), x => x.ApplicationCode == applicationCode).DistinctBy(x => x.Id).Select(x => x.Id);
+        //  ReSharper disable once PossibleMultipleEnumeration
+        var menus = applicationRoleIds.Any() ?
+            await menuRepo.SelectAsync(x => applicationRoleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new MenuAuthDto { MenuId = x.MenuId }, cancellationToken: cancellationToken)
             : [];
 
-        var appCodes = menus.Select(x => x.ApplicationCode).Distinct();
+        //  用户拥有哪几个平台角色
+        var appCodes = roles.Select(x => x.ApplicationCode).Distinct();
         var appList = await appRepo.SelectAsync(x => appCodes.Contains(x.Code), x => new AppSimplifyDto(), cancellationToken: cancellationToken);
 
         var result = userInfo.MapTo<UserAuthDto>();
