@@ -9,7 +9,7 @@ namespace Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 /// <summary>
 ///     工作上下文
 /// </summary>
-public class DefaultWorkContext: IWorkContext, IScopeDependency
+public class WorkContext: IWorkContext, IScopeDependency
 {
     private readonly ICurrentUser _currentUser;
 
@@ -17,7 +17,7 @@ public class DefaultWorkContext: IWorkContext, IScopeDependency
     ///     Ctor
     /// </summary>
     /// <param name="currentUser"></param>
-    public DefaultWorkContext(ICurrentUser currentUser)
+    public WorkContext(ICurrentUser currentUser)
     {
         _currentUser = currentUser;
     }
@@ -35,7 +35,8 @@ public class DefaultWorkContext: IWorkContext, IScopeDependency
                 UserId = _currentUser.UserId.CastTo<long>(),
                 Nickname  = _currentUser.UserName, 
                 OrgId = _currentUser.FindClaim(Const.Default.OrgIdKey)?.Value.CastTo<long>(),
-                OrgName = _currentUser.FindClaim(Const.Default.OrgNameKey)?.Value
+                OrgName = _currentUser.FindClaim(Const.Default.OrgNameKey)?.Value,
+                TenantId = _currentUser.TenantId
             };
         }
         return null;

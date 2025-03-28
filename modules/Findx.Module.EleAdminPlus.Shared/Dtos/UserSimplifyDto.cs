@@ -24,4 +24,9 @@ public class UserSimplifyDto
     ///     用户机构名称
     /// </summary>
     public string OrgName { set; get; }
+    
+    /// <summary>
+    ///     租户Id
+    /// </summary>
+    public string TenantId { set; get; }
 }

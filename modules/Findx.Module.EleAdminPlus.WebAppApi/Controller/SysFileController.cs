@@ -3,7 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using Findx.AspNetCore.Mvc;
 using Findx.Common;
 using Findx.Data;
+using Findx.Events;
 using Findx.Extensions;
+using Findx.Module.EleAdminPlus.Shared.Events;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.File;
 using Findx.Security;
@@ -29,9 +31,9 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
     private readonly IKeyGenerator<long> _keyGenerator;
     private readonly IFileStorage _fileStorage;
     private readonly IRepository<SysFileInfo, long> _repo;
-    private readonly ICurrentUser _currentUser;
+    private readonly IEventBus _eventBus;
     private readonly string _folderHost;
-    
+
     /// <summary>
     /// Ctor
     /// </summary>
@@ -39,14 +41,14 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
     /// <param name="applicationContext"></param>
     /// <param name="storageFactory"></param>
     /// <param name="repo"></param>
-    /// <param name="currentUser"></param>
     /// <param name="settingProvider"></param>
-    public SysFileController(IKeyGenerator<long> keyGenerator, IApplicationContext applicationContext, IStorageFactory storageFactory, IRepository<SysFileInfo, long> repo, ICurrentUser currentUser, ISettingProvider settingProvider)
+    /// <param name="eventBus"></param>
+    public SysFileController(IKeyGenerator<long> keyGenerator, IApplicationContext applicationContext, IStorageFactory storageFactory, IRepository<SysFileInfo, long> repo, ISettingProvider settingProvider, IEventBus eventBus)
     {
         _keyGenerator = keyGenerator;
         _applicationContext = applicationContext;
         _repo = repo;
-        _currentUser = currentUser;
+        _eventBus = eventBus;
         _fileStorage = storageFactory.Create(FileStorageType.Folder.ToString());
         _folderHost = settingProvider.GetValue<string>("Findx:Storage:Folder:Host") ?? $"//{HostUtility.ResolveHostAddress(HostUtility.ResolveHostName())}:{_applicationContext.Port}";
     }
@@ -76,7 +78,7 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
         
         // 文件大小检查
         if (uploadFileDto.File.Length > 1024 * 1024 * 50)
-            return CommonResult.Fail("4401", "选择的文件已超过5M限制!");
+            return CommonResult.Fail("4401", "选择的文件已超过50M限制!");
         
         // 组装目录及文件名
         var date = DateTime.Now;
@@ -103,9 +105,6 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
         var model = new SysFileInfo
         {
             Id = id,
-            CreatedTime = DateTime.Now, 
-            CreatorId = _currentUser.UserId?.CastTo<long>(), 
-            Creator = _currentUser.Nickname, 
             
             Name = fileInfo.FileName, 
             Length = size / 1024, 
@@ -119,7 +118,13 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
             FileTypeId = uploadFileDto.FileTypeId, 
             FileTypeName = uploadFileDto.FileTypeName
         };
+
+        model.CheckCreationAudited<SysFileInfo, long>(HttpContext.User);
+        model.CheckOrg<SysFileInfo, long>(HttpContext.User);
+        
         await _repo.InsertAsync(model, cancellationToken);
+
+        await _eventBus.PublishAsync(new FileUploadedEvent(model), cancellationToken);
             
         return CommonResult.Success(fileInfo);
     }

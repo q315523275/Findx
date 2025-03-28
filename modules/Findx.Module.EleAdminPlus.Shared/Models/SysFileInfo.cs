@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_file_record")]
 [EntityExtension(DataSource = "system")]
-public class SysFileInfo: FullAuditedBase<long, long>, ITenant, ISoftDeletable
+public class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, ITenant, ISoftDeletable
 {
     /// <summary>
     ///     文件名称
@@ -66,6 +66,21 @@ public class SysFileInfo: FullAuditedBase<long, long>, ITenant, ISoftDeletable
     public string FileTypeName { get; set; }
     
     /// <summary>
+    ///     机构Id
+    /// </summary>
+    public long? OrgId { get; set; }
+    
+    /// <summary>
+    ///     机构名称
+    /// </summary>
+    public string OrgName { get; set; }
+
+    /// <summary>
+    ///     租户id
+    /// </summary>
+    public string TenantId { get; set; }
+    
+    /// <summary>
     ///     是否删除
     /// </summary>
     public bool IsDeleted { get; set; }
@@ -74,14 +89,4 @@ public class SysFileInfo: FullAuditedBase<long, long>, ITenant, ISoftDeletable
     ///     删除时间
     /// </summary>
     public DateTime? DeletionTime { get; set; }
-
-    /// <summary>
-    ///     租户id
-    /// </summary>
-    public string TenantId { get; set; }
-    
-    /// <summary>
-    ///     创建人
-    /// </summary>
-    public string Creator { get; set; }
 }
