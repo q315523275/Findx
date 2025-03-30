@@ -43,9 +43,9 @@ public class TransactionalAttribute : ActionFilterAttribute
 		// 初始化工作单元
 		IUnitOfWork unitOfWork;
 		if (EntityType != null)
-			unitOfWork = await unitOfWorkManager.GetEntityUnitOfWorkAsync(EntityType, true, false, cancellationToken);
+			unitOfWork = await unitOfWorkManager.GetEntityUnitOfWorkAsync(EntityType, true, cancellationToken);
 		else
-			unitOfWork = await unitOfWorkManager.GetUnitOfWorkAsync(DataSource, true, false, cancellationToken);
+			unitOfWork = await unitOfWorkManager.GetUnitOfWorkAsync(DataSource, true, cancellationToken);
 		
 		// 开启事物
 		if (IsolationLevel.HasValue)

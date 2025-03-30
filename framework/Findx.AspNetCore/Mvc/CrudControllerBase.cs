@@ -197,7 +197,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         var repo = GetRepository<TModel, TKey>();
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
+        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, cancellationToken);
         repo.UnitOfWork = UnitOfWork;
         
         var model = ToModelFromCreateRequest(req);
@@ -239,7 +239,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         var repo = GetRepository<TModel, TKey>();
         
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
+        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, cancellationToken);
         repo.UnitOfWork = UnitOfWork;
 
         var model = await repo.GetAsync(req.Id, cancellationToken);
@@ -278,7 +278,7 @@ public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRe
         var repo = GetRepository<TModel, TKey>();
 
         var unitOfManager = GetService<IUnitOfWorkManager>();
-        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, false, cancellationToken);
+        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, cancellationToken);
         repo.UnitOfWork = UnitOfWork;
         
         await DeleteBeforeAsync(req, cancellationToken);

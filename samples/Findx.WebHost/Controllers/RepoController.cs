@@ -54,7 +54,7 @@ public class RepoController : ApiControllerBase
         await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
         {
             var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
-            await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true, true))
+            await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true))
             {
                 var repo1 = uow.GetRepository<TestNewsInfo, int>();
                 var repo2 = uow.GetRepository<TestUserInfo, int>();
@@ -87,7 +87,7 @@ public class RepoController : ApiControllerBase
         await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
         {
             var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
-            await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true, true))
+            await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true))
             {
                 var repo = uow.GetRepository<TestNewsInfo, int>();
 
@@ -120,7 +120,7 @@ public class RepoController : ApiControllerBase
         await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
         {
             var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
-            await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true, true))
+            await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true))
             {
                 var repo = uow.GetRepository<TestNewsInfo, int>();
                 var dic = new Dictionary<string, object>
