@@ -4,6 +4,7 @@ using System.Security.Principal;
 using System.Threading.Tasks;
 using Findx.Builders;
 using Findx.Common;
+using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Logging;
 using Findx.Modularity;
@@ -154,6 +155,29 @@ public static partial class Extensions
     #region IServiceProvider
 
     /// <summary>
+    ///     获取默认工作单元
+    /// </summary>
+    /// <param name="provider">非root服务提供者</param>
+    /// <param name="enableTransaction">是否启用事务</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static async Task<IUnitOfWork> GetUnitOfWorkAsync(this IServiceProvider provider, bool enableTransaction = false, CancellationToken cancellationToken = default)
+    {
+        var unitOfWorkManager = provider.GetRequiredService<IUnitOfWorkManager>();
+        if (unitOfWorkManager != null)
+        {
+            var unitOfWork = await unitOfWorkManager.GetUnitOfWorkAsync(enableTransaction, cancellationToken);
+            if (enableTransaction && unitOfWork != null)
+            {
+                unitOfWork.EnableTransaction();
+                await unitOfWork.BeginOrUseTransactionAsync(cancellationToken);
+            }
+            return unitOfWork;
+        }
+        return null;
+    }
+    
+    /// <summary>
     ///     获取所有模块信息
     /// </summary>
     public static IEnumerable<StartupModule> GetAllModules(this IServiceProvider provider)
@@ -182,7 +206,7 @@ public static partial class Extensions
     /// </summary>
     public static IServiceProvider UseFindx(this IServiceProvider provider)
     {
-        var logger = provider.GetLogger(typeof(Extensions));
+        var logger = provider.GetLogger(typeof(Data.Extensions));
         logger.LogInformation("框架初始化开始");
         var watch = Stopwatch.StartNew();
 

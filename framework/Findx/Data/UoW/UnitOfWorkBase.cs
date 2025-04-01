@@ -239,6 +239,7 @@ public abstract class UnitOfWorkBase: IUnitOfWork
         finally
         {
             _transactionStack.Clear();
+            
             UnitOfWorkEventDispatcher.ClearAllEvents();
             UnitOfWorkEventDispatcher = null;
             
