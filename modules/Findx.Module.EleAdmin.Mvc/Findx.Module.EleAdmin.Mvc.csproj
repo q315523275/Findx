@@ -5,17 +5,14 @@
         <Nullable>disable</Nullable>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net9.0;net6.0;net8.0</TargetFrameworks>
-        <Version>11.1.2025.315</Version>
+        <Version>11.1.2025.401</Version>
         <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj" />
       <ProjectReference Include="..\Findx.Module.EleAdmin.Shared\Findx.Module.EleAdmin.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.315" />
     </ItemGroup>
 
 </Project>

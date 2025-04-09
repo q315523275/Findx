@@ -5,11 +5,11 @@
         <Nullable>disable</Nullable>
         <TargetFrameworks>net9.0;net6.0;net8.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
-        <Version>11.1.2025.315</Version>
+        <Version>11.1.2025.401</Version>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.315" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.409" />
     </ItemGroup>
 
     <ItemGroup>

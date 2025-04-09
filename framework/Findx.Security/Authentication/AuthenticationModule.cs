@@ -21,7 +21,7 @@ namespace Findx.Security.Authentication;
 ///     Findx-认证模块
 /// </summary>
 [Description("Findx-认证模块")]
-public sealed class AuthenticationModule : AspNetCoreModuleBase
+public sealed class AuthenticationModule : WebApplicationModuleBase
 {
     /// <summary>
     ///     是否启用
@@ -67,7 +67,7 @@ public sealed class AuthenticationModule : AspNetCoreModuleBase
     ///     使用模块
     /// </summary>
     /// <param name="app"></param>
-    public override void UseModule(IApplicationBuilder app)
+    public override void UseModule(WebApplication app)
     {
         if (!_enabled) return;
 
@@ -89,6 +89,7 @@ public sealed class AuthenticationModule : AspNetCoreModuleBase
         services.Configure<JwtOptions>(section);
         var jwt = new JwtOptions();
         section.Bind(jwt);
+        
         if (!jwt.Enabled) return;
 
         Check.NotNull(jwt.Secret, nameof(jwt.Secret));
@@ -102,6 +103,7 @@ public sealed class AuthenticationModule : AspNetCoreModuleBase
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
                 LifetimeValidator = (nbf, exp, token, param) => exp > DateTimeOffset.UtcNow
             };
+            
             opts.Events = new FindxJwtBearerEvents();
         });
     }
@@ -115,6 +117,7 @@ public sealed class AuthenticationModule : AspNetCoreModuleBase
     private static void AddCookie(IServiceCollection services, AuthenticationBuilder builder)
     {
         var configuration = services.GetConfiguration();
+        
         var cookie = new CookieOptions();
         configuration.GetSection("Findx:Authentication:Cookie").Bind(cookie);
         if (!cookie.Enabled) return;

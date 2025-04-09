@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Findx.Data;
 using Findx.ExceptionHandling;
 using Findx.Exceptions;
-using Findx.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;

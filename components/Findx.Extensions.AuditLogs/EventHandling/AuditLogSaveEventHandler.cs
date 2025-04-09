@@ -5,6 +5,9 @@ using Findx.Messaging;
 
 namespace Findx.Extensions.AuditLogs.EventHandling;
 
+/// <summary>
+///     审计日志保存事件
+/// </summary>
 public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEvent>
 {
     private readonly IRepository<AuditLogInfo, long> _auditLogRepo;
@@ -30,6 +33,11 @@ public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEven
         _auditSqlRawParameterRepo = auditSqlRawParameterRepo;
     }
 
+    /// <summary>
+    ///     do
+    /// </summary>
+    /// <param name="eventData"></param>
+    /// <param name="cancellationToken"></param>
     public async Task HandleAsync(AuditLogSaveEvent eventData, CancellationToken cancellationToken = default)
     {
         if (eventData?.AuditLogInfo != null)
@@ -43,7 +51,7 @@ public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEven
                 if (changeList.Any())
                     await _auditEntityPropertyRepo.InsertAsync(changeList, cancellationToken);
             }
-
+            
             if (auditLogInfo.SqlRawEntries.Any())
             {
                 await _auditSqlRawRepo.InsertAsync(auditLogInfo.SqlRawEntries, cancellationToken);

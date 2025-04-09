@@ -33,7 +33,7 @@ public class WebSocketCoreModule : StartupModule
     {
         services.AddSingleton<IWebSocketSessionManager, WebSocketSessionManager>();
         services.AddSingleton<IWebSocketSerializer, WebSocketSerializer>();
-        services.AddSingleton<IWebSocketAuthorization, NullWebSocketAuthorization>();
+        services.AddSingleton<IWebSocketAuthorization, DefaultWebSocketAuthorization>();
 
         var handlerTypeFinder = services.GetOrAddTypeFinder<IWebSocketHandlerTypeFinder>(assemblyFinder => new WebSocketHandlerTypeFinder(assemblyFinder));
         var moduleTypes = handlerTypeFinder.FindAll();

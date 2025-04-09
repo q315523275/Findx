@@ -17,7 +17,7 @@ public static partial class Extensions
     /// <param name="mvcBuilder"></param>
     /// <param name="configure"></param>
     /// <returns></returns>
-    public static IMvcBuilder AddMvcFilter<TFilter>(this IMvcBuilder mvcBuilder, Action<MvcOptions> configure = default) where TFilter : IFilterMetadata
+    public static IMvcBuilder AddMvcFilter<TFilter>(this IMvcBuilder mvcBuilder, Action<MvcOptions> configure = null) where TFilter : IFilterMetadata
     {
         mvcBuilder.Services.AddMvcFilter<TFilter>(configure);
         return mvcBuilder;
@@ -30,7 +30,7 @@ public static partial class Extensions
     /// <param name="services"></param>
     /// <param name="configure"></param>
     /// <returns></returns>
-    public static IServiceCollection AddMvcFilter<TFilter>(this IServiceCollection services, Action<MvcOptions> configure = default) where TFilter : IFilterMetadata
+    public static IServiceCollection AddMvcFilter<TFilter>(this IServiceCollection services, Action<MvcOptions> configure = null) where TFilter : IFilterMetadata
     {
         services.Configure<MvcOptions>(options =>
         {

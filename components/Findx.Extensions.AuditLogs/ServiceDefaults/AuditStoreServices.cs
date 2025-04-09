@@ -36,6 +36,11 @@ public class AuditStoreServices: IAuditStore
         _eventBus = eventBus;
     }
 
+    /// <summary>
+    ///     保存
+    /// </summary>
+    /// <param name="operationEntry"></param>
+    /// <param name="cancelToken"></param>
     public async Task SaveAsync(AuditOperationEntry operationEntry, CancellationToken cancelToken = default)
     {
         var auditLogInfo = BuildOperation(operationEntry);
@@ -43,6 +48,11 @@ public class AuditStoreServices: IAuditStore
         await _eventBus.PublishAsync(new AuditLogSaveEvent(auditLogInfo), cancelToken);
     }
 
+    /// <summary>
+    ///     构建操作日志
+    /// </summary>
+    /// <param name="operationEntry"></param>
+    /// <returns></returns>
     private AuditLogInfo BuildOperation(AuditOperationEntry operationEntry)
     {
         var operation = operationEntry.MapTo<AuditLogInfo>();

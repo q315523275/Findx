@@ -67,6 +67,12 @@ public class EleAdminGlobalAttribute: ActionFilterAttribute
                         workContext.SetOrgIds(allSubsIds);
                     }
                 }
+                // 默认本机构
+                if (workContext.DataScope is DataScope.Oneself or DataScope.Department)
+                {
+                    // ReSharper disable once PossibleInvalidOperationException
+                    workContext.SetOrgIds([user.OrgId.Value]);
+                }
             }
         }
         await next();

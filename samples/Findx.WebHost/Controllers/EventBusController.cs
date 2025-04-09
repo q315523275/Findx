@@ -45,8 +45,8 @@ public class EventBusController : ApiControllerBase
     [HttpGet("uow-event")]
     public async Task<string> UnitOfWorkEvent([FromServices] IUnitOfWorkManager uowMgr, CancellationToken cancellationToken)
     {
-        var uow = await uowMgr.GetUnitOfWorkAsync(null, true, cancellationToken);
-
+        var uow = await uowMgr.GetUnitOfWorkAsync(true, cancellationToken: cancellationToken);
+        
         var repo1 = uow.GetRepository<TestNewsInfo, int>();
         await repo1.PagedAsync(1, 20, cancellationToken: cancellationToken);
 

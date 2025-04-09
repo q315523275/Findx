@@ -4,14 +4,14 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <LangVersion>default</LangVersion>
-        <Version>11.1.2025.328</Version>
+        <Version>11.1.2025.401</Version>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     
     <ItemGroup>
-      <PackageReference Include="Findx.Security" Version="11.1.2025.315" />
+      <PackageReference Include="Findx.Security" Version="11.1.2025.408" />
     </ItemGroup>
     
     <ItemGroup>

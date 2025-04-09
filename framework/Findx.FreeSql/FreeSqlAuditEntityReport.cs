@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Findx.Data;
 using Findx.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.FreeSql;
 
@@ -18,6 +19,7 @@ public class FreeSqlAuditEntityReport: IAuditEntityReport
     public void AuditEntity(AuditEntityEntry auditEntityEntry)
     {
         // Todo 当前弱实现,可以增加实体变更追踪(ChangeTracker)实现全量跟踪
+        // FreeSql执行前后无关联属性
         
         // var scopedDictionary = ServiceLocator.GetService<ScopedDictionary>();
         // if (scopedDictionary?.Function == null || scopedDictionary.AuditOperation?.EntityEntries == null)
@@ -34,6 +36,7 @@ public class FreeSqlAuditEntityReport: IAuditEntityReport
     public void AuditEntity(ICollection<AuditEntityEntry> auditEntityEntries)
     {
         // Todo 当前弱实现,可以增加实体变更追踪(ChangeTracker)实现全量跟踪
+        // FreeSql执行前后无关联属性
         
         // var scopedDictionary = ServiceLocator.GetService<ScopedDictionary>();
         // if (scopedDictionary?.Function == null || scopedDictionary.AuditOperation?.EntityEntries == null)
@@ -52,7 +55,7 @@ public class FreeSqlAuditEntityReport: IAuditEntityReport
     /// <param name="auditEntityPropertyEntry"></param>
     public void AuditEntityProperty(AuditEntityPropertyEntry auditEntityPropertyEntry)
     {
-        // 作用域字典
+        // 作用域字典,当前只实现Http请求关联审计信息
         var scopedDictionary = ServiceLocator.GetService<ScopedDictionary>();
         if (scopedDictionary?.Function == null || scopedDictionary.AuditOperation == null)
         {
@@ -63,7 +66,7 @@ public class FreeSqlAuditEntityReport: IAuditEntityReport
         var entity = scopedDictionary.AuditOperation.EntityEntries.FirstOrDefault(x => x.EntityTypeName == auditEntityPropertyEntry.EntityTypeName);
         if (entity == null)
         {
-            entity = new AuditEntityEntry { EntityTypeName = auditEntityPropertyEntry.EntityTypeName, ExecutionTime = DateTime.Now };
+            entity = new AuditEntityEntry { EntityId = auditEntityPropertyEntry.EntityId, EntityTypeName = auditEntityPropertyEntry.EntityTypeName, ExecutionTime = DateTime.Now };
             scopedDictionary.AuditOperation.EntityEntries.Add(entity);
         }
         entity.PropertyEntries.Add(auditEntityPropertyEntry);
@@ -75,20 +78,19 @@ public class FreeSqlAuditEntityReport: IAuditEntityReport
     /// <param name="auditEntityPropertyEntries"></param>
     public void AuditEntityProperty(ICollection<AuditEntityPropertyEntry> auditEntityPropertyEntries)
     {
-        // 作用域字典
+        // 作用域字典,当前只实现Http请求关联审计信息
         var scopedDictionary = ServiceLocator.GetService<ScopedDictionary>();
         if (scopedDictionary?.Function == null || scopedDictionary.AuditOperation == null || !scopedDictionary.AuditOperation.EntityEntries.Any())
         {
             return;
         }
-        
         // Todo 无追踪模块,无法精准定位
         // 关联
-        var entityTypeName = auditEntityPropertyEntries.First().EntityTypeName;
-        var entity = scopedDictionary.AuditOperation.EntityEntries.FirstOrDefault(x => x.EntityTypeName == entityTypeName);
+        var auditEntityFirst = auditEntityPropertyEntries.First();
+        var entity = scopedDictionary.AuditOperation.EntityEntries.FirstOrDefault(x => x.EntityTypeName == auditEntityFirst.EntityTypeName);
         if (entity == null)
         {
-            entity = new AuditEntityEntry { EntityTypeName = entityTypeName, ExecutionTime = DateTime.Now };
+            entity = new AuditEntityEntry { EntityId = auditEntityFirst.EntityId, EntityTypeName = auditEntityFirst.EntityTypeName, ExecutionTime = DateTime.Now };
             scopedDictionary.AuditOperation.EntityEntries.Add(entity);
         }
         foreach (var auditEntityPropertyEntry in auditEntityPropertyEntries)
@@ -103,6 +105,7 @@ public class FreeSqlAuditEntityReport: IAuditEntityReport
     /// <param name="auditSqlRawEntry"></param>
     public void AuditSqlRaw(AuditSqlRawEntry auditSqlRawEntry)
     {
+        // 作用域字典,当前只实现Http请求关联审计信息
         var scopedDictionary = ServiceLocator.GetService<ScopedDictionary>();
         if (scopedDictionary?.Function == null || scopedDictionary.AuditOperation?.SqlRawEntries == null)
         {
@@ -117,6 +120,7 @@ public class FreeSqlAuditEntityReport: IAuditEntityReport
     /// <param name="auditSqlRawEntries"></param>
     public void AuditSqlRaw(ICollection<AuditSqlRawEntry> auditSqlRawEntries)
     {
+        // 作用域字典,当前只实现Http请求关联审计信息
         var scopedDictionary = ServiceLocator.GetService<ScopedDictionary>();
         if (scopedDictionary?.Function == null || scopedDictionary.AuditOperation?.SqlRawEntries == null)
         {

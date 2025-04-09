@@ -67,6 +67,6 @@ public class WorkContext: IWorkContext, IScopeDependency
     /// <param name="ids"></param>
     public void SetOrgIds(IEnumerable<long> ids)
     {
-        OrgIds = ids;
+        OrgIds = ids.Distinct();
     }
 }

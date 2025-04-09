@@ -277,8 +277,13 @@ public class FreeSqlModule : StartupModule
     {
         if (!option.AuditEntity) return;
         
+        // Todo 需增加全局过滤,字段值无法识别出实体,记录审计日志数据的时候也会触发此模块
+        // 临时解决方案:审计日志数据入库是异步线程执行,通过Http对象进行识别
+        
+        var scopedResolver = ServiceLocator.Instance.GetService<IScopedServiceResolver>();
+        if (scopedResolver is { ResolveEnabled: false }) return;
+        
         var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
-        Console.WriteLine(auditEntityReport != null);
         if (auditEntityReport != null && e.Value != null && !e.Column.CsName.Equals("Id", StringComparison.OrdinalIgnoreCase))
         {
             string entityId;
@@ -291,7 +296,7 @@ public class FreeSqlModule : StartupModule
             var auditEntityPropertyEntry = new AuditEntityPropertyEntry
             {
                 EntityId = entityId,
-                EntityTypeName = e.Column.Table.CsName,
+                EntityTypeName = e.Column.Table.Type?.Name,
                 DisplayName = e.Column.Comment,
                 PropertyName = e.Property?.Name?? e.Column.CsName,
                 PropertyTypeFullName = e.Property?.PropertyType.FullName?? e.Column.CsType.FullName,

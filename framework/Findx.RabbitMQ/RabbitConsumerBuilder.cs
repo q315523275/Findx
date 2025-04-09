@@ -110,8 +110,7 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
 
         if (parameterType.IsEnum) return Enum.Parse(parameterType, message);
 
-        if (parameterType == typeof(Guid))
-            return TypeDescriptor.GetConverter(parameterType).ConvertFromInvariantString(message);
+        if (parameterType == typeof(Guid)) return Guid.Parse(message);
 
         if (parameterType == typeof(string)) return message;
 

@@ -93,8 +93,8 @@ public partial class Extensions
             logger.LogInformation("正在初始化模块《{Description}》({ModuleTypeName})”", moduleType.GetDescription(), moduleType.Name);
             if (module is WebApplicationModuleBase webApplicationModule)
                 webApplicationModule.UseModule(app);
-            else if (module is AspNetCoreModuleBase aspNetCoreModule)
-                aspNetCoreModule.UseModule(app);
+            // else if (module is AspNetCoreModuleBase aspNetCoreModule)
+            //     aspNetCoreModule.UseModule(app);
             else
                 module.UseModule(provider);
             logger.LogInformation("模块《{Description}》({ModuleTypeName})” 初始化完成，耗时{TotalMilliseconds}ms",

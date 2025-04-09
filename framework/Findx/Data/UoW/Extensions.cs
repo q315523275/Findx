@@ -14,7 +14,7 @@ public static partial class Extensions
     /// <param name="enableTransaction">启用事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<IUnitOfWork> GetUnitOfWorkAsync(this IUnitOfWorkManager unitOfWorkManager, bool enableTransaction = false, CancellationToken cancellationToken = default)
+    public static Task<IUnitOfWork> GetUnitOfWorkAsync(this IUnitOfWorkManager unitOfWorkManager, bool enableTransaction, CancellationToken cancellationToken = default)
     {
         return unitOfWorkManager.GetUnitOfWorkAsync(null, enableTransaction, enableTransaction, cancellationToken);
     }
@@ -27,7 +27,7 @@ public static partial class Extensions
     /// <param name="enableTransaction">启用事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<IUnitOfWork> GetUnitOfWorkAsync(this IUnitOfWorkManager unitOfWorkManager, string primary = null, bool enableTransaction = false, CancellationToken cancellationToken = default)
+    public static Task<IUnitOfWork> GetUnitOfWorkAsync(this IUnitOfWorkManager unitOfWorkManager, string primary, bool enableTransaction, CancellationToken cancellationToken = default)
     {
         return unitOfWorkManager.GetUnitOfWorkAsync(primary, enableTransaction, enableTransaction, cancellationToken);
     }
@@ -40,7 +40,7 @@ public static partial class Extensions
     /// <param name="enableTransaction">是否启用事务</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<IUnitOfWork> GetEntityUnitOfWorkAsync(this IUnitOfWorkManager unitOfWorkManager, Type entityType, bool enableTransaction = false, CancellationToken cancellationToken = default)
+    public static Task<IUnitOfWork> GetEntityUnitOfWorkAsync(this IUnitOfWorkManager unitOfWorkManager, Type entityType, bool enableTransaction, CancellationToken cancellationToken = default)
     {
         return unitOfWorkManager.GetEntityUnitOfWorkAsync(entityType, enableTransaction, enableTransaction, cancellationToken);
     }
@@ -52,7 +52,7 @@ public static partial class Extensions
     /// <param name="enableTransaction">是否启用事务</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(this IUnitOfWorkManager unitOfWorkManager, bool enableTransaction = false, CancellationToken cancellationToken = default)
+    public static Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(this IUnitOfWorkManager unitOfWorkManager, bool enableTransaction, CancellationToken cancellationToken = default)
     {
         return unitOfWorkManager.GetEntityUnitOfWorkAsync(typeof(TEntity), enableTransaction, enableTransaction, cancellationToken);
     }

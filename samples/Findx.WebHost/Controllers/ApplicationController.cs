@@ -14,6 +14,7 @@ using Findx.Machine.Cpu;
 using Findx.Machine.Memory;
 using Findx.Machine.Network;
 using Findx.Machine.System;
+using Findx.RPC;
 using Findx.Security;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Http;

@@ -3,7 +3,7 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <GenerateDocumentationFile>True</GenerateDocumentationFile>
-        <PackageVersion>11.1.2025.315</PackageVersion>
+        <PackageVersion>11.1.2025.401</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <RootNamespace>Findx.Module.EleAdmin</RootNamespace>

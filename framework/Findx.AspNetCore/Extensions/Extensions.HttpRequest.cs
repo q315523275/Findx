@@ -111,5 +111,4 @@ public static partial class Extensions
         reader.BaseStream.Seek(0, SeekOrigin.Begin);
         return await reader.ReadToEndAsync();
     }
-
 }

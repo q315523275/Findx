@@ -1,16 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
 using Findx.AspNetCore.Mvc.Middlewares;
-using Findx.Builders;
-using Findx.Extensions;
-using Findx.Logging;
-using Findx.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Findx.AspNetCore.Extensions;
 

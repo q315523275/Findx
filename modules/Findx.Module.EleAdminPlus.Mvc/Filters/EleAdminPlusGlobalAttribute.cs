@@ -65,7 +65,6 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
             {
                 // 默认数据范围
                 workContext.SetDataScope(DataScope.Oneself);
-                
                 // 根据角色控制数据范围
                 if (userRoleList.Any())
                 {
@@ -88,6 +87,12 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
                         var allSubsIds = GetTargetDepartmentAndSubOrgList(orgList, user.OrgId.Value).Select(x => x.Id);
                         workContext.SetOrgIds(allSubsIds);
                     }
+                }
+                // 默认本机构
+                if (workContext.DataScope is DataScope.Oneself or DataScope.Department)
+                {
+                    // ReSharper disable once PossibleInvalidOperationException
+                    workContext.SetOrgIds([user.OrgId.Value]);
                 }
             }
         }

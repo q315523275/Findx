@@ -13,7 +13,7 @@ namespace Findx.Security.Authorization;
 ///     Findx-授权模块
 /// </summary>
 [Description("Findx-授权模块")]
-public class AuthorizationModule : AspNetCoreModuleBase
+public class AuthorizationModule : WebApplicationModuleBase
 {
     private bool _enabled;
 
@@ -40,6 +40,7 @@ public class AuthorizationModule : AspNetCoreModuleBase
 
         _enabled = configuration.GetValue<bool>("Findx:Authorization:Enabled");
         if (!_enabled) return services;
+        
         services.AddAuthorization(opts =>
         {
             opts.AddPolicy(FunctionRequirement.Policy, policy => policy.AddRequirements(new FunctionRequirement()));
@@ -52,7 +53,7 @@ public class AuthorizationModule : AspNetCoreModuleBase
     ///     启用模块
     /// </summary>
     /// <param name="app"></param>
-    public override void UseModule(IApplicationBuilder app)
+    public override void UseModule(WebApplication app)
     {
         if (!_enabled) return;
         app.UseAuthorization();

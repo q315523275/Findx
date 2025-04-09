@@ -26,7 +26,7 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<IUnitOfWork> GetUnitOfWorkAsync(string primary = null, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
+    public async Task<IUnitOfWork> GetUnitOfWorkAsync(string primary, bool enableTransaction, bool beginTransaction, CancellationToken cancellationToken = default)
     {
         var primaryKey = primary ?? GetDataSourcePrimary();
         var unitOfWork = _scopedDictionary.GetUnitOfWork(primaryKey);
@@ -55,7 +55,7 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<IUnitOfWork> GetEntityUnitOfWorkAsync(Type entityType, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
+    public Task<IUnitOfWork> GetEntityUnitOfWorkAsync(Type entityType, bool enableTransaction, bool beginTransaction, CancellationToken cancellationToken = default)
     {
         return GetUnitOfWorkAsync(entityType.GetEntityExtensionAttribute()?.DataSource, enableTransaction, beginTransaction, cancellationToken);
     }
@@ -67,7 +67,7 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default)
+    public Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction, bool beginTransaction, CancellationToken cancellationToken = default)
     {
         return GetEntityUnitOfWorkAsync(typeof(TEntity), enableTransaction, beginTransaction, cancellationToken);
     }

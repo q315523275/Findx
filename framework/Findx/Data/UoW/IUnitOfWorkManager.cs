@@ -15,7 +15,7 @@ public interface IUnitOfWorkManager
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IUnitOfWork> GetUnitOfWorkAsync(string primary = null, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default);
+    Task<IUnitOfWork> GetUnitOfWorkAsync(string primary, bool enableTransaction, bool beginTransaction, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     根据实体类型获取工作单元
@@ -25,7 +25,7 @@ public interface IUnitOfWorkManager
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IUnitOfWork> GetEntityUnitOfWorkAsync(Type entityType, bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default);
+    Task<IUnitOfWork> GetEntityUnitOfWorkAsync(Type entityType, bool enableTransaction, bool beginTransaction, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     根据实体获取工作单元
@@ -34,7 +34,7 @@ public interface IUnitOfWorkManager
     /// <param name="beginTransaction">是否开启事物</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction = false, bool beginTransaction = false, CancellationToken cancellationToken = default);
+    Task<IUnitOfWork> GetEntityUnitOfWorkAsync<TEntity>(bool enableTransaction, bool beginTransaction, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取所以已创建工作单元

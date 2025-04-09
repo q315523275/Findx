@@ -6,11 +6,11 @@
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>11.1.2025.328</Version>
+        <Version>11.1.2025.401</Version>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.FreeSql" Version="11.1.2025.315" />
+      <PackageReference Include="Findx.FreeSql" Version="11.1.2025.408" />
     </ItemGroup>
     
 </Project>

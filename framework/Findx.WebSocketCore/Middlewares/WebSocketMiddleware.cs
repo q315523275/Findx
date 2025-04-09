@@ -2,7 +2,6 @@
 using System.Buffers;
 using System.IO;
 using System.Net.WebSockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Security;
@@ -62,8 +61,14 @@ public class WebSocketMiddleware
         {
             RemoteIpAddress = context.GetRemoteIpAddress(),
             RemotePort = context.Connection.RemotePort,
-            UserName = context.User.Identity?.GetUserName() ?? "匿名"
+            UserName = context.Request.Query.TryGetValue("userName", out var value) ? value.ToString() : "匿名"
         };
+        
+        // 认证通过进行用户名赋值
+        if (context.User.Identity?.IsAuthenticated == true)
+        {
+            webSocketSession.UserName = context.User.Identity?.GetUserName();
+        }
         
         // 无效
         // var cancellationToken = context.RequestAborted;
