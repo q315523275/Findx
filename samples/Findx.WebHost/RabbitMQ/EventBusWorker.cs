@@ -29,6 +29,5 @@
 //            _eventBus.StartConsuming();
 //        }
 //    }
-
 //}
 

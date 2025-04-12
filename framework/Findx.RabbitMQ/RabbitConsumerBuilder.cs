@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Buffers.Binary;
+using System.Buffers.Text;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.DependencyInjection;
 using Findx.Extensions;
@@ -24,7 +30,7 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
     private readonly IRabbitMqConsumerFactory _factory;
     private readonly IRabbitConsumerFinder _finder;
     private readonly IMethodInfoFinder _methodFinder;
-    private readonly IJsonSerializer _serializer;
+    private readonly IRabbitMqSerializer _serializer;
 
     /// <summary>
     ///     Ctor
@@ -33,7 +39,7 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
     /// <param name="methodFinder"></param>
     /// <param name="factory"></param>
     /// <param name="serializer"></param>
-    public RabbitConsumerBuilder(IRabbitConsumerFinder finder, IMethodInfoFinder methodFinder, IRabbitMqConsumerFactory factory, IJsonSerializer serializer)
+    public RabbitConsumerBuilder(IRabbitConsumerFinder finder, IMethodInfoFinder methodFinder, IRabbitMqConsumerFactory factory, IRabbitMqSerializer serializer)
     {
         _finder = finder;
         _methodFinder = methodFinder;
@@ -51,7 +57,7 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
     /// <summary>
     ///     构建
     /// </summary>
-    public void Build()
+    public async Task BuildAsync(CancellationToken cancellationToken = default)
     {
         var consumerList = FindAllConsumerExecutor();
         var queueList = consumerList.GroupBy(x => x.QueueName);
@@ -65,6 +71,7 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
             var routingKeyDict = group.GroupBy(x => x.RoutingKey).ToDictionary(x => x.Key, x => x);
 
             var consumer = _factory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration, defaultQueue.ConnectionName);
+            
             consumer.OnMessageReceived(async (channel, eventArgs) =>
             {
                 // direct模式指定routingKey
@@ -73,8 +80,6 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
                 var routingKey = eventArgs.RoutingKey;
                 if (routingKeyDict.TryGetValue(routingKey, out var typeList))
                 {
-                    var message = Encoding.UTF8.GetString(eventArgs.Body.ToArray());
-
                     await using var scope = ServiceLocator.Instance.CreateAsyncScope();
                     var serviceProvider = scope.ServiceProvider;
 
@@ -82,7 +87,7 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
                     {
                         var instance = serviceProvider.GetService(typeInfo.Type);
                         var parameterType = MethodParameterType.GetOrAdd(typeInfo.MethodInfo, _ => typeInfo.MethodInfo.GetParameters()[0].ParameterType);
-                        var parameter = ConvertToParameter(parameterType, message);
+                        var parameter = _serializer.Deserialize(eventArgs.Body, parameterType); 
                         var handler = MethodHandlers.GetOrAdd(typeInfo.MethodInfo, _ => FastInvokeHandler.Create(typeInfo.MethodInfo));
 
                         var result = handler.Invoke(instance, [parameter, eventArgs, channel]);
@@ -92,37 +97,15 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
             });
 
             // 循环绑定RoutingKey
-            foreach (var item in group.DistinctBy2(x => x.RoutingKey)) consumer.BindAsync(item.RoutingKey);
+            foreach (var item in group.DistinctBy(x => x.RoutingKey))
+            {
+               await consumer.BindAsync(item.RoutingKey, cancellationToken);
+            }
 
             ConsumerList.Add(consumer);
         }
     }
-
-    /// <summary>
-    ///     转换参数值
-    /// </summary>
-    /// <param name="parameterType"></param>
-    /// <param name="message"></param>
-    /// <returns></returns>
-    private object ConvertToParameter(Type parameterType, string message)
-    {
-        if (parameterType.IsNullableType()) parameterType = parameterType.GetUnNullableType();
-
-        if (parameterType.IsEnum) return Enum.Parse(parameterType, message);
-
-        if (parameterType == typeof(Guid)) return Guid.Parse(message);
-
-        if (parameterType == typeof(string)) return message;
-
-        if (parameterType.IsPrimitive || parameterType.IsValueType)
-            return Convert.ChangeType(message, parameterType);
-
-        if (message.IsJson()) 
-            return _serializer.Deserialize(message, parameterType);
-            
-        return null;
-    }
-
+    
     /// <summary>
     ///     查找所有消费执行者
     /// </summary>

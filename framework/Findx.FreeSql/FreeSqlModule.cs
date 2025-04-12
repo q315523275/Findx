@@ -260,7 +260,7 @@ public class FreeSqlModule : StartupModule
         if (option.MultiTenant && e.AuditValueType == AuditValueType.Insert && TenantManager.Current.IsNotNullOrWhiteSpace() && option.MultiTenantFieldName.IsNotNullOrWhiteSpace())
         {
             //  实体属性字段
-            if (e.Column.CsName.Equals(option.MultiTenantFieldName, StringComparison.OrdinalIgnoreCase) && e.Column.CsType == typeof(Guid?) && e.Value == null)
+            if (e.Column.CsName.Equals(option.MultiTenantFieldName, StringComparison.OrdinalIgnoreCase) && e.Value == null)
             {
                 e.Value = TenantManager.Current;
             }

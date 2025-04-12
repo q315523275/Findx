@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -13,23 +14,25 @@ public interface IRabbitMqConsumer
     /// <summary>
     ///     异常回调
     /// </summary>
-    Func<IModel, BasicDeliverEventArgs, Task> FailedCallback { set; }
+    Func<IChannel, BasicDeliverEventArgs, CancellationToken, Task> FailedCallback { set; }
 
     /// <summary>
     ///     绑定routingKey
     /// </summary>
     /// <param name="routingKey"></param>
-    Task BindAsync(string routingKey);
+    /// <param name="cancellationToken"></param>
+    Task BindAsync(string routingKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     解绑routingKey
     /// </summary>
     /// <param name="routingKey"></param>
-    Task UnbindAsync(string routingKey);
+    /// <param name="cancellationToken"></param>
+    Task UnbindAsync(string routingKey, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     添加消息处理
     /// </summary>
     /// <param name="callback"></param>
-    void OnMessageReceived(Func<IModel, BasicDeliverEventArgs, Task> callback);
+    void OnMessageReceived(Func<IChannel, BasicDeliverEventArgs, Task> callback);
 }

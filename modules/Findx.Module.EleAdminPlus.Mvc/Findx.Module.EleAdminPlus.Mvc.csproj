@@ -5,7 +5,7 @@
         <Nullable>disable</Nullable>
         <TargetFrameworks>net9.0;net6.0;net8.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
-        <Version>11.1.2025.401</Version>
+        <Version>11.1.2025.410</Version>
     </PropertyGroup>
 
     <ItemGroup>

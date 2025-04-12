@@ -2,6 +2,9 @@
 
 namespace Findx.RabbitMQ;
 
+/// <summary>
+///     交换机信息配置
+/// </summary>
 public class ExchangeDeclareConfiguration
 {
     /// <summary>

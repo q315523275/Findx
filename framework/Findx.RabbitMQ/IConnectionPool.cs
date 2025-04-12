@@ -1,9 +1,20 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using RabbitMQ.Client;
 
 namespace Findx.RabbitMQ;
 
-public interface IConnectionPool : IDisposable
+/// <summary>
+///     连接池服务接口
+/// </summary>
+public interface IConnectionPool : IAsyncDisposable
 {
-    IConnection Get(string connectionName = null);
+    /// <summary>
+    ///     获取连接
+    /// </summary>
+    /// <param name="connectionName"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<IConnection> GetAsync(string connectionName = null, CancellationToken cancellationToken = default);
 }

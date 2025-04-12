@@ -12,13 +12,13 @@ public interface IRabbitMqSerializer
     /// </summary>
     /// <param name="obj"></param>
     /// <returns></returns>
-    string Serialize(object obj);
-
+    byte[] Serialize<T>(T obj);
+    
     /// <summary>
     ///     反序列化
     /// </summary>
     /// <param name="value"></param>
     /// <param name="type"></param>
     /// <returns></returns>
-    object Deserialize(string value, Type type);
+    object Deserialize(ReadOnlyMemory<byte> value, Type type);
 }

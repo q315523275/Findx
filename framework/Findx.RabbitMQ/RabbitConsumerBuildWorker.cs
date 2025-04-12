@@ -25,10 +25,8 @@ public class RabbitConsumerBuildWorker : BackgroundService
     /// </summary>
     /// <param name="stoppingToken"></param>
     /// <returns></returns>
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        _builder.Build();
-
-        return Task.CompletedTask;
+        await _builder.BuildAsync(stoppingToken);
     }
 }

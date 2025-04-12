@@ -63,7 +63,7 @@ public class RateLimiterAttribute : ActionFilterAttribute
         var rateLimitKey = GetRateLimitKey(context);
         var rateLimitValue = await cache.IncrementAsync(rateLimitKey, expire: TimeSpanUtility.ToTimeSpan(Period));
         if (rateLimitValue > Limit)
-            context.Result = new JsonResult(CommonResult.Fail("429", "Frequent network requests"));
+            context.Result = new JsonResult(CommonResult.Fail("429", $"Too many requests in {Period}. Try again later."));
         else
             await next();
     }

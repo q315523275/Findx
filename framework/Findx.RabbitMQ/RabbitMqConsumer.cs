@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.ExceptionHandling;
+using Findx.Locks;
 using Findx.Threading;
 using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
@@ -38,7 +40,7 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
 
     protected IExceptionNotifier ExceptionNotifier { get; }
 
-    protected IModel Channel { get; private set; }
+    protected IChannel Channel { get; private set; }
 
     protected ExchangeDeclareConfiguration Exchange { get; private set; }
 
@@ -46,11 +48,11 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
 
     protected string ConnectionName { get; private set; }
 
-    protected ConcurrentBag<Func<IModel, BasicDeliverEventArgs, Task>> Callbacks { get; }
+    protected ConcurrentBag<Func<IChannel, BasicDeliverEventArgs, Task>> Callbacks { get; }
 
     protected ConcurrentQueue<QueueBindCommand> QueueBindCommands { get; }
 
-    protected object ChannelSendSyncLock { get; } = new object();
+    protected AsyncLock ChannelSendSyncLock { get; } = new();
 
     protected AsyncTimer Timer { get; }
 
@@ -60,24 +62,7 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
         DisposeChannel();
     }
 
-    public Func<IModel, BasicDeliverEventArgs, Task> FailedCallback { get; set; }
-
-    public virtual async Task BindAsync(string routingKey)
-    {
-        QueueBindCommands.Enqueue(new QueueBindCommand(QueueBindType.Bind, routingKey));
-        await TrySendQueueBindCommandsAsync();
-    }
-
-    public virtual async Task UnbindAsync(string routingKey)
-    {
-        QueueBindCommands.Enqueue(new QueueBindCommand(QueueBindType.Unbind, routingKey));
-        await TrySendQueueBindCommandsAsync();
-    }
-
-    public virtual void OnMessageReceived(Func<IModel, BasicDeliverEventArgs, Task> callback)
-    {
-        Callbacks.Add(callback);
-    }
+    public Func<IChannel, BasicDeliverEventArgs, CancellationToken, Task> FailedCallback { get; set; }
 
     public void Initialize([NotNull] ExchangeDeclareConfiguration exchange, [NotNull] QueueDeclareConfiguration queue, string connectionName = null)
     {
@@ -85,6 +70,65 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
         Queue = Check.NotNull(queue, nameof(queue));
         ConnectionName = connectionName;
         Timer.Start();
+    }
+    
+    public virtual async Task BindAsync(string routingKey, CancellationToken cancellationToken = default)
+    {
+        QueueBindCommands.Enqueue(new QueueBindCommand(QueueBindType.Bind, routingKey));
+        await TrySendQueueBindCommandsAsync(cancellationToken);
+    }
+
+    public virtual async Task UnbindAsync(string routingKey, CancellationToken cancellationToken = default)
+    {
+        QueueBindCommands.Enqueue(new QueueBindCommand(QueueBindType.Unbind, routingKey));
+        await TrySendQueueBindCommandsAsync(cancellationToken);
+    }
+    
+    protected virtual async Task TrySendQueueBindCommandsAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            while (!QueueBindCommands.IsEmpty)
+            {
+                if (Channel == null || Channel.IsClosed) return;
+
+                using (await ChannelSendSyncLock.LockAsync(cancellationToken))
+                {
+                    if (QueueBindCommands.TryPeek(out var command))
+                    {
+                        switch (command.Type)
+                        {
+                            case QueueBindType.Bind:
+                                await Channel.QueueBindAsync(
+                                    Queue.QueueName,
+                                    Exchange.ExchangeName,
+                                    command.RoutingKey, cancellationToken: cancellationToken);
+                                break;
+                            case QueueBindType.Unbind:
+                                await Channel.QueueUnbindAsync(
+                                    Queue.QueueName,
+                                    Exchange.ExchangeName,
+                                    command.RoutingKey, cancellationToken: cancellationToken);
+                                break;
+                            default:
+                                throw new Exception($"Unknown {nameof(QueueBindType)}: {command.Type}");
+                        }
+
+                        QueueBindCommands.TryDequeue(out command);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "");
+            await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex), cancellationToken);
+        }
+    }
+    
+    public virtual void OnMessageReceived(Func<IChannel, BasicDeliverEventArgs, Task> callback)
+    {
+        Callbacks.Add(callback);
     }
 
     protected virtual async Task Timer_Elapsed(AsyncTimer timer)
@@ -96,86 +140,94 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
         }
     }
 
-    protected virtual async Task HandleIncomingMessageAsync(object sender, BasicDeliverEventArgs basicDeliverEventArgs)
+    protected virtual async Task TryCreateChannelAsync(CancellationToken cancellationToken = default)
+    {
+        await DisposeChannelAsync();
+
+        try
+        {
+            Channel = await (await ConnectionPool.GetAsync(ConnectionName, cancellationToken)).CreateChannelAsync(cancellationToken: cancellationToken);
+
+            await Channel.ExchangeDeclareAsync(
+                Exchange.ExchangeName,
+                Exchange.Type,
+                Exchange.Durable,
+                Exchange.AutoDelete,
+                Exchange.Arguments, cancellationToken: cancellationToken);
+
+            await Channel.QueueDeclareAsync(
+                Queue.QueueName,
+                Queue.Durable,
+                Queue.Exclusive,
+                Queue.AutoDelete,
+                Queue.Arguments, cancellationToken: cancellationToken);
+
+            // var consumer = new AsyncEventingBasicConsumer(Channel);
+            // EventingBasicConsumer开启多线程
+            var consumer = new AsyncEventingBasicConsumer(Channel);
+            consumer.ReceivedAsync += (_, basicDeliverEventArgs) =>
+            {
+                HandleIncomingMessageAsync(Channel, basicDeliverEventArgs, cancellationToken);
+                return Task.CompletedTask;
+            };
+
+            await Channel.BasicQosAsync(0, (ushort)Queue.Qos, false, cancellationToken);
+
+            // 默认必须触发消息ack
+            await Channel.BasicConsumeAsync(Queue.QueueName, false, consumer, cancellationToken: cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            if (ex is OperationInterruptedException { ShutdownReason.ReplyCode: 406 } operationInterruptedException &&
+                operationInterruptedException.Message.Contains("arg 'x-dead-letter-exchange'"))
+            {
+                Logger.LogWarning(ex, "RabbitMQConsumer tryCreateChannelAsync");
+                await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex), cancellationToken);
+            }
+
+            Logger.LogWarning(ex, "RabbitMQConsumer tryCreateChannelAsync");
+            await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex), cancellationToken);
+        }
+    }
+    
+    protected virtual async Task HandleIncomingMessageAsync(object sender, BasicDeliverEventArgs basicDeliverEventArgs, CancellationToken cancellationToken = default)
     {
         try
         {
-            foreach (var callback in Callbacks) await callback(Channel, basicDeliverEventArgs);
+            foreach (var callback in Callbacks)
+            {
+                await callback(Channel, basicDeliverEventArgs);
+            }
 
-            if (Queue.AutoAck)
-                Channel.BasicAck(basicDeliverEventArgs.DeliveryTag, false);
+            if (Queue.AutoAck && Channel != null)
+            {
+                await Channel.BasicAckAsync(basicDeliverEventArgs.DeliveryTag, false, cancellationToken);
+            }
         }
         catch (Exception ex)
         {
             try
             {
-                if (Queue.AutoAck)
-                    Channel.BasicAck(basicDeliverEventArgs.DeliveryTag, false);
+                if (Queue.AutoAck && Channel != null)
+                {
+                    await Channel.BasicAckAsync(basicDeliverEventArgs.DeliveryTag, false, cancellationToken);
+                }
 
                 if (FailedCallback != null)
-                    await FailedCallback(Channel, basicDeliverEventArgs);
+                {
+                    await FailedCallback(Channel, basicDeliverEventArgs, cancellationToken);
+                }
             }
             catch
             {
                 // ignored
             }
 
-            Logger.LogError(ex, "rabbitMqConsumer handleIncomingMessageAsync");
-            await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
+            Logger.LogError(ex, "RabbitMQConsumer handleIncomingMessageAsync");
+            await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex), cancellationToken);
         }
     }
-
-    protected virtual async Task TryCreateChannelAsync()
-    {
-        await DisposeChannelAsync();
-
-        try
-        {
-            Channel = ConnectionPool.Get(ConnectionName).CreateModel();
-
-            Channel.ExchangeDeclare(
-                Exchange.ExchangeName,
-                Exchange.Type,
-                Exchange.Durable,
-                Exchange.AutoDelete,
-                Exchange.Arguments
-            );
-
-            Channel.QueueDeclare(
-                Queue.QueueName,
-                Queue.Durable,
-                Queue.Exclusive,
-                Queue.AutoDelete,
-                Queue.Arguments
-            );
-
-            // var consumer = new AsyncEventingBasicConsumer(Channel);
-            var consumer = new EventingBasicConsumer(Channel);
-            consumer.Received += async (_, basicDeliverEventArgs) =>
-            {
-                await HandleIncomingMessageAsync(Channel, basicDeliverEventArgs);
-            };
-
-            Channel.BasicQos(0, (ushort)Queue.Qos, false);
-
-            // 默认必须触发消息ack
-            Channel.BasicConsume(Queue.QueueName, false, consumer);
-        }
-        catch (Exception ex)
-        {
-            if (ex is OperationInterruptedException operationInterruptedException &&
-                operationInterruptedException.ShutdownReason.ReplyCode == 406 &&
-                operationInterruptedException.Message.Contains("arg 'x-dead-letter-exchange'"))
-            {
-                Logger.LogWarning(ex, "rabbitMqConsumer tryCreateChannelAsync");
-                await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-            }
-
-            Logger.LogWarning(ex, "rabbitMqConsumer tryCreateChannelAsync");
-            await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-        }
-    }
-
+    
     protected virtual async Task DisposeChannelAsync()
     {
         if (Channel == null) return;
@@ -203,54 +255,10 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "");
-            ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
+            ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex)).ConfigureAwait(false);
         }
     }
-
-    protected virtual async Task TrySendQueueBindCommandsAsync()
-    {
-        try
-        {
-            while (!QueueBindCommands.IsEmpty)
-            {
-                if (Channel == null || Channel.IsClosed) return;
-
-                lock (ChannelSendSyncLock)
-                {
-                    if (QueueBindCommands.TryPeek(out var command))
-                    {
-                        switch (command.Type)
-                        {
-                            case QueueBindType.Bind:
-                                Channel.QueueBind(
-                                    Queue.QueueName,
-                                    Exchange.ExchangeName,
-                                    command.RoutingKey
-                                );
-                                break;
-                            case QueueBindType.Unbind:
-                                Channel.QueueUnbind(
-                                    Queue.QueueName,
-                                    Exchange.ExchangeName,
-                                    command.RoutingKey
-                                );
-                                break;
-                            default:
-                                throw new Exception($"Unknown {nameof(QueueBindType)}: {command.Type}");
-                        }
-
-                        QueueBindCommands.TryDequeue(out command);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "");
-            await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
-        }
-    }
-
+    
     protected class QueueBindCommand
     {
         /// <summary>

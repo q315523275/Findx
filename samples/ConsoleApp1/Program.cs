@@ -10,6 +10,8 @@ using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using ConsoleApp1;
 using CsvHelper;
 using Findx;
@@ -105,19 +107,19 @@ Console.WriteLine("Hello, World!");
 
 
 // webSocketClient测试
-var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:10021/ws").Build();
-hubConnection.On(async (message, token) =>  
-{
-    var txt = await message.AsTextAsync(token);
-    Console.WriteLine($"Received {txt}");
-});
-await hubConnection.StartAsync();
-while (true)
-{
-    Console.WriteLine($"请输入websocket发送内容");
-    var msg = Console.ReadLine();
-    await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
-}
+// var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:10021/ws").Build();
+// hubConnection.On(async (message, token) =>  
+// {
+//     var txt = await message.AsTextAsync(token);
+//     Console.WriteLine($"Received {txt}");
+// });
+// await hubConnection.StartAsync();
+// while (true)
+// {
+//     Console.WriteLine($"请输入websocket发送内容");
+//     var msg = Console.ReadLine();
+//     await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
+// }
 
 
 // 配置中心测试
@@ -637,5 +639,10 @@ while (true)
 // Console.WriteLine($"发送消息耗时:{stopwatch.Elapsed.TotalMilliseconds}ms");
 // Console.ReadLine();
 
-// var ai = new SysAppInfo { OrgId = Guid.Parse("3a067a31-b7b2-3c48-b770-a987a73c93c3") };
+var ai = new SysAppInfo { OrgId = Guid.Parse("3a067a31-b7b2-3c48-b770-a987a73c93c3") };
 // Console.WriteLine(ai.OrgId.CastTo<string>());
+
+var bt = JsonSerializer.SerializeToUtf8Bytes(ai);
+Console.WriteLine(bt);
+var str = Encoding.Default.GetString(bt);
+Console.WriteLine(str);

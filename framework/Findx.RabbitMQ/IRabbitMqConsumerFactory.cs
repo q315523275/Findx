@@ -1,4 +1,6 @@
-﻿namespace Findx.RabbitMQ;
+﻿using System.Threading;
+
+namespace Findx.RabbitMQ;
 
 /// <summary>
 ///     RabbitMQ消费者工厂

@@ -1,4 +1,8 @@
 ﻿using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Findx.Tracing;
+using Findx.Extensions;
 using RabbitMQ.Client;
 
 namespace Findx.RabbitMQ;
@@ -10,16 +14,19 @@ public class RabbitMqPublisher : IRabbitMqPublisher
 {
     private readonly IConnectionPool _connectionPool;
     private readonly IRabbitMqSerializer _serializer;
+    private readonly ICorrelationIdProvider _correlationIdProvider;
 
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="connectionPool"></param>
     /// <param name="serializer"></param>
-    public RabbitMqPublisher(IConnectionPool connectionPool, IRabbitMqSerializer serializer)
+    /// <param name="correlationIdProvider"></param>
+    public RabbitMqPublisher(IConnectionPool connectionPool, IRabbitMqSerializer serializer, ICorrelationIdProvider correlationIdProvider)
     {
         _connectionPool = connectionPool;
         _serializer = serializer;
+        _correlationIdProvider = correlationIdProvider;
     }
 
     /// <summary>
@@ -31,21 +38,24 @@ public class RabbitMqPublisher : IRabbitMqPublisher
     /// <param name="routingKey"></param>
     /// <param name="durable"></param>
     /// <param name="autoDelete"></param>
-    public void Publish(object obj, string exchangeName, string exchangeType, string routingKey, bool durable = false, bool autoDelete = false)
+    /// <param name="cancellationToken"></param>
+    public async Task PublishAsync<T>(T obj, string exchangeName, string exchangeType, string routingKey, bool durable = false, bool autoDelete = false, CancellationToken cancellationToken = default)
     {
-        var message = _serializer.Serialize(obj);
-        var body = Encoding.UTF8.GetBytes(message);
+        var body = _serializer.Serialize(obj);
 
-        using var channel = _connectionPool.Get().CreateModel();
+        await using var channel = await (await _connectionPool.GetAsync(cancellationToken: cancellationToken)).CreateChannelAsync(cancellationToken: cancellationToken);
+        
         // 创建并配置交换器
-        channel.ExchangeDeclare(exchangeName, exchangeType, durable: durable, autoDelete: autoDelete);
+        await channel.ExchangeDeclareAsync(exchangeName, exchangeType, durable: durable, autoDelete: autoDelete, cancellationToken: cancellationToken);
         // 创建队列属性
-        var properties = channel.CreateBasicProperties();
-        // 决定发送数据类型
-        properties.ContentType = "application/json";
-        // 是否持久化  1 no  2 yes
-        properties.DeliveryMode = 2;
+        var properties = new BasicProperties { DeliveryMode = DeliveryModes.Persistent };
+        if (properties.CorrelationId.IsNullOrWhiteSpace())
+        {
+            properties.CorrelationId = _correlationIdProvider.Get();
+        }
         // 发送数据
-        channel.BasicPublish(exchangeName, routingKey, true, properties, body);
+        // channel.BasicPublish(exchangeName, routingKey, true, properties, body);
+        // mandatory标志告诉broker代理服务器至少将消息route到一个队列中，否则就将消息return给发送者
+        await channel.BasicPublishAsync(exchangeName, routingKey, false, properties, body, cancellationToken);
     }
 }

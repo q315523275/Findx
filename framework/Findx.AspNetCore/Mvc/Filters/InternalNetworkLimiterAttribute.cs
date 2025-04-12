@@ -26,6 +26,6 @@ public class InternalNetworkLimiterAttribute : ActionFilterAttribute
         if (NetUtility.IsInternalIp(ipv4Address))
             await next();
         else
-            context.Result = new JsonResult(CommonResult.Fail("403", $"network request interception; ip({ipv4Address})"));
+            context.Result = new JsonResult(CommonResult.Fail("403", $"The network ({ipv4Address}) request has been intercepted."));
     }
 }

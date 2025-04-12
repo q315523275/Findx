@@ -4,6 +4,9 @@ using RabbitMQ.Client;
 
 namespace Findx.RabbitMQ;
 
+/// <summary>
+///     RabbitMQ连接字典信息
+/// </summary>
 public class RabbitMqConnections : Dictionary<string, ConnectionFactory>
 {
     public const string DefaultConnectionName = "Default";

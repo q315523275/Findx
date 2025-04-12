@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Findx.Common;
 using RabbitMQ.Client;
 
@@ -73,8 +74,8 @@ public class QueueDeclareConfiguration
     /// </summary>
     /// <param name="channel"></param>
     /// <returns></returns>
-    public virtual QueueDeclareOk Declare(IModel channel)
+    public virtual async Task<QueueDeclareOk> DeclareAsync(IChannel channel)
     {
-        return channel.QueueDeclare(QueueName, Durable, Exclusive, AutoDelete, Arguments);
+        return await channel.QueueDeclareAsync(QueueName, Durable, Exclusive, AutoDelete, Arguments);
     }
 }

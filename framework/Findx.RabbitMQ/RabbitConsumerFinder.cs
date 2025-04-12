@@ -2,6 +2,9 @@
 
 namespace Findx.RabbitMQ;
 
+/// <summary>
+///     MQ消费者查找器
+/// </summary>
 public class RabbitConsumerFinder : AttributeTypeFinderBase<RabbitListenerAttribute>, IRabbitConsumerFinder
 {
     /// <summary>

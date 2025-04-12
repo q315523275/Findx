@@ -16,4 +16,9 @@ public class OrgQueryDto : PageBase
     ///     关键词
     /// </summary>
     public string Keywords { set; get; }
+    
+    /// <summary>
+    ///     类型
+    /// </summary>
+    public string Type { set; get; }
 }

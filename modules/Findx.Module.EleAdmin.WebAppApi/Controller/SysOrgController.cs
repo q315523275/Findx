@@ -56,6 +56,7 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSaveDto, OrgQu
         var whereExp = PredicateBuilder.New<SysOrgInfo>()
                                        .AndIf(request.Pid != null && request.Pid != Guid.Empty, x => x.ParentId == request.Pid)
                                        .AndIf(!request.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(request.Keywords))
+                                       .AndIf(request.Type.IsNotNullOrWhiteSpace(), x => x.Type == request.Type)
                                        .AndIf(_workContext.DataScope is DataScope.Custom, x => _workContext.OrgIds.Contains(x.Id))
                                        .AndIf(_workContext.DataScope is DataScope.Subs, x => _workContext.OrgIds.Contains(x.Id))
                                        .AndIf(_workContext.DataScope is DataScope.Department, x => x.Id == user.OrgId.Value)
