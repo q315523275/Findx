@@ -7,7 +7,7 @@
         <Description>限速、限流、防重提交、内网限定、请求策略、动态API、上传、MVC扩展等</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>11.1.2025.409</PackageVersion>
+        <PackageVersion>11.1.2025.421</PackageVersion>
         <LangVersion>default</LangVersion>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>

@@ -6,6 +6,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.RabbitMQ;
+using Findx.WebHost.RabbitMQ;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,7 +32,7 @@ public class RabbitMqController : ApiControllerBase
     [HttpGet("publish")]
     public async Task<CommonResult> PublishAsync([FromServices] IRabbitMqPublisher publisher, [Required] string message, [Required] string exchangeName, [Required] string exchangeType, [Required] string routingKey, CancellationToken cancellationToken)
     {
-        await publisher.PublishAsync(message, exchangeName, exchangeType, routingKey, cancellationToken: cancellationToken);
+        await publisher.PublishAsync(new FindxTestEvent { Message = message }, exchangeName, exchangeType, routingKey, cancellationToken: cancellationToken);
         return CommonResult.Success();
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +8,7 @@ namespace Findx.WebSocketCore.Abstractions;
 /// <summary>
 ///     WebSocket session 管理器
 /// </summary>
-public interface IWebSocketSessionManager
+public interface IWebSocketSessionManager: IAsyncDisposable
 {
     /// <summary>
     ///     连接总数

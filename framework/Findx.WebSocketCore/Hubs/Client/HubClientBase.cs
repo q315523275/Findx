@@ -24,7 +24,7 @@ public abstract class HubClientBase: IHubClient
     /// <summary>
     ///     获取 通信Hub地址
     /// </summary>
-    public string HubUrl { get; }
+    public abstract string HubUrl { get; }
     
     /// <summary>
     ///     获取或设置 客户端版本
@@ -49,7 +49,7 @@ public abstract class HubClientBase: IHubClient
     /// <summary>
     ///     网络通信初始化
     /// </summary>
-    public void Initialize()
+    public virtual void Initialize()
     {
         Check.NotNull(HubUrl, nameof(HubUrl));
         HubConnection = new HubConnectionBuilder().WithUrl(HubUrl).Build();

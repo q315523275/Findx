@@ -1,5 +1,4 @@
 using Findx.Common;
-using Findx.Threading;
 
 namespace Findx.Tracing;
 
@@ -8,7 +7,7 @@ namespace Findx.Tracing;
 /// </summary>
 public class DefaultCorrelationIdProvider: ICorrelationIdProvider
 {
-    private static readonly IValueAccessor<string> ValueAccessor = new ValueAccessor<string>();
+    private static readonly AsyncLocal<string> ValueAccessor = new();
 
     private string CorrelationId => ValueAccessor.Value;
     

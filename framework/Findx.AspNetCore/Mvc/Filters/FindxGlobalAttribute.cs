@@ -26,8 +26,10 @@ public class FindxGlobalAttribute : IActionFilter
         // 租户赋值
         var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
         if (currentUser is { IsAuthenticated: true } && currentUser.TenantId.IsNotNullOrWhiteSpace())
+        {
             TenantManager.Current = currentUser.TenantId;
-
+        }
+        
         // 刷新Token
         // 已迁移组建内置实现
         
@@ -48,6 +50,6 @@ public class FindxGlobalAttribute : IActionFilter
     /// <param name="context"></param>
     public void OnActionExecuted(ActionExecutedContext context)
     {
-        TenantManager.Current = string.Empty;
+        TenantManager.Current = null;
     }
 }

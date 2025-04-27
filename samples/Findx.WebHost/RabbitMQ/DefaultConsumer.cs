@@ -33,7 +33,7 @@ public class DefaultConsumer
     /// <param name="message"></param>
     /// <returns></returns>
     [RabbitConsumer("findx_event_bus", "direct", "Findx.Consumer1", 5, "Findx.WebHost.RabbitConsumer")]
-    public async Task<string> ReceiveMessage(long message)
+    public async Task<string> ReceiveMessage(string message)
     {
         await Task.Delay(3);
         Console.WriteLine("message is:" + message + "-----" + DateTime.Now.ToLongTimeString());

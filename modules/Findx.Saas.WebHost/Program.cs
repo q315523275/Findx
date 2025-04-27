@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Extensions;
-using Findx.Module.EleAdmin.Mvc.Filters;
+using Findx.Module.EleAdminPlus.Mvc.Filters;
 using Findx.SaaS.WebHost.WebShell;
 using Findx.Serialization;
 using Findx.WebSocketCore.Extensions;
@@ -18,7 +18,7 @@ builder.Services.AddFindx().AddModules();
 builder.Services.AddControllers()
        .AddMvcFilter<FindxGlobalAttribute>()
        // .AddMvcFilter<AuditOperationAttribute>()
-       .AddMvcFilter<EleAdminGlobalAttribute>()
+       .AddMvcFilter<EleAdminPlusGlobalAttribute>()
        .AddJsonOptions(options =>
        {
             options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
@@ -34,8 +34,8 @@ builder.Services.AddCorsAccessor();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseJsonExceptionHandler().UseCorsAccessor();
-app.UseRouting();
+app.UseJsonExceptionHandler();
+app.UseCorrelationId().UseCorsAccessor().UseRouting();
 app.UseStaticFiles(new StaticFileOptions { RequestPath = "/storage", FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "storage")) });
 app.UseFindx();
 app.UseWebSockets().MapWebSocket("/ws", app.Services.GetRequiredService<WebSocketHandler>());

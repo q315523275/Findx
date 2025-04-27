@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Reflection;
 using Findx.Extensions;
 using Findx.Modularity;
@@ -41,5 +42,15 @@ public class WebSocketCoreModule : StartupModule
             if (type.GetTypeInfo().BaseType == typeof(WebSocketHandlerBase)) services.AddSingleton(type);
         
         return services;
+    }
+
+    /// <summary>
+    ///     应用关闭
+    /// </summary>
+    /// <param name="provider"></param>
+    public override void OnShutdown(IServiceProvider provider)
+    {
+        var sessionManager = provider.GetService<IWebSocketSessionManager>();
+        sessionManager.DisposeAsync();
     }
 }

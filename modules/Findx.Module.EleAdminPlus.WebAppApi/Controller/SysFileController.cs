@@ -5,6 +5,7 @@ using Findx.Common;
 using Findx.Data;
 using Findx.Events;
 using Findx.Extensions;
+using Findx.Imaging;
 using Findx.Module.EleAdminPlus.Shared.Events;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.File;
@@ -33,6 +34,7 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
     private readonly IRepository<SysFileInfo, long> _repo;
     private readonly IEventBus _eventBus;
     private readonly string _folderHost;
+    private readonly ISettingProvider _settingProvider;
 
     /// <summary>
     /// Ctor
@@ -48,6 +50,7 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
         _keyGenerator = keyGenerator;
         _applicationContext = applicationContext;
         _repo = repo;
+        _settingProvider = settingProvider;
         _eventBus = eventBus;
         _fileStorage = storageFactory.Create(FileStorageType.Folder.ToString());
         _folderHost = settingProvider.GetValue<string>("Findx:Storage:Folder:Host") ?? $"//{HostUtility.ResolveHostAddress(HostUtility.ResolveHostName())}:{_applicationContext.Port}";

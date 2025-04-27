@@ -72,19 +72,19 @@ public class WebSocketMiddleware
         
         // 无效
         // var cancellationToken = context.RequestAborted;
-        var cts = new CancellationTokenSource();
-        await WebSocketHandler.OnConnected(webSocketSession, cts.Token).ConfigureAwait(false);
-        await ReceiveAsync(webSocketSession, cts.Token);
+        CancellationTokenSource cancellationTokenSource = new();
+        await WebSocketHandler.OnConnected(webSocketSession, cancellationTokenSource.Token).ConfigureAwait(false);
+        await ReceiveAsync(webSocketSession, cancellationTokenSource.Token);
         #if NET8_0_OR_GREATER
-            await cts.CancelAsync(); 
+            await cancellationTokenSource.CancelAsync(); 
         #else
-            cts.Cancel();
+            cancellationTokenSource.Cancel();
         #endif
     }
     
     private async Task ReceiveAsync(IWebSocketSession session, CancellationToken cancellationToken = default)
     {
-        while (session.State == WebSocketState.Open)
+        while (session.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
         {
             // 4kb缓冲区大小
             const int chunkSize = 1024 * 4;
@@ -118,6 +118,7 @@ public class WebSocketMiddleware
                             result = await session.ReceiveAsync(buffer, cancellationToken).ConfigureAwait(false);
                             if (result.Count > 0) await ms.WriteAsync(buffer[..result.Count], cancellationToken);
                         } while (!result.EndOfMessage);
+
                         ms.Seek(0, SeekOrigin.Begin);
                         var message = ResponseMessage.BinaryStreamMessage(ms);
                         await HandleAsync(session, message, result, cancellationToken);

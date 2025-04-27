@@ -9,6 +9,7 @@ using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Locks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IO;
 
@@ -25,7 +26,7 @@ public class HubConnection: IAsyncDisposable
 
     private readonly CancellationTokenSource _cts;
     
-    private readonly TimeSpan _reconnectInterval = TimeSpan.FromSeconds(5);
+    private readonly TimeSpan _reconnectInterval = TimeSpan.FromSeconds(10);
 
     /// <summary>
     ///     Ctor
@@ -34,10 +35,10 @@ public class HubConnection: IAsyncDisposable
     /// <param name="automaticReconnect">释放自动重连</param>
     public HubConnection(string url, bool automaticReconnect)
     {
-        WebSocket = new ClientWebSocket();
         _cts = new CancellationTokenSource();
         
         _uri = new Uri(url);
+        
         if (automaticReconnect) HandleReconnect();
     }
 
@@ -87,22 +88,25 @@ public class HubConnection: IAsyncDisposable
         
         State = HubConnectionState.Connecting;
 
+        WebSocket = new ClientWebSocket();
+        
         await ConnectInnerAsync(cancellationToken);
 
         State = WebSocket.State == WebSocketState.Open ? HubConnectionState.Connected : HubConnectionState.Disconnected;
     }
-    
+
     /// <summary>
     ///     关闭连接
     /// </summary>
+    /// <param name="statusDescription"></param>
     /// <param name="cancellationToken"></param>
-    public virtual async Task StopAsync(CancellationToken cancellationToken = default)
+    public virtual async Task StopAsync(string statusDescription = "主动停止...", CancellationToken cancellationToken = default)
     {
         using var asyncLock = await _lock.LockAsync(cancellationToken);
         
         if (WebSocket is { State: WebSocketState.Open })
         {
-            await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "主动停止...", cancellationToken);
+            await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription, cancellationToken);
 
             State = HubConnectionState.Disconnected;
             
@@ -186,7 +190,8 @@ public class HubConnection: IAsyncDisposable
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         State = HubConnectionState.Disconnected;
-                        Closed?.Invoke(new Exception($"被动通知关闭"));
+                        Closed?.Invoke(new Exception($"客户端被动通知关闭..."));
+                        await WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "<UNK>", CancellationToken.None);
                     }
                     else
                     {
@@ -223,6 +228,9 @@ public class HubConnection: IAsyncDisposable
                     ArrayPool<byte>.Shared.Return(bytes);
                 }
             }
+
+            await StopAsync(cancellationToken: _cts.Token);
+            
         }, _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default).ConfigureAwait(false);
     }
 
@@ -262,7 +270,7 @@ public class HubConnection: IAsyncDisposable
     {
         if (_automaticReconnectCounter.IncrementAndGet() != 1) return;
         
-        var logger = ServiceLocator.GetService<ILogger<HubConnection>>();
+        var logger = ServiceLocator.Instance?.GetService<ILogger<HubConnection>>();
         
         _ = Task.Factory.StartNew(async () =>
         {
@@ -275,13 +283,13 @@ public class HubConnection: IAsyncDisposable
 
                     try
                     {
-                        await ConnectInnerAsync(_cts.Token);
+                        await StartAsync(_cts.Token);
                         State = HubConnectionState.Connected;
                         Reconnected?.Invoke();
                     }
                     catch (Exception ex)
                     {
-                       logger?.LogError(ex, "WebSocket通信“{S}”重连异常", _uri.ToString());
+                        logger?.LogError(ex, "WebSocket通信“{S}”重连异常", _uri.ToString());
                     }
                 }
                 
@@ -313,8 +321,8 @@ public class HubConnection: IAsyncDisposable
             await _cts.CancelAsync(); 
         #endif
         
-        WebSocket.Abort();
-        WebSocket.Dispose();
+        WebSocket?.Abort();
+        WebSocket?.Dispose();
         WebSocket = null;
     }
 

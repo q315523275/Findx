@@ -90,8 +90,11 @@ public class WebSocketSession: IWebSocketSession
     /// </summary>
     public void Dispose()
     {
-        _webSocket?.Abort();
-       _webSocket?.Dispose();
-       _webSocket = null;
+        if (_webSocket != null && _webSocket.State != WebSocketState.Closed)
+        {
+            _webSocket.Abort();
+            _webSocket.Dispose();
+        }
+        _webSocket = null;
     }
 }

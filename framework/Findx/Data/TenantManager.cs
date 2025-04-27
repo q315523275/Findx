@@ -1,13 +1,11 @@
-﻿using Findx.Threading;
-
-namespace Findx.Data;
+﻿namespace Findx.Data;
 
 /// <summary>
 ///     租户管理
 /// </summary>
 public static class TenantManager
 {
-    private static readonly IValueAccessor<string> ValueAccessor = new ValueAccessor<string>();
+    private static readonly AsyncLocal<string> ValueAccessor = new();
 
     /// <summary>
     ///     当前租户编号
