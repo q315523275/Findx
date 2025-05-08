@@ -1,5 +1,6 @@
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
@@ -26,7 +27,7 @@ public class HubConnection: IAsyncDisposable
 
     private readonly CancellationTokenSource _cts;
     
-    private readonly TimeSpan _reconnectInterval = TimeSpan.FromSeconds(10);
+    private readonly TimeSpan _reconnectInterval = TimeSpan.FromSeconds(5);
 
     /// <summary>
     ///     Ctor
@@ -70,7 +71,22 @@ public class HubConnection: IAsyncDisposable
     /// <summary>
     ///     使用 ClientWebSocket 通信
     /// </summary>
-    protected ClientWebSocket WebSocket;
+    protected ClientWebSocket ClientWebSocket;
+    
+    /// <summary>
+    ///     header字典信息
+    /// </summary>
+    private IDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
+    
+    /// <summary>
+    ///     设置请求头
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    public virtual void SetRequestHeader(string key, string value)
+    {
+        Headers.TryAdd(key, value);
+    }
     
     /// <summary>
     ///     开始连接
@@ -80,7 +96,7 @@ public class HubConnection: IAsyncDisposable
     {
         using var asyncLock = await _lock.LockAsync(cancellationToken);
         
-        if (WebSocket is { State: WebSocketState.Open })
+        if (ClientWebSocket is { State: WebSocketState.Open })
         {
             State = HubConnectionState.Connected;
             return;
@@ -88,11 +104,16 @@ public class HubConnection: IAsyncDisposable
         
         State = HubConnectionState.Connecting;
 
-        WebSocket = new ClientWebSocket();
+        ClientWebSocket = new ClientWebSocket();
+
+        foreach (var (key, value) in Headers)
+        {
+            ClientWebSocket.Options.SetRequestHeader(key, value);
+        }
         
         await ConnectInnerAsync(cancellationToken);
 
-        State = WebSocket.State == WebSocketState.Open ? HubConnectionState.Connected : HubConnectionState.Disconnected;
+        State = ClientWebSocket.State == WebSocketState.Open ? HubConnectionState.Connected : HubConnectionState.Disconnected;
     }
 
     /// <summary>
@@ -104,9 +125,9 @@ public class HubConnection: IAsyncDisposable
     {
         using var asyncLock = await _lock.LockAsync(cancellationToken);
         
-        if (WebSocket is { State: WebSocketState.Open })
+        if (ClientWebSocket is { State: WebSocketState.Open })
         {
-            await WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription, cancellationToken);
+            await ClientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, statusDescription, cancellationToken);
 
             State = HubConnectionState.Disconnected;
             
@@ -140,7 +161,7 @@ public class HubConnection: IAsyncDisposable
                 throw new ArgumentException($"Unknown message type: {message.GetType()}");
         }
         
-        await WebSocket.SendAsync(payload, messageType, endOfMessage, cancellationToken);
+        await ClientWebSocket.SendAsync(payload, messageType, endOfMessage, cancellationToken);
     }
     
     /// <summary>
@@ -173,7 +194,7 @@ public class HubConnection: IAsyncDisposable
         {
             while (!_cts.IsCancellationRequested)
             {
-                if (WebSocket.State != WebSocketState.Open)
+                if (ClientWebSocket.State != WebSocketState.Open)
                 {
                     await Task.Delay(_reconnectInterval);
                     continue;
@@ -186,12 +207,12 @@ public class HubConnection: IAsyncDisposable
 
                 try
                 {
-                    var result = await WebSocket.ReceiveAsync(buffer, _cts.Token).ConfigureAwait(false);
+                    var result = await ClientWebSocket.ReceiveAsync(buffer, _cts.Token).ConfigureAwait(false);
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         State = HubConnectionState.Disconnected;
                         Closed?.Invoke(new Exception($"客户端被动通知关闭..."));
-                        await WebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "<UNK>", CancellationToken.None);
+                        await ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "<UNK>", CancellationToken.None);
                     }
                     else
                     {
@@ -207,7 +228,7 @@ public class HubConnection: IAsyncDisposable
                             await ms.WriteAsync(buffer[..result.Count], _cts.Token);
                             do
                             {
-                                result = await WebSocket.ReceiveAsync(buffer, _cts.Token).ConfigureAwait(false);
+                                result = await ClientWebSocket.ReceiveAsync(buffer, _cts.Token).ConfigureAwait(false);
                                 if (result.Count > 0) await ms.WriteAsync(buffer[..result.Count], _cts.Token);
                             } while (!result.EndOfMessage);
                             ms.Seek(0, SeekOrigin.Begin);
@@ -240,7 +261,7 @@ public class HubConnection: IAsyncDisposable
     /// <param name="ex"></param>
     private void CheckReceiveMessageException(Exception ex)
     {
-        State = WebSocket.State == WebSocketState.Open ? HubConnectionState.Connected : HubConnectionState.Disconnected;
+        State = ClientWebSocket.State == WebSocketState.Open ? HubConnectionState.Connected : HubConnectionState.Disconnected;
                     
         if (State == HubConnectionState.Disconnected) Closed?.Invoke(ex);
     }
@@ -254,7 +275,7 @@ public class HubConnection: IAsyncDisposable
     /// <param name="cancellationToken"></param>
     private async Task ConnectInnerAsync(CancellationToken cancellationToken = default)
     {
-        await WebSocket.ConnectAsync(_uri, cancellationToken);
+        await ClientWebSocket.ConnectAsync(_uri, cancellationToken);
     }
 
     #endregion
@@ -276,7 +297,7 @@ public class HubConnection: IAsyncDisposable
         {
             while (!_cts.IsCancellationRequested)
             {
-                if (WebSocket is { State: WebSocketState.Closed })
+                if (ClientWebSocket is { State: WebSocketState.Closed })
                 {
                     State = HubConnectionState.Reconnecting;
                     Reconnecting?.Invoke();
@@ -321,9 +342,9 @@ public class HubConnection: IAsyncDisposable
             await _cts.CancelAsync(); 
         #endif
         
-        WebSocket?.Abort();
-        WebSocket?.Dispose();
-        WebSocket = null;
+        ClientWebSocket?.Abort();
+        ClientWebSocket?.Dispose();
+        ClientWebSocket = null;
     }
 
     #endregion

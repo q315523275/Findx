@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.5.200" />
+        <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.5.201" />
     </ItemGroup>
 
     <ItemGroup>
@@ -19,12 +19,13 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\components\Findx.Extensions.AuditLogs\Findx.Extensions.AuditLogs.csproj" />
+      <ProjectReference Include="..\..\components\Findx.Extensions.ConfigurationServer\Findx.Extensions.ConfigurationServer.csproj" />
       <ProjectReference Include="..\..\framework\Findx.Guids.NewId\Findx.Guids.NewId.csproj" />
       <ProjectReference Include="..\..\framework\Findx.ImageSharp\Findx.ImageSharp.csproj" />
       <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj" />
       <ProjectReference Include="..\..\framework\Findx.Swagger\Findx.Swagger.csproj" />
       <ProjectReference Include="..\..\framework\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
-      <ProjectReference Include="..\Findx.Module.EleAdminPlus.WebAppApi\Findx.Module.EleAdminPlus.WebAppApi.csproj" />
+      <ProjectReference Include="..\Findx.Module.EleAdmin.WebAppApi\Findx.Module.EleAdmin.WebAppApi.csproj" />
     </ItemGroup>
     
 </Project>

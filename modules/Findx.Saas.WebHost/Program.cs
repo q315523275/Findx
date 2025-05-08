@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Extensions;
-using Findx.Module.EleAdminPlus.Mvc.Filters;
+using Findx.Module.EleAdmin.Mvc.Filters;
 using Findx.SaaS.WebHost.WebShell;
 using Findx.Serialization;
 using Findx.WebSocketCore.Extensions;
@@ -18,7 +18,7 @@ builder.Services.AddFindx().AddModules();
 builder.Services.AddControllers()
        .AddMvcFilter<FindxGlobalAttribute>()
        // .AddMvcFilter<AuditOperationAttribute>()
-       .AddMvcFilter<EleAdminPlusGlobalAttribute>()
+       .AddMvcFilter<EleAdminGlobalAttribute>()
        .AddJsonOptions(options =>
        {
             options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;

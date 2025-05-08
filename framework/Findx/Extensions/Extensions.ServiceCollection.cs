@@ -227,6 +227,15 @@ public static partial class Extensions
 
         return provider;
     }
+    
+    /// <summary>
+    ///     框架初始化，适用于非AspNetCore环境
+    /// </summary>
+    public static IHost UseFindx(this IHost host)
+    {
+        host.Services.UseFindx();
+        return host;
+    }
 
     /// <summary>
     ///     获取指定类型的日志对象

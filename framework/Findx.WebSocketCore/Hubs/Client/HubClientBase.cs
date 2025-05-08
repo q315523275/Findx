@@ -59,6 +59,16 @@ public abstract class HubClientBase: IHubClient
     }
 
     /// <summary>
+    ///     设置请求头
+    /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    protected virtual void SetRequestHeader(string key, string value)
+    {
+        HubConnection.SetRequestHeader(key, value);
+    }
+    
+    /// <summary>
     ///     开始通信
     /// </summary>
     /// <returns></returns>
