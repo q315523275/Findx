@@ -1,3 +1,4 @@
+using Findx.Finders;
 using Findx.Reflection;
 
 namespace Findx.Data;
@@ -5,16 +6,8 @@ namespace Findx.Data;
 /// <summary>
 ///     实体查找器
 /// </summary>
-public class EntityFinder : BaseTypeFinderBase<IEntity>, IEntityFinder
+public class EntityFinder : FinderBase<Type>, IEntityFinder
 {
-    /// <summary>
-    ///     Ctor
-    /// </summary>
-    /// <param name="appDomainAssemblyFinder"></param>
-    public EntityFinder(IAppDomainAssemblyFinder appDomainAssemblyFinder) : base(appDomainAssemblyFinder)
-    {
-    }
-
     /// <summary>
     ///     重写以实现所有项的查找
     /// </summary>
@@ -22,7 +15,7 @@ public class EntityFinder : BaseTypeFinderBase<IEntity>, IEntityFinder
     protected override IEnumerable<Type> FindAllItems()
     {
         // 排除被继承的Handler实类
-        var types = base.FindAllItems();
+        var types = AssemblyManager.FindTypesByBase<IEntity>();
         // ReSharper disable once PossibleMultipleEnumeration
         var baseHandlerTypes = types.Select(m => m.BaseType).Where(m => m is { IsClass: true, IsAbstract: false });
         // ReSharper disable once PossibleMultipleEnumeration

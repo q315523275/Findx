@@ -30,9 +30,12 @@ public static partial class Extensions
     {
         // 框架启动异步日志
         services.GetOrAddSingletonInstance(() => new StartupLogger());
-        services.GetOrAddSingletonInstance<IAppDomainAssemblyFinder>(() => new AppDomainAssemblyFinder());
+        
         // 框架构建
-        return services.GetOrAddSingletonInstance<IFindxBuilder>(() => new FindxBuilder(services));
+        var builder = services.GetOrAddSingletonInstance<IFindxBuilder>(() => new FindxBuilder(services));
+        builder.AddCoreModule();
+        
+        return builder;
     }
 
     /// <summary>
@@ -74,18 +77,6 @@ public static partial class Extensions
 
         services.Add(toAdDescriptor);
         return toAdDescriptor;
-    }
-
-    /// <summary>
-    ///     获取或添加指定类型查找器
-    /// </summary>
-    public static TTypeFinder GetOrAddTypeFinder<TTypeFinder>(this IServiceCollection services, Func<IAppDomainAssemblyFinder, TTypeFinder> factory) where TTypeFinder : class
-    {
-        return services.GetOrAddSingletonInstance(() =>
-        {
-            var allAssemblyFinder = services.GetOrAddSingletonInstance<IAppDomainAssemblyFinder>(() => new AppDomainAssemblyFinder());
-            return factory(allAssemblyFinder);
-        });
     }
 
     /// <summary>
@@ -214,16 +205,13 @@ public static partial class Extensions
         foreach (var module in modules)
         {
             var jsTime = DateTime.Now;
-            var moduleType = module.GetType();
             module.UseModule(provider);
-            logger.LogInformation(
-                // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
-                $"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now - jsTime).TotalMilliseconds}ms");
+            var moduleType = module.GetType();
+            logger.LogInformation($"模块《{moduleType.GetDescription()}》({moduleType.Name})” 初始化完成，耗时{(DateTime.Now - jsTime).TotalMilliseconds}ms");
         }
 
         watch.Stop();
-        // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
-        logger.LogInformation($"框架初始化完毕，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Process.GetCurrentProcess().Id}{CommonUtility.Line}");
+        logger.LogInformation($"框架初始化完毕，耗时:{watch.Elapsed.TotalMilliseconds}毫秒，进程编号:{Environment.ProcessId}{CommonUtility.Line}");
 
         return provider;
     }

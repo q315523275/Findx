@@ -16,8 +16,6 @@ public class TraceIdentifierLayoutRenderer: LayoutRenderer
 {
     protected override void Append(StringBuilder builder, LogEventInfo logEvent)
     {
-        if (ServiceLocator.Instance == null) return;
-        
         var correlationIdProvider = ServiceLocator.GetService<ICorrelationIdProvider>();
         var httpContextAccessor = ServiceLocator.GetService<IHttpContextAccessor>();
         if (correlationIdProvider != null && correlationIdProvider.Get().IsNotNullOrWhiteSpace())

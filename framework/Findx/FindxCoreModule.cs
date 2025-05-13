@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Findx.Caching;
 using Findx.Data;
+using Findx.DependencyInjection;
 using Findx.Email;
 using Findx.Events;
 using Findx.ExceptionHandling;
@@ -39,7 +40,7 @@ public class FindxCoreModule : StartupModule
     ///     排序
     ///     模块启动顺序，模块启动的顺序先按级别启动，同一级别内部再按此顺序启动，
     /// </summary>
-    public override int Order => 10;
+    public override int Order => 1;
 
     /// <summary>
     ///     注册服务
@@ -48,6 +49,8 @@ public class FindxCoreModule : StartupModule
     /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
+        ServiceLocator.SetServiceCollection(services);
+        
         var configuration = services.GetConfiguration();
 
         // 应用基础
@@ -138,5 +141,15 @@ public class FindxCoreModule : StartupModule
         services.AddSingleton<IRulesEngineFactory, RulesEngineFactory>();
             
         return services;
+    }
+
+    /// <summary>
+    ///     启用模块
+    /// </summary>
+    /// <param name="provider"></param>
+    public override void UseModule(IServiceProvider provider)
+    {
+        ServiceLocator.SetApplicationServiceProvider(provider);
+        base.UseModule(provider);
     }
 }

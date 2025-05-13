@@ -29,6 +29,11 @@ public class HttpContextServiceScopeResolver : IScopedServiceResolver
     public bool ResolveEnabled => _httpContextAccessor.HttpContext != null;
 
     /// <summary>
+    ///     域内服务提供器
+    /// </summary>
+    public IServiceProvider ScopedProvider => _httpContextAccessor.HttpContext?.RequestServices;
+
+    /// <summary>
     ///     解析服务
     /// </summary>
     /// <typeparam name="T"></typeparam>

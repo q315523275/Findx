@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Security.Principal;
-using System.Text.Json;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
@@ -226,24 +224,27 @@ public class AuthController : AreaApiControllerBase
     ///     修改密码
     /// </summary>
     /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Description("修改账户密码")]
     [HttpPut("/api/auth/password")]
     [Authorize]
-    public CommonResult Password([FromBody] UpdatePasswordDto req)
+    public async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req, CancellationToken cancellationToken)
     {
         var userId = _currentUser.UserId.To<Guid>();
         // var tenantId = _currentUser.TenantId.To<Guid>();
-        var userInfo = _repo.First(x => x.Id == userId);
+        var userInfo = await _repo.FirstAsync(x => x.Id == userId, cancellationToken);
         if (userInfo == null)
             return CommonResult.Fail("D1000", "账户不存在");
 
         if (userInfo.Password != EncryptUtility.Md5By32(req.OldPassword))
             return CommonResult.Fail("D1000", "旧密码错误");
 
-        var pwd = EncryptUtility.Md5By32(req.Password);
-        _repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == userInfo.Id);
-
+        _repo.Attach(userInfo.Clone().As<SysUserInfo>());
+        userInfo.Password = EncryptUtility.Md5By32(req.Password);
+        userInfo.CheckUpdateAudited<SysUserInfo, Guid>(HttpContext.User);
+        await _repo.SaveAsync(userInfo, cancellationToken);
+        
         return CommonResult.Success();
     }
 
@@ -256,7 +257,6 @@ public class AuthController : AreaApiControllerBase
     [Authorize]
     public virtual async Task<CommonResult> SaveUserAsync([FromBody] SaveUserDto req, CancellationToken cancellationToken)
     {
-        var principal = GetRequiredService<IPrincipal>();
         var userId = _currentUser.UserId.To<Guid>();
         var userInfo = await _repo.FirstAsync(x => x.Id == userId, cancellationToken);
         if (userInfo == null)
@@ -264,7 +264,7 @@ public class AuthController : AreaApiControllerBase
 
         _repo.Attach(userInfo.Clone().As<SysUserInfo>());
         userInfo = req.MapTo(userInfo);
-        userInfo.CheckUpdateAudited<SysUserInfo, long>(principal);
+        userInfo.CheckUpdateAudited<SysUserInfo, Guid>(HttpContext.User);
         await _repo.SaveAsync(userInfo, cancellationToken);
 
         return CommonResult.Success();

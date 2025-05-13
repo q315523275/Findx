@@ -54,9 +54,8 @@ builder.Services.AddTransient(typeof(IMachine), provider =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseCorrelationId();
-app.UseJsonExceptionHandler();
-app.UseCorsAccessor().UseRouting();
+app.UseCorrelationId().UseJsonExceptionHandler().UseCorsAccessor();
+app.UseRouting();
 app.UseFindx();
 app.MapControllersWithAreaRoute();
 

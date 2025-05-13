@@ -16,7 +16,9 @@ using ConsoleApp1;
 using CsvHelper;
 using Findx;
 using Findx.Configuration;
+using Findx.Configuration.Extensions;
 using Findx.Data;
+using Findx.DependencyInjection;
 using Findx.Expressions;
 using Findx.Extensions;
 using Findx.Machine;
@@ -29,6 +31,8 @@ using Findx.WebSocketCore;
 using Findx.WebSocketCore.Extensions;
 using Findx.WebSocketCore.Hubs.Client;
 using MassTransit;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NewLife.Data;
 using Yitter.IdGenerator;
@@ -105,9 +109,19 @@ Console.WriteLine("Hello, World!");
 //     Console.WriteLine($"{activeTcpListener.Address.MapToIPv4().ToString()}:{activeTcpListener.Port}");
 // }
 
+#region Host构建
+var builder = Host.CreateApplicationBuilder(args);
+builder.Configuration.AddFindxConfig();
+builder.Services.AddFindx(); 
+var app = builder.Build();
+#endregion
+
+#region Host启动
+await app.UseFindx().RunAsync();
+#endregion
 
 // webSocketClient测试
-var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:5566/ws?userName=开发").WithAutomaticReconnection().Build();
+var hubConnection = new HubConnectionBuilder().WithUrl("ws://192.168.160.30:5566/ws?userName=开发").Build();
 await hubConnection.StartAsync();
 hubConnection.On(async (message, token) =>  
 {
@@ -116,14 +130,21 @@ hubConnection.On(async (message, token) =>
 });
 hubConnection.Closed += (error) =>
 {
-    Console.WriteLine(error.Message);
+    Console.WriteLine(error?.Message);
     return Task.FromResult(Task.CompletedTask);
 };
 while (true)
 {
-    Console.WriteLine($"请输入websocket发送内容");
+    Console.WriteLine($"请输入websocket发送内容;exit则退出");
     var msg = Console.ReadLine();
-    await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
+    if (msg == "exit")
+    {
+        await hubConnection.StopAsync();
+    }
+    else
+    {
+        await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
+    }
 }
 
 
@@ -174,8 +195,8 @@ while (true)
 //         Title = "Csv测试"
 //     });
 // }
-// var csvPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test.csv");
-// var csvPath2 = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "test2.csv");
+// var csvPath = Path.Combine(AppContext.BaseDirectory, "test.csv");
+// var csvPath2 = Path.Combine(AppContext.BaseDirectory, "test2.csv");
 // // 预热
 // await CsvUtility.ExportCsvAsync(userList, csvPath, rewrite: true);
 // _ = CsvUtility.ReadCsv<User>(csvPath);

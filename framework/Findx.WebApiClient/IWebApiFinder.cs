@@ -2,6 +2,4 @@
 
 namespace Findx.WebApiClient;
 
-public interface IWebApiFinder : ITypeFinder
-{
-}
+public interface IWebApiFinder : ITypeFinder;

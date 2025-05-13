@@ -121,7 +121,7 @@ public class HubConnection: IAsyncDisposable
     /// </summary>
     /// <param name="statusDescription"></param>
     /// <param name="cancellationToken"></param>
-    public virtual async Task StopAsync(string statusDescription = "主动停止...", CancellationToken cancellationToken = default)
+    public virtual async Task StopAsync(string statusDescription = "客户端主动停止...", CancellationToken cancellationToken = default)
     {
         using var asyncLock = await _lock.LockAsync(cancellationToken);
         
@@ -211,8 +211,7 @@ public class HubConnection: IAsyncDisposable
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         State = HubConnectionState.Disconnected;
-                        Closed?.Invoke(new Exception($"客户端被动通知关闭..."));
-                        await ClientWebSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "<UNK>", CancellationToken.None);
+                        await ClientWebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "<UNK>", CancellationToken.None);
                     }
                     else
                     {
@@ -291,7 +290,7 @@ public class HubConnection: IAsyncDisposable
     {
         if (_automaticReconnectCounter.IncrementAndGet() != 1) return;
         
-        var logger = ServiceLocator.Instance?.GetService<ILogger<HubConnection>>();
+        var logger = ServiceLocator.GetService<ILogger<HubConnection>>();
         
         _ = Task.Factory.StartNew(async () =>
         {

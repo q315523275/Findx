@@ -17,7 +17,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddFindx().AddModules();
 builder.Services.AddControllers()
        .AddMvcFilter<FindxGlobalAttribute>()
-       // .AddMvcFilter<AuditOperationAttribute>()
        .AddMvcFilter<EleAdminGlobalAttribute>()
        .AddJsonOptions(options =>
        {
@@ -34,12 +33,12 @@ builder.Services.AddCorsAccessor();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseJsonExceptionHandler();
-app.UseCorrelationId().UseCorsAccessor().UseRouting();
+app.UseJsonExceptionHandler().UseCorrelationId().UseCorsAccessor();
+app.UseRouting();
 app.UseStaticFiles(new StaticFileOptions { RequestPath = "/storage", FileProvider = new PhysicalFileProvider(Path.Combine(Environment.CurrentDirectory, "storage")) });
 app.UseFindx();
 app.UseWebSockets().MapWebSocket("/ws", app.Services.GetRequiredService<WebSocketHandler>());
-app.MapControllersWithAreaRoute();
+app.UseEndpointsWithAreaRoute();
 
 // Run Server
 app.UseFindxHosting();

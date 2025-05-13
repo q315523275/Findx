@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Reflection;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.RabbitMQ;
 
@@ -72,7 +71,7 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
                 var routingKey = eventArgs.RoutingKey;
                 if (routingKeyDict.TryGetValue(routingKey, out var typeList))
                 {
-                    await using var scope = ServiceLocator.Instance.CreateAsyncScope();
+                    await using var scope = ServiceLocator.CreateAsyncScope();
                     var serviceProvider = scope.ServiceProvider;
 
                     foreach (var typeInfo in typeList)

@@ -1,15 +1,17 @@
-﻿using Findx.Reflection;
+﻿using System;
+using System.Collections.Generic;
+using Findx.Finders;
+using Findx.Reflection;
 
 namespace Findx.RabbitMQ;
 
 /// <summary>
 ///     MQ消费者查找器
 /// </summary>
-public class RabbitConsumerFinder : AttributeTypeFinderBase<RabbitListenerAttribute>, IRabbitConsumerFinder
+public class RabbitConsumerFinder : FinderBase<Type>, IRabbitConsumerFinder
 {
-    /// <summary>
-    ///     Ctor
-    /// </summary>
-    /// <param name="appDomainAssemblyFinder"></param>
-    public RabbitConsumerFinder(IAppDomainAssemblyFinder appDomainAssemblyFinder) : base(appDomainAssemblyFinder) { }
+    protected override IEnumerable<Type> FindAllItems()
+    {
+        return AssemblyManager.FindTypesByAttribute<RabbitListenerAttribute>();
+    }
 }

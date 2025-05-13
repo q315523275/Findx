@@ -120,10 +120,11 @@ public class WebSocketSessionManager : IWebSocketSessionManager
         {
             foreach (var session in sessions)
             {
-                if (session.State == WebSocketState.Open)
+                if (session.State is WebSocketState.Open or WebSocketState.CloseSent or WebSocketState.CloseReceived)
                 {
                     await session.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务端主动关闭连接", cancellationToken).ConfigureAwait(false);
                 }
+                
                 session.Dispose();
             }
         }
@@ -142,12 +143,14 @@ public class WebSocketSessionManager : IWebSocketSessionManager
         {
             if (sessions.Any(x => x.Id == session.Id))
             {
-                var client = sessions.FirstOrDefault(x => x.Id == session.Id);
-                if (session.State == WebSocketState.Open)
+                var client = sessions.First(x => x.Id == session.Id);
+
+                if (client.State is WebSocketState.Open or WebSocketState.CloseSent or WebSocketState.CloseReceived)
                 {
-                    await session.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务端主动关闭连接", cancellationToken).ConfigureAwait(false);
+                    await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务端主动关闭连接", cancellationToken).ConfigureAwait(false);
                 }
-                session.Dispose();
+
+                client.Dispose();
                 
                 sessions.Remove(client);
             }

@@ -135,7 +135,7 @@ public class WebSocketMiddleware
                 ArrayPool<byte>.Shared.Return(bytes);
             }
         }
-    
+        
         await WebSocketHandler.OnDisconnected(session, cancellationToken);
     }
 

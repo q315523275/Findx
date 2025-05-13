@@ -60,13 +60,15 @@ public class JobModule : StartupModule
         
         // 自动注册作业
         var dict = new JobWorkSet();
-        var jobFinder = services.GetOrAddTypeFinder<IJobFinder>(assemblyFinder => new JobFinder(assemblyFinder));
+        var jobFinder = services.GetOrAddSingletonInstance<IJobFinder>(() => new JobFinder());
         var jobTypes = jobFinder.FindAll(true);
         foreach (var jobType in jobTypes)
         {
             services.AddTransient(jobType);
             if (jobType.FullName != null)
+            {
                 dict.Add(jobType.FullName, jobType);
+            }
         }
 
         services.AddSingleton(dict);

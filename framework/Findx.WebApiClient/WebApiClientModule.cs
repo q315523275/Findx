@@ -34,8 +34,7 @@ public class WebApiClientModule : StartupModule
     {
         var configuration = services.GetConfiguration();
 
-        var webApiFinder =
-            services.GetOrAddTypeFinder<IWebApiFinder>(assemblyFinder => new WebApiFinder(assemblyFinder));
+        var webApiFinder = services.GetOrAddSingletonInstance<IWebApiFinder>(() => new WebApiFinder());
         var types = webApiFinder.FindAll();
         foreach (var type in types)
         {

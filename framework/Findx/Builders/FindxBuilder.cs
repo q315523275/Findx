@@ -87,10 +87,10 @@ public class FindxBuilder : IFindxBuilder
         var dependTypes = module.GetDependModuleTypes();
         foreach (var dependType in dependTypes)
         {
-            var dependPack = _sourceModules.FirstOrDefault(m => m.GetType() == dependType);
-            if (dependPack == null)
+            var dependModule = _sourceModules.FirstOrDefault(m => m.GetType() == dependType);
+            if (dependModule == null)
                 throw new Exception($"加载模块{module.GetType().FullName}时无法找到依赖模块{dependType.FullName}");
-            _modules.TryAdd(dependPack);
+            _modules.TryAdd(dependModule);
         }
 
         // 按先层级后顺序的规则进行排序
@@ -145,14 +145,12 @@ public class FindxBuilder : IFindxBuilder
     /// <returns></returns>
     private static List<StartupModule> GetAllModules(IServiceCollection services)
     {
-        var moduleTypeFinder =
-            services.GetOrAddTypeFinder<IStartupModuleTypeFinder>(assemblyFinder =>
-                new StartupModuleTypeFinder(assemblyFinder));
+        var moduleTypeFinder = services.GetOrAddSingletonInstance(() => new StartupModuleTypeFinder());
         var moduleTypes = moduleTypeFinder.FindAll();
+
         return moduleTypes.Select(m => (StartupModule)Activator.CreateInstance(m))
-            .OrderBy(m => 
-                // ReSharper disable once PossibleNullReferenceException
-                m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName)
-            .ToList();
+                          .Where(x => x != null)
+                          .OrderBy(m => m.Level).ThenBy(m => m.Order).ThenBy(m => m.GetType().FullName)
+                          .ToList();
     }
 }

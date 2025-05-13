@@ -16,12 +16,12 @@ public class NLogLoggerProvider : ILoggerProvider
 
     public NLogLoggerProvider(string nlogConfigFile)
     {
-        var file = nlogConfigFile ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName);
+        var file = nlogConfigFile ?? Path.Combine(AppContext.BaseDirectory, DefaultNLogFileName);
         if (!File.Exists(file)) throw new FileNotFoundException("未发现“nlog.config”位置文件");
         LogManager.Setup().LoadConfigurationFromFile(file);
     }
 
-    public NLogLoggerProvider() : this(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultNLogFileName))
+    public NLogLoggerProvider() : this(Path.Combine(AppContext.BaseDirectory, DefaultNLogFileName))
     {
     }
 

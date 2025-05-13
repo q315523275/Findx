@@ -245,7 +245,7 @@ public class SwaggerModule : WebApplicationModuleBase
     /// <param name="options"></param>
     private static void AddXmlComments(SwaggerGenOptions options)
     {
-        foreach (var file in Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory, "*.xml"))
+        foreach (var file in Directory.GetFiles(AppContext.BaseDirectory, "*.xml"))
             options.IncludeXmlComments(file);
     }
 

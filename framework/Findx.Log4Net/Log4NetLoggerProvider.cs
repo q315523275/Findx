@@ -23,14 +23,14 @@ namespace Findx.Log4Net
 
         public Log4NetLoggerProvider(string log4NetConfigFile)
         {
-            var file = log4NetConfigFile ?? Path.Combine(AppDomain.CurrentDomain.BaseDirectory, DefaultLog4NetFileName);
+            var file = log4NetConfigFile ?? Path.Combine(AppContext.BaseDirectory, DefaultLog4NetFileName);
             if (!File.Exists(file)) throw new FileNotFoundException("未发现“log4net.config”位置文件");
             var assembly = Assembly.GetEntryAssembly() ?? GetCallingAssemblyFromStartup();
             _loggerRepository = LogManager.CreateRepository(assembly, typeof(Hierarchy));
             XmlConfigurator.ConfigureAndWatch(_loggerRepository, new FileInfo(file));
         }
 
-        public Log4NetLoggerProvider() : this(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+        public Log4NetLoggerProvider() : this(Path.Combine(AppContext.BaseDirectory,
             DefaultLog4NetFileName))
         {
         }

@@ -29,23 +29,15 @@ public sealed class DependencyModule : StartupModule
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
         // 查找所有自动注册的服务实现类型
-        var dependencyTypeFinder = services.GetOrAddTypeFinder<IDependencyTypeFinder>(assemblyFinder => new DependencyTypeFinder(assemblyFinder));
+        var dependencyTypeFinder = services.GetOrAddSingletonInstance<IDependencyTypeFinder>(() => new DependencyTypeFinder());
 
         var dependencyTypes = dependencyTypeFinder.FindAll();
-        foreach (var dependencyType in dependencyTypes) 
+        foreach (var dependencyType in dependencyTypes)
+        {
             ConfigureServices(services, dependencyType);
-
+        }
+        
         return services;
-    }
-
-    /// <summary>
-    ///     启用模块
-    /// </summary>
-    /// <param name="provider"></param>
-    public override void UseModule(IServiceProvider provider)
-    {
-        ServiceLocator.Instance = provider;
-        base.UseModule(provider);
     }
 
     /// <summary>
@@ -101,8 +93,7 @@ public sealed class DependencyModule : StartupModule
                 {
                     // 有多个接口，后边的接口注册使用第一个接口的实例，保证同个实现类的多个接口获得同一实例
                     var firstServiceType = serviceTypes[0];
-                    descriptor = new ServiceDescriptor(serviceType, provider => provider.GetService(firstServiceType),
-                        lifetime.Value);
+                    descriptor = new ServiceDescriptor(serviceType, provider => provider.GetService(firstServiceType), lifetime.Value);
                     AddSingleService(services, descriptor, dependencyAttribute);
                 }
             }

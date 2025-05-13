@@ -184,7 +184,7 @@ public class FreeSqlModule : StartupModule
     private static void Aop_CurdBefore_AuditEntity(CurdBeforeEventArgs e, FreeSqlConnectionConfig option)
     {
         if ((!option.AuditEntity && !option.AuditSqlRaw) || e.EntityType.GetEntityExtensionAttribute().DisableAuditing || e.CurdType == CurdType.Select) return;
-
+        
         var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
         if (auditEntityReport != null && option.AuditEntity)
         {
@@ -207,7 +207,7 @@ public class FreeSqlModule : StartupModule
     private static void Aop_CurdAfter_AuditSqlRaw(CurdAfterEventArgs e, FreeSqlConnectionConfig option)
     {
         if ((!option.AuditEntity && !option.AuditSqlRaw) || e.EntityType.GetEntityExtensionAttribute().DisableAuditing || e.CurdType == CurdType.Select) return;
-
+        
         var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
         if (auditEntityReport != null && option.AuditSqlRaw)
         {
@@ -280,8 +280,7 @@ public class FreeSqlModule : StartupModule
         // Todo 需增加全局过滤,字段值无法识别出实体,记录审计日志数据的时候也会触发此模块
         // 临时解决方案:审计日志数据入库是异步线程执行,通过Http对象进行识别
         
-        var scopedResolver = ServiceLocator.Instance.GetService<IScopedServiceResolver>();
-        if (scopedResolver is { ResolveEnabled: false }) return;
+        if (!ServiceLocator.InScoped()) return;
         
         var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
         if (auditEntityReport != null && e.Value != null && !e.Column.CsName.Equals("Id", StringComparison.OrdinalIgnoreCase))

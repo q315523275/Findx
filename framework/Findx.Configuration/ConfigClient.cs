@@ -266,7 +266,7 @@ public class ConfigClient : IConfigClient, IDisposable
     private async Task AddOrUpdateConfigAsync(IEnumerable<ConfigItemDto> rows)
     {
         // ReSharper disable once PossibleMultipleEnumeration
-        Check.NotNull(rows, nameof(rows));
+        if (rows == null) return;
         // 本地配置更新
         // ReSharper disable once PossibleMultipleEnumeration
         foreach (var item in rows) _data[item.DataId] = item;

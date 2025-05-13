@@ -121,7 +121,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSaveDto, Ro
         if (model == null) return CommonResult.Fail("not.exist", "未能查到相关信息");
         repo.Attach(model.Clone().As<SysRoleInfo>());
         model = req.MapTo(model);
-        model.CheckUpdateAudited<SysRoleInfo, long>(HttpContext.User);
+        model.CheckUpdateAudited<SysRoleInfo, Guid>(HttpContext.User);
         model.OrgJson = req.OrgIds.ToJson();
         await repo.SaveAsync(model, cancellationToken: cancellationToken);
         

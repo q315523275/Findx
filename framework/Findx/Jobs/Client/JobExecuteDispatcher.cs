@@ -59,7 +59,7 @@ public class JobExecuteDispatcher: Disposable, IJobExecuteDispatcher
             {
                 try
                 {
-                    await using var scope = ServiceLocator.Instance.CreateAsyncScope();
+                    await using var scope = ServiceLocator.CreateAsyncScope();
                     var jobExecutor = scope.ServiceProvider.GetService<IJobExecutor>();
                     var context = new JobExecuteContext(scope.ServiceProvider, message);
                     await jobExecutor.ExecuteAsync(context, cancellationToken);

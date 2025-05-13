@@ -3,13 +3,11 @@ using System.Diagnostics;
 using System.Linq;
 using Findx.AspNetCore.Mvc.Middlewares;
 using Findx.Builders;
-using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Logging;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Findx.AspNetCore.Extensions;
@@ -24,9 +22,7 @@ public partial class Extensions
     public static WebApplication UseFindxStartup(this WebApplication app)
     {
         var appInfo = app.Services.GetRequiredService<IApplicationContext>();
-        foreach (var uri in appInfo.Uris.Split(";"))
-            app.Urls.Add(uri);
-        ServiceLocator.Instance = app.Services;
+        foreach (var uri in appInfo.Uris.Split(";")) app.Urls.Add(uri);
         return app;
     }
     
@@ -38,9 +34,7 @@ public partial class Extensions
     public static void UseFindxHosting(this WebApplication app)
     {
         var appInfo = app.Services.GetRequiredService<IApplicationContext>();
-        foreach (var uri in appInfo.Uris.Split(";"))
-            app.Urls.Add(uri);
-        ServiceLocator.Instance = app.Services;
+        foreach (var uri in appInfo.Uris.Split(";")) app.Urls.Add(uri);
         app.Run();
     }
 
@@ -69,6 +63,7 @@ public partial class Extensions
 
         #endregion
 
+        #region Findx模块构建
         var provider = app.Services;
         var logger = provider.GetLogger("ApplicationBuilderExtensions");
 
@@ -102,15 +97,31 @@ public partial class Extensions
         }
 
         // 所有模块停止委托注册
-        var hostApplicationLifetime = provider.GetService<IHostApplicationLifetime>();
-        hostApplicationLifetime?.ApplicationStopping.Register(() =>
+        var applicationStopping = app.Lifetime.ApplicationStopping;
+        applicationStopping.Register(() =>
         {
             foreach (var module in findxBuilder.Modules) module.OnShutdown(provider);
         });
 
         watch.Stop();
         logger.LogInformation(0, "框架初始化完成，耗时:{ElapsedTotalMilliseconds}毫秒，进程编号:{ProcessId}{Line}", watch.Elapsed.TotalMilliseconds, Environment.ProcessId, CommonUtility.Line);
-
+        #endregion
+        
+        return app;
+    }
+    
+    /// <summary>
+    ///     添加Json异常处理器中间件
+    /// </summary>
+    /// <param name="app"></param>
+    /// <returns></returns>
+    public static WebApplication UseEndpointsWithAreaRoute(this WebApplication app)
+    {
+        app.UseEndpoints(builder =>
+        {
+            builder.MapControllerRoute("areas-router", "{area:exists}/{controller=Home}/{action=Index}/{id?}");
+            builder.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+        });
         return app;
     }
 

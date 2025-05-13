@@ -28,6 +28,7 @@ public static partial class Extensions
     /// <summary>
     ///     添加Endpoint并Area路由支持
     /// </summary>
+    [Obsolete("Invalid. Please use code UseEndpointsWithAreaRoute()")]
     public static IEndpointRouteBuilder MapControllersWithAreaRoute(this IEndpointRouteBuilder endpoints, bool area = true)
     {
         if (area)

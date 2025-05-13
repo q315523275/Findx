@@ -10,10 +10,63 @@ namespace Findx.DependencyInjection;
 /// </summary>
 public static class ServiceLocator
 {
+    private static IServiceProvider _provider;
+
+    private static IServiceCollection _services;
+    
     /// <summary>
-    ///     服务提供器
+    ///     获取 ServiceProvider是否为可用
     /// </summary>
-    public static IServiceProvider Instance { get; set; }
+    public static bool IsProviderEnabled => _provider != null;
+    
+    /// <summary>
+    /// 获取 <see cref="ServiceLifetime.Scoped"/>生命周期的服务提供者
+    /// </summary>
+    public static IServiceProvider ScopedProvider
+    {
+        get
+        {
+            var scopedResolver = _provider.GetService<IScopedServiceResolver>();
+            return scopedResolver is { ResolveEnabled: true } ? scopedResolver.ScopedProvider : null;
+        }
+    }
+    
+    /// <summary>
+    /// 获取当前是否处于<see cref="ServiceLifetime.Scoped"/>生命周期中
+    /// </summary>
+    /// <returns></returns>
+    public static bool InScoped()
+    {
+        var scopedResolver = _provider.GetService<IScopedServiceResolver>();
+        return scopedResolver is { ResolveEnabled: true };
+    }
+    
+    /// <summary>
+    /// 设置应用程序服务集合
+    /// </summary>
+    internal static void SetServiceCollection(IServiceCollection services)
+    {
+        Check.NotNull(services, nameof(services));
+        _services = services;
+    }
+
+    /// <summary>
+    /// 设置应用程序服务提供者
+    /// </summary>
+    internal static void SetApplicationServiceProvider(IServiceProvider provider)
+    {
+        Check.NotNull(provider, nameof(provider));
+        _provider = provider;
+    }
+    
+    /// <summary>
+    ///     获取所有已注册的<see cref="ServiceDescriptor"/>对象
+    /// </summary>
+    public static IEnumerable<ServiceDescriptor> GetServiceDescriptors()
+    {
+        Check.NotNull(_services, nameof(_services));
+        return _services;
+    }
 
     /// <summary>
     ///     获取单个泛型实例
@@ -22,11 +75,11 @@ public static class ServiceLocator
     /// <returns></returns>
     public static T GetService<T>()
     {
-        Instance.ThrowIfNull();
+        _provider.ThrowIfNull();
 
-        var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+        var scopedResolver = _provider.GetService<IScopedServiceResolver>();
         if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService<T>() ?? default;
-        return Instance.GetService<T>() ?? default;
+        return _provider.GetService<T>() ?? default;
     }
     
     /// <summary>
@@ -36,12 +89,12 @@ public static class ServiceLocator
     /// <returns></returns>
     public static T GetService<T>(string name)
     {
-        Instance.ThrowIfNull();
+        _provider.ThrowIfNull();
         name.ThrowIfNull();
 
-        var scopedResolver = Instance.GetService<IScopedServiceResolver>(name);
+        var scopedResolver = _provider.GetService<IScopedServiceResolver>(name);
         if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService<T>(name) ?? default;
-        return Instance.GetService<T>(name) ?? default;
+        return _provider.GetService<T>(name) ?? default;
     }
 
     /// <summary>
@@ -51,11 +104,11 @@ public static class ServiceLocator
     /// <returns></returns>
     public static object GetService(Type serviceType)
     {
-        Instance.ThrowIfNull();
+        _provider.ThrowIfNull();
 
-        var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+        var scopedResolver = _provider.GetService<IScopedServiceResolver>();
         if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService(serviceType);
-        return Instance.GetService(serviceType);
+        return _provider.GetService(serviceType);
     }
 
     /// <summary>
@@ -66,12 +119,12 @@ public static class ServiceLocator
     /// <returns></returns>
     public static object GetService(string name, Type serviceType)
     {
-        Instance.ThrowIfNull();
+        _provider.ThrowIfNull();
         name.ThrowIfNull();
 
-        var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+        var scopedResolver = _provider.GetService<IScopedServiceResolver>();
         if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetService(name, serviceType);
-        return Instance.GetService(name, serviceType);
+        return _provider.GetService(name, serviceType);
     }
 
     /// <summary>
@@ -81,11 +134,11 @@ public static class ServiceLocator
     /// <returns></returns>
     public static IEnumerable<T> GetServices<T>()
     {
-        Check.NotNull(Instance, nameof(Instance));
+        Check.NotNull(_provider, nameof(_provider));
 
-        var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+        var scopedResolver = _provider.GetService<IScopedServiceResolver>();
         if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetServices<T>();
-        return Instance.GetServices<T>();
+        return _provider.GetServices<T>();
     }
 
     /// <summary>
@@ -95,12 +148,12 @@ public static class ServiceLocator
     /// <returns></returns>
     public static IEnumerable<object> GetServices(Type serviceType)
     {
-        Check.NotNull(Instance, nameof(Instance));
+        Check.NotNull(_provider, nameof(_provider));
         Check.NotNull(serviceType, nameof(serviceType));
 
-        var scopedResolver = Instance.GetService<IScopedServiceResolver>();
+        var scopedResolver = _provider.GetService<IScopedServiceResolver>();
         if (scopedResolver is { ResolveEnabled: true }) return scopedResolver.GetServices(serviceType);
-        return Instance.GetServices(serviceType);
+        return _provider.GetServices(serviceType);
     }
 
     /// <summary>
@@ -117,5 +170,14 @@ public static class ServiceLocator
         {
             return null;
         }
+    }
+
+    /// <summary>
+    ///     创建<see cref="ServiceLifetime.Scoped"/>生命周期服务提供器
+    /// </summary>
+    /// <returns>AsyncServiceScope,需手动释放</returns>
+    public static AsyncServiceScope CreateAsyncScope()
+    {
+        return _provider.CreateAsyncScope();
     }
 }

@@ -98,7 +98,7 @@ public class ApplicationEventPublisher : IApplicationEventPublisher, IDisposable
                 var handler = (ApplicationEventHandlerWrapper)MessageConst.ApplicationEventHandlers.GetOrAdd(messageType, _ => Activator.CreateInstance(typeof(ApplicationEventHandlerWrapperImpl<>).MakeGenericType(messageType)));
                 try
                 {
-                    await using var scope = ServiceLocator.Instance.CreateAsyncScope();
+                    await using var scope = ServiceLocator.CreateAsyncScope();
                     await handler.HandleAsync(message, scope.ServiceProvider, cancellationToken);
                 }
                 catch (Exception ex)

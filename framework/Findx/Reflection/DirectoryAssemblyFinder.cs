@@ -1,4 +1,6 @@
-﻿namespace Findx.Reflection;
+﻿using System.Runtime.Loader;
+
+namespace Findx.Reflection;
 
 /// <summary>
 ///     目录程序集查找器
@@ -36,10 +38,11 @@ public class DirectoryAssemblyFinder : IAssemblyFinder
     {
         if (fromCache && CacheDict.TryGetValue(_path, out var all)) return all;
         
-        var files = Directory.GetFiles(_path, "*.dll", SearchOption.TopDirectoryOnly)
-                             .Concat(Directory.GetFiles(_path, "*.exe", SearchOption.TopDirectoryOnly));
+        var files = Directory.EnumerateFiles(_path, "*.*", SearchOption.TopDirectoryOnly)
+                             .Where(s => s.EndsWith(".dll") || s.EndsWith(".exe"));
         
-        var assemblies = files.Select(Assembly.LoadFrom).Distinct();
+        var assemblies = files.Select(AssemblyLoadContext.Default.LoadFromAssemblyPath).Distinct();
+        
         CacheDict[_path] = assemblies;
         
         return assemblies;

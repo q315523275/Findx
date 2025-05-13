@@ -11,6 +11,11 @@ public interface IScopedServiceResolver
     bool ResolveEnabled { get; }
 
     /// <summary>
+    /// 获取 <see cref="ServiceLifetime.Scoped"/>生命周期的服务提供者
+    /// </summary>
+    IServiceProvider ScopedProvider { get; }
+    
+    /// <summary>
     ///     获取单个泛型服务
     /// </summary>
     /// <typeparam name="T"></typeparam>

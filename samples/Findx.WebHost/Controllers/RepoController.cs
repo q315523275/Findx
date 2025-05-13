@@ -51,7 +51,7 @@ public class RepoController : ApiControllerBase
     [HttpGet("uow")]
     public async Task<Guid> UnitOfWorkAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
     {
-        await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
+        await using (var scope = ServiceLocator.CreateAsyncScope())
         {
             var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
             await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true))
@@ -84,7 +84,7 @@ public class RepoController : ApiControllerBase
     [AuditOperation]
     public async Task<Guid> UpdateAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
     {
-        await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
+        await using (var scope = ServiceLocator.CreateAsyncScope())
         {
             var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
             await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true))
@@ -117,7 +117,7 @@ public class RepoController : ApiControllerBase
     [DisableAuditing]
     public async Task<Guid> DicAsync([FromServices] IKeyGenerator<Guid> keyGenerator)
     {
-        await using (var scope = ServiceLocator.Instance.CreateAsyncScope())
+        await using (var scope = ServiceLocator.CreateAsyncScope())
         {
             var unitOfWorkManager = scope.ServiceProvider.GetRequiredService<IUnitOfWorkManager>();
             await using (var uow = await unitOfWorkManager.GetEntityUnitOfWorkAsync<TestNewsInfo>(true))

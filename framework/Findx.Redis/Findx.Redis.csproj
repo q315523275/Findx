@@ -4,13 +4,13 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>Redis通用功能、分布式锁等(StackExchangeRedis)</Description>
-        <PackageVersion>11.1.2025.315</PackageVersion>
+        <PackageVersion>11.1.2025.510</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="StackExchange.Redis" Version="2.8.31" />
+        <PackageReference Include="StackExchange.Redis" Version="2.8.37" />
     </ItemGroup>
 
     <ItemGroup>

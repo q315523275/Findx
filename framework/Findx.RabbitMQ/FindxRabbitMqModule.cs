@@ -52,8 +52,7 @@ public class FindxRabbitMqModule : StartupModule
 
         // 注解消费者
         services.AddSingleton<IRabbitConsumerBuilder, RabbitConsumerBuilder>();
-        services.GetOrAddTypeFinder<IRabbitConsumerFinder>(assemblyFinder =>
-            new RabbitConsumerFinder(assemblyFinder));
+        services.AddSingleton<IRabbitConsumerFinder, RabbitConsumerFinder>();
 
         // 消费者自动构建
         services.AddHostedService<RabbitConsumerBuildWorker>();

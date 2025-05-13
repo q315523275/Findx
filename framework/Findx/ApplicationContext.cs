@@ -24,7 +24,7 @@ public class ApplicationContext : IApplicationContext
     {
         HostEnvironment = environment;
         AppSetting = configuration;
-        RootPath = environment.ContentRootPath; // AppDomain.CurrentDomain.BaseDirectory;
+        RootPath = environment.ContentRootPath; // AppContext.BaseDirectory;
         
         ApplicationId = options.Value.Id ?? Guid.NewGuid().ToString();
         ApplicationName = options.Value.Name ?? environment.ApplicationName;

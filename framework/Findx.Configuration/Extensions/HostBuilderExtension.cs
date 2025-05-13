@@ -1,3 +1,4 @@
+using Findx.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
@@ -46,4 +47,22 @@ public static class HostBuilderExtension
         });
         return builder;
     }
+    
+    // /// <summary>
+    // ///     使用配置中心
+    // /// </summary>
+    // /// <param name="builder"></param>
+    // /// <returns></returns>
+    // public static IHostApplicationBuilder UseFindxConfig(this IHostApplicationBuilder builder)
+    // {
+    //     var configuration = builder.Services.GetConfiguration();
+    //     
+    //     var options = configuration.GetSection("Findx:Config").Get<ConfigOptions>();
+    //
+    //     var configurationBuilder = builder.Services.GetSingletonInstanceOrNull<IConfigurationBuilder>();
+    //     
+    //     configurationBuilder.AddFindxConfig(options);
+    //     
+    //     return builder;
+    // }
 }
