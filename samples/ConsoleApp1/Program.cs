@@ -109,19 +109,19 @@ Console.WriteLine("Hello, World!");
 //     Console.WriteLine($"{activeTcpListener.Address.MapToIPv4().ToString()}:{activeTcpListener.Port}");
 // }
 
-#region Host构建
-var builder = Host.CreateApplicationBuilder(args);
-builder.Configuration.AddFindxConfig();
-builder.Services.AddFindx(); 
-var app = builder.Build();
-#endregion
-
-#region Host启动
-await app.UseFindx().RunAsync();
-#endregion
+// #region Host构建
+// var builder = Host.CreateApplicationBuilder(args);
+// builder.Configuration.AddFindxConfig();
+// builder.Services.AddFindx(); 
+// var app = builder.Build();
+// #endregion
+//
+// #region Host启动
+// await app.UseFindx().RunAsync();
+// #endregion
 
 // webSocketClient测试
-var hubConnection = new HubConnectionBuilder().WithUrl("ws://192.168.160.30:5566/ws?userName=开发").Build();
+var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:10021/ws?userName=开发").WithAutomaticReconnection().Build();
 await hubConnection.StartAsync();
 hubConnection.On(async (message, token) =>  
 {

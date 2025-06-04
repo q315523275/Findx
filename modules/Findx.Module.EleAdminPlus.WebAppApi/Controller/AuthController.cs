@@ -231,8 +231,10 @@ public class AuthController : AreaApiControllerBase
         if (!userInfo.Password.Equals(EncryptUtility.Md5By32(req.OldPassword), StringComparison.OrdinalIgnoreCase))
             return CommonResult.Fail("D1000", "旧密码错误");
 
-        var pwd = EncryptUtility.Md5By32(req.Password);
-        await _userRepo.UpdateColumnsAsync(x => new SysUserInfo { Password = pwd }, x => x.Id == userInfo.Id, cancellationToken);
+        _userRepo.Attach(userInfo.Clone().As<SysUserInfo>());
+        userInfo.Password = EncryptUtility.Md5By32(req.Password);
+        userInfo.CheckUpdateAudited<SysUserInfo, Guid>(HttpContext.User);
+        await _userRepo.SaveAsync(userInfo, cancellationToken);
 
         return CommonResult.Success();
     }

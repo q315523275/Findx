@@ -289,14 +289,12 @@ public class HubConnection: IAsyncDisposable
     private void HandleReconnect()
     {
         if (_automaticReconnectCounter.IncrementAndGet() != 1) return;
-        
-        var logger = ServiceLocator.GetService<ILogger<HubConnection>>();
-        
+
         _ = Task.Factory.StartNew(async () =>
         {
             while (!_cts.IsCancellationRequested)
             {
-                if (ClientWebSocket is { State: WebSocketState.Closed })
+                if (ClientWebSocket != null && ClientWebSocket.State != WebSocketState.None && ClientWebSocket.State != WebSocketState.Open )
                 {
                     State = HubConnectionState.Reconnecting;
                     Reconnecting?.Invoke();
@@ -309,7 +307,14 @@ public class HubConnection: IAsyncDisposable
                     }
                     catch (Exception ex)
                     {
-                        logger?.LogError(ex, "WebSocket通信“{S}”重连异常", _uri.ToString());
+                        if (ServiceLocator.IsProviderEnabled)
+                        {
+                            ServiceLocator.GetService<ILogger<HubConnection>>()?.LogError(ex, $"WebSocket通信“{_uri}”重连异常");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"WebSocket通信“{_uri}”重连异常:{ex.Message}");
+                        }
                     }
                 }
                 

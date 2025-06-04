@@ -7,7 +7,7 @@ namespace Findx.Utilities;
 ///     枚举工具类
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public static  class EnumUtility<T> where T : Enum
+public static class EnumUtility<T> where T : Enum
 {
     private static readonly ConcurrentDictionary<T, EnumMetadata> Cache = new();
 
