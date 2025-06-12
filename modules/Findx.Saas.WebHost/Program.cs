@@ -18,6 +18,7 @@ builder.Services.AddFindx().AddModules();
 builder.Services.AddControllers()
        .AddMvcFilter<FindxGlobalAttribute>()
        .AddMvcFilter<EleAdminGlobalAttribute>()
+       .AddMvcFilter<AuditOperationAttribute>()
        .AddJsonOptions(options =>
        {
             options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;

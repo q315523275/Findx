@@ -6,13 +6,13 @@
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>11.1.2025.315</Version>
+        <Version>11.1.2025.612</Version>
         <Description>Findx分布式配置中心扩展服务端</Description>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.510" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.612" />
     </ItemGroup>
 
 </Project>

@@ -16,7 +16,7 @@ public class PageResult<TList>
     /// <param name="totalRows"></param>
     /// <param name="rows"></param>
     [JsonConstructor]
-    public PageResult(int pageNo, int pageSize, int totalRows, TList rows)
+    public PageResult(int pageNo, int pageSize, long totalRows, TList rows)
     {
         PageNo = pageNo;
         PageSize = pageSize;
@@ -37,7 +37,7 @@ public class PageResult<TList>
     /// <summary>
     ///     总记录数
     /// </summary>
-    public int TotalRows { get; set; }
+    public long TotalRows { get; set; }
 
     /// <summary>
     ///     分页数据

@@ -381,7 +381,7 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     #region 分页
     
-    public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool isReturnTotal = true)
+    public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool hasTotalRows = true)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -396,14 +396,14 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
                     queryable.OrderByDescending(item.Conditions);
 
         var result = queryable.WithTransaction(UnitOfWork?.Transaction)
-                              .CountIf(isReturnTotal, out var totalRows)
+                              .CountIf(hasTotalRows, out var totalRows)
                               .Page(pageNumber, pageSize)
                               .ToList();
 
-        return new PageResult<List<TEntity>>(pageNumber, pageSize, (int)totalRows, result);
+        return new PageResult<List<TEntity>>(pageNumber, pageSize, totalRows, result);
     }
 
-    public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool isReturnTotal = true)
+    public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool hasTotalRows = true)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
@@ -417,13 +417,13 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
                 else
                     queryable.OrderByDescending(item.Conditions);
 
-        queryable.CountIf(isReturnTotal, out var totalRows).Page(pageNumber, pageSize);
+        queryable.CountIf(hasTotalRows, out var totalRows).Page(pageNumber, pageSize);
 
         var result = selectExpression == null
             ? queryable.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>()
             : queryable.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
 
-        return new PageResult<List<TObject>>(pageNumber, pageSize, (int)totalRows, result);
+        return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
     }
 
     #endregion

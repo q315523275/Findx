@@ -339,12 +339,12 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="pageSize"></param>
     /// <param name="whereExpression"></param>
     /// <param name="sortConditions"></param>
-    /// <param name="isReturnTotal">返回总数</param>
+    /// <param name="hasTotalRows">返回总数</param>
     /// <returns></returns>
     PageResult<List<TEntity>> Paged(int pageNumber, int pageSize,
         Expression<Func<TEntity, bool>> whereExpression = null,
         IEnumerable<SortCondition<TEntity>> sortConditions = null,
-        bool isReturnTotal = true);
+        bool hasTotalRows = true);
 
     /// <summary>
     ///     分页查询
@@ -353,13 +353,13 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="pageSize"></param>
     /// <param name="whereExpression"></param>
     /// <param name="sortConditions"></param>
-    /// <param name="isReturnTotal">返回总数</param>
+    /// <param name="hasTotalRows">返回总数</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<PageResult<List<TEntity>>> PagedAsync(int pageNumber, int pageSize,
         Expression<Func<TEntity, bool>> whereExpression = null,
         IEnumerable<SortCondition<TEntity>> sortConditions = null, 
-        bool isReturnTotal = true, 
+        bool hasTotalRows = true, 
         CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -371,13 +371,13 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="sortConditions"></param>
     /// <param name="selectExpression"></param>
-    /// <param name="isReturnTotal">返回总数</param>
+    /// <param name="hasTotalRows">返回总数</param>
     /// <returns></returns>
     PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize,
         Expression<Func<TEntity, bool>> whereExpression = null,
         Expression<Func<TEntity, TObject>> selectExpression = null,
         IEnumerable<SortCondition<TEntity>> sortConditions = null,
-        bool isReturnTotal = true);
+        bool hasTotalRows = true);
 
     /// <summary>
     ///     分页查询并返回指定参数
@@ -388,14 +388,14 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="sortConditions"></param>
     /// <param name="selectExpression"></param>
-    /// <param name="isReturnTotal"></param>
+    /// <param name="hasTotalRows"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     Task<PageResult<List<TObject>>> PagedAsync<TObject>(int pageNumber, int pageSize,
         Expression<Func<TEntity, bool>> whereExpression = null,
         Expression<Func<TEntity, TObject>> selectExpression = null,
         IEnumerable<SortCondition<TEntity>> sortConditions = null, 
-        bool isReturnTotal = true, 
+        bool hasTotalRows = true, 
         CancellationToken cancellationToken = default);
 
     #endregion

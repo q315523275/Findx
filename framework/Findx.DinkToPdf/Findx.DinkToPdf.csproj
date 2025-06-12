@@ -4,7 +4,7 @@
         <Description>Html生成pdf</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>11.1.2025.315</PackageVersion>
+        <PackageVersion>11.1.2025.612</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
