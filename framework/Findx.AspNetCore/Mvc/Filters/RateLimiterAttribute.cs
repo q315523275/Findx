@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Events;
 using Findx.AspNetCore.Extensions;
 using Findx.Caching;
 using Findx.Common;
 using Findx.Data;
+using Findx.Events;
 using Findx.Extensions;
 using Findx.Security;
 using Findx.Utilities;
@@ -63,11 +65,39 @@ public class RateLimiterAttribute : ActionFilterAttribute
         var rateLimitKey = GetRateLimitKey(context);
         var rateLimitValue = await cache.IncrementAsync(rateLimitKey, expire: TimeSpanUtility.ToTimeSpan(Period));
         if (rateLimitValue > Limit)
+        {
+            // 触发统计计算
+            var provider = context.HttpContext.RequestServices;
+            // 触发统计计算
+            var eventBus = provider.GetService<IEventBus>();
+            var eventData = new RateLimitedEvent
+            {
+                Key = Key,
+                Period = Period,
+                Limit = Limit,
+                IsDistributed = IsDistributed,
+                Type = Type,
+                RequestedTimes = rateLimitValue,
+                
+                TriggerTime = DateTime.Now,
+                ClientIpAddress = context.HttpContext.GetClientIp(), 
+                UserAgent = context.HttpContext.Request.GetUserAgentString()
+            };
+            await eventBus.PublishAsync(eventData, context.HttpContext.RequestAborted);
+            
             context.Result = new JsonResult(CommonResult.Fail("429", $"Too many requests in {Period}. Try again later."));
+        }
         else
+        {
             await next();
+        }
     }
 
+    /// <summary>
+    ///     获取限速标识Key
+    /// </summary>
+    /// <param name="context"></param>
+    /// <returns></returns>
     private string GetRateLimitKey(ActionExecutingContext context)
     {
         var currentUser = context.HttpContext.RequestServices.GetCurrentUser();

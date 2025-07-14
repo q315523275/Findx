@@ -97,6 +97,7 @@ public class FindxCoreModule : StartupModule
         services.AddSingleton<IMethodInfoFinder, PublicInstanceMethodInfoFinder>();
 
         // 进程消息
+        services.AddScoped<IMessageBroker, MessageBroker>();
         services.AddScoped<IMessageDispatcher, MessageDispatcher>();
         services.AddSingleton<IApplicationEventPublisher, ApplicationEventPublisher>();
 

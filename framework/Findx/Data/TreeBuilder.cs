@@ -17,7 +17,7 @@ public class TreeBuilder<TNode, TKey> where TNode : ITreeNode<TKey> where TKey :
     {
         nodes.ForEach(u => BuildChildNodes(nodes, u, []));
 
-        foreach (var item in nodes.Where(item => rootParentId.Equals(item.GetPId())))
+        foreach (var item in nodes.Where(item => rootParentId.Equals(item.GetParentId())))
         {
             yield return item;
         }
@@ -34,7 +34,7 @@ public class TreeBuilder<TNode, TKey> where TNode : ITreeNode<TKey> where TKey :
         var nodeSubList = new List<TNode>();
         totalNodes.ForEach(u =>
         {
-            if (u.GetPId().Equals(node.GetId()))
+            if (u.GetParentId().Equals(node.GetId()))
                 nodeSubList.Add(u);
         });
         nodeSubList.ForEach(u => BuildChildNodes(totalNodes, u, []));

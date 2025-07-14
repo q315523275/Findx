@@ -10,19 +10,19 @@ namespace Findx.Events;
 public class EventBus: IEventBus
 {
     private readonly IApplicationEventPublisher _eventPublisher;
-    private readonly IMessageDispatcher _messageDispatcher;
+    private readonly IMessageBroker _messageBroker;
     private readonly IDistributedEventBus _distributedEventBus;
 
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="eventPublisher"></param>
-    /// <param name="messageDispatcher"></param>
+    /// <param name="messageBroker"></param>
     /// <param name="distributedEventBus"></param>
-    public EventBus(IApplicationEventPublisher eventPublisher, IMessageDispatcher messageDispatcher, IDistributedEventBus distributedEventBus = null)
+    public EventBus(IApplicationEventPublisher eventPublisher, IMessageBroker messageBroker, IDistributedEventBus distributedEventBus = null)
     {
         _eventPublisher = eventPublisher;
-        _messageDispatcher = messageDispatcher;
+        _messageBroker = messageBroker;
         _distributedEventBus = distributedEventBus;
     }
 
@@ -47,7 +47,7 @@ public class EventBus: IEventBus
             // ReSharper disable once SuspiciousTypeConversion.Global
             IApplicationEvent applicationEvent => applicationEvent is IAsync
                 ? _eventPublisher.PublishAsync(applicationEvent, cancellationToken)
-                : _messageDispatcher.PublishAsync(applicationEvent, cancellationToken),
+                : _messageBroker.PublishAsync(applicationEvent, cancellationToken),
             IIntegrationEvent integrationEvent => _distributedEventBus?.PublishAsync(integrationEvent, cancellationToken),
             _ => throw new Exception($"no matching sender found for the event ({nameof(@event)})")
         };

@@ -88,9 +88,7 @@ public static class NetUtility
                 return !IsInternalIp(IPAddress.Parse(uri.DnsSafeHost));
             
             case UriHostNameType.Unknown:
-                break;
             case UriHostNameType.Basic:
-                break;
             case UriHostNameType.IPv6:
                 break;
             default:

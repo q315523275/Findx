@@ -1,14 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Findx.AspNetCore.Events;
 using Findx.AspNetCore.Extensions;
 using Findx.Common;
 using Findx.Data;
+using Findx.Events;
 using Findx.Extensions;
 using Findx.Locks;
 using Findx.Security;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.AspNetCore.Mvc.Filters;
 
@@ -54,6 +57,7 @@ public class AntiDuplicateRequestAttribute : ActionFilterAttribute
 
         var getLock = await redLock.AcquireAsync(key, expire, renew: true);
         if (getLock.IsLocked())
+        {
             try
             {
                 await next();
@@ -62,8 +66,24 @@ public class AntiDuplicateRequestAttribute : ActionFilterAttribute
             {
                 await getLock.ReleaseAsync();
             }
+        }
         else
+        {
+            var provider = context.HttpContext.RequestServices;
+            // 触发统计计算
+            var eventBus = provider.GetService<IEventBus>();
+            var eventData = new DuplicateRequestedEvent
+            {
+                LockType = Type, 
+                LockKey = key, 
+                TriggerTime = DateTime.Now,
+                ClientIpAddress = context.HttpContext.GetClientIp(), 
+                UserAgent = context.HttpContext.Request.GetUserAgentString()
+            };
+            await eventBus.PublishAsync(eventData, context.HttpContext.RequestAborted);
+            
             context.Result = new JsonResult(CommonResult.Fail("4019", "重复提交,请稍后再试"));
+        }
     }
 
 

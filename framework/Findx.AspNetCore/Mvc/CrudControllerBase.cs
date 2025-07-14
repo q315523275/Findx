@@ -32,15 +32,15 @@ public abstract class CrudControllerBase<TModel, TRequest, TQueryParameter, TKey
 ///     增删改查通用控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
-/// <typeparam name="TDto">返回Dto</typeparam>
+/// <typeparam name="TVo">返回Dto</typeparam>
 /// <typeparam name="TRequest">新增/编辑Dto</typeparam>
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
 /// <typeparam name="TUserKey">用户主键</typeparam>
-public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<
-    TModel, TDto, TDto, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
+public abstract class CrudControllerBase<TModel, TVo, TRequest, TQueryParameter, TKey, TUserKey> : CrudControllerBase<
+    TModel, TVo, TVo, TRequest, TRequest, TQueryParameter, TKey, TUserKey>
     where TModel : EntityBase<TKey>, new()
-    where TDto : IResponse, new()
+    where TVo : IResponse, new()
     where TRequest : IRequest<TKey>, new()
     where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>
@@ -50,17 +50,17 @@ public abstract class CrudControllerBase<TModel, TDto, TRequest, TQueryParameter
 ///     增删改查通用控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
-/// <typeparam name="TDto">返回Dto</typeparam>
+/// <typeparam name="TVo">返回Dto</typeparam>
 /// <typeparam name="TCreateRequest">新增Dto</typeparam>
 /// <typeparam name="TUpdateRequest">编辑Dto</typeparam>
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
 /// <typeparam name="TUserKey">用户主键</typeparam>
 public abstract class
-    CrudControllerBase<TModel, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey> :
-        CrudControllerBase<TModel, TDto, TDto, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey>
+    CrudControllerBase<TModel, TVo, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey> :
+        CrudControllerBase<TModel, TVo, TVo, TCreateRequest, TUpdateRequest, TQueryParameter, TKey, TUserKey>
     where TModel : EntityBase<TKey>, new()
-    where TDto : IResponse, new()
+    where TVo : IResponse, new()
     where TCreateRequest : IRequest, new()
     where TUpdateRequest : IRequest<TKey>, new()
     where TQueryParameter : class, IPager, new()
@@ -71,19 +71,19 @@ public abstract class
 ///     增删改查通用控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
-/// <typeparam name="TListDto">返回列表Dto</typeparam>
-/// <typeparam name="TDetailDto">返回详情Dto</typeparam>
+/// <typeparam name="TListVo">返回列表Dto</typeparam>
+/// <typeparam name="TDetailVo">返回详情Dto</typeparam>
 /// <typeparam name="TCreateRequest">新增Dto</typeparam>
 /// <typeparam name="TUpdateRequest">编辑Dto</typeparam>
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
 /// <typeparam name="TUserKey">用户字段</typeparam>
-public abstract class CrudControllerBase<TModel, TListDto, TDetailDto, TCreateRequest, TUpdateRequest, TQueryParameter,
+public abstract class CrudControllerBase<TModel, TListVo, TDetailVo, TCreateRequest, TUpdateRequest, TQueryParameter,
         TKey, TUserKey>
-    : QueryControllerBase<TModel, TListDto, TDetailDto, TQueryParameter, TKey>
+    : QueryControllerBase<TModel, TListVo, TDetailVo, TQueryParameter, TKey>
     where TModel : EntityBase<TKey>, new()
-    where TListDto : IResponse, new()
-    where TDetailDto : IResponse, new()
+    where TListVo : IResponse, new()
+    where TDetailVo : IResponse, new()
     where TCreateRequest : IRequest, new()
     where TUpdateRequest : IRequest<TKey>, new()
     where TQueryParameter : class, IPager, new()

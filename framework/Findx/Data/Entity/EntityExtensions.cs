@@ -65,7 +65,7 @@ public static class EntityExtensions
     {
         Check.NotNull(entity, nameof(entity));
         var now = DateTime.Now;
-        return (entity.BeginTime != null && entity.BeginTime.Value > now) || (entity.EndTime != null && entity.EndTime.Value < now);
+        return (entity.EffectiveTime != null && entity.EffectiveTime.Value > now) || (entity.ExpiredTime != null && entity.ExpiredTime.Value < now);
     }
 
     /// <summary>

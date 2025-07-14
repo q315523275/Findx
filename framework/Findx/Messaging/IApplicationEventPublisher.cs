@@ -3,7 +3,7 @@
 namespace Findx.Messaging;
 
 /// <summary>
-///     应用事件推送器(异步事件)
+///     应用事件推送器(队列异步事件)
 /// </summary>
 public interface IApplicationEventPublisher
 {

@@ -3,20 +3,18 @@
 namespace Findx.Messaging;
 
 /// <summary>
-///     消息调度器(同步执行)
+///     消息传递服务
 /// </summary>
-[Obsolete("请使用新的“IMessageBroker”消息服务")]
-public interface IMessageDispatcher
+public interface IMessageBroker
 {
     /// <summary>
-    ///     发送消息
+    ///     发送请求并等待响应
     /// </summary>
     /// <typeparam name="TResponse"></typeparam>
     /// <param name="message"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [Obsolete("请使用新的“IMessageBroker.SendRequestAsync”消息服务")]
-    Task<TResponse> SendAsync<TResponse>(IMessageRequest<TResponse> message, CancellationToken cancellationToken = default);
+    Task<TResponse> SendRequestAsync<TResponse>(IMessageRequest<TResponse> message, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     推送异步执行事件
@@ -25,6 +23,5 @@ public interface IMessageDispatcher
     /// <param name="applicationEvent"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [Obsolete("请使用新的“IMessageBroker.PublishAsync”消息服务")]
     Task PublishAsync<TEvent>(TEvent applicationEvent, CancellationToken cancellationToken = default) where TEvent : IApplicationEvent;
 }

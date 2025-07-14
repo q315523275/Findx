@@ -24,10 +24,10 @@ public class MessageController : ApiControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("request")]
-    public async Task<string> MessageSend([FromServices] IMessageDispatcher dispatcher, CancellationToken cancellationToken)
+    public async Task<string> MessageSend([FromServices] IMessageBroker dispatcher, CancellationToken cancellationToken)
     {
         var orderId = SnowflakeIdUtility.Default().NextId();
-        var res = await dispatcher.SendAsync(new CancelOrderCommand(orderId.ToString()), cancellationToken);
+        var res = await dispatcher.SendRequestAsync(new CancelOrderCommand(orderId.ToString()), cancellationToken);
         return $"orderId:{orderId},result:{res}";
     }
 
@@ -38,7 +38,7 @@ public class MessageController : ApiControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("notify")]
-    public async Task<string> MessageNotify([FromServices] IMessageDispatcher context, CancellationToken cancellationToken)
+    public async Task<string> MessageNotify([FromServices] IMessageBroker context, CancellationToken cancellationToken)
     {
         await context.PublishAsync(new PayedOrderCommand(SnowflakeIdUtility.Default().NextId()), cancellationToken);
         return "ok";

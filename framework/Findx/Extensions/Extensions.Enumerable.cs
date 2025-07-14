@@ -203,4 +203,19 @@ public static partial class Extensions
             await Task.WhenAll(enumerable.Select(func));
         }
     }
+    
+    /// <summary>
+    ///     循环集合返回项与索引
+    /// </summary>
+    /// <param name="source"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
+    public static IEnumerable<(T item, int index)> WithIndex<T>(this IEnumerable<T> source)
+    {
+        var index = 0;
+        foreach (var item in source)
+        {
+            yield return (item, index++);
+        }
+    }
 }

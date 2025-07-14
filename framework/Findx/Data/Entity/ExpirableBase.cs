@@ -9,12 +9,12 @@ public abstract class ExpirableBase<TKey> : EntityBase<TKey>, IExpirable where T
     /// <summary>
     ///     获取或设置 生效时间
     /// </summary>
-    public DateTime? BeginTime { get; set; }
+    public DateTime? EffectiveTime { get; set; }
 
     /// <summary>
     ///     获取或设置 过期时间
     /// </summary>
-    public DateTime? EndTime { get; set; }
+    public DateTime? ExpiredTime { get; set; }
 
     /// <summary>
     ///     验证时间生效时间与过期时间是否有效
@@ -22,7 +22,7 @@ public abstract class ExpirableBase<TKey> : EntityBase<TKey>, IExpirable where T
     /// <returns></returns>
     public bool IsTimeValid()
     {
-        return !BeginTime.HasValue || !EndTime.HasValue || BeginTime.Value <= EndTime.Value;
+        return !EffectiveTime.HasValue || !ExpiredTime.HasValue || EffectiveTime.Value <= ExpiredTime.Value;
     }
 
     /// <summary>

@@ -18,13 +18,13 @@ namespace Findx.AspNetCore.Mvc;
 ///     通用查询控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
-/// <typeparam name="TDto">返回Dto</typeparam>
+/// <typeparam name="TVo">返回Dto</typeparam>
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
-public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> : QueryControllerBase<TModel, TDto, TDto,
+public abstract class QueryControllerBase<TModel, TVo, TQueryParameter, TKey> : QueryControllerBase<TModel, TVo, TVo,
     TQueryParameter, TKey>
     where TModel : EntityBase<TKey>, new()
-    where TDto : IResponse, new()
+    where TVo : IResponse, new()
     where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>;
 
@@ -32,14 +32,14 @@ public abstract class QueryControllerBase<TModel, TDto, TQueryParameter, TKey> :
 ///     通用查询控制器基类
 /// </summary>
 /// <typeparam name="TModel">实体</typeparam>
-/// <typeparam name="TListDto">返回列表Dto</typeparam>
-/// <typeparam name="TDetailDto">返回详情Dto</typeparam>
+/// <typeparam name="TListVo">返回列表Dto</typeparam>
+/// <typeparam name="TDetailVo">返回详情Dto</typeparam>
 /// <typeparam name="TQueryParameter">查询Dto</typeparam>
 /// <typeparam name="TKey">实体主键</typeparam>
-public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryParameter, TKey> : ApiControllerBase
+public abstract class QueryControllerBase<TModel, TListVo, TDetailVo, TQueryParameter, TKey> : ApiControllerBase
     where TModel : EntityBase<TKey>, new()
-    where TListDto : IResponse, new()
-    where TDetailDto : IResponse, new()
+    where TListVo : IResponse, new()
+    where TDetailVo : IResponse, new()
     where TQueryParameter : class, IPager, new()
     where TKey : IEquatable<TKey>
 {
@@ -84,7 +84,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// <returns></returns>
     [HttpGet("page")]
     [Description("分页")]
-    public virtual async Task<CommonResult<PageResult<List<TListDto>>>> PageAsync([FromQuery] TQueryParameter req, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult<PageResult<List<TListVo>>>> PageAsync([FromQuery] TQueryParameter req, CancellationToken cancellationToken = default)
     {
         Check.NotNull(req, nameof(req));
 
@@ -95,7 +95,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreateWhereExpression(req);
         var orderByExpression = CreateOrderExpression(req);
         
-        var result = await repo.PagedAsync<TListDto>(req.PageNo, req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
+        var result = await repo.PagedAsync<TListVo>(req.PageNo, req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(result);
     }
@@ -108,7 +108,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// <returns></returns>
     [HttpGet("list")]
     [Description("列表")]
-    public virtual async Task<CommonResult<List<TListDto>>> ListAsync([FromQuery] TQueryParameter req, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult<List<TListVo>>> ListAsync([FromQuery] TQueryParameter req, CancellationToken cancellationToken = default)
     {
         Check.NotNull(req, nameof(req));
         // 默认条数提升到99条
@@ -121,7 +121,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
         var whereExpression = CreateWhereExpression(req);
         var orderByExpression = CreateOrderExpression(req);
 
-        var list = await repo.TopAsync<TListDto>(req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
+        var list = await repo.TopAsync<TListVo>(req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
 
         return CommonResult.Success(list);
     }
@@ -134,7 +134,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// <returns></returns>
     [HttpGet("detail")]
     [Description("详情")]
-    public virtual async Task<CommonResult<TDetailDto>> Detail(TKey id, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult<TDetailVo>> Detail(TKey id, CancellationToken cancellationToken = default)
     {
         Check.NotNull(id, nameof(id));
         var repo = GetRepository<TModel, TKey>();
@@ -152,9 +152,9 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    protected virtual List<TListDto> ToListDto(List<TModel> model)
+    protected virtual List<TListVo> ToListDto(List<TModel> model)
     {
-        return model.MapTo<List<TListDto>>();
+        return model.MapTo<List<TListVo>>();
     }
 
     /// <summary>
@@ -162,9 +162,9 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="model"></param>
     /// <returns></returns>
-    protected virtual TDetailDto ToDetailDto(TModel model)
+    protected virtual TDetailVo ToDetailDto(TModel model)
     {
-        return model.MapTo<TDetailDto>();
+        return model.MapTo<TDetailVo>();
     }
 
     /// <summary>
@@ -172,7 +172,7 @@ public abstract class QueryControllerBase<TModel, TListDto, TDetailDto, TQueryPa
     /// </summary>
     /// <param name="model"></param>
     /// <param name="dto"></param>
-    protected virtual Task DetailAfterAsync(TModel model, TDetailDto dto)
+    protected virtual Task DetailAfterAsync(TModel model, TDetailVo dto)
     {
         return Task.CompletedTask;
     }
