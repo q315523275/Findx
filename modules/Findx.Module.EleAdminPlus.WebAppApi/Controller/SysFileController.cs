@@ -9,7 +9,7 @@ using Findx.Imaging;
 using Findx.Module.EleAdminPlus.Shared.Events;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.File;
-using Findx.Security;
+using Findx.Module.EleAdminPlus.WebAppApi.Options;
 using Findx.Setting;
 using Findx.Storage;
 using Findx.Utilities;
@@ -28,13 +28,13 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-文件"), Description("系统-文件")]
 public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePageQueryDto, long>
 {
-    private readonly IApplicationContext _applicationContext;
     private readonly IKeyGenerator<long> _keyGenerator;
-    private readonly IFileStorage _fileStorage;
     private readonly IRepository<SysFileInfo, long> _repo;
+    private readonly IFileStorage _fileStorage;
     private readonly IEventBus _eventBus;
+    private readonly IImageProcessor _imageProcessor;
+    private readonly ImageOptions _imageOptions;
     private readonly string _folderHost;
-    private readonly ISettingProvider _settingProvider;
 
     /// <summary>
     /// Ctor
@@ -45,15 +45,17 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
     /// <param name="repo"></param>
     /// <param name="settingProvider"></param>
     /// <param name="eventBus"></param>
-    public SysFileController(IKeyGenerator<long> keyGenerator, IApplicationContext applicationContext, IStorageFactory storageFactory, IRepository<SysFileInfo, long> repo, ISettingProvider settingProvider, IEventBus eventBus)
+    /// <param name="imageProcessor"></param>
+    public SysFileController(IKeyGenerator<long> keyGenerator, IApplicationContext applicationContext, IStorageFactory storageFactory, IRepository<SysFileInfo, long> repo, ISettingProvider settingProvider, IEventBus eventBus, IImageProcessor imageProcessor)
     {
         _keyGenerator = keyGenerator;
-        _applicationContext = applicationContext;
         _repo = repo;
-        _settingProvider = settingProvider;
         _eventBus = eventBus;
-        _fileStorage = storageFactory.Create(FileStorageType.Folder.ToString());
-        _folderHost = settingProvider.GetValue<string>("Findx:Storage:Folder:Host") ?? $"//{HostUtility.ResolveHostAddress(HostUtility.ResolveHostName())}:{_applicationContext.Port}";
+        _imageProcessor = imageProcessor;
+        _fileStorage = storageFactory.Create(nameof(FileStorageType.Folder));
+        _folderHost = settingProvider.GetValue<string>("Findx:Storage:Folder:Host") 
+                            ?? $"//{HostUtility.ResolveHostAddress(HostUtility.ResolveHostName())}:{applicationContext.Port}";
+        _imageOptions = settingProvider.GetObject<ImageOptions>("Findx:Storage:Image");
     }
 
     /// <summary>
@@ -95,12 +97,39 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
         var fileInfo = new FileSpec(path, size, name, id.ToString()) { SaveName = saveName };
         
         // 文件全路径
-        var fullPath = Path.Combine(_applicationContext.RootPath, fileInfo.Path.SafeString());
+        // var fullPath = Path.Combine(_applicationContext.RootPath, fileInfo.Path.SafeString());
         
         // 压缩保存
         await using (var fileStream = uploadFileDto.File.OpenReadStream())
         {
-            await _fileStorage.SaveFileAsync(fullPath, fileStream, cancellationToken); // 内部 Path.Combine 组合
+            // 图片上传并启用压缩
+            if (FileUtility.IsImage(fileInfo.Extension) && (_imageOptions.Compress || _imageOptions.ScaleSize))
+            {
+                using var ms = Pool.MemoryStream.Rent();
+
+                // 尺寸缩放
+                if (_imageOptions.ScaleSize)
+                {
+                    await using var res = await _imageProcessor.ResizeAsync(fileStream, new ImageResizeDto(_imageOptions.ScaleMaxWidth, 0), cancellationToken);
+                    await res.CopyToAsync(ms, cancellationToken);
+                    ms.Position = 0;
+                }
+
+                // 质量压缩
+                if (_imageOptions.Compress)
+                {
+                    await using var res = await _imageProcessor.CompressAsync(ms.Length > 0 ? ms : fileStream, _imageOptions.CompressQuality, cancellationToken);
+                    await res.CopyToAsync(ms, cancellationToken);
+                    ms.Position = 0;
+                }
+
+                await _fileStorage.SaveFileAsync(path, ms, cancellationToken); // 内部 Path.Combine 组合
+            }
+            else
+            {
+                await _fileStorage.SaveFileAsync(path, fileStream, cancellationToken); // 内部 Path.Combine 组合
+            }
+            
             // 替换域名
             fileInfo.Url = Path.Combine(_folderHost, fileInfo.Path.SafeString()).NormalizePath();
         }
