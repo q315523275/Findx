@@ -3,7 +3,7 @@
 /// <summary>
 ///     数据模型接口
 /// </summary>
-public interface IEntity;
+public interface IEntity: ICloneable;
 
 /// <summary>
 ///     数据模型接口

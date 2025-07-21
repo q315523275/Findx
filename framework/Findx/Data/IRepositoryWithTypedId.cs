@@ -407,7 +407,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// </summary>
     /// <param name="whereExpression"></param>
     /// <returns></returns>
-    int Count(Expression<Func<TEntity, bool>> whereExpression = null);
+    long Count(Expression<Func<TEntity, bool>> whereExpression = null);
 
     /// <summary>
     ///     查询指定条件记录总数
@@ -415,8 +415,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<int> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        CancellationToken cancellationToken = default);
+    Task<long> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     判断指定条件数据是否存在
@@ -431,8 +430,7 @@ public interface IRepository<TEntity, in TKey> where TEntity : class, IEntity<TK
     /// <param name="whereExpression"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null,
-        CancellationToken cancellationToken = default);
+    Task<bool> ExistAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default);
 
     #endregion
 

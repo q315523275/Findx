@@ -9,7 +9,6 @@ using Findx.Data;
 using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Security;
-using FreeSql.Extensions.EntityUtil;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -77,6 +76,11 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     #region 插入
 
+    /// <summary>
+    ///     单条插入
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
     public int Insert(TEntity entity)
     {
         entity.ThrowIfNull();
@@ -85,66 +89,96 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         // 存在分表标签
         // 动态自定义分表为Null
         if (_entityExtensionAttribute.HasTableSharding.GetValueOrDefault() && AsTableValueInternal == null)
-            // ReSharper disable once PossibleNullReferenceException
             // ReSharper disable once SuspiciousTypeConversion.Global
-            fInsert.AsTable(_ => (entity as ITableSharding).GetShardingTableName());
+            fInsert.AsTable(_ => (entity as ITableSharding)?.GetShardingTableName());
         else
             fInsert.AsTable(AsTableValueInternal);
 
         return fInsert.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
+    /// <summary>
+    ///     批量插入
+    /// </summary>
+    /// <param name="entities"></param>
+    /// <returns></returns>
     public int Insert(IEnumerable<TEntity> entities)
     {
         entities = CheckInsert(entities);
-        // ReSharper disable once PossibleMultipleEnumeration
-        var result = _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction)
-            .ExecuteAffrows();
-        // ReSharper disable once PossibleMultipleEnumeration
-        return result;
+        return _fsql.Insert(entities).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
     #endregion
 
     #region 删除
 
+    /// <summary>
+    ///     根据主键删除数据
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
     public int Delete(TKey key)
     {
         if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault())
-            return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal)
-                .Set(it => (it as ISoftDeletable).IsDeleted == true)
-                .Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now)
-                .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
-
-        return _fsql.Delete<TEntity>(key).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction)
-            .ExecuteAffrows();
+        {
+            return _fsql.Update<TEntity>(key).AsTable(AsTableValueInternal) 
+                        .Set(it => (it as ISoftDeletable).IsDeleted == true)
+                        .Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now)
+                        .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+        }
+        
+        return _fsql.Delete<TEntity>(key).AsTable(AsTableValueInternal).WithTransaction(UnitOfWork?.Transaction) .ExecuteAffrows();
     }
     
+    /// <summary>
+    ///     根据指定条件删除数据
+    /// </summary>
+    /// <param name="whereExpression"></param>
+    /// <returns></returns>
     public int Delete(Expression<Func<TEntity, bool>> whereExpression = null)
     {
         if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault() && whereExpression == null)
+        {
             return _fsql.Update<TEntity>().AsTable(AsTableValueInternal)
-                .Set(it => (it as ISoftDeletable).IsDeleted == true)
-                .Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(it => true)
-                .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+                        .Set(it => (it as ISoftDeletable).IsDeleted == true)
+                        .Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now)
+                        .Where(it => true) // freeSql 必须设置
+                        .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+        }
 
         if (_entityExtensionAttribute.HasSoftDeletable.GetValueOrDefault() && whereExpression != null)
+        {
             return _fsql.Update<TEntity>().AsTable(AsTableValueInternal)
-                .Set(it => (it as ISoftDeletable).IsDeleted == true)
-                .Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now).Where(whereExpression)
-                .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
-
+                        .Set(it => (it as ISoftDeletable).IsDeleted == true)
+                        .Set(it => (it as ISoftDeletable).DeletionTime == DateTime.Now)
+                        .Where(whereExpression)
+                        .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+        }
+        
         if (whereExpression == null)
-            return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(it => true)
-                .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
-        return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal).Where(whereExpression)
-            .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+        {
+            return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal)
+                        .Where(it => true) // freeSql 必须设置
+                        .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+        }
+
+        return _fsql.Delete<TEntity>().AsTable(AsTableValueInternal)
+                    .Where(whereExpression)
+                    .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
     #endregion
 
     #region 更新
 
+    /// <summary>
+    ///     更新单条实体信息
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <param name="updateColumns"></param>
+    /// <param name="ignoreColumns"></param>
+    /// <param name="ignoreNullColumns"></param>
+    /// <returns></returns>
     public int Update(TEntity entity, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null, bool ignoreNullColumns = false)
     {
         entity.ThrowIfNull();
@@ -175,6 +209,13 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return update.WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
+    /// <summary>
+    ///     更新批量实体信息
+    /// </summary>
+    /// <param name="entities"></param>
+    /// <param name="updateColumns"></param>
+    /// <param name="ignoreColumns"></param>
+    /// <returns></returns>
     public int Update(IEnumerable<TEntity> entities, Expression<Func<TEntity, object>> updateColumns = null, Expression<Func<TEntity, object>> ignoreColumns = null)
     {
         entities = CheckUpdate(entities);
@@ -194,12 +235,23 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return result;
     }
 
+    /// <summary>
+    ///     根据指定条件更新指定字段信息
+    /// </summary>
+    /// <param name="columns"></param>
+    /// <param name="whereExpression"></param>
+    /// <returns></returns>
     public int UpdateColumns(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> whereExpression)
     {
         return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).Set(columns).Where(whereExpression)
             .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
+    /// <summary>
+    ///     根据主键Id更新指定字段信息
+    /// </summary>
+    /// <param name="dict"></param>
+    /// <returns></returns>
     public int UpdateColumns(Dictionary<string, object> dict)
     {
         FindxException.ThrowIf(dict == null || !dict.ContainsKey("Id"), "505", "字典更新时必须包含主键Id数据");
@@ -207,13 +259,25 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return _fsql.UpdateDict(dict).AsTable(tableName).WherePrimary("Id").WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
+    /// <summary>
+    ///     根据指定条件更新指定字段信息
+    /// </summary>
+    /// <param name="dict"></param>
+    /// <param name="whereExpression"></param>
+    /// <returns></returns>
     public int UpdateColumns(Dictionary<string, object> dict, Expression<Func<TEntity, bool>> whereExpression)
     {
-        return _fsql.Update<TEntity>().AsTable(AsTableValueInternal).SetDto(dict).Where(whereExpression)
-            .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
+        return _fsql.Update<TEntity>().AsTable(AsTableValueInternal)
+                    .SetDto(dict).Where(whereExpression)
+                    .WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
-
+    /// <summary>
+    ///     根据指定条件更新指定字段信息
+    /// </summary>
+    /// <param name="columns"></param>
+    /// <param name="whereExpression"></param>
+    /// <returns></returns>
     public int UpdateColumns(List<Expression<Func<TEntity, bool>>> columns, Expression<Func<TEntity, bool>> whereExpression)
     {
         Check.NotNull(columns, nameof(columns));
@@ -226,14 +290,31 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return update.Where(whereExpression).WithTransaction(UnitOfWork?.Transaction).ExecuteAffrows();
     }
 
+    /// <summary>
+    ///     快照字典
+    /// </summary>
     private readonly Dictionary<string, TEntity> _attachDict = new();
 
+    /// <summary>
+    ///     记录快照
+    /// </summary>
+    /// <param name="entity"></param>
     public void Attach(TEntity entity)
     {
         var key = entity.Id.SafeString();
-        if (key.IsNotNullOrWhiteSpace()) _attachDict[key] = entity;
+        if (key.IsNotNullOrWhiteSpace())
+        {
+            _attachDict[key] = entity.Clone().As<TEntity>();
+        }
     }
     
+    /// <summary>
+    ///     保存变更字段
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    /// <exception cref="NotSupportedException"></exception>
     public int Save(TEntity entity)
     {
         var table = _fsql.CodeFirst.GetTableByEntity(_entityType);
@@ -288,74 +369,155 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     #region 查询
 
+    /// <summary>
+    ///     根据主键查询单条信息
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
     public TEntity Get(TKey key)
     {
-        return _fsql.Select<TEntity>(key).AsTable(AsTableSelectValueInternal)
-            .WithTransaction(UnitOfWork?.Transaction).First();
+        var model = _fsql.Select<TEntity>(key)
+                         .AsTable(AsTableSelectValueInternal)
+                         .WithTransaction(UnitOfWork?.Transaction)
+                         .First();
+        
+        if (model != null) Attach(model);
+        
+        return model;
     }
 
+    /// <summary>
+    ///     根据指定条件查询单条信息
+    /// </summary>
+    /// <param name="whereExpression"></param>
+    /// <returns></returns>
     public TEntity First(Expression<Func<TEntity, bool>> whereExpression = null)
     {
+        TEntity model;
         if (whereExpression == null)
-            return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
-                .WithTransaction(UnitOfWork?.Transaction).First();
-        return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression)
-            .WithTransaction(UnitOfWork?.Transaction).First();
+        {
+            model = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
+                         .WithTransaction(UnitOfWork?.Transaction).First();
+            
+            if (model != null) Attach(model);
+            
+            return model;
+        }
+
+        model = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
+                     .Where(whereExpression)
+                     .WithTransaction(UnitOfWork?.Transaction).First();
+        
+        if (model != null) Attach(model);
+        
+        return model;
     }
 
+    /// <summary>
+    ///     根据指定条件及排序查询列表信息
+    /// </summary>
+    /// <param name="whereExpression"></param>
+    /// <param name="sortConditions"></param>
+    /// <returns></returns>
     public List<TEntity> Select(Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null)
     {
         var queryable = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
-        if (whereExpression != null)
-            queryable.Where(whereExpression);
+        if (whereExpression != null) queryable.Where(whereExpression);
 
         if (sortConditions != null)
+        {
             foreach (var item in sortConditions)
+            {
                 if (item.SortDirection == ListSortDirection.Ascending)
+                {
                     queryable.OrderBy(item.Conditions);
+                }
                 else
+                {
                     queryable.OrderByDescending(item.Conditions);
+                }
+            }
+        }
 
         return queryable.WithTransaction(UnitOfWork?.Transaction).ToList();
     }
 
+    /// <summary>
+    ///     根据指定条件查询列表信息
+    /// </summary>
+    /// <param name="whereExpression"></param>
+    /// <param name="selectExpression"></param>
+    /// <param name="sortConditions"></param>
+    /// <typeparam name="TObject"></typeparam>
+    /// <returns></returns>
     public List<TObject> Select<TObject>(Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null)
     {
         var select = _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal);
 
-        if (whereExpression != null)
-            select.Where(whereExpression);
+        if (whereExpression != null) select.Where(whereExpression);
 
         if (sortConditions != null)
+        {
             foreach (var item in sortConditions)
+            {
                 if (item.SortDirection == ListSortDirection.Ascending)
+                {
                     select.OrderBy(item.Conditions);
+                }
                 else
+                {
                     select.OrderByDescending(item.Conditions);
-
+                }
+            }
+        }
+        
         if (selectExpression == null)
             return select.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>();
+        
         return select.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
     }
     
+    /// <summary>
+    ///     根据指定条件查询固定条数列表信息
+    /// </summary>
+    /// <param name="topSize"></param>
+    /// <param name="whereExpression"></param>
+    /// <param name="sortConditions"></param>
+    /// <returns></returns>
     public List<TEntity> Top(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
-        if (whereExpression != null)
-            queryable.Where(whereExpression);
+        if (whereExpression != null) queryable.Where(whereExpression);
 
         if (sortConditions != null)
+        {
             foreach (var item in sortConditions)
+            {
                 if (item.SortDirection == ListSortDirection.Ascending)
+                {
                     queryable.OrderBy(item.Conditions);
+                }
                 else
+                {
                     queryable.OrderByDescending(item.Conditions);
-
+                }
+            }
+        }
+        
         return queryable.WithTransaction(UnitOfWork?.Transaction).Take(topSize).ToList();
     }
 
+    /// <summary>
+    ///     根据指定条件查询固定条数列表信息
+    /// </summary>
+    /// <param name="topSize"></param>
+    /// <param name="whereExpression"></param>
+    /// <param name="selectExpression"></param>
+    /// <param name="sortConditions"></param>
+    /// <typeparam name="TObject"></typeparam>
+    /// <returns></returns>
     public List<TObject> Top<TObject>(int topSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
@@ -364,16 +526,25 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
             queryable.Where(whereExpression);
 
         if (sortConditions != null)
+        {
             foreach (var item in sortConditions)
+            {
                 if (item.SortDirection == ListSortDirection.Ascending)
+                {
                     queryable.OrderBy(item.Conditions);
+                }
                 else
+                {
                     queryable.OrderByDescending(item.Conditions);
-
+                }
+            }
+        }
+        
         queryable.Take(topSize);
 
         if (selectExpression == null)
             return queryable.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>();
+        
         return queryable.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
     }
 
@@ -381,20 +552,36 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     #region 分页
     
+    /// <summary>
+    ///     根据指定的条件进行分页查询
+    /// </summary>
+    /// <param name="pageNumber"></param>
+    /// <param name="pageSize"></param>
+    /// <param name="whereExpression"></param>
+    /// <param name="sortConditions"></param>
+    /// <param name="hasTotalRows"></param>
+    /// <returns></returns>
     public PageResult<List<TEntity>> Paged(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool hasTotalRows = true)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
 
-        if (whereExpression != null)
-            queryable.Where(whereExpression);
+        if (whereExpression != null) queryable.Where(whereExpression);
 
         if (sortConditions != null)
+        {
             foreach (var item in sortConditions)
+            {
                 if (item.SortDirection == ListSortDirection.Ascending)
+                {
                     queryable.OrderBy(item.Conditions);
+                }
                 else
+                {
                     queryable.OrderByDescending(item.Conditions);
-
+                }
+            }
+        }
+        
         var result = queryable.WithTransaction(UnitOfWork?.Transaction)
                               .CountIf(hasTotalRows, out var totalRows)
                               .Page(pageNumber, pageSize)
@@ -403,6 +590,17 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return new PageResult<List<TEntity>>(pageNumber, pageSize, totalRows, result);
     }
 
+    /// <summary>
+    ///     根据指定的条件进行分页查询
+    /// </summary>
+    /// <param name="pageNumber"></param>
+    /// <param name="pageSize"></param>
+    /// <param name="whereExpression"></param>
+    /// <param name="selectExpression"></param>
+    /// <param name="sortConditions"></param>
+    /// <param name="hasTotalRows"></param>
+    /// <typeparam name="TObject"></typeparam>
+    /// <returns></returns>
     public PageResult<List<TObject>> Paged<TObject>(int pageNumber, int pageSize, Expression<Func<TEntity, bool>> whereExpression = null, Expression<Func<TEntity, TObject>> selectExpression = null, IEnumerable<SortCondition<TEntity>> sortConditions = null, bool hasTotalRows = true)
     {
         var queryable = _fsql.Queryable<TEntity>().AsTable(AsTableSelectValueInternal);
@@ -411,17 +609,26 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
             queryable.Where(whereExpression);
 
         if (sortConditions != null)
+        {
             foreach (var item in sortConditions)
+            {
                 if (item.SortDirection == ListSortDirection.Ascending)
+                {
                     queryable.OrderBy(item.Conditions);
+                }
                 else
+                {
                     queryable.OrderByDescending(item.Conditions);
+                }
+            }
+        }
+            
 
         queryable.CountIf(hasTotalRows, out var totalRows).Page(pageNumber, pageSize);
 
         var result = selectExpression == null
-            ? queryable.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>()
-            : queryable.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
+                            ? queryable.WithTransaction(UnitOfWork?.Transaction).ToList<TObject>()
+                            : queryable.WithTransaction(UnitOfWork?.Transaction).ToList(selectExpression);
 
         return new PageResult<List<TObject>>(pageNumber, pageSize, totalRows, result);
     }
@@ -430,15 +637,29 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     #region 函数查询
 
-    public int Count(Expression<Func<TEntity, bool>> whereExpression = null)
+    /// <summary>
+    ///     查询指定的条件的数量
+    /// </summary>
+    /// <param name="whereExpression"></param>
+    /// <returns></returns>
+    public long Count(Expression<Func<TEntity, bool>> whereExpression = null)
     {
         if (whereExpression == null)
+        {
             return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
-                .WithTransaction(UnitOfWork?.Transaction).Count().To<int>();
-        return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression)
-            .WithTransaction(UnitOfWork?.Transaction).Count().To<int>();
+                        .WithTransaction(UnitOfWork?.Transaction).Count();
+        }
+            
+        return _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
+                    .Where(whereExpression)
+                    .WithTransaction(UnitOfWork?.Transaction).Count();
     }
 
+    /// <summary>
+    ///     判断指定的条件是否存在
+    /// </summary>
+    /// <param name="whereExpression"></param>
+    /// <returns></returns>
     public bool Exist(Expression<Func<TEntity, bool>> whereExpression = null)
     {
         if (whereExpression == null)
@@ -452,23 +673,40 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     #region 库表
 
+    /// <summary>
+    ///     获取数据来源名称
+    /// </summary>
+    /// <returns></returns>
     public string GetDataSource()
     {
         return _entityExtensionAttribute.DataSource;
     }
     
+    /// <summary>
+    ///     获取表名
+    /// </summary>
+    /// <returns></returns>
     public string GetDbTableName()
     {
         var dbName = _fsql.CodeFirst.GetTableByEntity(_entityType).DbName;
         return AsTableValueInternal?.Invoke(dbName) ?? dbName;
     }
 
+    /// <summary>
+    ///     获取表字段名称集合
+    /// </summary>
+    /// <returns></returns>
     public List<string> GetDbColumnName()
     {
         var columns = _fsql.CodeFirst.GetTableByEntity(_entityType).Columns;
         return columns.Keys.ToList();
     }
 
+    /// <summary>
+    ///     更改表名规则
+    /// </summary>
+    /// <param name="rule"></param>
+    /// <returns></returns>
     public IRepository<TEntity, TKey> AsTable(Func<string, string> rule)
     {
         AsTableValueInternal = rule;
@@ -479,6 +717,11 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return this;
     }
 
+    /// <summary>
+    ///     实体属性值变更比较
+    /// </summary>
+    /// <param name="newData"></param>
+    /// <returns></returns>
     public Dictionary<string, object[]> CompareState(TEntity newData)
     {
         if (!_attachDict.TryGetValue(newData.Id.SafeString(), out var oldData))
@@ -488,11 +731,21 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         return _fsql.CompareState(newData, oldData);
     }
 
+    /// <summary>
+    ///     实体属性值变更比较
+    /// </summary>
+    /// <param name="newData"></param>
+    /// <param name="oldData"></param>
+    /// <returns></returns>
     public Dictionary<string, object[]> CompareState(TEntity newData, TEntity oldData)
     {
         return _fsql.CompareState(newData, oldData);
     }
 
+    /// <summary>
+    ///     获取数据库类型
+    /// </summary>
+    /// <returns></returns>
     public DatabaseType GetDbType()
     {
         var dataType = _fsql.Ado.DataType.ToString();
@@ -616,6 +869,9 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
 
     #endregion
 
+    /// <summary>
+    ///     释放资源
+    /// </summary>
     public void Dispose()
     {
         AsTableValueInternal = null;

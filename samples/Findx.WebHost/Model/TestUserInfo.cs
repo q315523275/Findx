@@ -11,4 +11,9 @@ public class TestUserInfo : ISoftDeletable, IEntity<int>
 
     public DateTime? DeletionTime { get; set; }
     public bool IsDeleted { get; set; }
+    
+    public object Clone()
+    {
+        return this.MemberwiseClone();
+    }
 }
