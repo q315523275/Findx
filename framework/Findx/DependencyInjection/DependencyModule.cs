@@ -63,7 +63,7 @@ public sealed class DependencyModule : StartupModule
         // 服务实现显示要求注册身处时，注册自身并且继续注册接口
         if (dependencyAttribute?.AddSelf == true)
             services.TryAdd(new ServiceDescriptor(implementationType, implementationType, lifetime.Value));
-
+        
         // 注册服务
         for (var i = 0; i < serviceTypes.Length; i++)
         {

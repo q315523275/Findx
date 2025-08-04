@@ -246,8 +246,6 @@ public abstract class CrudControllerBase<TModel, TListVo, TDetailVo, TCreateRequ
         if (model == null) 
             return CommonResult.Fail("not.exist", "未能查到相关信息");
         
-        repo.Attach(model.Clone().As<TModel>());
-        
         model = ToModelFromUpdateRequest(req, model);
         // 判断设置修改时间
         model.CheckUpdateTime();

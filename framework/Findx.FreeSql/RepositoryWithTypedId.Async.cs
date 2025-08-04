@@ -301,7 +301,7 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
         dic.Add("Id", entity.Id);
         
         // 替换新的追踪实体
-        _attachDict[key] = entity;
+        _attachDict[key] = entity.Clone().As<TEntity>();
         
         return dic.Count > 1 ? await UpdateColumnsAsync(dic, cancellationToken) : 1;
     }

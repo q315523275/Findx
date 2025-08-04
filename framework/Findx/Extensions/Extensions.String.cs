@@ -146,7 +146,7 @@ public static partial class Extensions
         if (!DateTime.TryParse($"{array[2]}-{array[3]}-{array[4]}", out _)) return false;
         // 校验最后一位
         var chars = value.ToCharArray().Select(m => m.ToString()).ToArray();
-        int[] weights = { 7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2 };
+        int[] weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
         var sum = 0;
         for (var i = 0; i < 17; i++)
         {
@@ -884,7 +884,7 @@ public static partial class Extensions
     /// <returns> 一个集合，包含有关匹配项的字符串值 </returns>
     public static IEnumerable<string> Matches(this string value, string pattern)
     {
-        if (value == null) return new string[] { };
+        if (value == null) return [];
         var matches = Regex.Matches(value, pattern);
         return from Match match in matches select match.Value;
     }

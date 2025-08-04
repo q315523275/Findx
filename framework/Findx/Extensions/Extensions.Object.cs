@@ -78,7 +78,7 @@ public static partial class Extensions
         var valueType = value.GetType();
         
         if (valueType == conversionType) return value;
-        
+ 
         if (conversionType.IsNullableType()) conversionType = conversionType.GetUnNullableType();
         
         if (conversionType.IsEnum) return Enum.Parse(conversionType, value.ToString() ?? string.Empty);

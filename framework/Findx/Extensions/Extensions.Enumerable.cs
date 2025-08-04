@@ -76,6 +76,29 @@ public static partial class Extensions
 
         return sb.ToString();
     }
+    
+    /// <summary>
+    ///     集合是否为空
+    /// </summary>
+    /// <param name="source"> 要处理的集合 </param>
+    /// <typeparam name="T"> 动态类型 </typeparam>
+    /// <returns> 为空返回True，不为空返回False </returns>
+    public static bool IsEmpty<T>(this IEnumerable<T> source)
+    {
+        return !source.Any();
+    }
+    
+    /// <summary>
+    ///     打乱一个集合的项顺序，将一个集合洗牌
+    /// </summary>
+    public static IEnumerable<TSource> Shuffle<TSource>(this IEnumerable<TSource> source)
+    {
+        if (source == null)
+        {
+            throw new ArgumentNullException(nameof(source));
+        }
+        return source.OrderBy(_ => Guid.NewGuid());
+    }
 
     /// <summary>
     ///     过滤集合
@@ -104,17 +127,6 @@ public static partial class Extensions
     }
 
     /// <summary>
-    ///     集合是否为空
-    /// </summary>
-    /// <param name="source"> 要处理的集合 </param>
-    /// <typeparam name="T"> 动态类型 </typeparam>
-    /// <returns> 为空返回True，不为空返回False </returns>
-    public static bool IsEmpty<T>(this IEnumerable<T> source)
-    {
-        return !source.Any();
-    }
-
-    /// <summary>
     ///     将字符串集合按指定前缀排序
     /// </summary>
     /// <param name="source">源数据集</param>
@@ -124,12 +136,12 @@ public static partial class Extensions
     /// <returns></returns>
     public static IEnumerable<T> OrderByPrefixes<T>(this IEnumerable<T> source, Func<T, string> keySelector, params string[] prefixes)
     {
-        var all = source.OrderBy(keySelector).AsEnumerable();
+        var all = source.OrderBy(keySelector).AsEnumerable().ToList();
         var result = new List<T>();
         foreach (var prefix in prefixes)
         {
-            var tmpList = all.Where(m => keySelector(m).StartsWith(prefix)).OrderBy(keySelector);
-            all = all.Except(tmpList);
+            var tmpList = all.Where(m => keySelector(m).StartsWith(prefix)).OrderBy(keySelector).ToList();
+            all = all.Except(tmpList).ToList();
             result.AddRange(tmpList);
         }
 

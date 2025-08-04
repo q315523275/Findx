@@ -33,9 +33,22 @@ public static partial class Extensions
         // 标记字段计算
         foreach (var fieldInfo in queryFields)
         {
-            var value = propertyDynamicGetter.GetPropertyValue(req, fieldInfo.Key.Name).CastTo<string>();
-            if (value.IsNotNullOrWhiteSpace())
-                yield return new FilterCondition { Field = fieldInfo.Value?.Name?? fieldInfo.Key.Name, Operator = fieldInfo.Value?.FilterOperate?? FilterOperate.Equal, Value = value };
+            var objectValue = propertyDynamicGetter.GetPropertyValue(req, fieldInfo.Key.Name);
+            string valueString;
+            
+            if (objectValue is DateTime dateTimeValue)
+            {
+                valueString = dateTimeValue.ToString("yyyy-MM-dd HH:mm:ss");
+            }
+            else
+            {
+                valueString = objectValue?.CastTo<string>();
+            }
+
+            if (valueString.IsNotNullOrWhiteSpace())
+            {
+                yield return new FilterCondition { Field = fieldInfo.Value?.Name?? fieldInfo.Key.Name, Operator = fieldInfo.Value?.FilterOperate?? FilterOperate.Equal, Value = valueString };
+            }
         }
     }
 }

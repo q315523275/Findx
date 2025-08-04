@@ -360,7 +360,7 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
         }
         dic.Add("Id", entity.Id);
         
-        _attachDict[key] = entity;
+        _attachDict[key] = entity.Clone().As<TEntity>();
         
         return dic.Count > 1 ? UpdateColumns(dic) : 1;
     }

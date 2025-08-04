@@ -22,9 +22,7 @@ public abstract class EntityBase<TKey> : ValidatableObject, IEntity<TKey> where 
     /// <returns></returns>
     public override bool Equals(object obj)
     {
-        if (obj == null) return false;
-        if (!(obj is EntityBase<TKey> entity)) return false;
-        return IsKeyEqual(entity.Id, Id);
+        return obj is EntityBase<TKey> entity && IsKeyEqual(entity.Id, Id);
     }
 
     /// <summary>
@@ -32,12 +30,19 @@ public abstract class EntityBase<TKey> : ValidatableObject, IEntity<TKey> where 
     /// </summary>
     public static bool IsKeyEqual(TKey id1, TKey id2)
     {
-        if (id1 == null && id2 == null) return true;
-        if (id1 == null || id2 == null) return false;
+        if (id1 == null && id2 == null)
+        {
+            return true;
+        }
+
+        if (id1 == null || id2 == null)
+        {
+            return false;
+        }
 
         var type = typeof(TKey);
-        if (type.IsDeriveClassFrom(typeof(IEquatable<TKey>))) return id1.Equals(id2);
-        return Equals(id1, id2);
+        
+        return type.IsDeriveClassFrom(typeof(IEquatable<TKey>)) ? id1.Equals(id2) : Equals(id1, id2);
     }
 
     /// <summary>
@@ -50,7 +55,10 @@ public abstract class EntityBase<TKey> : ValidatableObject, IEntity<TKey> where 
     /// </returns>
     public override int GetHashCode()
     {
-        if (Id == null) return 0;
+        if (Id == null)
+        {
+            return 0;
+        }
         return Id.ToString().GetHashCode();
     }
     
