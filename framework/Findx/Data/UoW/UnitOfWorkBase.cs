@@ -188,13 +188,22 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     {
         if (HasCommitted || Transaction?.Connection == null) return;
         
+        string token;
+        if (_transactionStack.Count > 1)
+        {
+            token = _transactionStack.Pop();
+            Logger.LogDebug("跳过事务回滚，标识：{Token}，当前剩余标识数：{TransactionStackCount}", token, _transactionStack.Count);
+            return;
+        }
+        
+        token = _transactionStack.Pop();
         var transactionCode = Transaction?.GetHashCode();
         
         await InternalRollbackAsync(cancellationToken);
         
         await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterRollback, cancellationToken);
         
-        Logger.LogDebug("回滚事务，事务标识：{TransactionCode}", transactionCode);
+        Logger.LogDebug("回滚事务，标识：{Token}，事务标识：{TransactionCode}", token, transactionCode);
         
         HasCommitted = true;
     }
@@ -214,10 +223,9 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     /// <typeparam name="T"></typeparam>
     public void AddEventToBuffer<T>(T eventData, TransactionPhase transactionPhase = TransactionPhase.AfterCommit) where T : IEvent
     {
+        UnitOfWorkEventDispatcher ??= new UnitOfWorkEventDispatcher(ServiceProvider);
         UnitOfWorkEventDispatcher.AddEventToBuffer(eventData, transactionPhase);
     }
-    
-    private readonly AtomicInteger _disposeCounter = new();
 
     /// <summary>
     ///     资源释放
@@ -225,24 +233,30 @@ public abstract class UnitOfWorkBase: IUnitOfWork
     /// <returns></returns>
     public async ValueTask DisposeAsync()
     {
-        if (_disposeCounter.IncrementAndGet() != 1) return;
-        
         try
         {
-            if (IsEnabledTransaction && !HasCommitted) await RollbackAsync();
-            
-            if (IsEnabledTransaction && HasCommitted)
-                await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterCompletion);
+            if (!HasCommitted)
+            {
+                await RollbackAsync();
+            }
 
-            Logger.LogDebug("工作单元生命周期结束，单元标识：{Id}，释放计量：{DisposeCounter}", Id, _disposeCounter.Value);
+            if (HasCommitted && UnitOfWorkEventDispatcher != null)
+            {
+                await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterCompletion);
+            }
+
+            Logger.LogDebug("工作单元生命周期结束，单元标识：{Id}", Id);
         }
         finally
         {
-            _transactionStack.Clear();
-            
-            UnitOfWorkEventDispatcher.ClearAllEvents();
-            UnitOfWorkEventDispatcher = null;
-            
+            if (HasCommitted)
+            {
+                _transactionStack?.Clear();
+
+                UnitOfWorkEventDispatcher?.ClearAllEvents();
+                UnitOfWorkEventDispatcher = null;
+            }
+
             GC.SuppressFinalize(this);
         }
     }

@@ -25,15 +25,12 @@ public static class ExtraObjectExtensions
         if (string.IsNullOrWhiteSpace(extraObject.ExtraProperties))
             return default;
 
-        var jsonObject = JsonNode.Parse(extraObject.ExtraProperties)!.AsObject();
+        // JsonDocument 只读高性能
+        using var jsonDocument = JsonDocument.Parse(extraObject.ExtraProperties?? "{}");
 
-        if (!jsonObject.ContainsKey(name))
-            return default;
-
-        if (typeof(T).IsPrimitiveExtendedIncludingNullable(true))
-            return jsonObject[name]!.GetValue<T>();
-
-        return jsonObject[name].SafeString().ToObject<T>();
+        if (!jsonDocument.RootElement.TryGetProperty(name, out var property)) return default;
+        
+        return typeof(T).IsPrimitiveExtendedIncludingNullable(true) ? property.GetString().CastTo<T>() : property.GetString().ToObject<T>();
     }
 
     /// <summary>
@@ -53,7 +50,7 @@ public static class ExtraObjectExtensions
 
             extraObject.ExtraProperties = "{}";
         }
-
+        
         var jsonObject = JsonNode.Parse(extraObject.ExtraProperties)?.AsObject();
 
         jsonObject.ThrowIfNull(nameof(jsonObject));

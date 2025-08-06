@@ -37,9 +37,9 @@ public static class SystemTextJsonSerializerOptions
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 // 忽略只读属性，因为只读属性只能序列化而不能反序列化，所以在以json为储存数据的介质的时候，序列化只读属性意义不大
                 IgnoreReadOnlyFields = true,
-                // 不允许结尾有逗号的不标准json
+                // 允许结尾有逗号的不标准json
                 AllowTrailingCommas = true,
-                // 不允许有注释的不标准json
+                // 允许有注释的不标准json
                 ReadCommentHandling = JsonCommentHandling.Skip,
                 // 允许在反序列化的时候原本应为数字的字符串（带引号的数字）转为数字
                 NumberHandling = JsonNumberHandling.AllowReadingFromString,
@@ -52,6 +52,7 @@ public static class SystemTextJsonSerializerOptions
                 settings.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
             #endif
             
+            // 指定驼峰命名策略
             if (camelCase)
             {
                 settings.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
