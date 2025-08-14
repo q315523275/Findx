@@ -7,6 +7,7 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Expressions;
+using Findx.NewId;
 using Findx.WebHost.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

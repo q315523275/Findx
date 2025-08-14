@@ -1,5 +1,4 @@
-﻿using Findx.Finders;
-using Findx.Reflection;
+﻿using Findx.Reflection;
 
 namespace Findx.Modularity;
 

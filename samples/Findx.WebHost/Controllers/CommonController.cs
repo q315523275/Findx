@@ -10,6 +10,7 @@ using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Jobs.Storage;
+using Findx.Net.IP;
 using Findx.Pdf;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
@@ -207,5 +208,17 @@ public class CommonController : ApiControllerBase
     public bool Ping([Required] string ip)
     {
         return NetUtility.Ping(ip);
+    }
+
+    /// <summary>
+    ///     Ip地址归属
+    /// </summary>
+    /// <param name="ip"></param>
+    /// <param name="ipGeolocation"></param>
+    /// <returns></returns>
+    [HttpGet("ipGeolocation")]
+    public string IpGeolocation([Required] string ip, [FromServices] IIpGeolocation ipGeolocation)
+    {
+        return ipGeolocation.GetLocationTextByIp(ip);
     }
 }

@@ -41,6 +41,11 @@ public class LoginRecordDto: IResponse
     ///     ip地址
     /// </summary>
     public string Ip { get; set; }
+    
+    /// <summary>
+    ///     ip地址
+    /// </summary>
+    public string IpAddress { get; set; }
 
     /// <summary>
     ///     登录类型

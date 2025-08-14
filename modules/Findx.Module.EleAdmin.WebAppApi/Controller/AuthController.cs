@@ -11,6 +11,7 @@ using Findx.Module.EleAdmin.Dtos.Auth;
 using Findx.Module.EleAdmin.Dtos.User;
 using Findx.Module.EleAdmin.Shared.Enum;
 using Findx.Module.EleAdmin.Shared.Models;
+using Findx.NewId;
 using Findx.Security;
 using Findx.Security.Authentication.Jwt;
 using Findx.Setting;
@@ -104,7 +105,7 @@ public class AuthController : AreaApiControllerBase
             Browser = userAgent.Browser.Name,
             Comments = "账户密码错误",
             CreatedTime = DateTime.Now,
-            Device = userAgent.OS.Name,
+            Device = userAgent.Os.Name,
             Id = _keyGenerator.Create(),
             Ip = HttpContext.GetClientIp(),
             LoginType = 1,

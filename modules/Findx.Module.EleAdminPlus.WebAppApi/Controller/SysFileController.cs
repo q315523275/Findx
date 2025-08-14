@@ -10,6 +10,7 @@ using Findx.Module.EleAdminPlus.Shared.Events;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.File;
 using Findx.Module.EleAdminPlus.WebAppApi.Options;
+using Findx.NewId;
 using Findx.Setting;
 using Findx.Storage;
 using Findx.Utilities;

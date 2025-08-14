@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Linq;
 using Findx.AspNetCore.Mvc.Middlewares;
-using Findx.Builders;
+using Findx.Core.Builders;
 using Findx.Extensions;
 using Findx.Logging;
 using Findx.Utilities;

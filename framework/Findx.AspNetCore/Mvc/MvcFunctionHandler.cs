@@ -4,6 +4,7 @@ using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Logging;
+using Findx.NewId;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Controllers;

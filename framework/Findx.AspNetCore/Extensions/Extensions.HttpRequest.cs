@@ -4,8 +4,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Extensions;
-using Findx.UA;
 using Findx.Utilities;
+using Findx.Utilities.UA;
 using Microsoft.AspNetCore.Http;
 
 namespace Findx.AspNetCore.Extensions;

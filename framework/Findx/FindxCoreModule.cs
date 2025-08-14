@@ -6,11 +6,12 @@ using Findx.Email;
 using Findx.Events;
 using Findx.ExceptionHandling;
 using Findx.Extensions;
-using Findx.Guids;
 using Findx.Locks;
 using Findx.Mapping;
 using Findx.Messaging;
 using Findx.Modularity;
+using Findx.Net.IP;
+using Findx.NewId;
 using Findx.Reflection;
 using Findx.RulesEngine;
 using Findx.Security;
@@ -21,7 +22,7 @@ using Findx.Storage;
 using Findx.Threading;
 using Findx.Tracing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SequentialGuidGenerator = Findx.Guids.SequentialGuidGenerator;
+using SequentialGuidGenerator = Findx.NewId.SequentialGuidGenerator;
 
 namespace Findx;
 
@@ -98,7 +99,7 @@ public class FindxCoreModule : StartupModule
 
         // 进程消息
         services.AddScoped<IMessageBroker, MessageBroker>();
-        services.AddScoped<IMessageDispatcher, MessageDispatcher>();
+        // services.AddScoped<IMessageDispatcher, MessageDispatcher>();
         services.AddSingleton<IApplicationEventPublisher, ApplicationEventPublisher>();
 
         // 序列化
@@ -127,8 +128,8 @@ public class FindxCoreModule : StartupModule
         services.AddSingleton<IGuidGenerator, SequentialGuidGenerator>();
 
         // 主键生成器
-        services.AddSingleton<IKeyGenerator<long>, SnowflakeIdGenerator>();
-        services.AddSingleton<IKeyGenerator<Guid>, Data.SequentialGuidGenerator>();
+        services.AddSingleton<IKeyGenerator<long>, SnowflakeKeyGenerator>();
+        services.AddSingleton<IKeyGenerator<Guid>, GuidKeyGenerator>();
 
         // 功能权限
         services.AddScoped<IFunctionAuthorization, FunctionAuthorization>();
@@ -140,6 +141,9 @@ public class FindxCoreModule : StartupModule
 
         // 规则引擎工厂
         services.AddSingleton<IRulesEngineFactory, RulesEngineFactory>();
+        
+        // IP地理服务
+        services.AddSingleton<IIpGeolocation, NullIpGeolocation>();
             
         return services;
     }

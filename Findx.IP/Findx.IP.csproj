@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>基于IP2Region简单封装</Description>
+        <Authors>Findx</Authors>
+        <Company>Findx</Company>
+        <LangVersion>default</LangVersion>
+        <PackageVersion>11.1.2025.815</PackageVersion>
+        <TargetFrameworks>net9.0;net6.0;net8.0</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <None Update="ip2region.xdb">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="ip2region.xdb">
+            <Pack>true</Pack>
+            <PackageCopyToOutput>true</PackageCopyToOutput>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\framework\Findx\Findx.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="IP2Region.Net" Version="2.0.2" />
+    </ItemGroup>
+
+</Project>

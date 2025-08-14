@@ -10,6 +10,7 @@ using Findx.Mapping;
 using Findx.Module.EleAdmin.Dtos.Org;
 using Findx.Module.EleAdmin.Dtos.Role;
 using Findx.Module.EleAdmin.Shared.Models;
+using Findx.NewId;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

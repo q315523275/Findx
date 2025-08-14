@@ -1,4 +1,5 @@
 using Findx.Data;
+using Findx.NewId;
 
 namespace Findx.Jobs.Common;
 

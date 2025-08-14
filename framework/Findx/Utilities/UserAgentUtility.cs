@@ -1,4 +1,4 @@
-﻿using Findx.UA;
+﻿using Findx.Utilities.UA;
 
 namespace Findx.Utilities;
 

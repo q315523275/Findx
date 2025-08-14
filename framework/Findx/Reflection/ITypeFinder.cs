@@ -1,6 +1,4 @@
-﻿using Findx.Finders;
-
-namespace Findx.Reflection;
+﻿namespace Findx.Reflection;
 
 /// <summary>
 ///     类型查找器

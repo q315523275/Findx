@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Findx.Finders;
 using Findx.Reflection;
 using Findx.WebSocketCore.Abstractions;
 

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
 using Findx.AspNetCore.Mvc;
-using Findx.Builders;
+using Findx.Core.Builders;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Machine;
@@ -9,6 +9,7 @@ using Findx.Machine.Cpu;
 using Findx.Machine.Memory;
 using Findx.Machine.Network;
 using Findx.Machine.System;
+using Findx.NewId;
 using Findx.Security;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Http;

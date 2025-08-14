@@ -1,4 +1,5 @@
 using Findx.Common;
+using Findx.Common.DisposableEx;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Findx.Extensions;

@@ -1,4 +1,6 @@
-﻿namespace Findx.Guids.NewId;
+﻿using Findx.NewId;
+
+namespace Findx.Guids.NewId;
 
 public class MassTransitSequentialGuidGenerator: IGuidGenerator
 {

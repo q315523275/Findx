@@ -2,6 +2,7 @@
 using Findx.Common;
 using Findx.DependencyInjection;
 using Findx.Extensions;
+using Findx.NewId;
 using Findx.Security;
 
 namespace Findx.Data;

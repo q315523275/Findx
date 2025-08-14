@@ -4,14 +4,14 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>NLog日志组件包</Description>
-        <PackageVersion>11.1.2025.612</PackageVersion>
+        <PackageVersion>11.1.2025.815</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NLog" Version="5.5.0" />
+        <PackageReference Include="NLog" Version="6.0.3" />
     </ItemGroup>
 
     <ItemGroup>

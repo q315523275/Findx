@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
+using Findx.Common;
 using Findx.DependencyInjection;
-using Findx.Responses;
 
 namespace Findx.RulesEngine;
 

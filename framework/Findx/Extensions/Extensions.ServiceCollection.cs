@@ -2,8 +2,8 @@
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
-using Findx.Builders;
 using Findx.Common;
+using Findx.Core.Builders;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Logging;

@@ -1,6 +1,4 @@
-﻿using Findx.Finders;
-
-namespace Findx.Reflection;
+﻿namespace Findx.Reflection;
 
 /// <summary>
 ///     标注了指定<see cref="Attribute" />特性的类型查找器基类

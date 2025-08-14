@@ -1,4 +1,5 @@
 using Findx.Common;
+using Findx.Common.DisposableEx;
 
 namespace Findx.Tracing;
 

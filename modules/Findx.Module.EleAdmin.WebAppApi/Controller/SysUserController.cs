@@ -12,6 +12,7 @@ using Findx.Module.EleAdmin.Mvc.Filters;
 using Findx.Module.EleAdmin.Shared.Enum;
 using Findx.Module.EleAdmin.Shared.Models;
 using Findx.Module.EleAdmin.Shared.ServiceDefaults;
+using Findx.NewId;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

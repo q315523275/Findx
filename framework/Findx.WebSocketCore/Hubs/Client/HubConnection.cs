@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
+using Findx.Common.Atomic;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Locks;

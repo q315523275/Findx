@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Common.HashEx;
 using Findx.DependencyInjection;
 using Findx.Discovery.Abstractions;
 using Findx.Threading;

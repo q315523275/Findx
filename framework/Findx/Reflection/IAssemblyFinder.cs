@@ -1,5 +1,4 @@
 ﻿using Findx.DependencyInjection;
-using Findx.Finders;
 
 namespace Findx.Reflection;
 

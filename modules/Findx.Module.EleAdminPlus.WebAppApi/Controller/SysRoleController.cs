@@ -6,6 +6,7 @@ using Findx.Extensions;
 using Findx.Mapping;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
+using Findx.NewId;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

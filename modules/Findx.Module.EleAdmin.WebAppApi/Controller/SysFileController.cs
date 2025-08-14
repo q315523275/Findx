@@ -5,6 +5,7 @@ using Findx.Data;
 using Findx.Extensions;
 using Findx.Module.EleAdmin.Dtos;
 using Findx.Module.EleAdmin.Dtos.File;
+using Findx.NewId;
 using Findx.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

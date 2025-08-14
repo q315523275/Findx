@@ -1,6 +1,4 @@
-﻿using Findx.Finders;
-
-namespace Findx.Reflection;
+﻿namespace Findx.Reflection;
 
 /// <summary>
 ///     指定基类的实现类型查找器基类

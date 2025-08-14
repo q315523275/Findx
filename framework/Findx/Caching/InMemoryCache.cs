@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Findx.Common;
+using Findx.Common.Atomic;
 using Findx.Threading;
 
 namespace Findx.Caching;

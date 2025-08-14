@@ -12,6 +12,7 @@ using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
+using Findx.NewId;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;

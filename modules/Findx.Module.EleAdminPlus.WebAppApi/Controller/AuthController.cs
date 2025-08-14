@@ -12,6 +12,7 @@ using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
+using Findx.NewId;
 using Findx.Security;
 using Findx.Security.Authentication.Jwt;
 using Findx.Setting;
@@ -43,7 +44,6 @@ public class AuthController : AreaApiControllerBase
     private readonly IRepository<SysLoginRecordInfo, long> _loginRecordRepo;
     private readonly IRepository<SysUserInfo, long> _userRepo;
     private readonly IJwtTokenBuilder _tokenBuilder;
-    private readonly IOptions<JsonOptions> _jsonOptions;
 
     /// <summary>
     ///     Ctor
@@ -57,7 +57,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="settingProvider"></param>
     /// <param name="keyGenerator"></param>
     /// <param name="jsonOptions"></param>
-    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo, long> userRepo, IRepository<SysLoginRecordInfo, long> loginRecordRepo, ISettingProvider settingProvider, IKeyGenerator<long> keyGenerator, IOptions<JsonOptions> jsonOptions)
+    public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo, long> userRepo, IRepository<SysLoginRecordInfo, long> loginRecordRepo, ISettingProvider settingProvider, IKeyGenerator<long> keyGenerator)
     {
         _tokenBuilder = tokenBuilder;
         _options = options;
@@ -66,7 +66,6 @@ public class AuthController : AreaApiControllerBase
         _userRepo = userRepo;
         _loginRecordRepo = loginRecordRepo;
         _keyGenerator = keyGenerator;
-        _jsonOptions = jsonOptions;
         
         _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdminPlus:EnabledCaptcha");
         _useAbpJwt = settingProvider.GetValue<bool>("Modules:EleAdminPlus:UseAbpJwt");
@@ -107,7 +106,7 @@ public class AuthController : AreaApiControllerBase
             Browser = userAgent.Browser.Name,
             Comments = "账户密码错误",
             CreatedTime = DateTime.Now,
-            Device = userAgent.OS.Name,
+            Device = userAgent.Os.Name,
             Id = _keyGenerator.Create(),
             Ip = HttpContext.GetClientIp(),
             LoginType = 1,

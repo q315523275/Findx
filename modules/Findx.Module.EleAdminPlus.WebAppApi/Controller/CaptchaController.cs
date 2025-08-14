@@ -4,6 +4,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Imaging;
+using Findx.NewId;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;

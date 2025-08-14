@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Findx.Modularity;
+using Findx.NewId;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
