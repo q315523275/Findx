@@ -3,7 +3,7 @@
 /// <summary>
 ///     对象映射器
 /// </summary>
-public interface IMapper
+public interface IObjectMapper
 {
     /// <summary>
     ///     将对象映射为指定类型

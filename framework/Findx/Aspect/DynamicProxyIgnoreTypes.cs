@@ -7,7 +7,7 @@ namespace Findx.Aspect;
 /// </summary>
 public class DynamicProxyIgnoreTypes
 {
-    private static HashSet<Type> IgnoredTypes { get; } = new();
+    private static HashSet<Type> IgnoredTypes { get; } = [];
 
     /// <summary>
     ///     添加忽略类型

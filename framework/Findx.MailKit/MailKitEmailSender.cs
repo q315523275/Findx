@@ -47,8 +47,7 @@ public class MailKitEmailSender : EmailSenderBase
     /// <param name="token"></param>
     protected override async Task SendEmailAsync(MailMessage mail, CancellationToken token = default)
     {
-        // var message = mail.ToMimeMessage();
-        var message = MimeMessage.CreateFromMailMessage(mail);
+        using var message = mail.ToMimeMessage(); // 中文支持 MimeMessage.CreateFromMailMessage(mail);
         message.MessageId = MimeUtils.GenerateMessageId();
 
         using var client = new SmtpClient();
@@ -58,9 +57,7 @@ public class MailKitEmailSender : EmailSenderBase
 
         await client.ConnectAsync(EmailSenderOptions.Host, EmailSenderOptions.Port, EmailSenderOptions.EnableSsl, token);
         await client.AuthenticateAsync(EmailSenderOptions.UserName, EmailSenderOptions.Password, token);
-
         await client.SendAsync(message, token);
-        
         await client.DisconnectAsync(true, token);
     }
 
@@ -81,9 +78,8 @@ public class MailKitEmailSender : EmailSenderBase
 
         foreach (var message in messages)
         {
-            var mailMessage = MimeMessage.CreateFromMailMessage(message);
+            using var mailMessage = message.ToMimeMessage(); // 中文支持 MimeMessage.CreateFromMailMessage(message);
             mailMessage.MessageId = MimeUtils.GenerateMessageId();
-            
             await client.SendAsync(mailMessage, cancellationToken);
         }
         

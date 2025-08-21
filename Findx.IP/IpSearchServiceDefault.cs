@@ -56,7 +56,7 @@ public class IpSearchServiceDefault: IIpGeolocation
         {
             return new IpGeolocationVo { IsInternalIp = false, IpAddress = ipAddress };
         }
-        
+
         var parts = geolocationStr.Split("|");
         var vo = new IpGeolocationVo
         {

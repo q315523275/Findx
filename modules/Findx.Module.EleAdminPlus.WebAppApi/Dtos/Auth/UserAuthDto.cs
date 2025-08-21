@@ -8,6 +8,11 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Auth;
 public class UserAuthDto : IResponse
 {
     /// <summary>
+    ///     编号
+    /// </summary>
+    public long Id { get; set; }
+    
+    /// <summary>
     ///     账号
     /// </summary>
     public string UserName { get; set; }

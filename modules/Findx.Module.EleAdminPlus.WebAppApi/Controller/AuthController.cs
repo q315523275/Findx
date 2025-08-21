@@ -1,16 +1,15 @@
 ﻿using System.ComponentModel;
 using System.Security.Principal;
-using System.Text.Json;
 using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
 using Findx.Caching;
 using Findx.Data;
 using Findx.Extensions;
 using Findx.Mapping;
+using Findx.Module.EleAdminPlus.Mvc.Filters;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Auth;
 using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
-using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
 using Findx.NewId;
 using Findx.Security;
@@ -56,7 +55,6 @@ public class AuthController : AreaApiControllerBase
     /// <param name="loginRecordRepo"></param>
     /// <param name="settingProvider"></param>
     /// <param name="keyGenerator"></param>
-    /// <param name="jsonOptions"></param>
     public AuthController(IJwtTokenBuilder tokenBuilder, IOptions<JwtOptions> options, ICurrentUser currentUser, ICacheFactory cacheFactory, IRepository<SysUserInfo, long> userRepo, IRepository<SysLoginRecordInfo, long> loginRecordRepo, ISettingProvider settingProvider, IKeyGenerator<long> keyGenerator)
     {
         _tokenBuilder = tokenBuilder;
@@ -189,7 +187,7 @@ public class AuthController : AreaApiControllerBase
     ///     查看账户信息
     /// </summary>
     /// <returns></returns>
-    [HttpGet("/api/auth/user"), Authorize, Description("查看账户信息")]
+    [HttpGet("/api/auth/user"), Authorize, IpAddressLimiter, Description("查看账户信息")]
     public virtual async Task<CommonResult> UserAsync(CancellationToken cancellationToken)
     {
         var userId = _currentUser.UserId.To<long>();
@@ -219,7 +217,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="req"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpPut("/api/auth/password"), Authorize, Description("修改账户密码")]
+    [HttpPut("/api/auth/password"), Authorize, IpAddressLimiter, Description("修改账户密码")]
     public virtual async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req, CancellationToken cancellationToken)
     {
         var userId = _currentUser.UserId.To<long>();
@@ -242,7 +240,7 @@ public class AuthController : AreaApiControllerBase
     ///     修改账户信息
     /// </summary>
     /// <returns></returns>
-    [HttpPut("/api/auth/user"), Authorize, Description("修改账户信息")]
+    [HttpPut("/api/auth/user"), Authorize, IpAddressLimiter, Description("修改账户信息")]
     public virtual async Task<CommonResult> SaveUserAsync([FromBody] SaveUserDto req, CancellationToken cancellationToken)
     {
         var principal = GetRequiredService<IPrincipal>();
@@ -263,7 +261,7 @@ public class AuthController : AreaApiControllerBase
     ///     修改账户头像
     /// </summary>
     /// <returns></returns>
-    [HttpPut("/api/auth/user/avatar"), Authorize, DisableAuditing, Description("修改账户头像")]
+    [HttpPut("/api/auth/user/avatar"), Authorize, IpAddressLimiter, DisableAuditing, Description("修改账户头像")]
     public virtual async Task<CommonResult> SaveUserAvatarAsync([FromBody] SaveUserAvatarDto req, CancellationToken cancellationToken)
     {
         var principal = GetRequiredService<IPrincipal>();

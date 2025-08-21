@@ -10,13 +10,13 @@ public static class MapperExtensions
     /// <summary>
     ///     对象映射执行者
     /// </summary>
-    private static IMapper _mapper;
+    private static IObjectMapper _mapper;
 
     /// <summary>
     ///     设置对象映射执行者
     /// </summary>
     /// <param name="mapper">对象映射执行者</param>
-    public static void SetMapper(IMapper mapper)
+    public static void SetMapper(IObjectMapper mapper)
     {
         Check.NotNull(mapper, nameof(mapper));
         _mapper = mapper;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
+using Findx.Extensions;
 using MimeKit;
 using MimeKit.IO;
 using ContentDisposition = MimeKit.ContentDisposition;
@@ -16,22 +17,24 @@ namespace Findx.MailKit;
 public static class EmailExtensions
 {
     /// <summary>
-    ///     转换成MimeMessage
+    ///     转换成MimeMessage(特殊处理编码问题)
     /// </summary>
     /// <param name="mail"></param>
     /// <returns></returns>
     public static MimeMessage ToMimeMessage(this MailMessage mail)
     {
-        if (mail == null)
-            throw new ArgumentNullException(nameof(mail));
+        if (mail == null) throw new ArgumentNullException(nameof(mail));
+        
         var headers = new List<Header>();
         foreach (var key in mail.Headers.AllKeys)
         {
             var values = mail.Headers.GetValues(key);
-            if (values == null)
-                continue;
+            if (values == null) continue;
+
             foreach (var value in values)
+            {
                 headers.Add(new Header(key, value));
+            }
         }
 
         // ReSharper disable once CoVariantArrayConversion
@@ -103,6 +106,7 @@ public static class EmailExtensions
             body = text;
         }
 
+        //  嵌入文件
         if (mail.AlternateViews.Count > 0)
         {
             var alternative = new MultipartAlternative();
@@ -148,13 +152,18 @@ public static class EmailExtensions
         }
 
         body ??= new TextPart(mail.IsBodyHtml ? "html" : "plain");
+        
+        //  附件
         if (mail.Attachments.Count > 0)
         {
             var mixed = new Multipart("mixed");
 
-            if (body != null) mixed.Add(body);
+            mixed.Add(body);
 
-            foreach (var attachment in mail.Attachments) mixed.Add(GetMimePart(attachment));
+            foreach (var attachment in mail.Attachments)
+            {
+                mixed.Add(GetMimePart(attachment));
+            }
 
             body = mixed;
         }
@@ -174,14 +183,12 @@ public static class EmailExtensions
         var contentType = ContentType.Parse(mimeType);
         var attachment = item as Attachment;
 
-        var part = contentType.MediaType.Equals("text", StringComparison.OrdinalIgnoreCase)
-            ? new TextPart()
-            : new MimePart(contentType);
+        var part = contentType.MediaType.Equals("text", StringComparison.OrdinalIgnoreCase) ? new TextPart() : new MimePart(contentType);
 
         if (attachment != null)
-            //var disposition = attachment.ContentDisposition.ToString();
-            //part.ContentDisposition = ContentDisposition.Parse(disposition);
+        {
             part.ContentDisposition = new ContentDisposition(ContentDisposition.Attachment);
+        }
 
         switch (item.TransferEncoding)
         {
@@ -202,28 +209,47 @@ public static class EmailExtensions
                 break;
         }
 
-        if (item.ContentId != null) part.ContentId = item.ContentId;
-
+        if (item.ContentId.IsNotNullOrWhiteSpace())
+        {
+            part.ContentId = item.ContentId;
+        }
+        
         var stream = new MemoryBlockStream();
-        item.ContentStream.CopyTo(stream);
-        stream.Position = 0;
+        try
+        {
+            item.ContentStream.CopyTo(stream);
+            stream.Position = 0;
+        }
+        catch (Exception e)
+        {
+            stream.Dispose();
+            e.ReThrow();
+        }
 
         part.Content = new MimeContent(stream);
+        
         if (attachment != null)
         {
-            // 解决中文文件名乱码
+            //  解决文件名不能使用中文
             var charset = "GB18030";
+            
             part.ContentType.Parameters.Clear();
             part.ContentDisposition.Parameters.Clear();
+            
             var fileName = attachment.Name;
             part.ContentType.Parameters.Add(charset, "name", fileName);
             part.ContentDisposition.Parameters.Add(charset, "filename", fileName);
-            // 解决文件名不能超过41字符
+            
+            //  解决文件名不能超过41字符
             foreach (var parameter in part.ContentDisposition.Parameters)
+            {
                 parameter.EncodingMethod = ParameterEncodingMethod.Rfc2047;
+            }
 
             foreach (var parameter in part.ContentType.Parameters)
+            {
                 parameter.EncodingMethod = ParameterEncodingMethod.Rfc2047;
+            }
         }
 
         return part;
@@ -244,11 +270,12 @@ public static class EmailExtensions
     /// <param name="addresses">邮箱地址集合</param>
     private static InternetAddressList ToInternetAddressList(this MailAddressCollection addresses)
     {
-        if (addresses == null)
-            return null;
+        if (addresses == null) return null;
         var list = new InternetAddressList();
         foreach (var address in addresses)
+        {
             list.Add(address.ToMailboxAddress());
+        }
         return list;
     }
 }

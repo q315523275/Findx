@@ -3,6 +3,7 @@ using Findx.Events;
 using Findx.Extensions.AuditLogs.Events;
 using Findx.Extensions.AuditLogs.Models;
 using Findx.Mapping;
+using Findx.NewId;
 using Findx.Tracing;
 using Microsoft.Extensions.Logging;
 

@@ -32,7 +32,7 @@ public class MapsterMapperModule : StartupModule
     /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
-        services.AddSingleton<IMapper, MapsterMapper>();
+        services.AddSingleton<IObjectMapper, MapsterMapper>();
         return services;
     }
 
@@ -56,7 +56,7 @@ public class MapsterMapperModule : StartupModule
         TypeAdapterConfig.GlobalSettings.Default.IgnoreAttribute(typeof(IgnoreMappingAttribute));
         TypeAdapterConfig<string, DateTime?>.NewConfig().MapWith(src => src.IsNotNullOrWhiteSpace() ? null : DateTime.Parse(src));
             
-        MapperExtensions.SetMapper(provider.GetRequiredService<IMapper>());
+        MapperExtensions.SetMapper(provider.GetRequiredService<IObjectMapper>());
 
         base.UseModule(provider);
     }

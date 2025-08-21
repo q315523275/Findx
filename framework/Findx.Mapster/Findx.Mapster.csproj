@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Version>11.1.2025.612</Version>
+        <Version>11.1.2025.820</Version>
         <Description>Mapster高性能实体映射器</Description>
         <Authors>Findx</Authors>
         <Company>Findx</Company>

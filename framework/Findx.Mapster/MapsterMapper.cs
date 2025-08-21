@@ -3,7 +3,7 @@ using Mapster;
 
 namespace Findx.Mapster;
 
-public class MapsterMapper : IMapper
+public class MapsterMapper : IObjectMapper
 {
     public TTarget MapTo<TTarget>(object source)
     {
