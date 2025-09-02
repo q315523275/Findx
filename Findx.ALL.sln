@@ -87,7 +87,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.WebHost", "samples\Fi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "samples\WebApplication1\WebApplication1.csproj", "{CF8EB6A2-9F5F-459F-A41A-58E7E69F4CDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.IP", "Findx.IP\Findx.IP.csproj", "{DAE01A0F-F29C-4DAE-905A-9F27B906C334}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.IP", "framework\Findx.IP\Findx.IP.csproj", "{DAE01A0F-F29C-4DAE-905A-9F27B906C334}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

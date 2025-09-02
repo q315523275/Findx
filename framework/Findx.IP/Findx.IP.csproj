@@ -24,7 +24,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\framework\Findx\Findx.csproj" />
+      <ProjectReference Include="..\Findx\Findx.csproj" />
     </ItemGroup>
 
     <ItemGroup>
