@@ -12,7 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.815" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.820" />
     </ItemGroup>
 
 </Project>

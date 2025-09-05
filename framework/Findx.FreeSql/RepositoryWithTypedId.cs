@@ -9,6 +9,7 @@ using Findx.Data;
 using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Security;
+using FreeSql.Extensions.EntityUtil;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -317,52 +318,35 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
     /// <exception cref="NotSupportedException"></exception>
     public int Save(TEntity entity)
     {
-        var table = _fsql.CodeFirst.GetTableByEntity(_entityType);
-        if (!table.Primarys.Any()) 
-            throw new Exception($"实体{table.CsName}必须存在主键配置");
-        
         var key = entity.Id.SafeString();
-        if (key.IsNullOrWhiteSpace())
-            throw new Exception($"实体{table.CsName}的主键值不可为空");
-        
-        if (!_attachDict.TryGetValue(key, out var oldValue)) oldValue = Get(entity.Id);
+        if (key.IsNullOrWhiteSpace() || key == "0")
+        {
+            throw new Exception("主键值不可为空");
+        }
+
+        if (!_attachDict.TryGetValue(key, out var oldValue))
+        {
+            oldValue = Get(entity.Id);
+        }
 
         if (oldValue == null)
         {
             entity.SetEmptyKey();
             return Insert(entity);
         }
-        
-        var dic = _fsql.CompareChangeValues(entity, oldValue);
-        var columns = _fsql.CodeFirst.GetTableByEntity(_entityType).Columns;
-        foreach (var keyValue in dic)
+
+        //  变更字段集合
+        var updateFields = _fsql.CompareEntityValueReturnColumns(_entityType, oldValue, entity, false);
+
+        if (updateFields.Length > 0)
         {
-            if (columns.TryGetValue(keyValue.Key, out var columnInfo) && columnInfo.Attribute != null)
-            {
-                if (columnInfo.Attribute.MapType == columnInfo.CsType) continue;
-                var csTypeIsPrimitive = columnInfo.CsType.IsPrimitiveExtendedIncludingNullable(true);
-                var mapType = columnInfo.Attribute.MapType;
-                var mapTypeIsPrimitive = mapType?.IsPrimitiveExtendedIncludingNullable()?? false;
-                if (mapType != null && csTypeIsPrimitive && mapTypeIsPrimitive)
-                {
-                    dic[keyValue.Key] = keyValue.Value.CastTo(mapType);
-                }
-                else if (mapType != null && !csTypeIsPrimitive && mapTypeIsPrimitive)
-                {
-                    var value = keyValue.Value?.ToJson();
-                    dic[keyValue.Key] = value.CastTo(mapType);
-                }
-                else
-                {
-                    throw new NotSupportedException($"变更保存暂不支持“{mapType?.Name}”转换");
-                }
-            }
+            return _fsql.Update<TEntity>().AsTable(AsTableValueInternal)
+                        .SetSource(entity).UpdateColumns(x => updateFields)
+                        .WithTransaction(UnitOfWork?.Transaction)
+                        .ExecuteAffrows();
         }
-        dic.Add("Id", entity.Id);
-        
-        _attachDict[key] = entity.Clone().As<TEntity>();
-        
-        return dic.Count > 1 ? UpdateColumns(dic) : 1;
+
+        return 1;
     }
 
     #endregion
