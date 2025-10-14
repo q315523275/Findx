@@ -164,14 +164,6 @@ public class AuthController : AreaApiControllerBase
             { ClaimTypes.OrgName, accountInfo.OrgName.SafeString() }
         };
         
-        // 兼容AbpJwt
-        if (_useAbpJwt)
-        {
-            payload[System.Security.Claims.ClaimTypes.NameIdentifier] = accountInfo.Id.SafeString();
-            payload[System.Security.Claims.ClaimTypes.Name] = accountInfo.UserName.SafeString();
-            payload[System.Security.Claims.ClaimTypes.GivenName] = accountInfo.Nickname.SafeString();
-        }
-        
         // 角色id及编号
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
         var roles = await roleRepo.SelectAsync(x => x.UserId == accountInfo.Id && x.RoleId == x.RoleInfo.Id, x => new UserRoleSimplifyDto { Id = x.RoleId, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name }, cancellationToken: cancellationToken);
@@ -180,9 +172,19 @@ public class AuthController : AreaApiControllerBase
         
         var token = await _tokenBuilder.CreateAsync(payload, _options.Value);
         
-        return CommonResult.Success(new { access_token = "Bearer " + token.AccessToken });
+        return CommonResult.Success(new { AccessToken = "Bearer " + token.AccessToken, token.AccessTokenUtcExpires });
     }
 
+    /// <summary>
+    ///     退出登录
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("/api/auth/logout"), Authorize, Description("退出登录")]
+    public virtual Task<CommonResult> LogoutAsync(CancellationToken cancellationToken)
+    {
+        return Task.FromResult(CommonResult.Success());
+    }
+    
     /// <summary>
     ///     查看账户信息
     /// </summary>
@@ -192,23 +194,40 @@ public class AuthController : AreaApiControllerBase
     {
         var userId = _currentUser.UserId.To<long>();
         var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);
-        if (userInfo == null)
-            return CommonResult.Fail("D1000", "账户不存在");
+        if (userInfo == null) return CommonResult.Fail("D1000", "账户不存在");
+
+        var roleRepo = GetRepository<SysUserRoleInfo, long>();
+        var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
+        var result = userInfo.MapTo<UserAuthDto>();
+        result.Roles = roles.DistinctBy(x => x.Id);
+
+        return CommonResult.Success(result);
+    }
+    
+    /// <summary>
+    ///     查看账户菜单
+    /// </summary>
+    /// <returns></returns>
+    [HttpGet("/api/auth/menus"), Authorize, IpAddressLimiter, Description("查看账户菜单")]
+    public virtual async Task<CommonResult> MenusAsync(string code, CancellationToken cancellationToken)
+    {
+        var userId = _currentUser.UserId.To<long>();
+        var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);
+        if (userInfo == null) return CommonResult.Fail("D1000", "账户不存在");
 
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
         var menuRepo = GetRepository<SysRoleMenuInfo, long>();
 
-        var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
-        var roleIds = roles.DistinctBy(x => x.Id).Select(x => x.Id);
-        var menus = roleIds.Any() ? 
-            await menuRepo.SelectAsync(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new UserAuthMenuDto { MenuId = x.MenuId }, cancellationToken: cancellationToken) 
-            : [];
-        
-        var result = userInfo.MapTo<UserAuthDto>();
-        result.Roles = roles.DistinctBy(x => x.Id);
-        result.Authorities = menus.DistinctBy(x => x.MenuId).OrderBy(x => x.Sort);
+        var roleIds = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => x.RoleId, cancellationToken: cancellationToken);
+        var menus = new List<UserAuthMenuDto>();
+        if (roleIds.Any())
+        {
+            menus = await menuRepo.SelectAsync(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id,
+                            x => new UserAuthMenuDto { MenuId = x.MenuId }, cancellationToken: cancellationToken);
+        }
+        var res = menus.DistinctBy(x => x.MenuId).OrderBy(x => x.Sort);
 
-        return CommonResult.Success(result);
+        return CommonResult.Success(res);
     }
 
     /// <summary>

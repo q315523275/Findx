@@ -16,14 +16,12 @@ namespace Findx.WebSocketCore.Implementation;
 public class WebSocketSessionManager : IWebSocketSessionManager
 {
     private readonly ConcurrentDictionary<string, List<IWebSocketSession>> _sessionDic = new();
-
     private readonly ConcurrentDictionary<string, List<string>> _groups = new();
     
     /// <summary>
     ///     释放资源
     /// </summary>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public async ValueTask DisposeAsync()
     {
         foreach (var item in _sessionDic)
@@ -120,12 +118,7 @@ public class WebSocketSessionManager : IWebSocketSessionManager
         {
             foreach (var session in sessions)
             {
-                if (session.State is WebSocketState.Open or WebSocketState.CloseSent or WebSocketState.CloseReceived)
-                {
-                    await session.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务端主动关闭连接", cancellationToken).ConfigureAwait(false);
-                }
-                
-                session.Dispose();
+                await session.DisposeAsync();
             }
         }
     }
@@ -138,24 +131,22 @@ public class WebSocketSessionManager : IWebSocketSessionManager
     public async Task RemoveSessionAsync(IWebSocketSession session, CancellationToken cancellationToken = default)
     {
         if (session.UserName.IsNullOrWhiteSpace()) return;
-        
-        if (_sessionDic.TryGetValue(session.UserName, out var sessions) && sessions != null && sessions.Any())
+    
+        if (_sessionDic.TryGetValue(session.UserName, out var sessions) && sessions != null)
         {
-            if (sessions.Any(x => x.Id == session.Id))
+            //  移除目标session
+            var client = sessions.FirstOrDefault(x => x.Id == session.Id);
+            if (client != null)
             {
-                var client = sessions.First(x => x.Id == session.Id);
-
-                if (client.State is WebSocketState.Open or WebSocketState.CloseSent or WebSocketState.CloseReceived)
-                {
-                    await client.CloseAsync(WebSocketCloseStatus.NormalClosure, "服务端主动关闭连接", cancellationToken).ConfigureAwait(false);
-                }
-
-                client.Dispose();
-                
+                await client.DisposeAsync();
                 sessions.Remove(client);
             }
             
-            if (!sessions.Any()) _sessionDic.TryRemove(session.UserName, out _);
+            //  判断是否清楚客户连接
+            if (sessions.Count == 0) 
+            {
+                _sessionDic.TryRemove(session.UserName, out _);
+            }
         }
     }
 }

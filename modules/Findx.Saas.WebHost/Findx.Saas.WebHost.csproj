@@ -4,7 +4,7 @@
         <Nullable>disable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>default</LangVersion>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
 
     <ItemGroup>
@@ -25,7 +25,7 @@
       <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj" />
       <ProjectReference Include="..\..\framework\Findx.Swagger\Findx.Swagger.csproj" />
       <ProjectReference Include="..\..\framework\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
-      <ProjectReference Include="..\Findx.Module.EleAdmin.WebAppApi\Findx.Module.EleAdmin.WebAppApi.csproj" />
+      <ProjectReference Include="..\Findx.Module.EleAdminPlus.WebAppApi\Findx.Module.EleAdminPlus.WebAppApi.csproj" />
     </ItemGroup>
     
 </Project>

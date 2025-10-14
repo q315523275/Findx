@@ -17,6 +17,7 @@ using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FileSystemInfo = Findx.Common.FileSystemInfo;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
@@ -95,7 +96,7 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
         var id = _keyGenerator.Create();
         var saveName = $"{id.ToString().Replace("-", "")}{Path.GetExtension(name)}"; // 文件名
         var path = Path.Combine(pathDir, saveName);
-        var fileInfo = new FileSpec(path, size, name, id.ToString()) { SaveName = saveName };
+        var fileInfo = new FileSystemInfo(path, size, name, id.ToString()) { SaveName = saveName };
         
         // 文件全路径
         // var fullPath = Path.Combine(_applicationContext.RootPath, fileInfo.Path.SafeString());
@@ -111,7 +112,7 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
                 // 尺寸缩放
                 if (_imageOptions.ScaleSize)
                 {
-                    await using var res = await _imageProcessor.ResizeAsync(fileStream, new ImageResizeDto(_imageOptions.ScaleMaxWidth, 0), cancellationToken);
+                    await using var res = await _imageProcessor.ResizeAsync(fileStream, new ImageResizeDto(_imageOptions.ScaleMaxWidth, 0, _imageOptions.ResizeMode), cancellationToken);
                     await res.CopyToAsync(ms, cancellationToken);
                     ms.Position = 0;
                 }

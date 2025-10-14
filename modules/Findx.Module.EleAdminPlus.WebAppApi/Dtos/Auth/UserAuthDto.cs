@@ -81,11 +81,6 @@ public class UserAuthDto : IResponse
     ///     角色集合
     /// </summary>
     public IEnumerable<UserAuthRoleDto> Roles { get; set; }
-
-    /// <summary>
-    ///     权限集合
-    /// </summary>
-    public IEnumerable<UserAuthMenuDto> Authorities { get; set; }
 }
 
 /// <summary>

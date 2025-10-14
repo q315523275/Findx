@@ -110,7 +110,7 @@ public class FindxCoreModule : StartupModule
         services.AddSingleton<ISmsSender, NullSmsSender>();
 
         // 存储
-        services.AddSingleton<IFileStorage, FolderFileStorage>();
+        services.AddSingleton<IFileStorage, FileSystemStorage>();
         services.AddSingleton<IStorageFactory, StorageFactory>();
 
         // 线程取消通知

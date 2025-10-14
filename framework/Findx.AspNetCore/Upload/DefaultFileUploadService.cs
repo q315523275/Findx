@@ -10,6 +10,7 @@ using Findx.Common;
 using Findx.Exceptions;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Http;
+using FileSystemInfo = Findx.Common.FileSystemInfo;
 
 namespace Findx.AspNetCore.Upload;
 
@@ -23,7 +24,7 @@ internal class DefaultFileUploadService : IFileUploadService
     /// </summary>
     /// <param name="param">参数</param>
     /// <param name="cancellationToken">取消令牌</param>
-    public async Task<FileSpec> UploadAsync(SingleFileUploadParam param, CancellationToken cancellationToken = default)
+    public async Task<FileSystemInfo> UploadAsync(SingleFileUploadParam param, CancellationToken cancellationToken = default)
     {
         if (param.FormFile == null || param.FormFile.Length < 1)
             if (param.Request.Form.Files.Any())
@@ -39,7 +40,7 @@ internal class DefaultFileUploadService : IFileUploadService
     /// </summary>
     /// <param name="param">参数</param>
     /// <param name="cancellationToken">取消令牌</param>
-    public async Task<IEnumerable<FileSpec>> UploadAsync(MultipleFileUploadParam param, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<FileSystemInfo>> UploadAsync(MultipleFileUploadParam param, CancellationToken cancellationToken = default)
     {
         if (param.FormFiles == null || !param.FormFiles.Any())
             if (param.Request.Form.Files.Any())
@@ -86,7 +87,7 @@ internal class DefaultFileUploadService : IFileUploadService
     /// <param name="relativePath">相对路径</param>
     /// <param name="rootPath">根路径</param>
     /// <param name="cancellationToken">取消令牌</param>
-    private async Task<FileSpec> SaveAsync(IFormFile formFile, string relativePath, string rootPath, CancellationToken cancellationToken = default)
+    private async Task<FileSystemInfo> SaveAsync(IFormFile formFile, string relativePath, string rootPath, CancellationToken cancellationToken = default)
     {
         var date = DateTime.Now;
 
@@ -99,7 +100,7 @@ internal class DefaultFileUploadService : IFileUploadService
         var path = Path.Combine(pathDir, saveName); // 文件相对存储全路径
 
         // 文件信息
-        var fileInfo = new FileSpec(path, size, name, id.ToString()) { SaveName = saveName };
+        var fileInfo = new FileSystemInfo(path, size, name, id.ToString()) { SaveName = saveName };
         
         // 全目录
         var fullDir = Path.Combine(rootPath, pathDir);

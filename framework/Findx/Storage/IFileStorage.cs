@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Serialization;
+using FileSystemInfo = Findx.Common.FileSystemInfo;
 
 namespace Findx.Storage;
 
@@ -28,7 +29,7 @@ public interface IFileStorage
     /// <param name="path"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<FileSpec> GetFileInfoAsync(string path, CancellationToken cancellationToken = default);
+    Task<FileSystemInfo> GetFileInfoAsync(string path, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     判断文件是否存在

@@ -8,7 +8,7 @@ namespace Findx.WebSocketCore.Abstractions;
 /// <summary>
 ///     会话
 /// </summary>
-public interface IWebSocketSession: IDisposable
+public interface IWebSocketSession: IAsyncDisposable
 {
     /// <summary>
     ///     会话编号

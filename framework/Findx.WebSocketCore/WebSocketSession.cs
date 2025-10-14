@@ -86,15 +86,40 @@ public class WebSocketSession: IWebSocketSession
     }
 
     /// <summary>
-    ///     资源释放
+    ///     
     /// </summary>
-    public void Dispose()
+    /// <returns></returns>
+    public async ValueTask DisposeAsync()
     {
-        if (_webSocket != null && _webSocket.State != WebSocketState.Closed)
+        if (_webSocket != null)
         {
-            _webSocket.Abort();
+            //  主动断开关闭，CloseSent再次通知
+            if (_webSocket.State is WebSocketState.Open or WebSocketState.CloseSent)
+            {
+                try
+                {
+                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Connection closed by server", CancellationToken.None);
+                }
+                catch
+                {
+                    _webSocket.Abort();
+                }
+            }
+            //  被动关闭ack
+            else if (_webSocket.State is WebSocketState.CloseReceived)
+            {
+                try
+                {
+                    await _webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Acknowledged by server", CancellationToken.None);
+                }
+                catch
+                {
+                    _webSocket.Abort();
+                }
+            }
+            
             _webSocket.Dispose();
+            _webSocket = null;
         }
-        _webSocket = null;
     }
 }

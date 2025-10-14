@@ -59,6 +59,8 @@ public abstract class WebSocketHandlerBase
     /// <exception cref="ArgumentException"></exception>
     public async Task SendMessageAsync(IWebSocketSession session, RequestMessage message, CancellationToken cancellationToken = default)
     {
+        if (session is not { State: WebSocketState.Open }) return;
+        
         ReadOnlyMemory<byte> payload;
 
         switch (message)
@@ -107,15 +109,7 @@ public abstract class WebSocketHandlerBase
         {
             foreach (var session in allSessions)
             {
-                try
-                {
-                    if (session?.State == WebSocketState.Open)
-                        await SendMessageAsync(session, message, cancellationToken).ConfigureAwait(false);
-                }
-                catch (WebSocketException e)
-                {
-                    if (e.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely) await OnDisconnected(session, cancellationToken);
-                }
+                await SendMessageAsync(session, message, cancellationToken).ConfigureAwait(false);
             }
         }
     }

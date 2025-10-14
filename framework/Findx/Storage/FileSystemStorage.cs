@@ -4,17 +4,18 @@ using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Serialization;
 using Findx.Utilities;
+using FileSystemInfo = Findx.Common.FileSystemInfo;
 
 namespace Findx.Storage;
 
 /// <summary>
-///     本地文件存储器
+///     文件系统存储器
 /// </summary>
-public class FolderFileStorage : IFileStorage, IServiceNameAware
+public class FileSystemStorage : IFileStorage, IServiceNameAware
 {
     private readonly object _lockObject = new();
 
-    private readonly ILogger<FolderFileStorage> _logger;
+    private readonly ILogger<FileSystemStorage> _logger;
 
     private readonly string _mediaRootFolder;
 
@@ -25,7 +26,7 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
     /// <param name="app"></param>
     /// <param name="logger"></param>
     /// <param name="settingProvider"></param>
-    public FolderFileStorage(IObjectSerializer serializer, IApplicationContext app, ILogger<FolderFileStorage> logger, IConfiguration settingProvider)
+    public FileSystemStorage(IObjectSerializer serializer, IApplicationContext app, ILogger<FileSystemStorage> logger, IConfiguration settingProvider)
     {
         Serializer = serializer;
         _logger = logger;
@@ -41,7 +42,7 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
     /// <summary>
     ///     文件存储类型名称
     /// </summary>
-    public string Name => FileStorageType.Folder.ToString();
+    public string Name => nameof(FileStorageType.Folder);
 
     /// <summary>
     ///     文件拷贝
@@ -180,7 +181,7 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
     /// <param name="path"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<FileSpec> GetFileInfoAsync(string path, CancellationToken cancellationToken = default)
+    public Task<FileSystemInfo> GetFileInfoAsync(string path, CancellationToken cancellationToken = default)
     {
         Check.NotNull(path, nameof(path));
 
@@ -188,12 +189,9 @@ public class FolderFileStorage : IFileStorage, IServiceNameAware
 
         var fileInfo = new FileInfo(Path.Combine(_mediaRootFolder, path));
         if (!fileInfo.Exists)
-            return Task.FromResult<FileSpec>(null);
+            return Task.FromResult<FileSystemInfo>(null);
 
-        var fileSpec = new FileSpec(path, fileInfo.Length, fileInfo.Name, Guid.NewGuid().ToString())
-        {
-            SaveName = fileInfo.Name
-        };
+        var fileSpec = new FileSystemInfo(path, fileInfo.Length, fileInfo.Name, Guid.NewGuid().ToString()) { SaveName = fileInfo.Name };
 
         return Task.FromResult(fileSpec);
     }

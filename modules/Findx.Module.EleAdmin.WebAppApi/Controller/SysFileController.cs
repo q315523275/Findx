@@ -10,6 +10,7 @@ using Findx.Storage;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using FileSystemInfo = Findx.Common.FileSystemInfo;
 
 namespace Findx.Module.EleAdmin.Controller;
 
@@ -67,7 +68,7 @@ public class SysFileController : AreaApiControllerBase
         var id = _keyGenerator.Create();
         var saveName = $"{id.ToString().Replace("-", "")}{Path.GetExtension(name)}"; // 文件名
         var path = Path.Combine(pathDir, saveName);
-        var fileInfo = new FileSpec(path, size, name, id.ToString()) { SaveName = saveName };
+        var fileInfo = new FileSystemInfo(path, size, name, id.ToString()) { SaveName = saveName };
         // 文件全路径
         var fullPath = Path.Combine(_applicationContext.RootPath, fileInfo.Path.SafeString());
         // 压缩保存

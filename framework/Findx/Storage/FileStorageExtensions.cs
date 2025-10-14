@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Findx.Common;
+using FileSystemInfo = Findx.Common.FileSystemInfo;
 
 namespace Findx.Storage;
 
@@ -57,7 +58,7 @@ public static class FileStorageExtensions
     /// <param name="storage"></param>
     /// <param name="files"></param>
     /// <returns></returns>
-    public static async Task DeleteFilesAsync(this IFileStorage storage, IEnumerable<FileSpec> files)
+    public static async Task DeleteFilesAsync(this IFileStorage storage, IEnumerable<FileSystemInfo> files)
     {
         Check.NotNull(files, nameof(files));
 

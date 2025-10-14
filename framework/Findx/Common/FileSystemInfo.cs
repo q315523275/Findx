@@ -6,23 +6,21 @@ namespace Findx.Common;
 /// <summary>
 ///     文件信息
 /// </summary>
-public class FileSpec
+public class FileSystemInfo
 {
     /// <summary>
     ///     初始化空构造函数
     /// </summary>
-    public FileSpec()
-    {
-    }
+    public FileSystemInfo() {}
 
     /// <summary>
-    ///     初始化一个<see cref="FileSpec" />类型的实例
+    ///     初始化一个<see cref="FileSystemInfo" />类型的实例
     /// </summary>
     /// <param name="path">文件路径</param>
     /// <param name="size">文件大小</param>
     /// <param name="fileName">文件名</param>
     /// <param name="id">文件标识</param>
-    public FileSpec(string path, long? size, string fileName = null, string id = null)
+    public FileSystemInfo(string path, long? size, string fileName = null, string id = null)
     {
         Path = path;
         Size = SizeInfo.Get(size.SafeValue());
