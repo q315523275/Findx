@@ -5,9 +5,10 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>自定义认证授权、Token自动续期、自定义权限控制、可配置到接口级别权限等</Description>
-        <PackageVersion>11.1.2025.612</PackageVersion>
-        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
+        <PackageVersion>11.1.2025.1111</PackageVersion>
+        <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
         <LangVersion>default</LangVersion>
+        <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
     
     <ItemGroup>
@@ -23,8 +24,8 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.0" />
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
     </ItemGroup>
 
 </Project>

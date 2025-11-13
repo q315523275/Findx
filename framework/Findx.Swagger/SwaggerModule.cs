@@ -1,27 +1,26 @@
-﻿using System;
+﻿
 using System.ComponentModel;
 using System.Linq;
 using Findx.AspNetCore;
 using Findx.Extensions;
 using Findx.Modularity;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-#if NET9_0_OR_GREATER
-using Findx.Swagger.Transformers;
-using System.Threading.Tasks;
-#else
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Findx.Swagger.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Findx.Swagger.Filters;
+
+#if NET8_0_OR_GREATER
+using Microsoft.OpenApi;
+#else
+using Microsoft.OpenApi.Models;
 #endif
+
 
 namespace Findx.Swagger;
 
@@ -56,63 +55,30 @@ public class SwaggerModule : WebApplicationModuleBase
         // 配置服务
         var configuration = services.GetConfiguration();
         configuration.GetSection("Findx:Swagger").Bind(_swaggerOptions);
-        
+
         if (!_swaggerOptions.Enabled) return services;
 
-        #if NET9_0_OR_GREATER
-            if (_swaggerOptions?.Endpoints?.Count > 0)
-            {
-                foreach (var endpoint in _swaggerOptions.Endpoints)
-                {
-                    services.AddOpenApi(endpoint.Version, options => {
-                        options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-                        options.AddDocumentTransformer((document, _, _) =>
-                        {
-                            document.Info.Title = endpoint.Title ?? document.Info.Title;
-                            document.Servers = endpoint.Servers?.Select(x => new OpenApiServer { Url = x.Url, Description = x.Description }).ToArray();
-                            return Task.CompletedTask;
-                        });
-                        // options.AddSchemaTransformer((schema, context, _) =>
-                        // {
-                        //     if (context.JsonTypeInfo.Type.IsEnum)
-                        //     {
-                        //         schema.Enum.Clear();
-                        //         foreach (var name in Enum.GetNames(context.JsonTypeInfo.Type))
-                        //         {
-                        //             var enumValue = Enum.Parse(context.JsonTypeInfo.Type, name);
-                        //             // Todo 如果经常使用,可以进行一些性能优化
-                        //             schema.Enum.Add(new OpenApiString($"{name}({enumValue.GetType().GetField(name).GetDescription()})={enumValue.CastTo<int>()}"));
-                        //         }
-                        //     }
-                        //     return Task.CompletedTask;
-                        // });
-                    });
-                }
-            }
-        #else
-            services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(options =>
-            {
-                // 添加文档
-                AddDocs(_swaggerOptions, options);
+        services.AddEndpointsApiExplorer();
+        services.AddSwaggerGen(options =>
+        {
+            // 添加文档
+            AddDocs(_swaggerOptions, options);
 
-                // 添加自定义配置
-                AddCustomOptions(_swaggerOptions, options);
+            // 添加自定义配置
+            AddCustomOptions(_swaggerOptions, options);
 
-                // 添加注释
-                AddXmlComments(options);
+            // 添加注释
+            AddXmlComments(options);
 
-                // 添加过滤器
-                AddDocumentFilter(options);
+            // 添加过滤器
+            AddDocumentFilter(options);
 
-                // 添加权限
-                AddSecurity(options);
+            // 添加权限
+            AddSecurity(options);
 
-                // 标签分组
-                // AddActionTag(options);
-            });
-        #endif
-
+            // 标签分组,暂不需要 除非增加自动生成Controller然后构建swagger文档
+            // AddActionTag(options);
+        });
         return services;
     }
 
@@ -120,14 +86,8 @@ public class SwaggerModule : WebApplicationModuleBase
     {
         if (!_swaggerOptions.Enabled)
             return;
-
-        #if NET9_0_OR_GREATER
-            app.MapOpenApi();
-            app.MapOpenApi("/swagger/{documentName}/swagger.json");
-        #else
-            app.UseSwagger();
-        #endif
         
+        app.UseSwagger();
         app.UseSwaggerUI(options =>
         {
             if (_swaggerOptions.Endpoints?.Count > 0)
@@ -162,8 +122,7 @@ public class SwaggerModule : WebApplicationModuleBase
         
         base.UseModule(app);
     }
-
-    #if !NET9_0_OR_GREATER
+    
     /// <summary>
     ///     添加文档
     /// </summary>
@@ -172,9 +131,12 @@ public class SwaggerModule : WebApplicationModuleBase
     private static void AddDocs(SwaggerOptions customOptions, SwaggerGenOptions options)
     {
         if (customOptions?.Endpoints?.Count > 0)
+        {
             foreach (var endpoint in customOptions.Endpoints)
-                options.SwaggerDoc($"{endpoint.Version}",
-                    new OpenApiInfo { Title = endpoint.Title, Version = endpoint.Version });
+            {
+                options.SwaggerDoc($"{endpoint.Version}", new OpenApiInfo { Title = endpoint.Title, Version = endpoint.Version });
+            }
+        }
     }
 
     /// <summary>
@@ -193,6 +155,12 @@ public class SwaggerModule : WebApplicationModuleBase
             Scheme = "Bearer"
         });
 
+        #if NET8_0_OR_GREATER
+        options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        });
+        #else
         options.AddSecurityRequirement(new OpenApiSecurityRequirement
         {
             {
@@ -207,6 +175,7 @@ public class SwaggerModule : WebApplicationModuleBase
                 Array.Empty<string>()
             }
         });
+        #endif 
     }
 
     /// <summary>
@@ -219,7 +188,7 @@ public class SwaggerModule : WebApplicationModuleBase
         // 枚举注释
         options.SchemaFilter<EnumSchemaFilter>();
         // 标签重排
-        options.DocumentFilter<TagReorderDocumentFilter>();
+        // options.DocumentFilter<TagOrderDocumentFilter>();
     }
 
     /// <summary>
@@ -246,7 +215,9 @@ public class SwaggerModule : WebApplicationModuleBase
     private static void AddXmlComments(SwaggerGenOptions options)
     {
         foreach (var file in Directory.GetFiles(AppContext.BaseDirectory, "*.xml"))
+        {
             options.IncludeXmlComments(file);
+        }
     }
 
     /// <summary>
@@ -263,5 +234,4 @@ public class SwaggerModule : WebApplicationModuleBase
         // 自定义架构编号
         options.CustomSchemaIds(x => x.ToString());
     }
-    #endif
 }

@@ -18,8 +18,7 @@ public sealed class FunctionRequirementHandler : AuthorizationHandler<FunctionRe
     /// </summary>
     /// <param name="httpContextAccessor"></param>
     /// <param name="functionAuthorization"></param>
-    public FunctionRequirementHandler(IHttpContextAccessor httpContextAccessor,
-        IFunctionAuthorization functionAuthorization)
+    public FunctionRequirementHandler(IHttpContextAccessor httpContextAccessor, IFunctionAuthorization functionAuthorization)
     {
         _httpContextAccessor = httpContextAccessor;
         _functionAuthorization = functionAuthorization;

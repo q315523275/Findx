@@ -21,7 +21,7 @@ public static partial class Extensions
     ///     将时间转换为时间戳
     /// </summary>
     /// <param name="dateTime"></param>
-    /// <param name="milliseconds">是否分钟级别</param>
+    /// <param name="milliseconds">是否毫秒级别</param>
     /// <returns></returns>
     public static string ToJsGetTime(this DateTime dateTime, bool milliseconds = true)
     {

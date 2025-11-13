@@ -18,15 +18,15 @@ public class JwtToken
     /// </summary>
     public long AccessTokenUtcExpires { get; set; }
 
-    // /// <summary>
-    // /// 刷新令牌
-    // /// </summary>
-    // public string RefreshToken { get; set; }
-    //
-    // /// <summary>
-    // /// 刷新令牌有效期
-    // /// </summary>
-    // public long RefreshUtcExpires { get; set; }
+    /// <summary>
+    ///     刷新令牌
+    /// </summary>
+    public string RefreshToken { get; set; }
+    
+    /// <summary>
+    ///     刷新令牌有效期
+    /// </summary>
+    public long RefreshUtcExpires { get; set; }
 
     /// <summary>
     ///     是否已过期

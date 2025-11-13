@@ -8,6 +8,7 @@
         <Version>11.1.2025.612</Version>
         <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>

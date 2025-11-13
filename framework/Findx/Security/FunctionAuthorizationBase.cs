@@ -42,7 +42,7 @@ public abstract class FunctionAuthorizationBase : IFunctionAuthorization
     /// <returns>通过的角色</returns>
     public virtual IEnumerable<string> GetOkRoles(IFunction function, IPrincipal principal)
     {
-        if (principal.Identity is { IsAuthenticated: false }) return Array.Empty<string>();
+        if (principal.Identity is { IsAuthenticated: false }) return [];
 
         var userRoles = principal.Identity.GetRoles();
         if (function.AccessType != FunctionAccessType.RoleLimit)

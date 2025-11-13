@@ -4,9 +4,10 @@
         <Authors>Findx</Authors>
         <Company>Findx</Company>
         <Description>WebApiClient Http请求接口组件,服务发现、负载均衡、熔断、降级、重试等</Description>
-        <PackageVersion>11.1.2025.815</PackageVersion>
+        <PackageVersion>11.1.2025.1111</PackageVersion>
         <LangVersion>default</LangVersion>
-        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+        <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
@@ -27,8 +28,8 @@
         <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="8.0.0" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net9.0' ">
-        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="9.0.0" />
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+        <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="10.0.0" />
     </ItemGroup>
 
 </Project>

@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <PackageVersion>11.1.2025.612</PackageVersion>
+        <PackageVersion>11.1.2025.1111</PackageVersion>
         <Description>Caslte DynamicProxy</Description>
         <LangVersion>default</LangVersion>
         <Authors>Findx</Authors>
-        <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 

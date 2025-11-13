@@ -1,10 +1,12 @@
-#if !NET9_0_OR_GREATER
 using System;
 using Findx.Extensions;
+using Swashbuckle.AspNetCore.SwaggerGen;
+#if NET8_0_OR_GREATER
+using Microsoft.OpenApi;
+#else
 using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.SwaggerGen;
-
+#endif
 namespace Findx.Swagger.Filters;
 
 /// <summary>
@@ -12,11 +14,22 @@ namespace Findx.Swagger.Filters;
 /// </summary>
 public class EnumSchemaFilter: ISchemaFilter
 {
-    /// <summary>
-    ///     
-    /// </summary>
-    /// <param name="schema"></param>
-    /// <param name="context"></param>
+    #if NET8_0_OR_GREATER
+    public void Apply(IOpenApiSchema schema, SchemaFilterContext context)
+    {
+        if (context.Type.IsEnum && schema.Enum != null)
+        {
+            schema.Enum.Clear();
+            foreach (var name in Enum.GetNames(context.Type))
+            {
+                var enumValue = Enum.Parse(context.Type, name);
+                var field = context.Type.GetField(name);
+                var description = field.GetDescription();
+                schema.Enum.Add($"{name}({description})={enumValue.CastTo<int>()}");
+            }
+        }
+    }
+    #else
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {
         if (context.Type.IsEnum)
@@ -25,10 +38,11 @@ public class EnumSchemaFilter: ISchemaFilter
             foreach (var name in Enum.GetNames(context.Type))
             {
                 var enumValue = Enum.Parse(context.Type, name);
-                // Todo 如果经常使用,可以进行一些性能优化
-                schema.Enum.Add(new OpenApiString($"{name}({enumValue.GetType().GetField(name).GetDescription()})={enumValue.CastTo<int>()}"));
+                var field = context.Type.GetField(name);
+                var description = field.GetDescription();
+                schema.Enum.Add(new OpenApiString($"{name}({description})={enumValue.CastTo<int>()}"));
             }
         }
     }
+    #endif
 }
-#endif

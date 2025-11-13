@@ -98,9 +98,6 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
         var path = Path.Combine(pathDir, saveName);
         var fileInfo = new FileSystemInfo(path, size, name, id.ToString()) { SaveName = saveName };
         
-        // 文件全路径
-        // var fullPath = Path.Combine(_applicationContext.RootPath, fileInfo.Path.SafeString());
-        
         // 压缩保存
         await using (var fileStream = uploadFileDto.File.OpenReadStream())
         {

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace Findx.Security.Authentication.Jwt;
 
 /// <summary>
-///     Jwt Token构建器
+///     JwtToken构建器
 /// </summary>
 public interface IJwtTokenBuilder
 {

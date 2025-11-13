@@ -1,8 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Text;
+using System.Threading.Tasks;
 using Findx.AspNetCore;
 using Findx.Common;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Modularity;
 using Findx.Security.Authentication.Cookie;
@@ -52,6 +54,7 @@ public sealed class AuthenticationModule : WebApplicationModuleBase
         services.AddScoped<FindxCookieAuthenticationEvents>();
         services.AddScoped<FindxJwtBearerEvents>();
         services.AddScoped<IJwtTokenBuilder, DefaultJwtTokenBuilder>();
+        services.AddSingleton<IAdvancedTokenValidator, DefaultAdvancedTokenValidator>();
 
         var defaultScheme = configuration.GetValue<string>("Findx:Authentication:DefaultScheme");
 
@@ -98,10 +101,41 @@ public sealed class AuthenticationModule : WebApplicationModuleBase
         {
             opts.TokenValidationParameters = new TokenValidationParameters
             {
+                ValidateIssuer = true,
                 ValidIssuer = jwt.Issuer ?? "findx",
+                ValidateAudience = true,
                 ValidAudience = jwt.Audience ?? "findx",
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
-                LifetimeValidator = (nbf, exp, token, param) => exp > DateTimeOffset.UtcNow
+                ValidateLifetime = true,
+                LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
+                {
+                    var now = DateTime.UtcNow;
+                    var clockSkew = validationParameters.ClockSkew;  // 时钟偏移
+    
+                    // 检查令牌是否已过期
+                    if (expires.HasValue)
+                    {
+                        var effectiveExpires = expires.Value.Add(clockSkew);
+                        if (effectiveExpires < now) return false;
+                    }
+                    
+                    // 检查令牌是否已生效（如果有 notBefore 时间）
+                    if (notBefore.HasValue)
+                    {
+                        var effectiveNotBefore = notBefore.Value.Add(-clockSkew);
+                        if (effectiveNotBefore > now) return false;
+                    }
+                    
+                    // 三方令牌检查,如服务端强行管理:下线、锁定、单点等
+                    var validator = ServiceLocator.GetService<IAdvancedTokenValidator>();
+                    if (validator != null)
+                    {
+                        return validator.ValidateLifetime(notBefore, expires, securityToken, validationParameters);
+                    }
+                    
+                    return true;
+                },
+                ClockSkew = TimeSpan.FromMinutes(1), // 1分钟时钟偏移
             };
             
             opts.Events = new FindxJwtBearerEvents();

@@ -44,14 +44,14 @@ public class DefaultJwtTokenBuilder : IJwtTokenBuilder
         if (!payload.ContainsKey(ClaimTypes.UserId))
             throw new ArgumentException("不存在用户标识");
 
-        var claims = Helper.ToClaims(payload);
+        var claims = JwtTokenHelper.ToClaims(payload);
 
         // 不支持刷新
         // 生成刷新令牌
         // var (refreshToken, refreshExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.RefreshToken);
 
         // 生成访问令牌
-        var (token, accessExpires) = Helper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.AccessToken);
+        var (token, accessExpires) = JwtTokenHelper.CreateToken(_tokenHandler, claims, jwtOption, JsonWebTokenType.AccessToken);
 
         var accessToken = new JwtToken
         {

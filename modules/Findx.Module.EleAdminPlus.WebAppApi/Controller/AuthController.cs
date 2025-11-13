@@ -37,7 +37,6 @@ public class AuthController : AreaApiControllerBase
     private readonly IKeyGenerator<long> _keyGenerator;
 
     private readonly bool _enabledCaptcha;
-    private readonly bool _useAbpJwt;
     
     private readonly IOptions<JwtOptions> _options;
     private readonly IRepository<SysLoginRecordInfo, long> _loginRecordRepo;
@@ -66,7 +65,6 @@ public class AuthController : AreaApiControllerBase
         _keyGenerator = keyGenerator;
         
         _enabledCaptcha = settingProvider.GetValue<bool>("Modules:EleAdminPlus:EnabledCaptcha");
-        _useAbpJwt = settingProvider.GetValue<bool>("Modules:EleAdminPlus:UseAbpJwt");
     }
 
     /// <summary>
@@ -305,14 +303,19 @@ public class AuthController : AreaApiControllerBase
             fileExt = req.Avatar.Replace("data:image/", string.Empty).Split(";")[0];
             imageBase64 = req.Avatar.Replace($"data:image/{fileExt};base64,", string.Empty);
         }
-        var saveName = $"{userId}.{fileExt}"; // 文件名
+        var saveName = $"{_keyGenerator.Create()}.{fileExt}"; // 文件名
         var path = Path.Combine(pathDir, saveName);
         var fullPath = Path.Combine(applicationContext.RootPath, path);
         // 图片压缩
         var imageByte = Convert.FromBase64String(imageBase64);
         // 物理存储
         await fileStorage.SaveFileAsync(fullPath, imageByte, cancellationToken);
-        
+        // 删除原始头像
+        if (!string.IsNullOrWhiteSpace(userInfo.Avatar))
+        {
+            var oldPath = Path.Combine(applicationContext.RootPath, userInfo.Avatar.RemovePreFix(folderHost).NormalizePath());
+            await fileStorage.DeleteFileAsync(oldPath, cancellationToken);
+        }
         // 落库
         userInfo.Avatar = Path.Combine(folderHost, path).NormalizePath();
         userInfo.CheckUpdateAudited<SysUserInfo, long>(principal);

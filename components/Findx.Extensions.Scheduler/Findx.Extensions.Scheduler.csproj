@@ -7,10 +7,11 @@
         <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <RootNamespace>Findx.Component.DistributedScheduler</RootNamespace>
+        <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.820" />
+      <PackageReference Include="Findx.AspNetCore" Version="11.1.2025.1111" />
     </ItemGroup>
 
     <ItemGroup>

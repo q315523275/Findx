@@ -12,7 +12,7 @@ namespace Findx.Security.Authentication.Jwt;
 /// <summary>
 ///     JwtBearer帮助类
 /// </summary>
-internal static class Helper
+internal static class JwtTokenHelper
 {
     /// <summary>
     ///     转换为声明列表
@@ -30,8 +30,7 @@ internal static class Helper
     /// <param name="claims">声明列表</param>
     /// <param name="options">Jwt选项配置</param>
     /// <param name="tokenType">Jwt令牌类型</param>
-    public static (string token, DateTime expires) CreateToken(JwtSecurityTokenHandler tokenHandler,
-        IEnumerable<Claim> claims, JwtOptions options, JsonWebTokenType tokenType)
+    public static (string token, DateTime expires) CreateToken(JwtSecurityTokenHandler tokenHandler, IEnumerable<Claim> claims, JwtOptions options, JsonWebTokenType tokenType)
     {
         var secret = options.Secret;
         Check.NotNull(secret, nameof(secret));
@@ -45,8 +44,7 @@ internal static class Helper
                 ? options.RefreshExpireMinutes
                 : 10080; // 默认7天
         var expires = now.AddMinutes(minutes);
-        var jwt = new JwtSecurityToken(options.Issuer, options.Audience, claims, now.AddMinutes(-1), expires,
-            credentials);
+        var jwt = new JwtSecurityToken(options.Issuer, options.Audience, claims, now.AddMinutes(-1), expires, credentials);
         var accessToken = tokenHandler.WriteToken(jwt);
         return (accessToken, expires);
     }
