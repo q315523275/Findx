@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_tenant")]
 [EntityExtension(DataSource = "system")]
-public class SysTenantInfo : FullAuditedBase<Guid, long>, ISoftDeletable
+public partial class SysTenantInfo : FullAuditedBase<Guid, long>, ISoftDeletable
 {
     /// <summary>
     ///     租户id

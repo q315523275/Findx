@@ -12,6 +12,7 @@ using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
+using Findx.Module.EleAdminPlus.WebAppApi.Vos.User;
 using Findx.NewId;
 using Findx.Utilities;
 using Microsoft.AspNetCore.Authorization;
@@ -28,7 +29,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [Route("api/[area]/user")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-用户"), Description("系统-用户")]
-public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto, UserCreateDto, UserEditDto, UserPageQueryDto, long, long>
+public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyVo, UserAddDto, UserEditDto, UserPageQueryDto, long, long>
 {
     private readonly IKeyGenerator<long> _keyGenerator;
     private readonly IWorkContext _workContext;
@@ -70,7 +71,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [DataScopeLimiter, IpAddressLimiter]
-    public override async Task<CommonResult<PageResult<List<UserSimplifyDto>>>> PageAsync(UserPageQueryDto request, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult<PageResult<List<UserSimplifyVo>>>> PageAsync(UserPageQueryDto request, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysUserInfo, long>();
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
@@ -78,11 +79,11 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
-        var res = await repo.PagedAsync<UserSimplifyDto>(request.PageNo, request.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
+        var res = await repo.PagedAsync<UserSimplifyVo>(request.PageNo, request.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
         var ids = res.Rows.Select(x => x.Id).Distinct();
         var roles = await roleRepo.SelectAsync(x => x.RoleInfo.Id == x.RoleId && ids.Contains(x.UserId), cancellationToken: cancellationToken);
         foreach (var item in res.Rows)
-            item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => new UserRoleSimplifyDto { Id = x.RoleInfo.Id, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name });
+            item.Roles = roles.Where(x => x.UserId == item.Id && x.RoleInfo != null).Select(x => new UserRoleSimplifyVo { Id = x.RoleInfo.Id, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name });
         
         return CommonResult.Success(res);
     }
@@ -94,14 +95,14 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [DataScopeLimiter, IpAddressLimiter]
-    public override async Task<CommonResult<List<UserSimplifyDto>>> ListAsync(UserPageQueryDto request, CancellationToken cancellationToken = new())
+    public override async Task<CommonResult<List<UserSimplifyVo>>> ListAsync(UserPageQueryDto request, CancellationToken cancellationToken = new())
     {
         var repo = GetRepository<SysUserInfo, long>();
 
         var whereExpression = BuildDataScopeWhereExpression(CreateWhereExpression(request));
         var orderByExpression = CreateOrderExpression(request);
 
-        var res = await repo.TopAsync<UserSimplifyDto>(request.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
+        var res = await repo.TopAsync<UserSimplifyVo>(request.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
         
         return CommonResult.Success(res);
     }
@@ -112,10 +113,10 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpPut("status"), Description("修改状态")]
-    public CommonResult Status([FromBody] UserPropertySaveDto req)
+    public async Task<CommonResult> StatusAsync([FromBody] UpdateStatusDto req)
     {
         var repo = GetRepository<SysUserInfo, long>();
-        repo.UpdateColumns(x => new SysUserInfo { Status = req.Status }, x => x.Id == req.Id);
+        await repo.UpdateColumnsAsync(x => new SysUserInfo { Status = req.Status }, x => x.Id == req.Id);
         return CommonResult.Success();
     }
 
@@ -125,11 +126,11 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="req"></param>
     /// <returns></returns>
     [HttpPut("password"), Description("修改密码")]
-    public CommonResult Password([FromBody] UserPropertySaveDto req)
+    public async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req)
     {
         var repo = GetRepository<SysUserInfo, long>();
         var pwd = EncryptUtility.Md5By32(req.Password);
-        repo.UpdateColumns(x => new SysUserInfo { Password = pwd }, x => x.Id == req.Id);
+        await repo.UpdateColumnsAsync(x => new SysUserInfo { Password = pwd }, x => x.Id == req.Id);
         return CommonResult.Success();
     }
 
@@ -141,7 +142,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="id"></param>
     /// <returns></returns>
     [HttpGet("existence"), Description("检查是否存在")]
-    public CommonResult Existence([Required] string field, [Required] string value, long id)
+    public async Task<CommonResult> ExistenceAsync([Required] string field, [Required] string value, long id)
     {
         var filterGroup = new FilterGroup
         {
@@ -153,21 +154,20 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
         };
         var whereExp = LambdaExpressionParser.ParseConditions<SysUserInfo>(filterGroup);
         var repo = GetRepository<SysUserInfo, long>();
-        return repo.Exist(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
+        return await repo.ExistAsync(whereExp) ? CommonResult.Success() : CommonResult.Fail("404", "账号不存在");
     }
 
     /// <summary>
     ///     详情查询后
     /// </summary>
     /// <param name="model"></param>
-    /// <param name="simplifyDto"></param>
+    /// <param name="simplifyVo"></param>
     /// <returns></returns>
-    protected override Task DetailAfterAsync(SysUserInfo model, UserSimplifyDto simplifyDto)
+    protected override Task DetailAfterAsync(SysUserInfo model, UserSimplifyVo simplifyVo)
     {
         var roleRepo = GetRepository<SysUserRoleInfo, long>();
         var roles = roleRepo.Select(x => x.RoleInfo.Id == x.RoleId && x.UserId == model.Id);
-        simplifyDto.Roles = roles.Where(x => x.RoleInfo != null).Select(x => new UserRoleSimplifyDto { Id = x.RoleInfo.Id, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name });
-        
+        simplifyVo.Roles = roles.Where(x => x.RoleInfo != null).Select(x => new UserRoleSimplifyVo { Id = x.RoleInfo.Id, Code = x.RoleInfo.Code, Name = x.RoleInfo.Name });
         return Task.CompletedTask;
     }
     
@@ -177,11 +177,11 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="model"></param>
     /// <param name="req"></param>
     /// <param name="cancellationToken"></param>
-    protected override async Task AddBeforeAsync(SysUserInfo model, UserCreateDto req, CancellationToken cancellationToken = default)
+    protected override async Task AddBeforeAsync(SysUserInfo model, UserAddDto req, CancellationToken cancellationToken = default)
     {
         if (!req.Password.IsNullOrWhiteSpace())
             model.Password = EncryptUtility.Md5By32(req.Password);
-        model.RoleJson = JsonSerializer.Serialize(req.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
+        model.RoleJson = JsonSerializer.Serialize(req.Roles, options: _jsonOptions.Value.JsonSerializerOptions);
         await base.AddBeforeAsync(model, req, cancellationToken);
     }
 
@@ -192,7 +192,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [Transactional(EntityType = typeof(SysUserInfo))]
-    public override Task<CommonResult> AddAsync(UserCreateDto request, CancellationToken cancellationToken = default)
+    public override Task<CommonResult> AddAsync(UserAddDto request, CancellationToken cancellationToken = default)
     {
         return base.AddAsync(request, cancellationToken);
     }
@@ -204,7 +204,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <param name="req"></param>
     /// <param name="result"></param>
     /// <param name="cancellationToken"></param>
-    protected override async Task AddAfterAsync(SysUserInfo model, UserCreateDto req, int result, CancellationToken cancellationToken = default)
+    protected override async Task AddAfterAsync(SysUserInfo model, UserAddDto req, int result, CancellationToken cancellationToken = default)
     {
         if (result > 0)
         {
@@ -225,7 +225,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyDto
     /// <returns></returns>
     protected override Task EditBeforeAsync(SysUserInfo model, UserEditDto request, CancellationToken cancellationToken = default)
     {
-        model.RoleJson = JsonSerializer.Serialize(request.Roles.Select(x => new { x.Id, x.Name, x.Code }), options: _jsonOptions.Value.JsonSerializerOptions);
+        model.RoleJson = JsonSerializer.Serialize(request.Roles, options: _jsonOptions.Value.JsonSerializerOptions);
         return base.EditBeforeAsync(model, request, cancellationToken);
     }
 

@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
 /// <summary>
 ///     分页查询用户入参
 /// </summary>
-public class UserPageQueryDto: UserQueryDto, IPager
+public partial class UserPageQueryDto: UserQueryDto, IPager
 {
     /// <summary>
     ///     页码

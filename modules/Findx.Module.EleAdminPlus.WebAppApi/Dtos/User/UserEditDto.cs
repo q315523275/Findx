@@ -1,12 +1,13 @@
 ﻿using Findx.Data;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
+using Findx.Module.EleAdminPlus.WebAppApi.Vos.User;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
 
 /// <summary>
-///     设置用户信息Dto模型
+///     编辑用户参数Dto
 /// </summary>
-public class UserEditDto : IRequest<long>
+public partial class UserEditDto : IRequest<long>
 {
     /// <summary>
     ///     编号
@@ -76,5 +77,5 @@ public class UserEditDto : IRequest<long>
     /// <summary>
     ///     角色列表
     /// </summary>
-    public List<RoleDto> Roles { get; set; } = [];
+    public List<UserRoleSimplifyVo> Roles { get; set; } = [];
 }

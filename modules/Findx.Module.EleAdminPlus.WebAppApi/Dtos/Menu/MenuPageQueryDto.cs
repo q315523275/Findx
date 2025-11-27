@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Menu;
 /// <summary>
 ///     分页查询菜单入参
 /// </summary>
-public class MenuPageQueryDto: MenuQueryDto, IPager
+public partial class MenuPageQueryDto: MenuQueryDto, IPager
 {
     /// <summary>
     ///     页码

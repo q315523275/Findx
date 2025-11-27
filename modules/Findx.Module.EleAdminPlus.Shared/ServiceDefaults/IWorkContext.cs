@@ -1,5 +1,6 @@
-using Findx.Module.EleAdminPlus.Shared.Dtos;
 using Findx.Module.EleAdminPlus.Shared.Enums;
+using Findx.Module.EleAdminPlus.Shared.Vos;
+using Findx.Module.EleAdminPlus.Shared.Vos.Context;
 
 namespace Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 
@@ -9,9 +10,9 @@ namespace Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 public interface IWorkContext
 {
     /// <summary>
-    ///     获取当前用户
+    ///     获取当前用户上下文信息
     /// </summary>
-    UserSimplifyDto GetCurrentUser();
+    UserContextSimplifyVo GetCurrentUser();
 
     /// <summary>
     ///     数据范围

@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_login_record")]
 [EntityExtension(DataSource = "system")]
-public class SysLoginRecordInfo : EntityBase<long>, ITenant, ICreatedTime
+public partial class SysLoginRecordInfo : EntityBase<long>, ITenant, ICreatedTime
 {
     /// <summary>
     ///     编号

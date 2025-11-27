@@ -1,13 +1,10 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Findx.AspNetCore.Mvc;
-using Findx.Caching;
 using Findx.Data;
-using Findx.Imaging;
-using Findx.NewId;
+using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
@@ -19,24 +16,15 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-验证码"), Description("系统-验证码")]
 public class CaptchaController : AreaApiControllerBase
 {
-    private readonly ICacheFactory _cacheFactory;
-    private readonly IVerifyCoder _verifyCoder;
-    private readonly IKeyGenerator<Guid> _keyGenerator;
-    private readonly IApplicationContext _applicationContext;
-    
+    private readonly ICaptchaService _captchaService;
+
     /// <summary>
     ///     Ctor
     /// </summary>
-    /// <param name="verifyCoder"></param>
-    /// <param name="cacheFactory"></param>
-    /// <param name="keyGenerator"></param>
-    /// <param name="applicationContext"></param>
-    public CaptchaController(IVerifyCoder verifyCoder, ICacheFactory cacheFactory, IKeyGenerator<Guid> keyGenerator, IApplicationContext applicationContext)
+    /// <param name="captchaService"></param>
+    public CaptchaController(ICaptchaService captchaService)
     {
-        _verifyCoder = verifyCoder;
-        _cacheFactory = cacheFactory;
-        _keyGenerator = keyGenerator;
-        _applicationContext = applicationContext;
+        _captchaService = captchaService;
     }
 
     /// <summary>
@@ -51,13 +39,6 @@ public class CaptchaController : AreaApiControllerBase
     [DisableAuditing]
     public async Task<CommonResult> CaptchaAsync(int width = 150, int height = 50, [Range(3, 6)] int length = 4, CancellationToken cancellationToken = default)
     {
-        var code = _verifyCoder.GetCode(length, VerifyCodeType.NumberAndLetter);
-        var st = await _verifyCoder.CreateImageAsync(code, width, height, 38);
-        var uuid = _keyGenerator.Create();
-        var cacheKey = $"verifyCode:{uuid}";
-        var cache = _cacheFactory.Create(CacheType.DefaultMemory);
-        await cache.AddAsync(cacheKey, code.ToLower(), TimeSpan.FromMinutes(2), cancellationToken);
-        code = _applicationContext.HostEnvironment.IsProduction() ? string.Empty : code.ToLower();
-        return CommonResult.Success(new { text = code, uuid, Base64 = $"data:image/png;base64,{Convert.ToBase64String(st)}" });
+        return await _captchaService.GenerateCaptchaAsync(width, height, length, cancellationToken);
     }
 }

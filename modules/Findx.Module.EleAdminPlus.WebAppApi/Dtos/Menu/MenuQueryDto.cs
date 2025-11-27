@@ -1,13 +1,11 @@
-﻿using Findx.AspNetCore.Mvc;
-using Findx.Data;
-using Findx.Expressions;
+﻿using Findx.Expressions;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Menu;
 
 /// <summary>
 ///     查询菜单入参
 /// </summary>
-public class MenuQueryDto : SortCondition
+public partial class MenuQueryDto : SortCondition
 {
     /// <summary>
     ///     名称

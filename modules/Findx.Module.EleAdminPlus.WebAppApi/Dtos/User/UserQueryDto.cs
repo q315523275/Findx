@@ -1,13 +1,11 @@
-﻿using Findx.AspNetCore.Mvc;
-using Findx.Data;
-using Findx.Expressions;
+﻿using Findx.Expressions;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.User;
 
 /// <summary>
 ///     查询用户入参
 /// </summary>
-public class UserQueryDto : SortCondition
+public partial class UserQueryDto : SortCondition
 {
     /// <summary>
     ///     账号

@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_role_org")]
 [EntityExtension(DataSource = "system")]
-public class SysRoleOrgInfo : EntityBase<long>
+public partial class SysRoleOrgInfo : EntityBase<long>
 {
     /// <summary>
     ///     主键id

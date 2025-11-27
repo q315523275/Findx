@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_user")]
 [EntityExtension(DataSource = "system")]
-public class SysUserInfo : FullAuditedBase<long, long>, ITenant, ISoftDeletable
+public partial class SysUserInfo : FullAuditedBase<long, long>, ITenant, ISoftDeletable
 {
     /// <summary>
     ///     用户id

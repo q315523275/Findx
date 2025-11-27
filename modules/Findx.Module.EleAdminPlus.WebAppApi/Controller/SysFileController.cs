@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Findx.AspNetCore.Mvc;
-using Findx.Common;
 using Findx.Data;
 using Findx.Events;
 using Findx.Extensions;
@@ -10,6 +9,7 @@ using Findx.Module.EleAdminPlus.Shared.Events;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.File;
 using Findx.Module.EleAdminPlus.WebAppApi.Options;
+using Findx.Module.EleAdminPlus.WebAppApi.Vos.File;
 using Findx.NewId;
 using Findx.Setting;
 using Findx.Storage;
@@ -28,7 +28,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [Route("api/[area]/file")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-文件"), Description("系统-文件")]
-public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePageQueryDto, long>
+public class SysFileController: QueryControllerBase<SysFileInfo, FileSimplifyDto, FilePageQueryDto, long>
 {
     private readonly IKeyGenerator<long> _keyGenerator;
     private readonly IRepository<SysFileInfo, long> _repo;
@@ -39,7 +39,7 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
     private readonly string _folderHost;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="keyGenerator"></param>
     /// <param name="applicationContext"></param>
@@ -61,7 +61,7 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileDto, FilePa
     }
 
     /// <summary>
-    /// 文件上传
+    ///     文件上传
     /// </summary>
     /// <param name="uploadFileDto"></param>
     /// <param name="cancellationToken"></param>

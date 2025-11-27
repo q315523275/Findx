@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Org;
 /// <summary>
 ///     分页查询组织入参
 /// </summary>
-public class OrgPageQueryDto: OrgQueryDto, IPager
+public partial class OrgPageQueryDto: OrgQueryDto, IPager
 {
     /// <summary>
     ///     页码

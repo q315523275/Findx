@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_file_record")]
 [EntityExtension(DataSource = "system")]
-public class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, ITenant, ISoftDeletable
+public partial class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, ITenant, ISoftDeletable
 {
     /// <summary>
     ///     文件名称

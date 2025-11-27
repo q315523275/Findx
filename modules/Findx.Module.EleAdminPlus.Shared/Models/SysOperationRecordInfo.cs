@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_operation_record")]
 [EntityExtension(DataSource = "system")]
-public class SysOperationRecordInfo : EntityBase<long>, ITenant, ICreatedTime
+public partial class SysOperationRecordInfo : EntityBase<long>, ITenant, ICreatedTime
 {
     /// <summary>
     ///     编号

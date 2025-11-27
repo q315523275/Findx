@@ -2,9 +2,9 @@
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Exceptions;
-using Findx.Module.EleAdminPlus.Dtos;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Menu;
+using Findx.Module.EleAdminPlus.WebAppApi.Vos.Menu;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,7 +18,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [Route("api/[area]/menu")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-菜单"), Description("系统-菜单")]
-public class SysMenuController : CrudControllerBase<SysMenuInfo, MenuDto, MenuSaveDto, MenuPageQueryDto, long, long>
+public class SysMenuController : CrudControllerBase<SysMenuInfo, MenuSimplifyDto, MenuAddOrEditDto, MenuPageQueryDto, long, long>
 {
     /// <summary>
     ///     列表查询
@@ -26,7 +26,7 @@ public class SysMenuController : CrudControllerBase<SysMenuInfo, MenuDto, MenuSa
     /// <param name="menuQueryDto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override Task<CommonResult<List<MenuDto>>> ListAsync(MenuPageQueryDto menuQueryDto, CancellationToken cancellationToken = default)
+    public override Task<CommonResult<List<MenuSimplifyDto>>> ListAsync(MenuPageQueryDto menuQueryDto, CancellationToken cancellationToken = default)
     {
         menuQueryDto.PageSize = 9999;
         return base.ListAsync(menuQueryDto, cancellationToken);

@@ -4,9 +4,9 @@ using Findx.Module.EleAdminPlus.Shared.Enums;
 namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
 
 /// <summary>
-///     设置角色数据范围
+///     设置角色数据范围参数Dto
 /// </summary>
-public class RoleOrgSaveDto: IRequest
+public partial class RoleOrgSaveDto: IRequest
 {
     /// <summary>
     ///     编号

@@ -1,13 +1,11 @@
-﻿using Findx.AspNetCore.Mvc;
-using Findx.Data;
-using Findx.Expressions;
+﻿using Findx.Expressions;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Org;
 
 /// <summary>
 ///     查询组织入参
 /// </summary>
-public class OrgQueryDto : SortCondition
+public partial class OrgQueryDto : SortCondition
 {
     /// <summary>
     ///     类型

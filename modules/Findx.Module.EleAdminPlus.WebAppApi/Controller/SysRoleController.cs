@@ -6,6 +6,7 @@ using Findx.Extensions;
 using Findx.Mapping;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
+using Findx.Module.EleAdminPlus.WebAppApi.Vos.Role;
 using Findx.NewId;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [Route("api/[area]/role")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-角色"), Description("系统-角色")]
-public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSaveDto, RolePageQueryDto, long, long>
+public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSimplifyDto, RoleAddOrEditDto, RolePageQueryDto, long, long>
 {
     private readonly ICache _cache;
     private readonly string _cacheKey;
@@ -44,13 +45,13 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("menu/{roleId}"), Description("系统-查看角色菜单")]
-    public async Task<CommonResult<IOrderedEnumerable<RoleMenuDto>>> MenuAsync(long roleId, CancellationToken cancellationToken)
+    public async Task<CommonResult<IOrderedEnumerable<RoleMenuSimplifyDto>>> MenuAsync(long roleId, CancellationToken cancellationToken)
     {
         var repo = GetRepository<SysRoleMenuInfo, long>();
         var menuRepo = GetRepository<SysMenuInfo, long>();
 
         var menuIdArray = (await repo.SelectAsync(x => x.RoleId == roleId, x => x.MenuId, cancellationToken: cancellationToken)).Distinct();
-        var menuList = await menuRepo.SelectAsync<RoleMenuDto>(cancellationToken: cancellationToken);
+        var menuList = await menuRepo.SelectAsync<RoleMenuSimplifyDto>(cancellationToken: cancellationToken);
         
         menuList.ForEach(x => { x.Checked = menuIdArray.Contains(x.Id); });
 
@@ -64,13 +65,13 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("org/{roleId}"), Description("系统-查看角色对应机构")]
-    public async Task<CommonResult<IOrderedEnumerable<RoleOrgDto>>> OrgAsync(long roleId, CancellationToken cancellationToken)
+    public async Task<CommonResult<IOrderedEnumerable<RoleOrgSimplifyDto>>> OrgAsync(long roleId, CancellationToken cancellationToken)
     {
         var repo = GetRepository<SysRoleOrgInfo, long>();
         var orgRepo = GetRepository<SysOrgInfo, long>();
 
         var orgIdArray = (await repo.SelectAsync(x => x.RoleId == roleId, x => x.OrgId, cancellationToken: cancellationToken)).Distinct();
-        var orgList = await orgRepo.SelectAsync<RoleOrgDto>(cancellationToken: cancellationToken);
+        var orgList = await orgRepo.SelectAsync<RoleOrgSimplifyDto>(cancellationToken: cancellationToken);
 
         orgList.ForEach(x => { x.Checked = orgIdArray.Contains(x.Id); });
 
@@ -82,7 +83,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPost("add"), Description("新增")]
-    public override async Task<CommonResult> AddAsync([FromBody] RoleSaveDto req, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult> AddAsync([FromBody] RoleAddOrEditDto req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysRoleInfo, long>();
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
@@ -109,7 +110,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPut("edit"), Description("编辑")]
-    public override async Task<CommonResult> EditAsync([FromBody] RoleSaveDto req, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult> EditAsync([FromBody] RoleAddOrEditDto req, CancellationToken cancellationToken = default)
     {
         var repo = GetRepository<SysRoleInfo, long>();
         var roleMenuRepo = GetRepository<SysRoleMenuInfo, long>();
@@ -172,7 +173,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// <param name="request"></param>
     /// <param name="result"></param>
     /// <param name="cancellationToken"></param>
-    protected override async Task AddAfterAsync(SysRoleInfo model, RoleSaveDto request, int result, CancellationToken cancellationToken = default)
+    protected override async Task AddAfterAsync(SysRoleInfo model, RoleAddOrEditDto request, int result, CancellationToken cancellationToken = default)
     {
         await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
@@ -184,7 +185,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleDto, RoleSa
     /// <param name="request"></param>
     /// <param name="result"></param>
     /// <param name="cancellationToken"></param>
-    protected override async Task EditAfterAsync(SysRoleInfo model, RoleSaveDto request, int result, CancellationToken cancellationToken = default)
+    protected override async Task EditAfterAsync(SysRoleInfo model, RoleAddOrEditDto request, int result, CancellationToken cancellationToken = default)
     {
         await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }

@@ -1,13 +1,11 @@
-﻿using Findx.AspNetCore.Mvc;
-using Findx.Data;
-using Findx.Expressions;
+﻿using Findx.Expressions;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
 
 /// <summary>
 ///     查询角色入参
 /// </summary>
-public class RoleQueryDto : SortCondition
+public partial class RoleQueryDto : SortCondition
 {
     /// <summary>
     ///     名称

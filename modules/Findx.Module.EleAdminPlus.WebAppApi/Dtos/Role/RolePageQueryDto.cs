@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Role;
 /// <summary>
 ///     分页查询角色入参
 /// </summary>
-public class RolePageQueryDto: RoleQueryDto, IPager
+public partial class RolePageQueryDto: RoleQueryDto, IPager
 {
     /// <summary>
     ///     页码

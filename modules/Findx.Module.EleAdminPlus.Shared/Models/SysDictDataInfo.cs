@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_dict_data")]
 [EntityExtension(DataSource = "system")]
-public class SysDictDataInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable
+public partial class SysDictDataInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable
 {
     /// <summary>
     ///     字典项id

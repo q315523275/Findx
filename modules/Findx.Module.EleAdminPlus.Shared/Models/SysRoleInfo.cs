@@ -9,7 +9,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_role")]
 [EntityExtension(DataSource = "system")]
-public class SysRoleInfo : FullAuditedBase<long, long>, ITenant, ISoftDeletable
+public partial class SysRoleInfo : FullAuditedBase<long, long>, ITenant, ISoftDeletable
 {
     /// <summary>
     ///     角色id

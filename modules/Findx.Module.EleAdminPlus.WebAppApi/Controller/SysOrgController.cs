@@ -10,6 +10,7 @@ using Findx.Module.EleAdminPlus.Shared.Enums;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Org;
+using Findx.Module.EleAdminPlus.WebAppApi.Vos.Org;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [Route("api/[area]/org")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-机构"), Description("系统-机构")]
-public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDto, OrgPageQueryDto, long, long>
+public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSimplifyDto, OrgAddOrEditDto, OrgPageQueryDto, long, long>
 {
     private readonly IWorkContext _workContext;
     private readonly ICache _cache;
@@ -77,7 +78,7 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDt
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [DataScopeLimiter, IpAddressLimiter]
-    public override Task<CommonResult<PageResult<List<OrgDto>>>> PageAsync(OrgPageQueryDto request, CancellationToken cancellationToken = default)
+    public override Task<CommonResult<PageResult<List<OrgSimplifyDto>>>> PageAsync(OrgPageQueryDto request, CancellationToken cancellationToken = default)
     {
         return base.PageAsync(request, cancellationToken);
     }
@@ -89,7 +90,7 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDt
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [DataScopeLimiter, IpAddressLimiter]
-    public override Task<CommonResult<List<OrgDto>>> ListAsync(OrgPageQueryDto request, CancellationToken cancellationToken = default)
+    public override Task<CommonResult<List<OrgSimplifyDto>>> ListAsync(OrgPageQueryDto request, CancellationToken cancellationToken = default)
     {
         return base.ListAsync(request, cancellationToken);
     }
@@ -114,7 +115,7 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDt
     /// <param name="request"></param>
     /// <param name="result"></param>
     /// <param name="cancellationToken"></param>
-    protected override async Task AddAfterAsync(SysOrgInfo model, OrgSaveDto request, int result, CancellationToken cancellationToken = default)
+    protected override async Task AddAfterAsync(SysOrgInfo model, OrgAddOrEditDto request, int result, CancellationToken cancellationToken = default)
     {
         await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
@@ -126,7 +127,7 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgDto, OrgSaveDt
     /// <param name="request"></param>
     /// <param name="result"></param>
     /// <param name="cancellationToken"></param>
-    protected override async Task EditAfterAsync(SysOrgInfo model, OrgSaveDto request, int result, CancellationToken cancellationToken = default)
+    protected override async Task EditAfterAsync(SysOrgInfo model, OrgAddOrEditDto request, int result, CancellationToken cancellationToken = default)
     {
         await _cache.RemoveAsync(_cacheKey, cancellationToken);
     }
