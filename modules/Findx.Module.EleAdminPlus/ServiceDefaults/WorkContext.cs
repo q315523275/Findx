@@ -1,3 +1,4 @@
+using System.Security.Principal;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Module.EleAdminPlus.Shared.Enums;
@@ -12,15 +13,15 @@ namespace Findx.Module.EleAdminPlus.ServiceDefaults;
 /// </summary>
 public class WorkContext: IWorkContext, IScopeDependency
 {
-    private readonly ICurrentUser _currentUser;
-
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="currentUser"></param>
-    public WorkContext(ICurrentUser currentUser)
+    /// <param name="principal"></param>
+    public WorkContext(ICurrentUser currentUser, IPrincipal principal)
     {
-        _currentUser = currentUser;
+        CurrentUser = currentUser;
+        Principal = principal;
     }
 
     /// <summary>
@@ -29,19 +30,51 @@ public class WorkContext: IWorkContext, IScopeDependency
     /// <returns></returns>
     public UserContextSimplifyVo GetCurrentUser()
     {
-        if (_currentUser is { IsAuthenticated: true })
+        if (CurrentUser is { IsAuthenticated: true })
         {
             return new UserContextSimplifyVo
             {
-                UserId = _currentUser.UserId.CastTo<long>(),
-                Nickname  = _currentUser.UserName, 
-                OrgId = _currentUser.FindClaim(Shared.Const.Default.OrgIdKey)?.Value.CastTo<long>(),
-                OrgName = _currentUser.FindClaim(Shared.Const.Default.OrgNameKey)?.Value,
-                TenantId = _currentUser.TenantId
+                UserId = CurrentUser.UserId.CastTo<long>(),
+                Nickname  = CurrentUser.UserName, 
+                OrgId = CurrentUser.FindClaim(Shared.Const.Default.OrgIdKey)?.Value.CastTo<long>(),
+                OrgName = CurrentUser.FindClaim(Shared.Const.Default.OrgNameKey)?.Value,
+                TenantId = CurrentUser.TenantId
             };
         }
         return null;
     }
+
+    /// <summary>
+    ///     用户上下文
+    /// </summary>
+    public UserContextSimplifyVo ContextUser 
+    {
+        get
+        {
+            if (CurrentUser is { IsAuthenticated: true })
+            {
+                return new UserContextSimplifyVo
+                {
+                    UserId = CurrentUser.UserId.CastTo<long>(),
+                    Nickname  = CurrentUser.UserName, 
+                    OrgId = CurrentUser.FindClaim(Shared.Const.Default.OrgIdKey)?.Value.CastTo<long>(),
+                    OrgName = CurrentUser.FindClaim(Shared.Const.Default.OrgNameKey)?.Value,
+                    TenantId = CurrentUser.TenantId
+                };
+            }
+            return null;
+        }
+    }
+
+    /// <summary>
+    ///     用户接口
+    /// </summary>
+    public ICurrentUser CurrentUser { get; }
+    
+    /// <summary>
+    ///     身份信息
+    /// </summary>
+    public IPrincipal Principal { get; }
 
     /// <summary>
     ///     数据范围
@@ -51,7 +84,7 @@ public class WorkContext: IWorkContext, IScopeDependency
     /// <summary>
     ///     机构集合
     /// </summary>
-    public IEnumerable<long> OrgIds { get; private set; } = new List<long>();
+    public List<long> OrgIds { get; private set; } = [];
 
     /// <summary>
     ///     设置数据范围
@@ -66,8 +99,8 @@ public class WorkContext: IWorkContext, IScopeDependency
     ///     设置机构Id集合
     /// </summary>
     /// <param name="ids"></param>
-    public void SetOrgIds(IEnumerable<long> ids)
+    public void SetOrgIds(List<long> ids)
     {
-        OrgIds = ids.Distinct();
+        OrgIds = ids;
     }
 }

@@ -39,7 +39,7 @@ public class DefaultWorkContext: IWorkContext, IScopeDependency
                 OrgName = _currentUser.FindClaim(Default.OrgNameKey)?.Value
             };
         }
-        return default;
+        return null;
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public class DefaultWorkContext: IWorkContext, IScopeDependency
     /// <summary>
     ///     机构集合
     /// </summary>
-    public IEnumerable<Guid> OrgIds { get; private set; } = new List<Guid>();
+    public List<Guid> OrgIds { get; private set; } = [];
 
     /// <summary>
     ///     设置数据范围
@@ -65,8 +65,8 @@ public class DefaultWorkContext: IWorkContext, IScopeDependency
     ///     设置机构Id集合
     /// </summary>
     /// <param name="ids"></param>
-    public void SetOrgIds(IEnumerable<Guid> ids)
+    public void SetOrgIds(List<Guid> ids)
     {
-        OrgIds = ids.Distinct();
+        OrgIds = ids;
     }
 }

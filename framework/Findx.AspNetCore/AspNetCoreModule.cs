@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.Security.Principal;
-using Findx.AspNetCore.Upload;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Modularity;
@@ -46,8 +45,6 @@ public class AspNetCoreModule : StartupModule
         services.TryAddSingleton<IScopedServiceResolver, HttpContextServiceScopeResolver>();
 
         services.Replace<ICancellationTokenProvider, HttpContextCancellationTokenProvider>(ServiceLifetime.Singleton);
-
-        services.AddSingleton<IFileUploadService, DefaultFileUploadService>();
 
         // 关闭模型自动化验证,实现自控
         services.Configure<ApiBehaviorOptions>(opts => opts.SuppressModelStateInvalidFilter = true);

@@ -8,28 +8,28 @@ namespace Findx.Module.EleAdminPlus.Shared.Enums;
 public enum DataScope
 {
     /// <summary>
-    ///     全部数据
+    ///     全部数据权限
     /// </summary>
     [Description("全部数据")]
     All = 1,
     
     /// <summary>
-    ///     自定义数据
+    ///     自定义数据权限
     /// </summary>
     [Description("自定义数据")]
     Custom = 2,
     
     /// <summary>
-    ///     本部门
-    /// </summary>
-    [Description("本部门")]
-    Department = 3,
-    
-    /// <summary>
     ///     本部门及以下数据权限
     /// </summary>
     [Description("本部门及以下数据权限")]
-    Subs = 4,
+    Subs = 3,
+    
+    /// <summary>
+    ///     本部门数据权限
+    /// </summary>
+    [Description("本部门")]
+    Department = 4,
     
     /// <summary>
     ///     本人数据权限

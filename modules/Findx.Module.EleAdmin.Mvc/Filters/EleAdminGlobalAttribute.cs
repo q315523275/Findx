@@ -56,7 +56,7 @@ public class EleAdminGlobalAttribute: ActionFilterAttribute
                     {
                         // 所有自定义范围集合
                         var ids = userRoleList.Where(x => x.DataScope == DataScope.Custom).SelectMany(x => x.OrgJson?.ToObject<List<Guid>>());
-                        workContext.SetOrgIds(ids);
+                        workContext.SetOrgIds(ids.Distinct().ToList());
                     }
 
                     // 本部门及所有下属部门
@@ -64,7 +64,7 @@ public class EleAdminGlobalAttribute: ActionFilterAttribute
                     {
                         var orgList = await AllOrgListAsync(context);
                         var allSubsIds = GetTargetDepartmentAndSubOrgList(orgList, user.OrgId.Value).Select(x => x.Id);
-                        workContext.SetOrgIds(allSubsIds);
+                        workContext.SetOrgIds(allSubsIds.Distinct().ToList());
                     }
                 }
                 // 默认本机构

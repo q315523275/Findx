@@ -8,12 +8,12 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_menu")]
 [EntityExtension(DataSource = "system")]
-public partial class SysMenuInfo : FullAuditedBase<long, long>, ITenant, ISort, ISoftDeletable
+public class SysMenuInfo : FullAuditedBase<long, long>, ITenant<long>, ISort, ISoftDeletable
 {
     /// <summary>
     ///     菜单id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
+    [Column(IsPrimary = true)]
     public override long Id { get; set; }
 
     /// <summary>
@@ -69,7 +69,7 @@ public partial class SysMenuInfo : FullAuditedBase<long, long>, ITenant, ISort, 
     /// <summary>
     ///     租户id
     /// </summary>
-    public string TenantId { get; set; }
+    public long? TenantId { get; set; }
 
     /// <summary>
     ///     是否删除

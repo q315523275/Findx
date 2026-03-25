@@ -113,7 +113,7 @@ public abstract class QueryControllerBase<TModel, TListVo, TDetailVo, TQueryPara
         Check.NotNull(req, nameof(req));
         // 默认条数提升到99条
         if (req.PageSize == 20) 
-            req.PageSize = 999;
+            req.PageSize = 2000;
         
         var repo = GetRepository<TModel, TKey>();
         Check.NotNull(repo, nameof(repo));

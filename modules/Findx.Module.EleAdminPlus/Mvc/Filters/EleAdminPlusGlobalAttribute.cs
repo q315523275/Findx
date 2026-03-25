@@ -34,13 +34,13 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
         var ipAddressLimit = filters.OfType<IpAddressLimiterAttribute>().Any();
         var dataScopeLimit = filters.OfType<DataScopeLimiterAttribute>().Any();
 
-        var workContext = context.HttpContext.RequestServices.GetService<IWorkContext>();
-        var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
-        var logger = context.HttpContext.RequestServices.GetService<ILogger<EleAdminPlusGlobalAttribute>>();
+        var workContext = context.HttpContext.RequestServices.GetRequiredService<IWorkContext>();
+        var currentUser = context.HttpContext.RequestServices.GetRequiredService<ICurrentUser>();
+        var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<EleAdminPlusGlobalAttribute>>();
         
         if (currentUser is { IsAuthenticated: true } && (ipAddressLimit || dataScopeLimit))
         {
-            var user = workContext.GetCurrentUser();
+            var contextUser = workContext.ContextUser;
 
             // 用户角色信息
             var roles = await AllRoleListAsync(context);
@@ -48,7 +48,7 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
             var userRoleList = roles.Where(x => userRoleIds.Contains(x.Id)).ToList();
             
             // 客户访问ip限定
-            var ipAddressList = userRoleList.Where(x => x.IpLimit && x.IpAddress.IsNotNullOrWhiteSpace()).Select(x => x.IpAddress);
+            var ipAddressList = userRoleList.Where(x => x.IpLimit && x.IpAddress.IsNotNullOrWhiteSpace()).Select(x => x.IpAddress).ToList();
             if (ipAddressLimit && ipAddressList.Any())
             {
                 var clientIpAddress = context.HttpContext.GetClientIp();
@@ -77,22 +77,22 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
                     {
                         // 所有自定义范围集合
                         var ids = userRoleList.Where(x => x.DataScope == DataScope.Custom).SelectMany(x => x.OrgJson?.ToObject<List<long>>());
-                        workContext.SetOrgIds(ids);
+                        workContext.SetOrgIds(ids.Distinct().ToList());
                     }
 
                     // 本部门及所有下属部门
-                    if (workContext.DataScope == DataScope.Subs && user.OrgId.HasValue)
+                    if (workContext.DataScope == DataScope.Subs && contextUser.OrgId.HasValue)
                     {
                         var orgList = await AllOrgListAsync(context);
-                        var allSubsIds = GetTargetDepartmentAndSubOrgList(orgList, user.OrgId.Value).Select(x => x.Id);
-                        workContext.SetOrgIds(allSubsIds);
+                        var allSubsIds = GetTargetDepartmentAndSubOrgList(orgList, contextUser.OrgId.Value).Select(x => x.Id);
+                        workContext.SetOrgIds(allSubsIds.Distinct().ToList());
                     }
                 }
                 // 默认本机构
                 if (workContext.DataScope is DataScope.Oneself or DataScope.Department)
                 {
                     // ReSharper disable once PossibleInvalidOperationException
-                    workContext.SetOrgIds([user.OrgId.Value]);
+                    workContext.SetOrgIds([contextUser.OrgId.Value]);
                 }
             }
         }

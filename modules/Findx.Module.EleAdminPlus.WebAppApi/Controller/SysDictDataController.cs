@@ -6,6 +6,7 @@ using Findx.Extensions;
 using Findx.Expressions;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dict;
 using Findx.Module.EleAdminPlus.Shared.Models;
+using Findx.Module.EleAdminPlus.WebAppApi.Vos.DictData;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,7 +20,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [Route("api/[area]/dictData")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-字典值"), Description("系统-字典值")]
-public class SysDictDataController : CrudControllerBase<SysDictDataInfo, DictDataDto, DictDataSaveDto, DictDataPageQueryDto, long, long>
+public class SysDictDataController : CrudControllerBase<SysDictDataInfo, DictDataSimplifyVo, DictDataSaveDto, DictDataPageQueryDto, long, long>
 {
     /// <summary>
     ///     构建查询条件
@@ -37,7 +38,6 @@ public class SysDictDataController : CrudControllerBase<SysDictDataInfo, DictDat
         }
 
         var whereExp = PredicateBuilder.New<SysDictDataInfo>()
-                                       .And(x => x.TypeId == x.TypeInfo.Id)
                                        .AndIf(typeId > -1, x => x.TypeId == typeId)
                                        .AndIf(!dto.Keywords.IsNullOrWhiteSpace(), x => x.Name.Contains(dto.Keywords))
                                        .Build();
@@ -50,7 +50,7 @@ public class SysDictDataController : CrudControllerBase<SysDictDataInfo, DictDat
     /// <param name="dto"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<CommonResult<List<DictDataDto>>> ListAsync([FromQuery] DictDataPageQueryDto dto, CancellationToken cancellationToken = default)
+    public override async Task<CommonResult<List<DictDataSimplifyVo>>> ListAsync([FromQuery] DictDataPageQueryDto dto, CancellationToken cancellationToken = default)
     {
         dto.PageSize = 9999;
         return await base.ListAsync(dto, cancellationToken);

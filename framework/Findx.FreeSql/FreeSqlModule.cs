@@ -65,11 +65,28 @@ public class FreeSqlModule : StartupModule
 
             // 开启租户隔离
             if (item.Value.MultiTenant)
-                fsql.GlobalFilter.ApplyIf<ITenant>("Tenant", () => TenantManager.Current.IsNotNullOrWhiteSpace(), it => it.TenantId == TenantManager.Current);
+            {
+                switch (item.Value.TenantFieldType)
+                {
+                    case TenantFieldType.Guid:
+                        fsql.GlobalFilter.ApplyOnlyIf<ITenant<Guid>>("Tenant", () => TenantManager<Guid>.Current != Guid.Empty, it => it.TenantId == TenantManager<Guid>.Current);
+                        break;
+                    case TenantFieldType.Int:
+                        fsql.GlobalFilter.ApplyOnlyIf<ITenant<int>>("Tenant", () => TenantManager<int>.Current > 0, it => it.TenantId == TenantManager<int>.Current);
+                        break;
+                    case TenantFieldType.Long:
+                        fsql.GlobalFilter.ApplyOnlyIf<ITenant<long>>("Tenant", () => TenantManager<long>.Current > 0, it => it.TenantId == TenantManager<long>.Current);
+                        break;
+                    case TenantFieldType.String:
+                    default:
+                        fsql.GlobalFilter.ApplyOnlyIf<ITenant>("Tenant", () => TenantManager.Current.IsNotNullOrWhiteSpace(), it => it.TenantId == TenantManager.Current);
+                        break;
+                }
+            }
             
             // 开启逻辑删除
             if (item.Value.SoftDeletable)
-                fsql.GlobalFilter.Apply<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
+                fsql.GlobalFilter.ApplyOnly<ISoftDeletable>("SoftDeletable", it => it.IsDeleted == false);
 
             // AOP
             fsql.Aop.CurdBefore += (_, e) => Aop_CurdBefore(e, item.Value);
@@ -260,9 +277,25 @@ public class FreeSqlModule : StartupModule
         if (option.MultiTenant && e.AuditValueType == AuditValueType.Insert && TenantManager.Current.IsNotNullOrWhiteSpace() && option.MultiTenantFieldName.IsNotNullOrWhiteSpace())
         {
             //  实体属性字段
-            if (e.Column.CsName.Equals(option.MultiTenantFieldName, StringComparison.OrdinalIgnoreCase) && e.Value == null)
+            if (e.Column.CsName.Equals(option.MultiTenantFieldName, StringComparison.OrdinalIgnoreCase))
             {
-                e.Value = TenantManager.Current;
+                switch (option.TenantFieldType)
+                {
+                    case TenantFieldType.Guid when e.Value == null:
+                        e.Value = TenantManager<Guid>.Current;
+                        break;
+                    case TenantFieldType.Int when e.Value?.ToString() == "0":
+                        e.Value = TenantManager<int>.Current;
+                        break;
+                    case TenantFieldType.Long when e.Value?.ToString() == "0":
+                        e.Value = TenantManager<long>.Current;
+                        break;
+                    case TenantFieldType.String when e.Value == null:
+                    default:
+                        e.Value = TenantManager.Current;
+                        break;
+                }
+                
             }
         }
     }

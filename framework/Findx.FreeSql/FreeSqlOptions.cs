@@ -97,6 +97,11 @@ namespace Findx.FreeSql
         public bool MultiTenant { set; get; }
 
         /// <summary>
+        ///     租户字段类型
+        /// </summary>
+        public TenantFieldType TenantFieldType { set; get; } = TenantFieldType.String;
+
+        /// <summary>
         ///     多租户字段名
         /// </summary>
         public string MultiTenantFieldName { set; get; } = "TenantId";

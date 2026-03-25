@@ -3,6 +3,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Exceptions;
 using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dict;
+using Findx.Module.EleAdminPlus.WebAppApi.Vos.DictData;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 [Route("api/[area]/dictType")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-字典"), Description("系统-字典")]
-public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, DictTypeDto, DictTypeSaveDto, DictTypePageQueryDto, long, long>
+public class SysDictTypeController : CrudControllerBase<SysDictTypeInfo, DictTypeSimplifyVo, DictTypeSaveDto, DictTypePageQueryDto, long, long>
 {
     /// <summary>
     ///     删除前校验

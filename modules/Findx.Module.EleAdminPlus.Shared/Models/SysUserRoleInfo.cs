@@ -8,12 +8,12 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_user_role")]
 [EntityExtension(DataSource = "system")]
-public partial class SysUserRoleInfo : EntityBase<long>
+public class SysUserRoleInfo : EntityBase<long>
 {
     /// <summary>
     ///     主键id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
+    [Column(IsPrimary = true)]
     public override long Id { get; set; }
 
     /// <summary>

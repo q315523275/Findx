@@ -18,6 +18,12 @@ public partial class UserQueryDto : SortCondition
     /// </summary>
     [QueryField(FilterOperate = FilterOperate.Contains)]
     public string Nickname { set; get; }
+    
+    /// <summary>
+    ///     手机
+    /// </summary>
+    [QueryField(FilterOperate = FilterOperate.Contains)]
+    public string Phone { set; get; }
 
     /// <summary>
     ///     性别

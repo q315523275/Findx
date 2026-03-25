@@ -1,3 +1,5 @@
+using System.Text.Json.Nodes;
+
 namespace Findx.Module.EleAdminPlus.Shared.Vos.Auth;
 
 /// <summary>
@@ -59,4 +61,9 @@ public partial class UserAuthMenuSimplifyDto
     ///     其它路由元信息
     /// </summary>
     public string Meta { get; set; }
+    
+    /// <summary>
+    ///     扩展属性
+    /// </summary>
+    public JsonObject ExtraProperties { get; set; }
 }

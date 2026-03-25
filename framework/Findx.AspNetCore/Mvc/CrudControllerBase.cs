@@ -132,7 +132,31 @@ public abstract class CrudControllerBase<TModel, TListVo, TDetailVo, TCreateRequ
     {
         return Task.CompletedTask;
     }
-
+    
+    /// <summary>
+    ///     导入前操作
+    /// </summary>
+    /// <param name="models">实体集合</param>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected virtual Task ImportBeforeAsync(List<TModel> models, List<TCreateRequest> req, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+    
+    /// <summary>
+    ///     导入后操作
+    /// </summary>
+    /// <param name="models">实体集合</param>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    protected virtual Task ImportAfterAsync(List<TModel> models, List<TCreateRequest> req, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
+    
     /// <summary>
     ///     修改前操作
     /// </summary>
@@ -220,6 +244,48 @@ public abstract class CrudControllerBase<TModel, TListVo, TDetailVo, TCreateRequ
         await AddBeforeAsync(model, req, cancellationToken);
         var res = await repo.InsertAsync(model, cancellationToken);
         await AddAfterAsync(model, req, res, cancellationToken);
+
+        return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
+    }
+    
+    /// <summary>
+    ///     导入数据
+    /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpPost("import")]
+    [Description("导入数据")]
+    public virtual async Task<CommonResult> BatchAddAsync([FromBody, MinLength(1)] List<TCreateRequest> req, CancellationToken cancellationToken = default)
+    {
+        Check.NotNull(req, nameof(req));
+
+        var repo = GetRepository<TModel, TKey>();
+        
+        var unitOfManager = GetService<IUnitOfWorkManager>();
+        UnitOfWork = await unitOfManager.GetEntityUnitOfWorkAsync<TModel>(false, cancellationToken);
+        repo.UnitOfWork = UnitOfWork;
+
+        var models = req.MapTo<List<TModel>>();
+        foreach (var model in models)
+        {
+            // 判断设置创建时间
+            model.CheckCreatedTime();
+            // 判断设置创建人
+            model.CheckCreationAudited<TModel, TUserKey>(HttpContext.User);
+            // 判断设置租户值
+            model.CheckTenant(HttpContext.User);
+            // 判断设置部门机构
+            model.CheckOrg<TModel, TUserKey>(HttpContext.User);
+            // 判断设置拥有者
+            model.CheckOwner<TModel, TUserKey>(HttpContext.User);
+            // 判断设置ID值
+            model.SetEmptyKey(); 
+        }
+
+        await ImportBeforeAsync(models, req, cancellationToken);
+        var res = await repo.InsertAsync(models, cancellationToken);
+        await ImportAfterAsync(models, req, cancellationToken);
 
         return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
     }

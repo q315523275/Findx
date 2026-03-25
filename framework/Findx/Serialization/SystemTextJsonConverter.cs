@@ -91,10 +91,10 @@ public class LongStringJsonConverter : JsonConverter<long>
     /// <returns></returns>
     public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None) return default;
+        if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None) return 0;
 
         if (reader.TokenType == JsonTokenType.String)
-            return long.TryParse(reader.GetString(), out var longValue) ? longValue : default;
+            return long.TryParse(reader.GetString(), out var longValue) ? longValue : 0;
 
         return reader.GetInt64();
     }

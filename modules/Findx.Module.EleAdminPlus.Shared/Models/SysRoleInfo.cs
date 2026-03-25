@@ -9,12 +9,12 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_role")]
 [EntityExtension(DataSource = "system")]
-public partial class SysRoleInfo : FullAuditedBase<long, long>, ITenant, ISoftDeletable
+public class SysRoleInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDeletable
 {
     /// <summary>
     ///     角色id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
+    [Column(IsPrimary = true)]
     public override long Id { get; set; }
 
     /// <summary>
@@ -51,7 +51,7 @@ public partial class SysRoleInfo : FullAuditedBase<long, long>, ITenant, ISoftDe
     /// <summary>
     ///     租户id
     /// </summary>
-    public string TenantId { get; set; }
+    public long? TenantId { get; set; }
     
     /// <summary>
     ///     是否删除

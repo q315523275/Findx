@@ -1,32 +1,27 @@
 using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dict;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Vos.DictData;
 
 /// <summary>
-///     字典项目数据
+///     字典类型Vo
 /// </summary>
-public class DictDataDto: IResponse
+public class DictTypeSimplifyVo: IResponse
 {
     /// <summary>
-    ///     字典项id
+    ///     字典id
     /// </summary>
     public long Id { get; set; }
 
     /// <summary>
-    ///     字典id
+    ///     字典标识
     /// </summary>
-    public long TypeId { get; set; }
+    public string Code { get; set; }
 
     /// <summary>
-    ///     字典项名称
+    ///     字典名称
     /// </summary>
     public string Name { get; set; }
-
-    /// <summary>
-    ///     字典项值
-    /// </summary>
-    public string Value { get; set; }
-
+    
     /// <summary>
     ///     排序号
     /// </summary>
@@ -36,7 +31,7 @@ public class DictDataDto: IResponse
     ///     备注
     /// </summary>
     public string Comments { get; set; }
-    
+        
     /// <summary>
     ///     创建时间
     /// </summary>

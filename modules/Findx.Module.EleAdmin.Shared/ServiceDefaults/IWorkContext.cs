@@ -21,7 +21,7 @@ public interface IWorkContext
     /// <summary>
     ///     机构Id集合
     /// </summary>
-    IEnumerable<Guid> OrgIds { get; }
+    List<Guid> OrgIds { get; }
 
     /// <summary>
     ///     设置数据范围
@@ -33,5 +33,5 @@ public interface IWorkContext
     ///     设置机构范围
     /// </summary>
     /// <param name="ids"></param>
-    void SetOrgIds(IEnumerable<Guid> ids);
+    void SetOrgIds(List<Guid> ids);
 }

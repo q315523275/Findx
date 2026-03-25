@@ -8,12 +8,12 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_dict_type")]
 [EntityExtension(DataSource = "system")]
-public partial class SysDictTypeInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable
+public class SysDictTypeInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable, ITenant<long>
 {
     /// <summary>
     ///     字典id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
+    [Column(IsPrimary = true)]
     public override long Id { get; set; }
 
     /// <summary>
@@ -45,4 +45,9 @@ public partial class SysDictTypeInfo : FullAuditedBase<long, long>, ISort, ISoft
     ///     删除时间
     /// </summary>
     public DateTime? DeletionTime { get; set; }
+
+    /// <summary>
+    ///     租户Id
+    /// </summary>
+    public long? TenantId { get; set; }
 }

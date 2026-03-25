@@ -217,7 +217,7 @@ public class AuthService : IAuthService, IScopeDependency
         await ClearLoginArtifactsAsync(request, cancellationToken);
     
         //  生成Token
-        return await GenerateAuthTokenAsync(accountInfo, request.TenantId, cancellationToken);
+        return await GenerateAuthTokenAsync(accountInfo, cancellationToken);
     }
     
     /// <summary>
@@ -272,10 +272,9 @@ public class AuthService : IAuthService, IScopeDependency
     ///     生成认证Token
     /// </summary>
     /// <param name="accountInfo"></param>
-    /// <param name="tenantId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected virtual async Task<CommonResult> GenerateAuthTokenAsync(SysUserInfo accountInfo, string tenantId, CancellationToken cancellationToken)
+    public virtual async Task<CommonResult> GenerateAuthTokenAsync(SysUserInfo accountInfo, CancellationToken cancellationToken)
     {
         //  token票据
         var payload = new Dictionary<string, string>
@@ -284,7 +283,7 @@ public class AuthService : IAuthService, IScopeDependency
             { ClaimTypes.UserIdTypeName, typeof(long).FullName },
             { ClaimTypes.UserName, accountInfo.UserName.SafeString() },
             { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
-            { ClaimTypes.TenantId, tenantId },
+            { ClaimTypes.TenantId, accountInfo.TenantId.SafeString() },
             { ClaimTypes.OrgId, accountInfo.OrgId.SafeString() },
             { ClaimTypes.OrgName, accountInfo.OrgName.SafeString() }
         };
@@ -330,7 +329,6 @@ public class AuthService : IAuthService, IScopeDependency
         var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleSimplifyDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
         var result = userInfo.MapTo<UserAuthSimplifyDto>();
         result.Roles = roles.DistinctBy(x => x.Id);
-
         return CommonResult.Success(result);
     }
     

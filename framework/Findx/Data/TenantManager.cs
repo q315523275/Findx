@@ -1,4 +1,6 @@
-﻿namespace Findx.Data;
+﻿using Findx.Extensions;
+
+namespace Findx.Data;
 
 /// <summary>
 ///     租户管理
@@ -15,4 +17,15 @@ public static class TenantManager
         get => ValueAccessor.Value;
         set => ValueAccessor.Value = value;
     }
+}
+
+/// <summary>
+///     租户管理(范型)
+/// </summary>
+public static class TenantManager<TKey>
+{
+    /// <summary>
+    ///     当前租户编号
+    /// </summary>
+    public static TKey Current => TenantManager.Current.IsNotNullOrWhiteSpace() ? TenantManager.Current.CastTo<TKey>() : default;
 }

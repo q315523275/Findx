@@ -1,4 +1,5 @@
-﻿using Findx.Data;
+﻿using System.Text.Json.Nodes;
+using Findx.Data;
 
 namespace Findx.Module.EleAdminPlus.Shared.Vos.Auth;
 
@@ -81,4 +82,9 @@ public partial class UserAuthSimplifyDto : IResponse
     ///     角色集合
     /// </summary>
     public IEnumerable<UserAuthRoleSimplifyDto> Roles { get; set; }
+
+    /// <summary>
+    ///     扩展属性
+    /// </summary>
+    public JsonObject ExtraProperties { get; set; }
 }

@@ -8,8 +8,14 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_file_record")]
 [EntityExtension(DataSource = "system")]
-public partial class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, ITenant, ISoftDeletable
+public class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, ITenant<long>, ISoftDeletable
 {
+    /// <summary>
+    ///     字典id
+    /// </summary>
+    [Column(IsPrimary = true)]
+    public override long Id { get; set; }
+    
     /// <summary>
     ///     文件名称
     /// </summary>
@@ -78,7 +84,7 @@ public partial class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<l
     /// <summary>
     ///     租户id
     /// </summary>
-    public string TenantId { get; set; }
+    public long? TenantId { get; set; }
     
     /// <summary>
     ///     是否删除

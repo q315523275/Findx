@@ -8,13 +8,13 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_tenant")]
 [EntityExtension(DataSource = "system")]
-public partial class SysTenantInfo : FullAuditedBase<Guid, long>, ISoftDeletable
+public class SysTenantInfo : FullAuditedBase<long, long>, ISoftDeletable
 {
     /// <summary>
     ///     租户id
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
-    public override Guid Id { get; set; }
+    [Column(IsPrimary = true)]
+    public override long Id { get; set; }
 
     /// <summary>
     ///     租户名称

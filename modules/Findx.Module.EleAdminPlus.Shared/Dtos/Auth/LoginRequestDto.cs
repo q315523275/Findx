@@ -28,7 +28,7 @@ public partial class LoginRequestDto: ValidatableObject, IRequest
     /// <summary>
     ///     租户
     /// </summary>
-    public string TenantId { set; get; }
+    public long? TenantId { set; get; }
 
     /// <summary>
     ///     uuid

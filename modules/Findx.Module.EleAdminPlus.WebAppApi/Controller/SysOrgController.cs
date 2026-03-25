@@ -22,7 +22,7 @@ namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 ///     机构服务
 /// </summary>
 [Area("system")]
-[Route("api/[area]/org")]
+[Route("api/[area]/organization")]
 [Authorize]
 [ApiExplorerSettings(GroupName = "eleAdminPlus"), Tags("系统-机构"), Description("系统-机构")]
 public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSimplifyDto, OrgAddOrEditDto, OrgPageQueryDto, long, long>

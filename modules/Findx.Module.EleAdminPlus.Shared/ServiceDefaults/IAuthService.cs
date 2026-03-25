@@ -1,5 +1,6 @@
 using Findx.Data;
 using Findx.Module.EleAdminPlus.Shared.Dtos.Auth;
+using Findx.Module.EleAdminPlus.Shared.Models;
 using Findx.Module.EleAdminPlus.Shared.Vos.Auth;
 
 namespace Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
@@ -17,6 +18,14 @@ public interface IAuthService
     /// <returns></returns>
     Task<CommonResult> LoginAsync(LoginRequestDto request, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     生成认证Token
+    /// </summary>
+    /// <param name="accountInfo"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task<CommonResult> GenerateAuthTokenAsync(SysUserInfo accountInfo, CancellationToken cancellationToken);
+    
     /// <summary>
     ///     用户登出
     /// </summary>

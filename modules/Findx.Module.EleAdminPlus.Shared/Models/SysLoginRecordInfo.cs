@@ -8,12 +8,12 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_login_record")]
 [EntityExtension(DataSource = "system")]
-public partial class SysLoginRecordInfo : EntityBase<long>, ITenant, ICreatedTime
+public class SysLoginRecordInfo : EntityBase<long>, ITenant<long>, ICreatedTime
 {
     /// <summary>
     ///     编号
     /// </summary>
-    [Column(IsPrimary = true, IsIdentity = false)]
+    [Column(IsPrimary = true)]
     public override long Id { get; set; }
 
     /// <summary>
@@ -60,7 +60,7 @@ public partial class SysLoginRecordInfo : EntityBase<long>, ITenant, ICreatedTim
     /// <summary>
     ///     租户编号
     /// </summary>
-    public string TenantId { get; set; }
+    public long? TenantId { get; set; }
     
     /// <summary>
     ///     创建时间
