@@ -12,7 +12,7 @@ public static class ScopedDictionaryExtensions
     /// </summary>
     public static IUnitOfWork GetUnitOfWork(this ScopedDictionary dict, string primary)
     {
-        return dict.TryGetValue<IUnitOfWork>($"UnitOfWork_Primary_{primary}", out var uow) ? uow : default;
+        return dict.TryGetValue<IUnitOfWork>($"UnitOfWork_Primary_{primary}", out var uow) ? uow : null;
     }
 
     /// <summary>

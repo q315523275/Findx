@@ -1,4 +1,4 @@
-﻿using Findx.Extensions;
+using Findx.Extensions;
 
 namespace Findx.Data;
 

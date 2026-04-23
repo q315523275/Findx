@@ -12,7 +12,7 @@ namespace Findx.NLog;
 public class NLogLoggerProvider : ILoggerProvider
 {
     private const string DefaultNLogFileName = "nlog.config";
-    private readonly IDictionary<string, NLogLogger> _loggers = new ConcurrentDictionary<string, NLogLogger>();
+    private readonly ConcurrentDictionary<string, NLogLogger> _loggers = new();
 
     public NLogLoggerProvider(string nlogConfigFile)
     {

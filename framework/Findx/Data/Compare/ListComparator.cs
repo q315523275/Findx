@@ -10,49 +10,46 @@ namespace Findx.Data.Compare;
 public class ListComparator<TEntity, TKey> where TEntity : IEntity<TKey>
 {
     /// <summary>
-    ///     比较
+    ///     比较两个实体集合，返回需要创建、更新、删除的实体列表
     /// </summary>
     /// <param name="newList">新实体集合</param>
     /// <param name="originalList">旧实体集合</param>
-    public ListCompareResult<TEntity, TKey> Compare(IEnumerable<TEntity> newList, IEnumerable<TEntity> originalList)
+    /// <returns>比较结果，包含三个列表</returns>
+    public ListCompareResult<TEntity, TKey> Compare(List<TEntity> newList, List<TEntity> originalList)
     {
-        // ReSharper disable once PossibleMultipleEnumeration
-        newList.ThrowIfNull(nameof(newList));
-        // ReSharper disable once PossibleMultipleEnumeration
-        originalList.ThrowIfNull(nameof(originalList));
-        // ReSharper disable once PossibleMultipleEnumeration
-        var newEntities = newList.ToList();
-        // ReSharper disable once PossibleMultipleEnumeration
-        var originalEntities = originalList.ToList();
-        var createList = GetCreateList(newEntities, originalEntities);
-        var updateList = GetUpdateList(newEntities, originalEntities);
-        var deleteList = GetDeleteList(newEntities, originalEntities);
+        //  构建旧实体的字典，以 Id 为键
+        var originalDict = originalList.ToDictionary(x => x.Id);
+
+        //  预分配容量
+        var newIdSet = new HashSet<TKey>(newList.Count);
+        var createList = new List<TEntity>(newList.Count);
+        var updateList = new List<TEntity>(newList.Count);
+
+        //  一次遍历 newList，完成新 Id 集合构建及分类
+        foreach (var entity in newList)
+        {
+            newIdSet.Add(entity.Id);
+            //  使用 TryGetValue 仅一次字典查找
+            if (originalDict.TryGetValue(entity.Id, out _))
+            {
+                updateList.Add(entity);
+            }
+            else
+            {
+                createList.Add(entity);
+            }
+        }
+
+        //  删除列表：遍历字典，仅包含不在 newIdSet 中的旧实体
+        var deleteList = new List<TEntity>(originalDict.Count);
+        foreach (var kvp in originalDict)
+        {
+            if (!newIdSet.Contains(kvp.Key))
+            {
+                deleteList.Add(kvp.Value);
+            }
+        }
+
         return new ListCompareResult<TEntity, TKey>(createList, updateList, deleteList);
-    }
-
-    /// <summary>
-    ///     获取创建列表
-    /// </summary>
-    private static List<TEntity> GetCreateList(List<TEntity> newList, List<TEntity> originalList)
-    {
-        var result = newList.Except(originalList);
-        return result.ToList();
-    }
-
-    /// <summary>
-    ///     获取更新列表
-    /// </summary>
-    private static List<TEntity> GetUpdateList(List<TEntity> newList, List<TEntity> originalList)
-    {
-        return newList.FindAll(entity => originalList.Exists(t => t.Id.Equals(entity.Id)));
-    }
-
-    /// <summary>
-    ///     获取删除列表
-    /// </summary>
-    private static List<TEntity> GetDeleteList(List<TEntity> newList, List<TEntity> originalList)
-    {
-        var result = originalList.Except(newList);
-        return result.ToList();
     }
 }

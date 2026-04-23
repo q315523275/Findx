@@ -161,11 +161,11 @@ public abstract class UnitOfWorkBase: IUnitOfWork
         token = _transactionStack.Pop();
         var transactionCode = Transaction.GetHashCode();
 
-        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.BeforeCommit, cancellationToken);
+        await OnBeforeCommitAsync(cancellationToken);
 
         await InternalCommitAsync(cancellationToken);
 
-        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterCommit, cancellationToken);
+        await OnAfterCommitAsync(cancellationToken);
         
         Logger.LogDebug("提交事务，标识：{Token}，事务标识：{TransactionCode}", token, transactionCode);
   
@@ -200,8 +200,8 @@ public abstract class UnitOfWorkBase: IUnitOfWork
         var transactionCode = Transaction?.GetHashCode();
         
         await InternalRollbackAsync(cancellationToken);
-        
-        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterRollback, cancellationToken);
+
+        await OnAfterRollbackAsync(cancellationToken);
         
         Logger.LogDebug("回滚事务，标识：{Token}，事务标识：{TransactionCode}", token, transactionCode);
         
@@ -227,6 +227,33 @@ public abstract class UnitOfWorkBase: IUnitOfWork
         UnitOfWorkEventDispatcher.AddEventToBuffer(eventData, transactionPhase);
     }
 
+    /// <summary>
+    ///     事物提交之前
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    protected virtual async Task OnBeforeCommitAsync(CancellationToken cancellationToken = default)
+    {
+        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.BeforeCommit, cancellationToken);
+    }
+
+    /// <summary>
+    ///     事物提交之后
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    protected virtual async Task OnAfterCommitAsync(CancellationToken cancellationToken = default)
+    {
+        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterCommit, cancellationToken);
+    }
+    
+    /// <summary>
+    ///     事物回滚之后
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    protected virtual async Task OnAfterRollbackAsync(CancellationToken cancellationToken = default)
+    {
+        await UnitOfWorkEventDispatcher.ProcessEventAsync(TransactionPhase.AfterRollback, cancellationToken);
+    }
+    
     /// <summary>
     ///     资源释放
     /// </summary>

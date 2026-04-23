@@ -28,12 +28,12 @@ public class WebSocketMiddleware
     /// <param name="webSocketAuthorization"></param>
     public WebSocketMiddleware(RequestDelegate next, WebSocketHandlerBase webSocketHandler, IWebSocketAuthorization webSocketAuthorization)
     {
-        WebSocketHandler = webSocketHandler;
-        _next = next;
-        _webSocketAuthorization = webSocketAuthorization;
+        _next = next ?? throw new ArgumentNullException(nameof(next));
+        _webSocketHandler = webSocketHandler ?? throw new ArgumentNullException(nameof(webSocketHandler));
+        _webSocketAuthorization = webSocketAuthorization ?? throw new ArgumentNullException(nameof(webSocketAuthorization));
     }
 
-    private WebSocketHandlerBase WebSocketHandler { get; }
+    private readonly WebSocketHandlerBase _webSocketHandler;
 
     /// <summary>
     ///     执行
@@ -51,7 +51,9 @@ public class WebSocketMiddleware
         if (!await _webSocketAuthorization.AuthorizeAsync(context))
         {
             context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("basic auth failed .");
+            context.Response.ContentType = "text/plain";
+            context.Response.Headers["WWW-Authenticate"] = "Basic";
+            await context.Response.WriteAsync("basic auth failed.");
             return;
         }
         
@@ -61,7 +63,7 @@ public class WebSocketMiddleware
         {
             RemoteIpAddress = context.GetRemoteIpAddress(),
             RemotePort = context.Connection.RemotePort,
-            UserName = context.Request.Query.TryGetValue("userName", out var value) ? value.ToString() : "匿名"
+            UserName = GetUserName(context)
         };
         
         // 认证通过进行用户名赋值
@@ -73,7 +75,7 @@ public class WebSocketMiddleware
         // 无效
         // var cancellationToken = context.RequestAborted;
         CancellationTokenSource cancellationTokenSource = new();
-        await WebSocketHandler.OnConnected(webSocketSession, cancellationTokenSource.Token).ConfigureAwait(false);
+        await _webSocketHandler.OnConnected(webSocketSession, cancellationTokenSource.Token).ConfigureAwait(false);
         await ReceiveAsync(webSocketSession, cancellationTokenSource.Token);
         #if NET8_0_OR_GREATER
             await cancellationTokenSource.CancelAsync(); 
@@ -136,7 +138,7 @@ public class WebSocketMiddleware
             }
         }
         
-        await WebSocketHandler.OnDisconnected(session, cancellationToken);
+        await _webSocketHandler.OnDisconnected(session, cancellationToken);
     }
 
     private async Task HandleAsync(IWebSocketSession session, ResponseMessage message, ValueWebSocketReceiveResult receiveResult, CancellationToken cancellationToken = default)
@@ -144,12 +146,19 @@ public class WebSocketMiddleware
         switch (receiveResult.MessageType)
         {
             case WebSocketMessageType.Text or WebSocketMessageType.Binary:
-                await WebSocketHandler.ReceiveAsync(session, message, receiveResult, cancellationToken).ConfigureAwait(false);
+                await _webSocketHandler.ReceiveAsync(session, message, receiveResult, cancellationToken).ConfigureAwait(false);
                 return;
             
             case WebSocketMessageType.Close:
-                await WebSocketHandler.OnDisconnected(session, cancellationToken).ConfigureAwait(false);
+                await _webSocketHandler.OnDisconnected(session, cancellationToken).ConfigureAwait(false);
                 break;
         }
+    }
+    
+    private string GetUserName(HttpContext context)
+    {
+        if (context.User.Identity?.IsAuthenticated == true) return context.User.Identity.GetUserName();
+        if (context.Request.Query.TryGetValue("userName", out var value)) return value.ToString();
+        return "匿名";
     }
 }

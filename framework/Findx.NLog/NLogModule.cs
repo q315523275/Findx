@@ -1,10 +1,12 @@
 ﻿using System.ComponentModel;
+using Findx.Extensions;
 using Findx.Modularity;
 using Findx.NLog.LayoutRenderX;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using NLog.LayoutRenderers;
+using NLog;
 
 namespace Findx.NLog;
 
@@ -31,8 +33,17 @@ public class NLogModule : StartupModule
     /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
+        // 配置服务
+        var configuration = services.GetConfiguration();
+        if (!configuration.GetValue<bool>("Logging:Enabled")) return services;
+        
         services.Replace(new ServiceDescriptor(typeof(ILoggerProvider), typeof(NLogLoggerProvider), ServiceLifetime.Singleton));
-        LayoutRenderer.Register<TraceIdentifierLayoutRenderer>("TraceIdentifier");
+        //  LayoutRenderer.Register<TraceIdentifierLayoutRenderer>("TraceIdentifier");
+        LogManager.Setup().SetupExtensions(builder =>
+        {
+            builder.RegisterLayoutRenderer<TraceIdentifierLayoutRenderer>("TraceIdentifier");
+        });
+        
         return services;
     }
 }

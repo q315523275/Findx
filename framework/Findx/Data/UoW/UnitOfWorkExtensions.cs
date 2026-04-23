@@ -14,8 +14,7 @@ public static class UnitOfWorkExtensions
     public static IRepository<TEntity> GetRepository<TEntity>(this IUnitOfWork uow) where TEntity : class, IEntity<Guid>
     {
         var repo = uow.ServiceProvider.GetRequiredService<IRepository<TEntity>>();
-        repo.UnitOfWork = uow;
-        return repo;
+        return repo.WithUnitOfWork(uow);
     }
     
     /// <summary>
@@ -28,8 +27,7 @@ public static class UnitOfWorkExtensions
     public static IRepository<TEntity, TKey> GetRepository<TEntity, TKey>(this IUnitOfWork uow) where TEntity : class, IEntity<TKey>
     {
         var repo = uow.ServiceProvider.GetRequiredService<IRepository<TEntity, TKey>>();
-        repo.UnitOfWork = uow;
-        return repo;
+        return repo.WithUnitOfWork(uow);
     }
     
     /// <summary>

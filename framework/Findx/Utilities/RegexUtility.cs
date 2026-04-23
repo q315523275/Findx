@@ -15,8 +15,8 @@ public static class RegexUtility
     /// <param name="options">选项</param>
     public static IEnumerable<string> GetValues(string input, string pattern, RegexOptions options = RegexOptions.IgnoreCase)
     {
-        if (string.IsNullOrWhiteSpace(input))
-            return new List<string>();
+        if (string.IsNullOrWhiteSpace(input)) return new List<string>();
+        
         var matches = Regex.Matches(input, pattern, options);
         return from Match match in matches select match.Value;
     }
@@ -30,11 +30,9 @@ public static class RegexUtility
     /// <param name="options">选项</param>
     public static string GetValue(string input, string pattern, string resultPattern = "", RegexOptions options = RegexOptions.IgnoreCase)
     {
-        if (string.IsNullOrWhiteSpace(input))
-            return string.Empty;
+        if (string.IsNullOrWhiteSpace(input)) return string.Empty;
         var match = Regex.Match(input, pattern, options);
-        if (match.Success == false)
-            return string.Empty;
+        if (!match.Success) return string.Empty;
         return string.IsNullOrWhiteSpace(resultPattern) ? match.Value : match.Result(resultPattern);
     }
 
@@ -46,8 +44,7 @@ public static class RegexUtility
     /// <param name="options">选项</param>
     public static string[] Split(string input, string pattern, RegexOptions options = RegexOptions.IgnoreCase)
     {
-        if (string.IsNullOrWhiteSpace(input))
-            return new string[] { };
+        if (string.IsNullOrWhiteSpace(input)) return [];
         return Regex.Split(input, pattern, options);
     }
 
