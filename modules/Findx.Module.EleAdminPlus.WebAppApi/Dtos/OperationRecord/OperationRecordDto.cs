@@ -15,7 +15,7 @@ public class OperationRecordDto: IResponse
     /// <summary>
     ///     账号
     /// </summary>
-    public string UserName { get; set; }
+    public string Username { get; set; }
 
     /// <summary>
     ///     用户名

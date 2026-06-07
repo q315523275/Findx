@@ -1,4 +1,4 @@
-﻿using Findx.Data;
+using Findx.Data;
 using FreeSql.DataAnnotations;
 
 namespace Findx.Module.EleAdminPlus.Shared.Models;
@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_menu")]
 [EntityExtension(DataSource = "system")]
-public class SysMenuInfo : FullAuditedBase<long, long>, ITenant<long>, ISort, ISoftDeletable
+public class SysMenuInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable
 {
     /// <summary>
     ///     菜单id
@@ -67,9 +67,9 @@ public class SysMenuInfo : FullAuditedBase<long, long>, ITenant<long>, ISort, IS
     public string Meta { get; set; }
 
     /// <summary>
-    ///     租户id
+    ///     应用ID（所属功能模块）
     /// </summary>
-    public long? TenantId { get; set; }
+    public long AppId { get; set; }
 
     /// <summary>
     ///     是否删除

@@ -1,4 +1,4 @@
-﻿using Findx.Data;
+using Findx.Data;
 using Findx.Module.EleAdminPlus.Shared.Enums;
 using FreeSql.DataAnnotations;
 
@@ -44,12 +44,17 @@ public class SysRoleInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDele
     public string IpAddress { get; set; }
     
     /// <summary>
+    ///     冗余机构Json
+    /// </summary>
+    public string OrgJson { get; set; }
+    
+    /// <summary>
     ///     备注
     /// </summary>
     public string Comments { get; set; }
-
+    
     /// <summary>
-    ///     租户id
+    ///     租户ID（用于业务数据隔离）
     /// </summary>
     public long? TenantId { get; set; }
     
@@ -62,9 +67,4 @@ public class SysRoleInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDele
     ///     删除时间
     /// </summary>
     public DateTime? DeletionTime { get; set; }
-    
-    /// <summary>
-    ///     冗余机构Json
-    /// </summary>
-    public string OrgJson { get; set; }
 }

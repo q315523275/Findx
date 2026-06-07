@@ -1,5 +1,3 @@
-using Findx.AspNetCore.Mvc;
-using Findx.Data;
 using Findx.Expressions;
 
 namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.OperationRecord;
@@ -13,7 +11,7 @@ public class OperationRecordQueryDto : SortCondition
     ///     账号
     /// </summary>
     [QueryField(FilterOperate = FilterOperate.Contains)]
-    public string UserName { set; get; }
+    public string Username { set; get; }
 
     /// <summary>
     ///     用户名

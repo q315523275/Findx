@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_operation_record")]
 [EntityExtension(DataSource = "system")]
-public class SysOperationRecordInfo : EntityBase<long>, ITenant<long>, ICreatedTime
+public class SysOperationRecordInfo : EntityBase<long>, ICreatedTime
 {
     /// <summary>
     ///     编号
@@ -19,7 +19,7 @@ public class SysOperationRecordInfo : EntityBase<long>, ITenant<long>, ICreatedT
     /// <summary>
     ///     账号
     /// </summary>
-    public string UserName { get; set; }
+    public string Username { get; set; }
 
     /// <summary>
     ///     用户名
@@ -102,7 +102,7 @@ public class SysOperationRecordInfo : EntityBase<long>, ITenant<long>, ICreatedT
     public int SpendTime { get; set; }
 
     /// <summary>
-    ///     租户编号
+    ///     租户ID（用于业务数据隔离）
     /// </summary>
     public long? TenantId { get; set; }
     

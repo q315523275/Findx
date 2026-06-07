@@ -1,4 +1,4 @@
-﻿using Findx.Data;
+using Findx.Data;
 using FreeSql.DataAnnotations;
 
 namespace Findx.Module.EleAdminPlus.Shared.Models;
@@ -19,7 +19,7 @@ public class SysUserInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDele
     /// <summary>
     ///     账号
     /// </summary>
-    public string UserName { get; set; }
+    public string Username { get; set; }
 
     /// <summary>
     ///     密码
@@ -92,10 +92,20 @@ public class SysUserInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDele
     public string OrgName { get; set; }
 
     /// <summary>
-    ///     状态, 0正常, 1冻结
+    ///     状态: 0正常 1冻结
     /// </summary>
     public int Status { get; set; }
 
+    /// <summary>
+    ///     冗余角色Json
+    /// </summary>
+    public string RoleJson { get; set; }
+    
+    /// <summary>
+    ///     租户ID（用于业务数据隔离）
+    /// </summary>
+    public long? TenantId { get; set; }
+    
     /// <summary>
     ///     是否删除
     /// </summary>
@@ -105,14 +115,4 @@ public class SysUserInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDele
     ///     删除时间
     /// </summary>
     public DateTime? DeletionTime { get; set; }
-
-    /// <summary>
-    ///     租户id
-    /// </summary>
-    public long? TenantId { get; set; }
-    
-    /// <summary>
-    ///     冗余角色Json
-    /// </summary>
-    public string RoleJson { get; set; }
 }

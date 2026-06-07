@@ -55,7 +55,7 @@ public class SysUserController : CrudControllerBase<SysUserInfo, UserSimplifyVo,
     /// <returns></returns>
     private Expression<Func<SysUserInfo, bool>> BuildDataScopeWhereExpression(Expression<Func<SysUserInfo, bool>> defaultWhere)
     {
-        var user = _workContext.GetCurrentUser();
+        var user = _workContext.ContextUser;
         var exp = PredicateBuilder.New<SysUserInfo>()
                                   .AndIf(_workContext.DataScope is DataScope.Custom, x => _workContext.OrgIds.Contains(x.OrgId.Value))
                                   .AndIf(_workContext.DataScope is DataScope.Subs, x => _workContext.OrgIds.Contains(x.OrgId.Value))

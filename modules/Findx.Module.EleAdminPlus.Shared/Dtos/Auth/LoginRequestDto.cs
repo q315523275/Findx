@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Findx.Data;
 
 namespace Findx.Module.EleAdminPlus.Shared.Dtos.Auth;
@@ -12,7 +12,7 @@ public partial class LoginRequestDto: ValidatableObject, IRequest
     ///     账号
     /// </summary>
     [Required]
-    public string UserName { set; get; }
+    public string Username { set; get; }
 
     /// <summary>
     ///     密码
@@ -26,9 +26,9 @@ public partial class LoginRequestDto: ValidatableObject, IRequest
     public string Code { set; get; }
 
     /// <summary>
-    ///     租户
+    ///     租户编码（用于识别租户）
     /// </summary>
-    public long? TenantId { set; get; }
+    public string TenantCode { set; get; }
 
     /// <summary>
     ///     uuid

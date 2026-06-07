@@ -29,6 +29,8 @@ public class AuthService : IAuthService, IScopeDependency
 {
     private readonly IRepository<SysLoginRecordInfo, long> _loginRecordRepo;
     private readonly IRepository<SysUserInfo, long> _userRepo;
+    private readonly IRepository<SysTenantInfo, long> _tenantRepo;
+    private readonly IRepository<SysTenantAppSubscriptionInfo, long> _subscriptionRepo;
     private readonly IKeyGenerator<long> _keyGenerator;
     
     private readonly IServiceProvider _serviceProvider;
@@ -48,7 +50,9 @@ public class AuthService : IAuthService, IScopeDependency
         IJwtTokenBuilder tokenBuilder, 
         IOptions<JwtOptions> options, 
         ICacheFactory cacheFactory, 
-        IRepository<SysUserInfo, long> userRepo, 
+        IRepository<SysUserInfo, long> userRepo,
+        IRepository<SysTenantInfo, long> tenantRepo,
+        IRepository<SysTenantAppSubscriptionInfo, long> subscriptionRepo, 
         IRepository<SysLoginRecordInfo, long> loginRecordRepo, 
         ISettingProvider settingProvider, 
         IKeyGenerator<long> keyGenerator,
@@ -59,6 +63,8 @@ public class AuthService : IAuthService, IScopeDependency
         _options = options;
         _cacheFactory = cacheFactory;
         _userRepo = userRepo;
+        _tenantRepo = tenantRepo;
+        _subscriptionRepo = subscriptionRepo;
         _loginRecordRepo = loginRecordRepo;
         _keyGenerator = keyGenerator;
         _httpContextAccessor = httpContextAccessor;
@@ -76,23 +82,20 @@ public class AuthService : IAuthService, IScopeDependency
     /// <returns></returns>
     public virtual async Task<CommonResult> LoginAsync(LoginRequestDto req, CancellationToken cancellationToken = default)
     {
-        // 1. 验证码校验
+        //  1. 验证码校验
         var captchaValidation = await ValidateCaptchaAsync(req, cancellationToken);
-        if (!captchaValidation.IsSuccess()) 
-            return captchaValidation;
+        if (!captchaValidation.IsSuccess()) return captchaValidation;
 
-        // 2. 密码错误次数检查
-        var passwordValidation = await ValidatePasswordAttemptAsync(req.UserName, cancellationToken);
-        if (!passwordValidation.IsSuccess()) 
-            return passwordValidation;
+        //  2. 密码错误次数检查
+        var passwordValidation = await ValidatePasswordAttemptAsync(req.Username, cancellationToken);
+        if (!passwordValidation.IsSuccess()) return passwordValidation;
 
-        // 3. 用户身份验证
+        //  3. 用户身份验证
         var userValidation = await ValidateUserCredentialsAsync(req, cancellationToken);
-        if (!userValidation.IsSuccess()) 
-            return userValidation;
+        if (!userValidation.IsSuccess()) return userValidation;
 
-        // 4. 登录成功处理
-        return await HandleSuccessfulLoginAsync(req, userValidation.Data, cancellationToken);
+        //  5. 登录成功处理
+        return await HandleSuccessfulLoginAsync(req, userValidation.Data.UserInfo, userValidation.Data.TenantInfo, cancellationToken);
     }
     
     /// <summary>
@@ -117,13 +120,13 @@ public class AuthService : IAuthService, IScopeDependency
     /// <summary>
     ///     密码尝试次数检查
     /// </summary>
-    /// <param name="userName"></param>
+    /// <param name="username"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<CommonResult> ValidatePasswordAttemptAsync(string userName, CancellationToken cancellationToken)
+    private async Task<CommonResult> ValidatePasswordAttemptAsync(string username, CancellationToken cancellationToken)
     {
         var cache = _cacheFactory.Create(_defaultCacheType);
-        var errorCacheKey = $"error:{userName}";
+        var errorCacheKey = $"error:{username}";
         var errorCount = await cache.GetAsync<int>(errorCacheKey, cancellationToken);
     
         return errorCount >= 5 ? CommonResult.Fail("50509", "密码错误次数超出限制") : CommonResult.Success();
@@ -135,28 +138,44 @@ public class AuthService : IAuthService, IScopeDependency
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    private async Task<CommonResult<SysUserInfo>> ValidateUserCredentialsAsync(LoginRequestDto request, CancellationToken cancellationToken)
+    private async Task<CommonResult<(SysUserInfo UserInfo, SysTenantInfo TenantInfo)>> ValidateUserCredentialsAsync(LoginRequestDto request, CancellationToken cancellationToken)
     {
-        var accountInfo = await _userRepo.FirstAsync(it => it.UserName == request.UserName && it.TenantId == request.TenantId, cancellationToken);
+        //  1. 验证租户
+        if (request.TenantCode.IsNullOrWhiteSpace())
+            return CommonResult.Fail<(SysUserInfo, SysTenantInfo)>("D1001", "租户编码不能为空");
+        
+        var tenant = await _tenantRepo.FirstAsync(t => t.Code == request.TenantCode, cancellationToken);
+        if (tenant == null)
+            return CommonResult.Fail<(SysUserInfo, SysTenantInfo)>("D1002", "租户不存在");
+        
+        if (tenant.Status != 1)
+            return CommonResult.Fail<(SysUserInfo, SysTenantInfo)>("D1003", "租户已禁用");
+        
+        if (tenant.ExpireTime < DateTime.Now)
+            return CommonResult.Fail<(SysUserInfo, SysTenantInfo)>("D1004", "租户已过期");
+        
+        //  2. 验证用户（在指定租户下）
+        var accountInfo = await _userRepo.FirstAsync(it => it.Username == request.Username && it.TenantId == tenant.Id, cancellationToken);
     
         //  验证帐号是否存在
-        if (accountInfo == null) return CommonResult.Fail<SysUserInfo>("D1000", "账户不存在");
+        if (accountInfo == null) return CommonResult.Fail<(SysUserInfo, SysTenantInfo)>("D1000", "账户不存在");
 
         //  验证帐号密码是否正确
         if (!accountInfo.Password.Equals(EncryptUtility.Md5By32(request.Password), StringComparison.OrdinalIgnoreCase))
         {
             await RecordFailedLoginAttemptAsync(request, accountInfo, "账号密码错误", cancellationToken);
-            return CommonResult.Fail<SysUserInfo>("D1000", "账号密码错误");
+            return CommonResult.Fail<(SysUserInfo, SysTenantInfo)>("D1000", "账号密码错误");
         }
 
         //  验证账号是否被冻结
         if (accountInfo.Status != CommonStatus.Enable.To<int>())
         {
             await RecordFailedLoginAttemptAsync(request, accountInfo, "账号已冻结", cancellationToken);
-            return CommonResult.Fail<SysUserInfo>("D1017", "账号已冻结");
+            return CommonResult.Fail<(SysUserInfo, SysTenantInfo)>("D1017", "账号已冻结");
         }
 
-        return CommonResult.Success(accountInfo);
+        //  返回用户信息和租户信息（避免后续重复查询）
+        return CommonResult.Success((accountInfo, tenant));
     }
     
     /// <summary>
@@ -179,8 +198,8 @@ public class AuthService : IAuthService, IScopeDependency
             Ip = _httpContextAccessor.HttpContext?.GetClientIp(),
             LoginType = 1,
             Os = userAgent?.Platform.Name,
-            TenantId = request.TenantId,
-            UserName = request.UserName,
+            TenantId = accountInfo.TenantId,
+            Username = request.Username,
             Nickname = accountInfo.Nickname
         };
 
@@ -188,7 +207,7 @@ public class AuthService : IAuthService, IScopeDependency
     
         //  更新密码错误次数
         var cache = _cacheFactory.Create(_defaultCacheType);
-        var errorCacheKey = $"error:{request.UserName}";
+        var errorCacheKey = $"error:{request.Username}";
         var errorCount = await cache.GetAsync<int>(errorCacheKey, cancellationToken);
         errorCount++;
         await cache.AddAsync(errorCacheKey, errorCount, TimeSpan.FromMinutes(15), cancellationToken);
@@ -206,9 +225,10 @@ public class AuthService : IAuthService, IScopeDependency
     /// </summary>
     /// <param name="request"></param>
     /// <param name="accountInfo"></param>
+    /// <param name="tenant"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected virtual async Task<CommonResult> HandleSuccessfulLoginAsync(LoginRequestDto request, SysUserInfo accountInfo, CancellationToken cancellationToken)
+    protected virtual async Task<CommonResult> HandleSuccessfulLoginAsync(LoginRequestDto request, SysUserInfo accountInfo, SysTenantInfo tenant, CancellationToken cancellationToken)
     {
         //  记录成功登录
         await RecordSuccessfulLoginAsync(request, accountInfo, cancellationToken);
@@ -217,7 +237,7 @@ public class AuthService : IAuthService, IScopeDependency
         await ClearLoginArtifactsAsync(request, cancellationToken);
     
         //  生成Token
-        return await GenerateAuthTokenAsync(accountInfo, cancellationToken);
+        return await GenerateAuthTokenAsync(accountInfo, tenant, cancellationToken);
     }
     
     /// <summary>
@@ -239,8 +259,8 @@ public class AuthService : IAuthService, IScopeDependency
             Ip = _httpContextAccessor.HttpContext?.GetClientIp(),
             LoginType = 0, // 0表示成功
             Os = userAgent?.Platform.Name,
-            TenantId = request.TenantId,
-            UserName = request.UserName,
+            TenantId = accountInfo.TenantId,
+            Username = request.Username,
             Nickname = accountInfo.Nickname
         };
 
@@ -257,7 +277,7 @@ public class AuthService : IAuthService, IScopeDependency
         var cache = _cacheFactory.Create(_defaultCacheType);
     
         // 清除密码错误次数
-        var errorCacheKey = $"error:{request.UserName}";
+        var errorCacheKey = $"error:{request.Username}";
         await cache.RemoveAsync(errorCacheKey, cancellationToken);
     
         // 清除验证码
@@ -272,20 +292,23 @@ public class AuthService : IAuthService, IScopeDependency
     ///     生成认证Token
     /// </summary>
     /// <param name="accountInfo"></param>
+    /// <param name="tenant"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public virtual async Task<CommonResult> GenerateAuthTokenAsync(SysUserInfo accountInfo, CancellationToken cancellationToken)
+    public virtual async Task<CommonResult> GenerateAuthTokenAsync(SysUserInfo accountInfo, SysTenantInfo tenant, CancellationToken cancellationToken)
     {
         //  token票据
         var payload = new Dictionary<string, string>
         {
             { ClaimTypes.UserId, accountInfo.Id.SafeString() },
             { ClaimTypes.UserIdTypeName, typeof(long).FullName },
-            { ClaimTypes.UserName, accountInfo.UserName.SafeString() },
+            { ClaimTypes.UserName, accountInfo.Username.SafeString() },
             { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
             { ClaimTypes.TenantId, accountInfo.TenantId.SafeString() },
+            { ClaimTypes.TenantCode, tenant.Code },
+            { ClaimTypes.TenantName, tenant.Name },
             { ClaimTypes.OrgId, accountInfo.OrgId.SafeString() },
-            { ClaimTypes.OrgName, accountInfo.OrgName.SafeString() }
+            { ClaimTypes.OrgName, accountInfo.OrgName.SafeString() },
         };
     
         //  角色id及编号

@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_user_role")]
 [EntityExtension(DataSource = "system")]
-public class SysUserRoleInfo : EntityBase<long>
+public class SysUserRoleInfo : EntityBase<long>, ITenant<long>
 {
     /// <summary>
     ///     主键id
@@ -27,7 +27,12 @@ public class SysUserRoleInfo : EntityBase<long>
     public long RoleId { get; set; }
     
     /// <summary>
-    ///     角色信息
+    ///     租户id
+    /// </summary>
+    public long? TenantId { get; set; }
+    
+    /// <summary>
+    ///    导航属性 - 角色信息
     /// </summary>
     [Navigate(nameof(RoleId))]
     public virtual SysRoleInfo RoleInfo { set; get; }

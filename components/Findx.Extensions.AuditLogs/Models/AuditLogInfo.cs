@@ -26,7 +26,7 @@ public class AuditLogInfo: EntityBase<long>
     /// <summary>
     ///     用户账号
     /// </summary>
-    public string UserName { set; get; }
+    public string Username { set; get; }
     
     /// <summary>
     ///     用户昵称

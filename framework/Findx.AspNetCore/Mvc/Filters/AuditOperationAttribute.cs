@@ -59,7 +59,7 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
         if (httpContext.User.Identity is { IsAuthenticated: true } and ClaimsIdentity identity)
         {
             operation.UserId = identity.GetUserId();
-            operation.UserName = identity.GetUserName();
+            operation.Username = identity.GetUserName();
             operation.NickName = identity.GetNickname();
             operation.TenantId = identity.GetTenantId();
         }

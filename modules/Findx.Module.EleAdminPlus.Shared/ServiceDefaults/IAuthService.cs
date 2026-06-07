@@ -22,9 +22,10 @@ public interface IAuthService
     ///     生成认证Token
     /// </summary>
     /// <param name="accountInfo"></param>
+    /// <param name="tenant"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<CommonResult> GenerateAuthTokenAsync(SysUserInfo accountInfo, CancellationToken cancellationToken);
+    Task<CommonResult> GenerateAuthTokenAsync(SysUserInfo accountInfo, SysTenantInfo tenant, CancellationToken cancellationToken);
     
     /// <summary>
     ///     用户登出

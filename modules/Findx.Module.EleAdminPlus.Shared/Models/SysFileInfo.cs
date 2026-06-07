@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_file_record")]
 [EntityExtension(DataSource = "system")]
-public class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, ITenant<long>, ISoftDeletable
+public class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, ISoftDeletable
 {
     /// <summary>
     ///     字典id
@@ -82,7 +82,7 @@ public class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, IT
     public string OrgName { get; set; }
 
     /// <summary>
-    ///     租户id
+    ///     租户ID（用于业务数据隔离）
     /// </summary>
     public long? TenantId { get; set; }
     

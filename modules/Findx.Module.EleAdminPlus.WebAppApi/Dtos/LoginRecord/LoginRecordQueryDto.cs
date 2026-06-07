@@ -13,7 +13,7 @@ public class LoginRecordQueryDto : SortCondition
     ///     账号
     /// </summary>
     [QueryField(FilterOperate = FilterOperate.Contains)]
-    public string UserName { set; get; }
+    public string Username { set; get; }
 
     /// <summary>
     ///     用户名

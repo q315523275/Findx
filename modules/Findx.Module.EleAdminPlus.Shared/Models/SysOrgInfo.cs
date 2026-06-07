@@ -1,4 +1,4 @@
-﻿using Findx.Data;
+using Findx.Data;
 using FreeSql.DataAnnotations;
 
 namespace Findx.Module.EleAdminPlus.Shared.Models;
@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_org")]
 [EntityExtension(DataSource = "system")]
-public class SysOrgInfo : FullAuditedBase<long, long>, IDataOwner<long>, ITenant<long>, ISort, ISoftDeletable
+public class SysOrgInfo : FullAuditedBase<long, long>, IDataOwner<long>, ISort, ISoftDeletable
 {
     /// <summary>
     ///     机构id
@@ -62,6 +62,11 @@ public class SysOrgInfo : FullAuditedBase<long, long>, IDataOwner<long>, ITenant
     public string Comments { get; set; }
 
     /// <summary>
+    ///     租户ID（用于业务数据隔离）
+    /// </summary>
+    public long? TenantId { get; set; }
+    
+    /// <summary>
     ///     是否删除
     /// </summary>
     public bool IsDeleted { get; set; }
@@ -70,9 +75,4 @@ public class SysOrgInfo : FullAuditedBase<long, long>, IDataOwner<long>, ITenant
     ///     删除时间
     /// </summary>
     public DateTime? DeletionTime { get; set; }
-
-    /// <summary>
-    ///     租户id
-    /// </summary>
-    public long? TenantId { get; set; }
 }

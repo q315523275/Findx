@@ -1,11 +1,8 @@
 using System.ComponentModel;
-using System.Security.Principal;
-using Findx.AspNetCore.Extensions;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Module.EleAdminPlus.Shared.Dtos.Auth;
 using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
-using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -53,7 +50,7 @@ public class AuthController : AreaApiControllerBase
     [HttpGet("/api/auth/logout"), Authorize, Description("退出登录")]
     public virtual async Task<CommonResult> LogoutAsync(CancellationToken cancellationToken)
     {
-        var userId = _workContext.GetCurrentUser().UserId;
+        var userId = _workContext.ContextUser.UserId;
         return await _authService.LogoutAsync(userId, cancellationToken);
     }
     
@@ -64,7 +61,7 @@ public class AuthController : AreaApiControllerBase
     [HttpGet("/api/auth/user"), Authorize, Description("查看账户信息")]
     public virtual async Task<CommonResult> UserAsync(CancellationToken cancellationToken)
     {
-        var userId = _workContext.GetCurrentUser().UserId;
+        var userId = _workContext.ContextUser.UserId;
         return await _authService.GetUserAsync(userId, cancellationToken);
     }
     
@@ -75,7 +72,7 @@ public class AuthController : AreaApiControllerBase
     [HttpGet("/api/auth/menus"), Authorize, Description("查看账户菜单")]
     public virtual async Task<CommonResult> MenusAsync(string code, CancellationToken cancellationToken)
     {
-        var userId = _workContext.GetCurrentUser().UserId;
+        var userId = _workContext.ContextUser.UserId;
         return await _authService.GetUserMenusAsync(userId, code, cancellationToken);
     }
 
@@ -88,7 +85,7 @@ public class AuthController : AreaApiControllerBase
     [HttpPut("/api/auth/password"), Authorize, Description("修改账户密码")]
     public virtual async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req, CancellationToken cancellationToken)
     {
-        var userId = _workContext.GetCurrentUser().UserId;
+        var userId = _workContext.ContextUser.UserId;
         return await _authService.UpdatePasswordAsync(userId, req, cancellationToken);
     }
     
@@ -99,7 +96,7 @@ public class AuthController : AreaApiControllerBase
     [HttpPut("/api/auth/user"), Authorize, Description("修改账户信息")]
     public virtual async Task<CommonResult> SaveUserAsync([FromBody] UpdateUserDto req, CancellationToken cancellationToken)
     {
-        var userId = _workContext.GetCurrentUser().UserId;
+        var userId = _workContext.ContextUser.UserId;
         return await _authService.UpdateUserAsync(userId, req, cancellationToken);
     }
     
@@ -110,7 +107,7 @@ public class AuthController : AreaApiControllerBase
     [HttpPut("/api/auth/user/avatar"), Authorize, Description("修改账户头像")]
     public virtual async Task<CommonResult> SaveUserAvatarAsync([FromBody] UpdateUserAvatarDto req, CancellationToken cancellationToken)
     {
-        var userId = _workContext.GetCurrentUser().UserId;
+        var userId = _workContext.ContextUser.UserId;
         return await _authService.UpdateUserAvatarAsync(userId, req, cancellationToken);
     }
 }

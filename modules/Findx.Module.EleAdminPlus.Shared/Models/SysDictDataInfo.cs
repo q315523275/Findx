@@ -1,4 +1,4 @@
-﻿using Findx.Data;
+using Findx.Data;
 using FreeSql.DataAnnotations;
 
 namespace Findx.Module.EleAdminPlus.Shared.Models;
@@ -8,7 +8,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// </summary>
 [Table(Name = "sys_dict_data")]
 [EntityExtension(DataSource = "system")]
-public class SysDictDataInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable, ITenant<long>
+public class SysDictDataInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable
 {
     /// <summary>
     ///     字典项id
@@ -32,14 +32,24 @@ public class SysDictDataInfo : FullAuditedBase<long, long>, ISort, ISoftDeletabl
     public string Value { get; set; }
 
     /// <summary>
-    ///     备注
-    /// </summary>
-    public string Comments { get; set; }
-
-    /// <summary>
     ///     排序号
     /// </summary>
     public int Sort { get; set; }
+    
+    /// <summary>
+    ///     所属应用ID（冗余字段，方便查询）
+    /// </summary>
+    public long? AppId { get; set; }
+    
+    /// <summary>
+    ///     租户ID（冗余字段，方便查询）
+    /// </summary>
+    public long? TenantId { get; set; }
+    
+    /// <summary>
+    ///     备注
+    /// </summary>
+    public string Comments { get; set; }
     
     /// <summary>
     ///     是否删除
@@ -56,9 +66,4 @@ public class SysDictDataInfo : FullAuditedBase<long, long>, ISort, ISoftDeletabl
     /// </summary>
     [Navigate(nameof(TypeId))]
     public SysDictTypeInfo TypeInfo { get; set; }
-
-    /// <summary>
-    ///     租户Id
-    /// </summary>
-    public long? TenantId { get; set; }
 }

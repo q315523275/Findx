@@ -52,7 +52,7 @@ public class SysOrgController : CrudControllerBase<SysOrgInfo, OrgSimplifyDto, O
     /// <returns></returns>
     private Expression<Func<SysOrgInfo, bool>> BuildDataScopeWhereExpression(Expression<Func<SysOrgInfo, bool>> defaultWhere)
     {
-        var user = _workContext.GetCurrentUser();
+        var user = _workContext.ContextUser;
         var exp = PredicateBuilder.New<SysOrgInfo>()
                                   .AndIf(_workContext.DataScope is DataScope.Custom, x => _workContext.OrgIds.Contains(x.Id))
                                   .AndIf(_workContext.DataScope is DataScope.Subs, x => _workContext.OrgIds.Contains(x.Id))
