@@ -6,9 +6,9 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// <summary>
 ///     系统用户
 /// </summary>
-[Table(Name = "sys_user")]
+[Table(Name = "sys_users")]
 [EntityExtension(DataSource = "system")]
-public class SysUserInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDeletable
+public class SysUserInfo : FullAuditedBase<long, long>, IDataDepartment<long>, ITenant<long>, ISoftDeletable
 {
     /// <summary>
     ///     用户id
@@ -76,6 +76,11 @@ public class SysUserInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDele
     /// </summary>
     public string Introduction { get; set; }
 
+    /// <summary>
+    ///     员工Id
+    /// </summary>
+    public long? EmployeeId { get; set; }
+    
     /// <summary>
     ///     员工编号
     /// </summary>

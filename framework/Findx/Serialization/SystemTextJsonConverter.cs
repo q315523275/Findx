@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Findx.Extensions;
 
 namespace Findx.Serialization;
 
@@ -52,11 +53,16 @@ public class DateTimeNullableJsonConverter : JsonConverter<DateTime?>
     /// <returns></returns>
     public override DateTime? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None) return default;
+        if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None) return null;
 
         if (reader.TokenType == JsonTokenType.String)
-            return DateTime.TryParse(reader.GetString(), out var dateTime) ? dateTime : default;
-
+        {
+            var stringValue = reader.GetString();
+            if (stringValue.IsNullOrWhiteSpace()) return null;
+            
+            return DateTime.TryParse(stringValue, out var dateTime) ? dateTime : null;
+        }
+        
         return reader.GetDateTime();
     }
 
@@ -94,8 +100,13 @@ public class LongStringJsonConverter : JsonConverter<long>
         if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None) return 0;
 
         if (reader.TokenType == JsonTokenType.String)
+        {
+            var stringValue = reader.GetString();
+            if (stringValue.IsNullOrWhiteSpace()) return 0;
+            
             return long.TryParse(reader.GetString(), out var longValue) ? longValue : 0;
-
+        }
+        
         return reader.GetInt64();
     }
 
@@ -126,11 +137,16 @@ public class DecimalNullableJsonConverter : JsonConverter<decimal?>
     /// <returns></returns>
     public override decimal? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None) return default;
+        if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None) return null;
 
         if (reader.TokenType == JsonTokenType.String)
-            return decimal.TryParse(reader.GetString(), out var decimalValue) ? decimalValue : default;
-
+        {
+            var stringValue = reader.GetString();
+            if (stringValue.IsNullOrWhiteSpace()) return null;
+            
+            return decimal.TryParse(reader.GetString(), out var decimalValue) ? decimalValue : null;
+        }
+        
         return reader.GetDecimal();
     }
 

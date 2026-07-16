@@ -108,10 +108,10 @@ public class AuthService : IAuthService, IScopeDependency
     {
         if (!_enabledCaptcha) return CommonResult.Success();
 
-        if (request.Code.IsNullOrWhiteSpace() || request.Uuid.IsNullOrWhiteSpace()) return CommonResult.Fail("D1000", "验证码不能为空");
+        if (request.Code.IsNullOrWhiteSpace() || request.CaptchaKey.IsNullOrWhiteSpace()) return CommonResult.Fail("D1000", "验证码不能为空");
         
         var cache = _cacheFactory.Create(_defaultCacheType);
-        var cacheKey = $"verifyCode:{request.Uuid}";
+        var cacheKey = $"verifyCode:{request.CaptchaKey}";
         var cacheValue = await cache.GetAsync<string>(cacheKey, cancellationToken);
     
         return !string.Equals(cacheValue.SafeString(), request.Code, StringComparison.OrdinalIgnoreCase) ? CommonResult.Fail("50500", "验证码错误") : CommonResult.Success();
@@ -168,7 +168,7 @@ public class AuthService : IAuthService, IScopeDependency
         }
 
         //  验证账号是否被冻结
-        if (accountInfo.Status != CommonStatus.Enable.To<int>())
+        if (accountInfo.Status != CommonStatus.Enable.CastTo<int>())
         {
             await RecordFailedLoginAttemptAsync(request, accountInfo, "账号已冻结", cancellationToken);
             return CommonResult.Fail<(SysUserInfo, SysTenantInfo)>("D1017", "账号已冻结");
@@ -215,7 +215,7 @@ public class AuthService : IAuthService, IScopeDependency
         //  清空验证码
         if (_enabledCaptcha)
         {
-            var cacheKey = $"verifyCode:{request.Uuid}";
+            var cacheKey = $"verifyCode:{request.CaptchaKey}";
             await cache.RemoveAsync(cacheKey, cancellationToken);
         }
     }
@@ -283,7 +283,7 @@ public class AuthService : IAuthService, IScopeDependency
         // 清除验证码
         if (_enabledCaptcha)
         {
-            var cacheKey = $"verifyCode:{request.Uuid}";
+            var cacheKey = $"verifyCode:{request.CaptchaKey}";
             await cache.RemoveAsync(cacheKey, cancellationToken);
         }
     }
@@ -304,16 +304,16 @@ public class AuthService : IAuthService, IScopeDependency
             { ClaimTypes.UserIdTypeName, typeof(long).FullName },
             { ClaimTypes.UserName, accountInfo.Username.SafeString() },
             { ClaimTypes.Nickname, accountInfo.Nickname.SafeString() },
-            { ClaimTypes.TenantId, accountInfo.TenantId.SafeString() },
-            { ClaimTypes.TenantCode, tenant.Code },
-            { ClaimTypes.TenantName, tenant.Name },
+            { ClaimTypes.TenantId, tenant.Id.SafeString() },
+            { ClaimTypes.TenantCode, tenant.Code.SafeString() },
+            { ClaimTypes.TenantName, tenant.Name.SafeString() },
             { ClaimTypes.OrgId, accountInfo.OrgId.SafeString() },
             { ClaimTypes.OrgName, accountInfo.OrgName.SafeString() },
         };
     
         //  角色id及编号
         var roleRepo = _serviceProvider.GetRequiredService<IRepository<SysUserRoleInfo, long>>();
-        var roles = await roleRepo.SelectAsync(x => x.UserId == accountInfo.Id && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleSimplifyDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
+        var roles = await roleRepo.SelectAsync(x => x.UserId == accountInfo.Id && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleSimplifyVo { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
     
         payload[ClaimTypes.RoleIds] = roles.Select(x => x.Id).Distinct().JoinAsString(",");
         payload[ClaimTypes.Role] = roles.Select(x => x.RoleCode).Distinct().JoinAsString(",");
@@ -343,14 +343,14 @@ public class AuthService : IAuthService, IScopeDependency
     ///     查看账户信息
     /// </summary>
     /// <returns></returns>
-    public virtual async Task<CommonResult<UserAuthSimplifyDto>> GetUserAsync(long userId, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult<UserAuthSimplifyVo>> GetUserAsync(long userId, CancellationToken cancellationToken = default)
     {
         var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);
-        if (userInfo == null) return CommonResult.Fail<UserAuthSimplifyDto>("D1000", "账户不存在");
+        if (userInfo == null) return CommonResult.Fail<UserAuthSimplifyVo>("D1000", "账户不存在");
 
         var roleRepo = _serviceProvider.GetRequiredService<IRepository<SysUserRoleInfo, long>>();
-        var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleSimplifyDto { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
-        var result = userInfo.MapTo<UserAuthSimplifyDto>();
+        var roles = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => new UserAuthRoleSimplifyVo { Id = x.RoleId, RoleCode = x.RoleInfo.Code, RoleName = x.RoleInfo.Name }, cancellationToken: cancellationToken);
+        var result = userInfo.MapTo<UserAuthSimplifyVo>();
         result.Roles = roles.DistinctBy(x => x.Id);
         return CommonResult.Success(result);
     }
@@ -359,7 +359,7 @@ public class AuthService : IAuthService, IScopeDependency
     ///     查看账户菜单
     /// </summary>
     /// <returns></returns>
-    public virtual async Task<CommonResult<IEnumerable<UserAuthMenuSimplifyDto>>> GetUserMenusAsync(long userId, string code, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult<IEnumerable<UserAuthMenuSimplifyVo>>> GetUserMenusAsync(long userId, string code, CancellationToken cancellationToken = default)
     {
         //  实体仓储
         var roleRepo = _serviceProvider.GetRequiredService<IRepository<SysUserRoleInfo, long>>();
@@ -367,9 +367,9 @@ public class AuthService : IAuthService, IScopeDependency
 
         //  合并菜单查询
         var roleIds = await roleRepo.SelectAsync(x => x.UserId == userId && x.RoleId == x.RoleInfo.Id, x => x.RoleId, cancellationToken: cancellationToken);
-        var menus = new List<UserAuthMenuSimplifyDto>();
+        var menus = new List<UserAuthMenuSimplifyVo>();
         if (roleIds.Any())
-            menus = await menuRepo.SelectAsync(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new UserAuthMenuSimplifyDto { MenuId = x.MenuId }, cancellationToken: cancellationToken);
+            menus = await menuRepo.SelectAsync(x => roleIds.Contains(x.RoleId) && x.MenuId == x.MenuInfo.Id, x => new UserAuthMenuSimplifyVo { MenuId = x.MenuId }, cancellationToken: cancellationToken);
         
         //  去重排序
         var res = menus.DistinctBy(x => x.MenuId).OrderBy(x => x.Sort).AsEnumerable();
@@ -384,7 +384,7 @@ public class AuthService : IAuthService, IScopeDependency
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public virtual async Task<CommonResult> UpdatePasswordAsync(long userId, UpdatePasswordDto request, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult> UpdatePasswordAsync(long userId, UserPasswordEditDto request, CancellationToken cancellationToken = default)
     {
         var principal = _serviceProvider.GetService<IPrincipal>();
         
@@ -406,7 +406,7 @@ public class AuthService : IAuthService, IScopeDependency
     ///     修改账户信息
     /// </summary>
     /// <returns></returns>
-    public virtual async Task<CommonResult> UpdateUserAsync(long userId, UpdateUserDto request, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult> UpdateUserAsync(long userId, UserEditDto request, CancellationToken cancellationToken = default)
     {
         var principal = _serviceProvider.GetService<IPrincipal>();
         var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);
@@ -423,7 +423,7 @@ public class AuthService : IAuthService, IScopeDependency
     ///     修改账户头像
     /// </summary>
     /// <returns></returns>
-    public virtual async Task<CommonResult> UpdateUserAvatarAsync(long userId, UpdateUserAvatarDto request, CancellationToken cancellationToken = default)
+    public virtual async Task<CommonResult> UpdateUserAvatarAsync(long userId, UserAvatarEditDto request, CancellationToken cancellationToken = default)
     {
         var principal = _serviceProvider.GetService<IPrincipal>();
         var userInfo = await _userRepo.FirstAsync(x => x.Id == userId, cancellationToken);

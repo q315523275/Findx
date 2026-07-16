@@ -4,11 +4,11 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdminPlus.Shared.Models;
 
 /// <summary>
-///     角色机构
+///     角色对应组织集合信息表
 /// </summary>
-[Table(Name = "sys_role_org")]
+[Table(Name = "sys_role_organizations")]
 [EntityExtension(DataSource = "system")]
-public class SysRoleOrgInfo : EntityBase<long>
+public class SysRoleOrgInfo : EntityBase<long>, ITenant<long>
 {
     /// <summary>
     ///     主键id
@@ -22,13 +22,19 @@ public class SysRoleOrgInfo : EntityBase<long>
     public long RoleId { get; set; }
 
     /// <summary>
-    ///     机构id
+    ///     组织id
     /// </summary>
     public long OrgId { get; set; }
+    
+    /// <summary>
+    ///     租户id
+    /// </summary>
+    public long? TenantId { get; set; }
     
     /// <summary>
     ///     机构信息
     /// </summary>
     [Navigate(nameof(OrgId))]
-    public virtual SysOrgInfo OrgInfo { set; get; }
+    public virtual SysOrganizationInfo OrgInfo { set; get; }
+
 }

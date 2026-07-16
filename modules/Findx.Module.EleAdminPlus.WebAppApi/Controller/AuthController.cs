@@ -83,7 +83,7 @@ public class AuthController : AreaApiControllerBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpPut("/api/auth/password"), Authorize, Description("修改账户密码")]
-    public virtual async Task<CommonResult> PasswordAsync([FromBody] UpdatePasswordDto req, CancellationToken cancellationToken)
+    public virtual async Task<CommonResult> PasswordAsync([FromBody] UserPasswordEditDto req, CancellationToken cancellationToken)
     {
         var userId = _workContext.ContextUser.UserId;
         return await _authService.UpdatePasswordAsync(userId, req, cancellationToken);
@@ -94,7 +94,7 @@ public class AuthController : AreaApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpPut("/api/auth/user"), Authorize, Description("修改账户信息")]
-    public virtual async Task<CommonResult> SaveUserAsync([FromBody] UpdateUserDto req, CancellationToken cancellationToken)
+    public virtual async Task<CommonResult> SaveUserAsync([FromBody] UserEditDto req, CancellationToken cancellationToken)
     {
         var userId = _workContext.ContextUser.UserId;
         return await _authService.UpdateUserAsync(userId, req, cancellationToken);
@@ -105,7 +105,7 @@ public class AuthController : AreaApiControllerBase
     /// </summary>
     /// <returns></returns>
     [HttpPut("/api/auth/user/avatar"), Authorize, Description("修改账户头像")]
-    public virtual async Task<CommonResult> SaveUserAvatarAsync([FromBody] UpdateUserAvatarDto req, CancellationToken cancellationToken)
+    public virtual async Task<CommonResult> SaveUserAvatarAsync([FromBody] UserAvatarEditDto req, CancellationToken cancellationToken)
     {
         var userId = _workContext.ContextUser.UserId;
         return await _authService.UpdateUserAvatarAsync(userId, req, cancellationToken);

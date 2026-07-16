@@ -4,9 +4,9 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdminPlus.Shared.Models;
 
 /// <summary>
-///     菜单
+///     菜单信息表
 /// </summary>
-[Table(Name = "sys_menu")]
+[Table(Name = "sys_menus")]
 [EntityExtension(DataSource = "system")]
 public class SysMenuInfo : FullAuditedBase<long, long>, ISort, ISoftDeletable
 {

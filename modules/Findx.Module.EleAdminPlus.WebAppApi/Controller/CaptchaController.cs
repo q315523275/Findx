@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
 /// <summary>
-///     验证码服务
+///     系统-验证码
 /// </summary>
 [Area("system")]
 [Route("api/[area]/captcha")]

@@ -11,17 +11,22 @@ public partial class UserContextSimplifyVo
     public long UserId { set; get; }
     
     /// <summary>
+    ///     用户名
+    /// </summary>
+    public string Username { set; get; }
+    
+    /// <summary>
     ///     用户昵称
     /// </summary>
     public string Nickname { set; get; }
     
     /// <summary>
-    ///     用户机构Id
+    ///     机构Id
     /// </summary>
     public long? OrgId { set; get; }
     
     /// <summary>
-    ///     用户机构名称
+    ///     机构名称
     /// </summary>
     public string OrgName { set; get; }
     

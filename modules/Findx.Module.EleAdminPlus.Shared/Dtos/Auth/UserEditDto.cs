@@ -4,9 +4,9 @@ using Findx.Data;
 namespace Findx.Module.EleAdminPlus.Shared.Dtos.Auth;
 
 /// <summary>
-///     更新用户信息Dto
+///     用户信息编辑Dto
 /// </summary>
-public partial class UpdateUserDto : IRequest
+public partial class UserEditDto : IRequest
 {
     /// <summary>
     ///     昵称

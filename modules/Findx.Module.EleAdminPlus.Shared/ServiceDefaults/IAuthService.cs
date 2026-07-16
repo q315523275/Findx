@@ -6,7 +6,7 @@ using Findx.Module.EleAdminPlus.Shared.Vos.Auth;
 namespace Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 
 /// <summary>
-/// 认证服务接口
+///     认证服务接口
 /// </summary>
 public interface IAuthService
 {
@@ -41,7 +41,7 @@ public interface IAuthService
     /// <param name="userId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<CommonResult<UserAuthSimplifyDto>> GetUserAsync(long userId, CancellationToken cancellationToken = default);
+    Task<CommonResult<UserAuthSimplifyVo>> GetUserAsync(long userId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取用户菜单
@@ -50,7 +50,7 @@ public interface IAuthService
     /// <param name="code"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<CommonResult<IEnumerable<UserAuthMenuSimplifyDto>>> GetUserMenusAsync(long userId, string code, CancellationToken cancellationToken = default);
+    Task<CommonResult<IEnumerable<UserAuthMenuSimplifyVo>>> GetUserMenusAsync(long userId, string code, CancellationToken cancellationToken = default);
     
     /// <summary>
     ///     更新密码
@@ -59,7 +59,7 @@ public interface IAuthService
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<CommonResult> UpdatePasswordAsync(long userId, UpdatePasswordDto request, CancellationToken cancellationToken = default);
+    Task<CommonResult> UpdatePasswordAsync(long userId, UserPasswordEditDto request, CancellationToken cancellationToken = default);
     
     /// <summary>
     ///     更新用户信息
@@ -68,7 +68,7 @@ public interface IAuthService
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<CommonResult> UpdateUserAsync(long userId, UpdateUserDto request, CancellationToken cancellationToken = default);
+    Task<CommonResult> UpdateUserAsync(long userId, UserEditDto request, CancellationToken cancellationToken = default);
     
     /// <summary>
     ///     更新用户头像
@@ -77,5 +77,5 @@ public interface IAuthService
     /// <param name="request"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    Task<CommonResult> UpdateUserAvatarAsync(long userId, UpdateUserAvatarDto request, CancellationToken cancellationToken = default);
+    Task<CommonResult> UpdateUserAvatarAsync(long userId, UserAvatarEditDto request, CancellationToken cancellationToken = default);
 }

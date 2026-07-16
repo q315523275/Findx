@@ -1,11 +1,11 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Org;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Organization;
 
 /// <summary>
 ///     新增或编辑机构信息参数Dto
 /// </summary>
-public partial class OrgAddOrEditDto : IRequest<long>
+public partial class OrganizationSaveDto : IRequest<long>
 {
     /// <summary>
     ///     机构id

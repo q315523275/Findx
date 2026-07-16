@@ -4,9 +4,9 @@ using Findx.Data;
 namespace Findx.Module.EleAdminPlus.Shared.Dtos.Auth;
 
 /// <summary>
-///     更新密码参数Dto
+///     密码修改Dto
 /// </summary>
-public class UpdatePasswordDto: IRequest
+public class UserPasswordEditDto: IRequest
 {
     /// <summary>
     ///     旧密码

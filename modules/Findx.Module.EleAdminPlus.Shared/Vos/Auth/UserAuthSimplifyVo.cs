@@ -6,7 +6,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Vos.Auth;
 /// <summary>
 ///     用户认证授权简化信息Vo
 /// </summary>
-public partial class UserAuthSimplifyDto : IResponse
+public partial class UserAuthSimplifyVo : IResponse
 {
     /// <summary>
     ///     编号
@@ -81,7 +81,7 @@ public partial class UserAuthSimplifyDto : IResponse
     /// <summary>
     ///     角色集合
     /// </summary>
-    public IEnumerable<UserAuthRoleSimplifyDto> Roles { get; set; }
+    public IEnumerable<UserAuthRoleSimplifyVo> Roles { get; set; }
 
     /// <summary>
     ///     扩展属性

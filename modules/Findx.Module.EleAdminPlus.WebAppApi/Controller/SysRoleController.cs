@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
 /// <summary>
-///     角色服务
+///     系统-角色
 /// </summary>
 [Area("system")]
 [Route("api/[area]/role")]
@@ -68,7 +68,7 @@ public class SysRoleController : CrudControllerBase<SysRoleInfo, RoleSimplifyDto
     public async Task<CommonResult<IOrderedEnumerable<RoleOrgSimplifyDto>>> OrgAsync(long roleId, CancellationToken cancellationToken)
     {
         var repo = GetRepository<SysRoleOrgInfo, long>();
-        var orgRepo = GetRepository<SysOrgInfo, long>();
+        var orgRepo = GetRepository<SysOrganizationInfo, long>();
 
         var orgIdArray = (await repo.SelectAsync(x => x.RoleId == roleId, x => x.OrgId, cancellationToken: cancellationToken)).Distinct();
         var orgList = await orgRepo.SelectAsync<RoleOrgSimplifyDto>(cancellationToken: cancellationToken);

@@ -6,7 +6,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// <summary>
 ///     租户 - 使用Findx平台的客户
 /// </summary>
-[Table(Name = "sys_tenant")]
+[Table(Name = "sys_tenants")]
 [EntityExtension(DataSource = "system")]
 public class SysTenantInfo : FullAuditedBase<long, long>, ISoftDeletable
 {

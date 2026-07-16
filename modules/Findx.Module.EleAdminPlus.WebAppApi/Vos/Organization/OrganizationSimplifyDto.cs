@@ -1,11 +1,11 @@
 using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Vos.Org;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Vos.Organization;
 
 /// <summary>
 ///     机构简化信息Vo
 /// </summary>
-public partial class OrgSimplifyDto: IResponse
+public partial class OrganizationSimplifyDto: IResponse
 {
     /// <summary>
     ///     机构id

@@ -5,9 +5,9 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdminPlus.Shared.Models;
 
 /// <summary>
-///     角色
+///     角色信息表
 /// </summary>
-[Table(Name = "sys_role")]
+[Table(Name = "sys_roles")]
 [EntityExtension(DataSource = "system")]
 public class SysRoleInfo : FullAuditedBase<long, long>, ITenant<long>, ISoftDeletable
 {

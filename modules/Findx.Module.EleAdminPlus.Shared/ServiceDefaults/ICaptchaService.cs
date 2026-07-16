@@ -3,7 +3,7 @@ using Findx.Data;
 namespace Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
 
 /// <summary>
-/// 验证码服务接口
+///     验证码服务接口
 /// </summary>
 public interface ICaptchaService
 {

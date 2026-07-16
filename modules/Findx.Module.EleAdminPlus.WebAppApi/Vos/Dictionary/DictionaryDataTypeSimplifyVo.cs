@@ -1,11 +1,11 @@
 using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Vos.DictData;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Vos.Dictionary;
 
 /// <summary>
 ///     字典数据Vo
 /// </summary>
-public class DictDataTypeSimplifyVo: IResponse
+public class DictionaryDataTypeSimplifyVo: IResponse
 {
     /// <summary>
     ///     字典名称

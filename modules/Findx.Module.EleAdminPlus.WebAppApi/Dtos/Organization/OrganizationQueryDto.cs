@@ -1,11 +1,11 @@
 ﻿using Findx.Expressions;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Org;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Organization;
 
 /// <summary>
 ///     查询组织入参
 /// </summary>
-public partial class OrgQueryDto : SortCondition
+public partial class OrganizationQueryDto : SortCondition
 {
     /// <summary>
     ///     类型

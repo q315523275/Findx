@@ -5,20 +5,20 @@ using Findx.Module.EleAdminPlus.Shared.Models;
 namespace Findx.Module.EleAdminPlus.Shared.Events;
 
 /// <summary>
-///     文件已上传事件
+///     文件上传成功事件
 /// </summary>
-public sealed class FileUploadedEvent: IApplicationEvent, IAsync
+public sealed class FileUploadSuccessEvent: IApplicationEvent, IAsync
 {
     /// <summary>
     ///     Ctor
     /// </summary>
-    public FileUploadedEvent() { }
+    public FileUploadSuccessEvent() { }
 
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="fileInfo"></param>
-    public FileUploadedEvent(SysFileInfo fileInfo)
+    public FileUploadSuccessEvent(SysFileInfo fileInfo)
     {
         FileId = fileInfo.Id;
         FileName = fileInfo.Name;

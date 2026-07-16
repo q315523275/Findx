@@ -5,7 +5,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Vos.Auth;
 /// <summary>
 ///     用户授权简化信息
 /// </summary>
-public partial class UserAuthMenuSimplifyDto
+public partial class UserAuthMenuSimplifyVo
 {
     /// <summary>
     ///     菜单id

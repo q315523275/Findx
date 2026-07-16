@@ -1,11 +1,11 @@
 using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Org;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dictionary;
 
 /// <summary>
-///     分页查询组织入参
+///     分页查询字典入参
 /// </summary>
-public partial class OrgPageQueryDto: OrgQueryDto, IPager
+public class DictionaryPageQueryDto: DictionaryQueryDto, IPager
 {
     /// <summary>
     ///     页码

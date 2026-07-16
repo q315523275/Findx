@@ -4,11 +4,11 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdminPlus.Shared.Models;
 
 /// <summary>
-///     角色菜单
+///     角色对应菜单集合信息表
 /// </summary>
-[Table(Name = "sys_role_menu")]
+[Table(Name = "sys_role_menus")]
 [EntityExtension(DataSource = "system")]
-public class SysRoleMenuInfo : EntityBase<long>
+public class SysRoleMenuInfo : EntityBase<long>, ITenant<long>
 {
     /// <summary>
     ///     主键id
@@ -25,6 +25,11 @@ public class SysRoleMenuInfo : EntityBase<long>
     ///     菜单id
     /// </summary>
     public long MenuId { get; set; }
+    
+    /// <summary>
+    ///     租户id
+    /// </summary>
+    public long? TenantId { get; set; }
     
     /// <summary>
     ///     角色信息

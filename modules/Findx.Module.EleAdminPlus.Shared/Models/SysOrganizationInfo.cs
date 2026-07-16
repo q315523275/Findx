@@ -4,11 +4,11 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdminPlus.Shared.Models;
 
 /// <summary>
-///     组织
+///     组织信息表
 /// </summary>
-[Table(Name = "sys_org")]
+[Table(Name = "sys_organizations")]
 [EntityExtension(DataSource = "system")]
-public class SysOrgInfo : FullAuditedBase<long, long>, IDataOwner<long>, ISort, ISoftDeletable
+public class SysOrganizationInfo : FullAuditedBase<long, long>, IDataOwner<long>, ISort, ISoftDeletable
 {
     /// <summary>
     ///     机构id

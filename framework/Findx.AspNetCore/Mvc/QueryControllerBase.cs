@@ -111,9 +111,8 @@ public abstract class QueryControllerBase<TModel, TListVo, TDetailVo, TQueryPara
     public virtual async Task<CommonResult<List<TListVo>>> ListAsync([FromQuery] TQueryParameter req, CancellationToken cancellationToken = default)
     {
         Check.NotNull(req, nameof(req));
-        // 默认条数提升到99条
-        if (req.PageSize == 20) 
-            req.PageSize = 2000;
+        // Todo 临时 默认条数提升到99条
+        if (req.PageSize == 20) req.PageSize = 2000;
         
         var repo = GetRepository<TModel, TKey>();
         Check.NotNull(repo, nameof(repo));
@@ -121,9 +120,16 @@ public abstract class QueryControllerBase<TModel, TListVo, TDetailVo, TQueryPara
         var whereExpression = CreateWhereExpression(req);
         var orderByExpression = CreateOrderExpression(req);
 
-        var list = await repo.TopAsync<TListVo>(req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
-
-        return CommonResult.Success(list);
+        if (req.PageSize > 0)
+        {
+            var list = await repo.TopAsync<TListVo>(req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
+            return CommonResult.Success(list);
+        }
+        else
+        {
+            var list = await repo.SelectAsync<TListVo>(whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
+            return CommonResult.Success(list); 
+        }
     }
 
     /// <summary>

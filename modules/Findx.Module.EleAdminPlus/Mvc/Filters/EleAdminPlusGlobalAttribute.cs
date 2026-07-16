@@ -111,19 +111,19 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
     /// </summary>
     /// <param name="context"></param>
     /// <returns></returns>
-    private async Task<List<SysOrgInfo>> AllOrgListAsync(ActionExecutingContext context)
+    private async Task<List<SysOrganizationInfo>> AllOrgListAsync(ActionExecutingContext context)
     {
         var cacheFactory = context.HttpContext.RequestServices.GetService<ICacheFactory>();
         var cache = cacheFactory.Create(CacheType.DefaultMemory);
         var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
-        var cacheKey = $"EleAdminPlus:Org:{currentUser.TenantId}";
+        var cacheKey = $"EleAdminPlus:Organization:{currentUser.TenantId}";
         
-        var orgList = await cache.GetAsync<List<SysOrgInfo>>(cacheKey, context.HttpContext.RequestAborted);
+        var orgList = await cache.GetAsync<List<SysOrganizationInfo>>(cacheKey, context.HttpContext.RequestAborted);
         if (orgList != null && orgList.Any())
             return orgList;
         
-        var orgRepo = context.HttpContext.RequestServices.GetService<IRepository<SysOrgInfo, long>>();
-        orgList = await orgRepo.SelectAsync(selectExpression: x => new SysOrgInfo { Id = x.Id, Name = x.Name, ParentId = x.ParentId });
+        var orgRepo = context.HttpContext.RequestServices.GetService<IRepository<SysOrganizationInfo, long>>();
+        orgList = await orgRepo.SelectAsync(selectExpression: x => new SysOrganizationInfo { Id = x.Id, Name = x.Name, ParentId = x.ParentId });
         await cache.AddAsync(cacheKey, orgList, context.HttpContext.RequestAborted);
 
         return orgList;
@@ -158,10 +158,10 @@ public class EleAdminPlusGlobalAttribute: ActionFilterAttribute
     /// <param name="organizations"></param>
     /// <param name="targetDepartmentId"></param>
     /// <returns></returns>
-    static List<SysOrgInfo> GetTargetDepartmentAndSubOrgList(List<SysOrgInfo> organizations, long targetDepartmentId)
+    static List<SysOrganizationInfo> GetTargetDepartmentAndSubOrgList(List<SysOrganizationInfo> organizations, long targetDepartmentId)
     {
-        var result = new List<SysOrgInfo>();
-        var queue = new Queue<SysOrgInfo>();
+        var result = new List<SysOrganizationInfo>();
+        var queue = new Queue<SysOrganizationInfo>();
 
         foreach (var org in organizations)
         {

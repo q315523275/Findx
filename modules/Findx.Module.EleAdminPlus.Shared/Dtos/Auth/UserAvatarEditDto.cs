@@ -4,9 +4,9 @@ using Findx.Data;
 namespace Findx.Module.EleAdminPlus.Shared.Dtos.Auth;
 
 /// <summary>
-///     更新用户头像参数Dto
+///     用户头像修改Dto
 /// </summary>
-public partial class UpdateUserAvatarDto : IRequest
+public partial class UserAvatarEditDto : IRequest
 {
     /// <summary>
     ///     头像(base64)

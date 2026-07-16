@@ -1,9 +1,7 @@
+using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Text;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Findx.Extensions;
 
 namespace Findx.Configuration;
 
@@ -12,6 +10,13 @@ namespace Findx.Configuration;
 /// </summary>
 internal static class HttpUtil
 {
+    private static readonly SocketsHttpHandler HttpHandler = new()
+    {
+        PooledConnectionLifetime = TimeSpan.FromMinutes(5)
+    };
+    
+    private static readonly HttpClient HttpClient = new(HttpHandler);
+    
     /// <summary>
     ///     异步方式发起HttpGet请求
     /// </summary>
@@ -19,77 +24,22 @@ internal static class HttpUtil
     /// <param name="headers"></param>
     /// <param name="timeout"></param>
     /// <returns></returns>
-    public static async Task<HttpWebResponse> GetAsync(string url, Dictionary<string, string> headers, int? timeout)
+    public static async Task<HttpResponseMessage> GetAsync(string url, Dictionary<string, string> headers, int? timeout)
     {
-        var request = (HttpWebRequest)WebRequest.Create(url);
-
-        if (timeout.HasValue)
-            request.Timeout = timeout.Value;
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
 
         if (headers != null)
+        {
             foreach (var kvp in headers)
+            {
                 request.Headers.Add(kvp.Key, kvp.Value);
+            }
+        }
 
-        var response = await request.GetResponseAsync();
-        return (HttpWebResponse)response;
+        if (!timeout.HasValue) return await HttpClient.SendAsync(request);
+        
+        using var cts = new System.Threading.CancellationTokenSource();
+        cts.CancelAfter(timeout.Value);
+        return await HttpClient.SendAsync(request, cts.Token);
     }
-
-    // /// <summary>
-    // ///     同步方式发起HttpGet请求
-    // /// </summary>
-    // /// <param name="url"></param>
-    // /// <param name="headers"></param>
-    // /// <param name="timeout"></param>
-    // /// <returns></returns>
-    // public static HttpWebResponse Get(string url, IDictionary<string, string> headers, int? timeout)
-    // {
-    //     var request = (HttpWebRequest)WebRequest.Create(url);
-    //
-    //     if (timeout.HasValue)
-    //         request.Timeout = timeout.Value;
-    //
-    //     if (headers == null) 
-    //         return (HttpWebResponse)request.GetResponse();
-    //         
-    //     foreach (var kvp in headers)
-    //         request.Headers.Add(kvp.Key, kvp.Value);
-    //
-    //     return (HttpWebResponse)request.GetResponse();
-    // }
-    
-    // /// <summary>
-    // ///     获取Response内容
-    // /// </summary>
-    // /// <param name="response"></param>
-    // /// <returns></returns>
-    // public static async Task<string> ReadAsStringAsync(this HttpWebResponse response)
-    // {
-    //     await using var responseStream = response.GetResponseStream();
-    //     using var reader = new StreamReader(responseStream, Encoding.UTF8);
-    //     return await reader.ReadToEndAsync();
-    //
-    // }
-    //
-    // /// <summary>
-    // ///     获取Response内容
-    // /// </summary>
-    // /// <param name="response"></param>
-    // /// <returns></returns>
-    // public static async Task<byte[]> ReadAsByteAsync(this HttpWebResponse response)
-    // {
-    //     await using var responseStream = response.GetResponseStream();
-    //     return await responseStream.ToByteArrayAsync();
-    // }
-    //
-    // /// <summary>
-    // ///     获取Response内容
-    // /// </summary>
-    // /// <param name="response"></param>
-    // /// <returns></returns>
-    // public static string ReadAsString(this HttpWebResponse response)
-    // {
-    //     using var responseStream = response.GetResponseStream();
-    //     using var reader = new StreamReader(responseStream, Encoding.UTF8);
-    //     return reader.ReadToEnd();
-    // }
 }

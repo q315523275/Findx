@@ -3,7 +3,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Vos.Auth;
 /// <summary>
 ///     用户认证角色简化信息Vo
 /// </summary>
-public partial class UserAuthRoleSimplifyDto
+public partial class UserAuthRoleSimplifyVo
 {
     /// <summary>
     ///     角色id

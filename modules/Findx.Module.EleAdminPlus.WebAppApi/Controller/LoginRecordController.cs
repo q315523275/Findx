@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
 /// <summary>
-///     登录日志
+///     系统-登录日志
 /// </summary>
 [Area("system")]
 [Route("api/[area]/login-record")]

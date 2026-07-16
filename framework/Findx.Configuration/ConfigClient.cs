@@ -200,7 +200,7 @@ public class ConfigClient : IConfigClient, IDisposable
             {
                 _requestException = false;
                 
-                await using var stream = response.GetResponseStream();
+                await using var stream = await response.Content.ReadAsStreamAsync();
                 var configItem = ConvertToConfigItem(stream);
                 
                 if (configItem.Any(x => x.Version > CurrentDataVersion))

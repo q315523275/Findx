@@ -22,7 +22,7 @@ using FileSystemInfo = Findx.Common.FileSystemInfo;
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
 /// <summary>
-///     文件服务
+///     系统-文件
 /// </summary>
 [Area("system")]
 [Route("api/[area]/file")]
@@ -155,7 +155,7 @@ public class SysFileController: QueryControllerBase<SysFileInfo, FileSimplifyDto
         
         await _repo.InsertAsync(model, cancellationToken);
 
-        await _eventBus.PublishAsync(new FileUploadedEvent(model), cancellationToken);
+        await _eventBus.PublishAsync(new FileUploadSuccessEvent(model), cancellationToken);
             
         return CommonResult.Success(fileInfo);
     }

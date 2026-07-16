@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
 /// <summary>
-///     操作日志
+///     系统-操作日志
 /// </summary>
 [Area("system")]
 [Route("api/[area]/operation-record")]

@@ -41,11 +41,11 @@ public class CaptchaService : ICaptchaService, IScopeDependency
     {
         var code = _verifyCoder.GetCode(length, VerifyCodeType.NumberAndLetter);
         var st = await _verifyCoder.CreateImageAsync(code, width, height, 38);
-        var uuid = _keyGenerator.Create();
-        var cacheKey = $"verifyCode:{uuid}";
+        var captchaKey = _keyGenerator.Create();
+        var cacheKey = $"verifyCode:{captchaKey}";
         var cache = _cacheFactory.Create(CacheType.DefaultMemory);
         await cache.AddAsync(cacheKey, code.ToLower(), TimeSpan.FromMinutes(2), cancellationToken);
         code = _applicationContext.HostEnvironment.IsProduction() ? null : code.ToLower();
-        return CommonResult.Success(new { text = code, uuid, Base64 = $"data:image/png;base64,{Convert.ToBase64String(st)}" });
+        return CommonResult.Success(new { Text = code, CaptchaKey = captchaKey, Base64 = $"data:image/png;base64,{Convert.ToBase64String(st)}" });
     }
 }

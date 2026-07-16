@@ -6,7 +6,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// <summary>
 ///     租户应用订阅
 /// </summary>
-[Table(Name = "sys_tenant_app_subscription")]
+[Table(Name = "sys_tenant_application_subscriptions")]
 [EntityExtension(DataSource = "system")]
 public class SysTenantAppSubscriptionInfo: EntityBase<long>
 {

@@ -6,7 +6,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// <summary>
 ///     系统用户角色
 /// </summary>
-[Table(Name = "sys_user_role")]
+[Table(Name = "sys_user_roles")]
 [EntityExtension(DataSource = "system")]
 public class SysUserRoleInfo : EntityBase<long>, ITenant<long>
 {

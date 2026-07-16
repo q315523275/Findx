@@ -1,11 +1,11 @@
 using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dict;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Organization;
 
 /// <summary>
-///     分页查询字典入参
+///     分页查询组织入参
 /// </summary>
-public class DictTypePageQueryDto: DictTypeQueryDto, IPager
+public partial class OrganizationPageQueryDto: OrganizationQueryDto, IPager
 {
     /// <summary>
     ///     页码

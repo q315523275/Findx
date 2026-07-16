@@ -6,7 +6,7 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// <summary>
 ///     应用/平台 - Findx提供的功能模块
 /// </summary>
-[Table(Name = "sys_app")]
+[Table(Name = "sys_applications")]
 [EntityExtension(DataSource = "system")]
 public class SysAppInfo : FullAuditedBase<long, long>, ISoftDeletable
 {

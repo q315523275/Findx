@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
 /// <summary>
-///     菜单服务
+///     系统-菜单
 /// </summary>
 [Area("system")]
 [Route("api/[area]/menu")]
@@ -28,7 +28,7 @@ public class SysMenuController : CrudControllerBase<SysMenuInfo, MenuSimplifyDto
     /// <returns></returns>
     public override Task<CommonResult<List<MenuSimplifyDto>>> ListAsync(MenuPageQueryDto menuQueryDto, CancellationToken cancellationToken = default)
     {
-        menuQueryDto.PageSize = 9999;
+        menuQueryDto.PageSize = 10000;
         return base.ListAsync(menuQueryDto, cancellationToken);
     }
 

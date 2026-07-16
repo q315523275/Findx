@@ -9,6 +9,11 @@ namespace Findx.Module.EleAdminPlus.Shared.Dtos.Auth;
 public partial class LoginRequestDto: ValidatableObject, IRequest
 {
     /// <summary>
+    ///     租户编码（用于识别租户）
+    /// </summary>
+    public string TenantCode { set; get; }
+    
+    /// <summary>
     ///     账号
     /// </summary>
     [Required]
@@ -26,13 +31,7 @@ public partial class LoginRequestDto: ValidatableObject, IRequest
     public string Code { set; get; }
 
     /// <summary>
-    ///     租户编码（用于识别租户）
+    ///     CaptchaKey
     /// </summary>
-    public string TenantCode { set; get; }
-
-    /// <summary>
-    ///     uuid
-    /// </summary>
-    [Required]
-    public string Uuid { set; get; }
+    public string CaptchaKey { set; get; }
 }

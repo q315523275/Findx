@@ -6,9 +6,9 @@ namespace Findx.Module.EleAdminPlus.Shared.Models;
 /// <summary>
 ///     应用/平台成员 - 租户下的具体员工权限管理
 /// </summary>
-[Table(Name = "sys_app_member")]
+[Table(Name = "sys_application_members")]
 [EntityExtension(DataSource = "system")]
-public class SysAppUser : FullAuditedBase<long, long>, ITenant<long>
+public class SysAppUserInfo : FullAuditedBase<long, long>, ITenant<long>
 {
     /// <summary>
     ///     主键id

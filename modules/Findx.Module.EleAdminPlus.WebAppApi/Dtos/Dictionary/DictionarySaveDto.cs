@@ -1,11 +1,11 @@
 ﻿using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dict;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dictionary;
 
 /// <summary>
 ///     设置字典类型入参
 /// </summary>
-public class DictTypeSaveDto : IRequest<long>
+public class DictionarySaveDto : IRequest<long>
 {
     /// <summary>
     ///     编号

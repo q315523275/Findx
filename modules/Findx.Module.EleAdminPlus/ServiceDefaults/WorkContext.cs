@@ -35,7 +35,8 @@ public class WorkContext: IWorkContext, IScopeDependency
             return new UserContextSimplifyVo
             {
                 UserId = CurrentUser.UserId.CastTo<long>(),
-                Nickname  = CurrentUser.UserName, 
+                Username = CurrentUser.UserName,
+                Nickname = CurrentUser.Nickname, 
                 OrgId = CurrentUser.FindClaim(Shared.Const.Default.OrgIdKey)?.Value.CastTo<long>(),
                 OrgName = CurrentUser.FindClaim(Shared.Const.Default.OrgNameKey)?.Value,
                 TenantId = CurrentUser.TenantId
@@ -56,7 +57,8 @@ public class WorkContext: IWorkContext, IScopeDependency
                 return new UserContextSimplifyVo
                 {
                     UserId = CurrentUser.UserId.CastTo<long>(),
-                    Nickname  = CurrentUser.UserName, 
+                    Username = CurrentUser.UserName, 
+                    Nickname = CurrentUser.Nickname,
                     OrgId = CurrentUser.FindClaim(Shared.Const.Default.OrgIdKey)?.Value.CastTo<long>(),
                     OrgName = CurrentUser.FindClaim(Shared.Const.Default.OrgNameKey)?.Value,
                     TenantId = CurrentUser.TenantId

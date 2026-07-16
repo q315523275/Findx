@@ -1,21 +1,20 @@
-using Findx.Data;
+﻿using Findx.Data;
 
-namespace Findx.Module.EleAdminPlus.WebAppApi.Vos.DictData;
+namespace Findx.Module.EleAdminPlus.WebAppApi.Dtos.Dictionary;
 
 /// <summary>
-///     字典项目数据Vo
+///     设置字典数据Dto模型
 /// </summary>
-public class DictDataSimplifyVo: IResponse
+public class DictionaryDataSaveDto : IRequest<long>
 {
     /// <summary>
-    ///     字典项id
     /// </summary>
     public long Id { get; set; }
 
     /// <summary>
     ///     字典id
     /// </summary>
-    public long TypeId { get; set; }
+    public long DictId { get; set; }
 
     /// <summary>
     ///     字典项名称
@@ -31,19 +30,9 @@ public class DictDataSimplifyVo: IResponse
     ///     排序号
     /// </summary>
     public int Sort { get; set; }
-    
+
     /// <summary>
     ///     备注
     /// </summary>
     public string Comments { get; set; }
-    
-    /// <summary>
-    ///     创建时间
-    /// </summary>
-    public DateTime? CreatedTime { get; set; }
-    
-    /// <summary>
-    ///     字典简化信息
-    /// </summary>
-    public DictDataTypeSimplifyVo TypeInfo { get; set; }
 }

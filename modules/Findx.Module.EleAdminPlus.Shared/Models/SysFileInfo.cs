@@ -4,9 +4,9 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdminPlus.Shared.Models;
 
 /// <summary>
-///     文件信息表
+///     文件记录信息表
 /// </summary>
-[Table(Name = "sys_file_record")]
+[Table(Name = "sys_file_records")]
 [EntityExtension(DataSource = "system")]
 public class SysFileInfo: FullAuditedBase<long, long>, IDataDepartment<long>, ISoftDeletable
 {

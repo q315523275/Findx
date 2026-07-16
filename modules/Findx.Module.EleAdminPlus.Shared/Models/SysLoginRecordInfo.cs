@@ -4,9 +4,9 @@ using FreeSql.DataAnnotations;
 namespace Findx.Module.EleAdminPlus.Shared.Models;
 
 /// <summary>
-///     登录日志
+///     登录日志信息表
 /// </summary>
-[Table(Name = "sys_login_record")]
+[Table(Name = "sys_login_records")]
 [EntityExtension(DataSource = "system")]
 public class SysLoginRecordInfo : EntityBase<long>, ICreatedTime
 {

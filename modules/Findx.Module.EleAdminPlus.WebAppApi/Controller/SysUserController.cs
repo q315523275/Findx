@@ -23,7 +23,7 @@ using Microsoft.Extensions.Options;
 namespace Findx.Module.EleAdminPlus.WebAppApi.Controller;
 
 /// <summary>
-///     用户服务
+///     系统-用户
 /// </summary>
 [Area("system")]
 [Route("api/[area]/user")]
