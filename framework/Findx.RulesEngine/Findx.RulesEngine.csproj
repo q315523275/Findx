@@ -3,7 +3,7 @@
     <PropertyGroup>
         <Authors>Findx</Authors>
         <Company>Findx</Company>
-        <PackageVersion>11.1.2025.1111</PackageVersion>
+        <PackageVersion>11.1.2026.730</PackageVersion>
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
         <Description>Microsoft.RulesEngine</Description>
@@ -11,7 +11,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Aliases="MicrosoftRulesEngine" Include="RulesEngine" Version="6.0.0" />
+      <PackageReference Aliases="MicrosoftRulesEngine" Include="RulesEngine" Version="6.0.1" />
     </ItemGroup>
 
     <ItemGroup>
