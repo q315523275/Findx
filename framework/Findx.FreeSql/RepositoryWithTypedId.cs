@@ -63,6 +63,9 @@ public partial class RepositoryWithTypedId<TEntity, TKey> : IRepository<TEntity,
     }
 
     private Func<string, string> AsTableValueInternal { get; set; }
+    
+    private List<Func<string, string>> AsTableValues { get; set; }
+    
     private Func<Type, string, string> AsTableSelectValueInternal { get; set; }
 
     /// <summary>

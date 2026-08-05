@@ -30,15 +30,19 @@ public static partial class Extensions
     /// <param name="httpClient"></param>
     /// <param name="requestUri"></param>
     /// <param name="parameter"></param>
+    /// <param name="headers"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task<HttpResponseMessage> PostAsJsonAsync<T>(this HttpClient httpClient, string requestUri, T parameter, CancellationToken cancellationToken = default)
+    public static Task<HttpResponseMessage> PostAsJsonAsync<T>(this HttpClient httpClient, string requestUri, T parameter, IDictionary<string, string> headers = null, CancellationToken cancellationToken = default)
     {
         Check.NotNull(httpClient, nameof(httpClient));
         Check.NotNull(requestUri, nameof(requestUri));
         Check.NotNull(parameter, nameof(parameter));
 
-        return httpClient.PostAsync(requestUri, new StringContent(parameter.ToJson(), Encoding.UTF8, JsonMediaType), cancellationToken);
+        var context = new StringContent(parameter.ToJson(), Encoding.UTF8, JsonMediaType);
+        if (headers != null) foreach (var kv in headers) context.Headers.Add(kv.Key, kv.Value);
+        
+        return httpClient.PostAsync(requestUri, context, cancellationToken);
     }
 
     /// <summary>
@@ -134,7 +138,7 @@ public static partial class Extensions
                 content.Add(new StringContent(kv.Value), kv.Key);
 
         foreach (var file in files)
-            content.Add(new StreamContent(file.Value), Path.GetFileNameWithoutExtension(file.Key), Path.GetFileName(file.Key));
+            content.Add(new StreamContent(file.Value), Path.GetFileNameWithoutExtension(file.Key) ?? string.Empty, Path.GetFileName(file.Key) ?? string.Empty);
 
         return await httpClient.PostAsync(requestUri, content, cancellationToken);
     }

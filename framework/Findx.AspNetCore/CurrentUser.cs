@@ -1,13 +1,17 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Security.Principal;
-using Findx.DependencyInjection;
+using Findx.Security;
+using ClaimTypes = Findx.Security.ClaimTypes;
 
-namespace Findx.Security;
+namespace Findx.AspNetCore;
 
 /// <summary>
 ///     当前用户
 /// </summary>
-public class CurrentUser : ICurrentUser, ITransientDependency
+public class CurrentUser : ICurrentUser
 {
     private readonly IPrincipal _principal;
 
