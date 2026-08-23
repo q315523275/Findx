@@ -57,7 +57,7 @@ public class IpHashSelector : ILoadBalancer
                 _serviceInstanceNodes.Add(service);
         }
         
-        // 客户端Ip,不存在客户端Ip时使用本地Ip
+        //  客户端Ip,不存在客户端Ip时使用本地Ip
         var clientIp = ServiceLocator.GetService<IThreadCurrentClientIpAccessor>()?.GetClientIp()?? HostUtility.ResolveHostAddress(HostUtility.ResolveHostName());
         
         var currentService = (IServiceEndPoint) null;

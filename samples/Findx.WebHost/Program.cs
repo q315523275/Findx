@@ -57,6 +57,6 @@ var app = builder.Build();
 app.UseCorrelationId().UseJsonExceptionHandler().UseCorsAccessor();
 app.UseRouting();
 app.UseFindx();
-app.MapControllersWithAreaRoute();
+app.UseEndpointsWithAreaRoute();
 
 app.UseFindxHosting();

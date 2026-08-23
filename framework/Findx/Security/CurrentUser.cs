@@ -1,27 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Security.Principal;
-using Findx.Security;
-using ClaimTypes = Findx.Security.ClaimTypes;
+using Findx.DependencyInjection;
 
-namespace Findx.AspNetCore;
+namespace Findx.Security;
 
 /// <summary>
 ///     当前用户
 /// </summary>
-public class CurrentUser : ICurrentUser
+public class CurrentUser : ICurrentUser, ITransientDependency
 {
     private readonly IPrincipal _principal;
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    /// <param name="principal"></param>
-    public CurrentUser(IPrincipal principal)
+    /// <param name="serviceProvider"></param>
+    public CurrentUser(IServiceProvider serviceProvider)
     {
-        _principal = principal;
+        _principal = serviceProvider.GetService<IPrincipal>();
     }
 
     /// <summary>
@@ -57,8 +53,7 @@ public class CurrentUser : ICurrentUser
     /// <summary>
     ///     手机号是否已验证
     /// </summary>
-    public bool PhoneNumberVerified => string.Equals(this.FindClaimValue(ClaimTypes.PhoneNumberVerified), "true",
-        StringComparison.InvariantCultureIgnoreCase);
+    public bool PhoneNumberVerified => string.Equals(this.FindClaimValue(ClaimTypes.PhoneNumberVerified), "true", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     ///     邮箱
@@ -68,8 +63,7 @@ public class CurrentUser : ICurrentUser
     /// <summary>
     ///     邮箱是否已验证
     /// </summary>
-    public bool EmailVerified => string.Equals(this.FindClaimValue(ClaimTypes.EmailVerified), "true",
-        StringComparison.InvariantCultureIgnoreCase);
+    public bool EmailVerified => string.Equals(this.FindClaimValue(ClaimTypes.EmailVerified), "true", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     ///     租户编号
@@ -108,7 +102,7 @@ public class CurrentUser : ICurrentUser
     /// <returns></returns>
     public IEnumerable<Claim> GetAllClaims()
     {
-        if (_principal.Identity is not ClaimsIdentity claimsIdentity) return Array.Empty<Claim>();
+        if (_principal.Identity is not ClaimsIdentity claimsIdentity) return [];
         return claimsIdentity.Claims;
     }
 
@@ -119,7 +113,6 @@ public class CurrentUser : ICurrentUser
     /// <returns></returns>
     public bool IsInRole(string roleName)
     {
-        return _principal?.Identity?.GetClaimValues(System.Security.Claims.ClaimTypes.Role)?.Any(c => c == roleName) ??
-               false;
+        return _principal?.Identity?.GetClaimValues(System.Security.Claims.ClaimTypes.Role)?.Any(c => c == roleName) ?? false;
     }
 }

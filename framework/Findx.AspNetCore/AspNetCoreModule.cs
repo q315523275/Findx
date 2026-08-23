@@ -38,7 +38,7 @@ public class AspNetCoreModule : StartupModule
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
-        services.TryAddTransient<IPrincipal>(provider => provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
+        services.TryAddSingleton<IPrincipal>(provider => provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
         services.TryAddSingleton<ICurrentUser, CurrentUser>();
         services.TryAddSingleton<IThreadCurrentClientIpAccessor, HttpContextClientIpAccessor>();
 

@@ -19,6 +19,6 @@ var app = builder.Build();
 app.UseJsonExceptionHandler();
 app.UseWebSockets().MapWebSocket("/ws", app.Services.GetRequiredService<WebSocketHandler>());
 app.UseFindx();
-app.MapControllersWithAreaRoute();
+app.UseEndpointsWithAreaRoute();
 
 app.UseFindxHosting();

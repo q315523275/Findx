@@ -3,7 +3,7 @@
     <PropertyGroup>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <LangVersion>default</LangVersion>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
     </PropertyGroup>
     
     <ItemGroup>
@@ -35,6 +35,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.5.212" />
+      <PackageReference Include="FreeSql.Provider.MySqlConnector" Version="3.5.310" />
     </ItemGroup>
 </Project>

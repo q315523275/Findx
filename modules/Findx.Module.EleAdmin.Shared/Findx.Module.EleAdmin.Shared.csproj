@@ -5,7 +5,7 @@
         <LangVersion>default</LangVersion>
         <TargetFrameworks>net6.0;net8.0;net9.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <Version>11.1.2026.326</Version>
+        <Version>11.1.2026.808</Version>
         <Authors />
         <Description>适配 https://eleadmin.com/ saas后端基础模块</Description>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
