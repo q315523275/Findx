@@ -23,17 +23,16 @@ public class FindxGlobalAttribute : IActionFilter
     /// <param name="context"></param>
     public void OnActionExecuting(ActionExecutingContext context)
     {
-        // 租户赋值
+        //  租户赋值
         var currentUser = context.HttpContext.RequestServices.GetService<ICurrentUser>();
         if (currentUser is { IsAuthenticated: true } && currentUser.TenantId.IsNotNullOrWhiteSpace())
         {
             TenantManager.Current = currentUser.TenantId;
         }
         
-        // 刷新Token
-        // 已迁移组建内置实现
+        //  刷新Token 已迁移组建内置实现
         
-        // 模型判断
+        //  模型判断
         if (!context.ModelState.IsValid)
         {
             var errors = context.ModelState

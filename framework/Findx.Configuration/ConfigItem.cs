@@ -3,10 +3,9 @@
 namespace Findx.Configuration;
 
 /// <summary>
-///     配置项Dto
+///     配置项
 /// </summary>
-// ReSharper disable once ClassNeverInstantiated.Global
-public class ConfigItemDto
+public class ConfigItem
 {
     /// <summary>
     ///     数据编号
@@ -31,7 +30,7 @@ public class ConfigItemDto
 }
 
 /// <summary>
-/// 数据类型
+///     数据类型
 /// </summary>
 public enum DataType
 {

@@ -1,4 +1,3 @@
-using Findx.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
@@ -7,7 +6,7 @@ namespace Findx.Configuration.Extensions;
 /// <summary>
 ///     主机构建扩展
 /// </summary>
-public static class HostBuilderExtension
+public static partial class HostBuilderExtension
 {
     /// <summary>
     ///     使用配置中心

@@ -4,12 +4,12 @@ using Findx.Data;
 namespace Findx.Configuration;
 
 /// <summary>
-///     配置中心客户端配置
+///     客户端配置
 /// </summary>
 public class ConfigOptions : ValidatableObject
 {
     /// <summary>
-    /// 开启使用
+    ///     开启使用
     /// </summary>
     public bool Enabled { get; set; } = true;
         
@@ -38,7 +38,7 @@ public class ConfigOptions : ValidatableObject
     public string Servers { set; get; }
 
     /// <summary>
-    ///     是否进行异常恢复
+    ///     是否异常恢复
     /// </summary>
     public bool IsRecovery { set; get; }
 }

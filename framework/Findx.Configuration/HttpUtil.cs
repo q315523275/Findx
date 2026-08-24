@@ -6,17 +6,20 @@ using System.Threading.Tasks;
 namespace Findx.Configuration;
 
 /// <summary>
-///     Http请求
+///     Http工具
 /// </summary>
 internal static class HttpUtil
 {
     private static readonly SocketsHttpHandler HttpHandler = new()
     {
-        PooledConnectionLifetime = TimeSpan.FromMinutes(5)
+        //  定期刷新 DNS，解决 K8s/容器环境下服务迁移导致的连接报错
+        PooledConnectionLifetime = TimeSpan.FromMinutes(2), 
+        //  保持连接活跃，减少握手开销
+        KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always
     };
     
     private static readonly HttpClient HttpClient = new(HttpHandler);
-    
+
     /// <summary>
     ///     异步方式发起HttpGet请求
     /// </summary>

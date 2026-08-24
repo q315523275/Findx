@@ -19,7 +19,7 @@ public interface IConfigClient
     ///     配置变更事件
     /// </summary>
     /// <param name="callback"></param>
-    void OnConfigDataChange(Func<IEnumerable<ConfigItemDto>, Task> callback);
+    void OnConfigDataChange(Func<List<ConfigItem>, Task> callback);
 
     #region 属性
 

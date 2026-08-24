@@ -38,15 +38,15 @@ public class AspNetCoreModule : StartupModule
         services.AddMemoryCache();
 
         services.AddHttpContextAccessor();
-        services.TryAddSingleton<IPrincipal>(provider => provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
-        services.TryAddSingleton<ICurrentUser, CurrentUser>();
+        services.TryAddScoped<IPrincipal>(provider => provider.GetService<IHttpContextAccessor>()?.HttpContext?.User);
+        services.TryAddScoped<ICurrentUser, CurrentUser>();
         services.TryAddSingleton<IThreadCurrentClientIpAccessor, HttpContextClientIpAccessor>();
 
         services.TryAddSingleton<IScopedServiceResolver, HttpContextServiceScopeResolver>();
 
         services.Replace<ICancellationTokenProvider, HttpContextCancellationTokenProvider>(ServiceLifetime.Singleton);
 
-        // 关闭模型自动化验证,实现自控
+        //  关闭模型自动化验证,实现自控
         services.Configure<ApiBehaviorOptions>(opts => opts.SuppressModelStateInvalidFilter = true);
 
         return services;

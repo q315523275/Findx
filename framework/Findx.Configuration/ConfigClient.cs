@@ -20,7 +20,7 @@ namespace Findx.Configuration;
 /// </summary>
 public class ConfigClient : IConfigClient, IDisposable
 {
-    private readonly ConcurrentBag<Func<IEnumerable<ConfigItemDto>, Task>> _changeCallbacks;
+    private readonly ConcurrentBag<Func<List<ConfigItem>, Task>> _changeCallbacks;
     private readonly CancellationTokenSource _cts;
     private readonly AtomicInteger _nodeIndex;
     private readonly AtomicBoolean _polling;
@@ -73,7 +73,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <summary>
     ///     配置字典
     /// </summary>
-    private readonly Dictionary<string, ConfigItemDto> _data = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, ConfigItem> _data = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     应用编号
@@ -147,14 +147,14 @@ public class ConfigClient : IConfigClient, IDisposable
     ///     添加配置变更回调
     /// </summary>
     /// <param name="callback"></param>
-    public void OnConfigDataChange(Func<IEnumerable<ConfigItemDto>, Task> callback)
+    public void OnConfigDataChange(Func<List<ConfigItem>, Task> callback)
     {
         _changeCallbacks.Add(callback);
     }
 
     #endregion
 
-    #region 获取远端配置信息
+    #region 远程配置
 
     /// <summary>
     ///     生成http地址
@@ -201,40 +201,44 @@ public class ConfigClient : IConfigClient, IDisposable
                 _requestException = false;
                 
                 await using var stream = await response.Content.ReadAsStreamAsync();
-                var configItem = ConvertToConfigItem(stream);
-                
+                var configItem = ConvertToConfigItems(stream);
+                //  配置变更
                 if (configItem.Any(x => x.Version > CurrentDataVersion))
                 {
-                    // 更新配置
+                    //  更新配置
                     await AddOrUpdateConfigAsync(configItem);
-                    // 保存备份配置
-                    if (IsRecovery) await SaveObjectFileAsync("appsettings.ConfigCache.json", _data.Values);
+                    //  保存备份配置
+                    if (IsRecovery)
+                    {
+                        await SaveObjectFileAsync("appsettings.ConfigCache.json", _data.Values);
+                    }
                 }
 
-                // 监听更新
-                ConfigureUpdateListening();
+                //  监听更新
+                ConfigureChangeListening();
             }
         }
         catch (Exception ex)
         {
             if (!_polling.Value && IsRecovery)
             {
-                // 首次请求异常但开启了容灾备份恢复
-                var rows = await GetFileObjectAsync<List<ConfigItemDto>>("appsettings.ConfigCache.json");
+                //  首次请求异常但开启了容灾备份恢复
+                var rows = await GetFileObjectAsync<List<ConfigItem>>("appsettings.ConfigCache.json");
                 await AddOrUpdateConfigAsync(rows);
-                ConfigureUpdateListening();
+                //  监听更新
+                ConfigureChangeListening();
             }
             else if (!_polling.Value)
             {
-                // 首次请求异常
+                //  首次请求异常
                 ex.ReThrow();
             }
             else
             {
-                // 循环中请求异常
+                //  循环中请求异常
                 _requestException = true;
 
-                // 循环存在异常时,进行60秒等待
+                //  循环存在异常时,进行60秒等待
                 await Task.Delay(30 * 1000);
             }
         }
@@ -245,17 +249,20 @@ public class ConfigClient : IConfigClient, IDisposable
     #region 私有方法
 
     /// <summary>
-    ///     执行循环
+    ///     配置变更监听
     /// </summary>
-    private void ConfigureUpdateListening()
+    private void ConfigureChangeListening()
     {
-        // 开启polling
+        //  开启polling
         if (!_polling.Value && CurrentDataVersion > 0)
         {
             _polling.CompareAndSet(false, true);
             _pollingTask = Task.Factory.StartNew(async () =>
             {
-                while (!_cts.IsCancellationRequested) await LoadAsync();
+                while (!_cts.IsCancellationRequested)
+                {
+                    await LoadAsync();
+                }
             }, _cts.Token);
         }
     }
@@ -264,18 +271,19 @@ public class ConfigClient : IConfigClient, IDisposable
     ///     更新配置
     /// </summary>
     /// <param name="rows"></param>
-    private async Task AddOrUpdateConfigAsync(IEnumerable<ConfigItemDto> rows)
+    private async Task AddOrUpdateConfigAsync(List<ConfigItem> rows)
     {
-        // ReSharper disable once PossibleMultipleEnumeration
-        if (rows == null) return;
-        // 本地配置更新
-        // ReSharper disable once PossibleMultipleEnumeration
-        foreach (var item in rows) _data[item.DataId] = item;
-        // 有配置更新
-        // ReSharper disable once PossibleMultipleEnumeration
-        foreach (var callback in _changeCallbacks) await callback(rows);
-        // 刷新配置版本号
-        // ReSharper disable once PossibleMultipleEnumeration
+        //  本地配置更新
+        foreach (var item in rows)
+        {
+            _data[item.DataId] = item;
+        }
+        //  有配置更新
+        foreach (var callback in _changeCallbacks)
+        {
+            await callback(rows);
+        }
+        //  刷新配置版本号
         CurrentDataVersion = rows.Max(x => x.Version);
     }
 
@@ -284,9 +292,9 @@ public class ConfigClient : IConfigClient, IDisposable
     /// </summary>
     /// <param name="body"></param>
     /// <returns></returns>
-    private static List<ConfigItemDto> ConvertToConfigItem(Stream body)
+    private static List<ConfigItem> ConvertToConfigItems(Stream body)
     {
-        return JsonSerializer.Deserialize<List<ConfigItemDto>>(body, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
+        return JsonSerializer.Deserialize<List<ConfigItem>>(body, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
     }
 
     /// <summary>
@@ -352,8 +360,7 @@ public class ConfigClient : IConfigClient, IDisposable
     private static Stream CreateFileStream(string filePath)
     {
         var directory = Path.GetDirectoryName(filePath);
-        if (directory != null)
-            DirectoryUtility.CreateIfNotExists(directory);
+        if (directory != null) DirectoryUtility.CreateIfNotExists(directory);
         FileUtility.DeleteIfExists(filePath);
         return File.Create(filePath);
     }
@@ -364,7 +371,7 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <param name="list"></param>
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     /// <returns></returns>
-    public static IDictionary<string, string> ConvertChangeDataToJsonConfigDictionary(IEnumerable<ConfigItemDto> list)
+    public static Dictionary<string, string> ConvertToDictionary(List<ConfigItem> list)
     {
         var dict = new Dictionary<string, string>();
         foreach (var item in list)

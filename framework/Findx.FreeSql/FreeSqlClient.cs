@@ -1,36 +1,40 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Findx.FreeSql
+namespace Findx.FreeSql;
+
+/// <summary>
+///     FreeSql
+/// </summary>
+public class FreeSqlClient : Dictionary<string, IFreeSql>, IDisposable
 {
+    private readonly FreeSqlOptions _options;
+
     /// <summary>
-    ///     FreeSql
+    ///     Ctor
     /// </summary>
-    public class FreeSqlClient : Dictionary<string, IFreeSql>, IDisposable
+    /// <param name="options"></param>
+    public FreeSqlClient(FreeSqlOptions options)
     {
-        private readonly FreeSqlOptions _options;
+        _options = options;
+    }
 
-        /// <summary>
-        ///     Ctor
-        /// </summary>
-        /// <param name="options"></param>
-        public FreeSqlClient(FreeSqlOptions options)
-        {
-            _options = options;
-        }
+    /// <summary>
+    ///     获取默认
+    /// </summary>
+    /// <returns></returns>
+    public IFreeSql GetDefault()
+    {
+        return this[_options.Primary];
+    }
 
-        /// <summary>
-        ///     获取默认
-        /// </summary>
-        /// <returns></returns>
-        public IFreeSql GetDefault()
-        {
-            return this[_options.Primary];
-        }
+    /// <summary>
+    ///     释放资源
+    /// </summary>
+    public void Dispose()
+    {
+        foreach (var fsql in Values) fsql?.Dispose();
         
-        public void Dispose()
-        {
-            Clear();
-        }
+        Clear();
     }
 }

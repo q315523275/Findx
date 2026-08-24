@@ -7,7 +7,7 @@ namespace Findx.Configuration.Extensions;
 /// <summary>
 ///     配置中心扩展
 /// </summary>
-public static class ConfigurationBuilderExtension
+public static partial class ConfigurationBuilderExtension
 {
     /// <summary>
     ///     添加配置中心
