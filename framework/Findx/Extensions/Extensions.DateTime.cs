@@ -68,6 +68,19 @@ public static partial class Extensions
     }
     
     /// <summary>
+    ///     计算任意日期所在的周一
+    /// </summary>
+    /// <param name="date"></param>
+    /// <returns></returns>
+    public static DateTime GetWeekStart(this DateTime date)
+    {
+        var d = date.Date;
+        var diff = (int)d.DayOfWeek - (int)DayOfWeek.Monday;
+        if (diff < 0) diff += 7;
+        return d.AddDays(-diff);
+    }
+    
+    /// <summary>
     ///     Converts a DateTime to ISO 8601 string
     /// </summary>
     public static string ToIso8601String(this DateTime value)

@@ -5,6 +5,6 @@ using BenchmarkDotNetExercise;
 
 Console.WriteLine("Hello, World!");
 
-// BenchmarkRunner.Run<GenerateSequentialId>();
+BenchmarkRunner.Run<GenerateSequentialId>();
 
-BenchmarkRunner.Run<PropertyDynamicGet>();
+//  BenchmarkRunner.Run<PropertyDynamicGet>();

@@ -44,13 +44,13 @@ public class DefaultWebSocketAuthorization : IWebSocketAuthorization
     {
         if (context.Request.Headers.TryGetValue("Authorization", out var token))
         {
-            // 手动验证Token
+            //  手动验证Token
             var principal = _jwtSecurityTokenHandler.ValidateToken(token.ToString().RemovePreFix("Bearer "), _tokenValidationParameters, out _);
             
-            // 将用户信息附加到上下文
+            //  将用户信息附加到上下文
             context.User = principal;
             
-            // 认证结果
+            //  认证结果
             var result = context.User.Identity?.IsAuthenticated ?? false;
             
             return Task.FromResult(result);

@@ -47,7 +47,7 @@ public class WebSocketMiddleware
             return;
         }
 
-        // 开放认证
+        //  开放认证
         if (!await _webSocketAuthorization.AuthorizeAsync(context))
         {
             context.Response.StatusCode = 401;
@@ -57,7 +57,7 @@ public class WebSocketMiddleware
             return;
         }
         
-        // 控制连接
+        //  控制连接
         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
         var webSocketSession = new WebSocketSession(webSocket)
         {
@@ -66,14 +66,14 @@ public class WebSocketMiddleware
             UserName = GetUserName(context)
         };
         
-        // 认证通过进行用户名赋值
+        //  认证通过进行用户名赋值
         if (context.User.Identity?.IsAuthenticated == true)
         {
             webSocketSession.UserName = context.User.Identity?.GetUserName();
         }
         
-        // 无效
-        // var cancellationToken = context.RequestAborted;
+        //  无效
+        //  var cancellationToken = context.RequestAborted;
         CancellationTokenSource cancellationTokenSource = new();
         await _webSocketHandler.OnConnected(webSocketSession, cancellationTokenSource.Token).ConfigureAwait(false);
         await ReceiveAsync(webSocketSession, cancellationTokenSource.Token);
@@ -88,7 +88,7 @@ public class WebSocketMiddleware
     {
         while (session.State == WebSocketState.Open && !cancellationToken.IsCancellationRequested)
         {
-            // 4kb缓冲区大小
+            //  4kb缓冲区大小
             const int chunkSize = 1024 * 4;
             var bytes = ArrayPool<byte>.Shared.Rent(chunkSize);
             var buffer = new Memory<byte>(bytes);

@@ -8,13 +8,14 @@ using Microsoft.Extensions.Options;
 namespace Findx.WebSocketCore.Implementation;
 
 /// <summary>
+///     WebSocket序列化器
 /// </summary>
 public class WebSocketSerializer : IWebSocketSerializer
 {
     private readonly IOptions<JsonOptions> _options;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="options"></param>
     public WebSocketSerializer(IOptions<JsonOptions> options)

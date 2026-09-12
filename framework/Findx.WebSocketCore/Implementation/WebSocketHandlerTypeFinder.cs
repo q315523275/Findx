@@ -17,7 +17,7 @@ public class WebSocketHandlerTypeFinder : FinderBase<Type>, IWebSocketHandlerTyp
     /// <returns></returns>
     protected override IEnumerable<Type> FindAllItems()
     {
-        // 排除被继承的Handler实类
+        //  排除被继承的Handler实类
         var types = AssemblyManager.FindTypesByBase<WebSocketHandlerBase>();
         var baseHandlerTypes = types.Select(m => m.BaseType).Where(m => m is { IsClass: true, IsAbstract: false });
         return types.Except(baseHandlerTypes);

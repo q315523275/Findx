@@ -28,7 +28,7 @@ public class ClusterService : IClusterService
     {
         var client = _httpClientFactory.CreateClient();
         var httpUrl = $"http://{nodeInfo}/api/config/cluster/configChangeNotify";
-        var response = await client.PostAsJsonAsync(httpUrl, changeDto, cancellationToken);
+        var response = await client.PostAsJsonAsync(httpUrl, changeDto, cancellationToken: cancellationToken);
         response.EnsureSuccessStatusCode();
     }
 }

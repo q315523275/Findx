@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Data;
-using Findx.Extensions;
 using Findx.Mapping;
 using Microsoft.AspNetCore.Mvc;
 
@@ -245,7 +244,7 @@ public abstract class CrudControllerBase<TModel, TListVo, TDetailVo, TCreateRequ
         var res = await repo.InsertAsync(model, cancellationToken);
         await AddAfterAsync(model, req, res, cancellationToken);
 
-        return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.add.error", "数据创建失败");
+        return res > 0 ? CommonResult.Success(model) : CommonResult.Fail("db.add.error", "数据创建失败");
     }
     
     /// <summary>
@@ -322,7 +321,7 @@ public abstract class CrudControllerBase<TModel, TListVo, TDetailVo, TCreateRequ
         var res = await repo.SaveAsync(model, cancellationToken: cancellationToken);
         await EditAfterAsync(model, req, res, cancellationToken);
 
-        return res > 0 ? CommonResult.Success() : CommonResult.Fail("db.edit.error", "数据更新失败");
+        return res > 0 ? CommonResult.Success(model) : CommonResult.Fail("db.edit.error", "数据更新失败");
     }
 
     /// <summary>

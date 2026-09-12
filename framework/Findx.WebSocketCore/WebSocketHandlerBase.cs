@@ -17,16 +17,16 @@ public abstract class WebSocketHandlerBase
     /// <summary>
     ///     Ctor
     /// </summary>
-    /// <param name="webSocketSessionManager"></param>
-    protected WebSocketHandlerBase(IWebSocketSessionManager webSocketSessionManager)
+    /// <param name="sessionManager"></param>
+    protected WebSocketHandlerBase(IWebSocketSessionManager sessionManager)
     {
-        WebSocketSessionManager = webSocketSessionManager;
+        SessionManager = sessionManager;
     }
 
     /// <summary>
     ///     连接管理器
     /// </summary>
-    protected IWebSocketSessionManager WebSocketSessionManager { get; }
+    protected IWebSocketSessionManager SessionManager { get; }
 
     /// <summary>
     ///     连接成功
@@ -35,7 +35,7 @@ public abstract class WebSocketHandlerBase
     /// <param name="cancellationToken"></param>
     public virtual async Task OnConnected(IWebSocketSession session, CancellationToken cancellationToken = default)
     {
-        WebSocketSessionManager.AddSession(session);
+        SessionManager.AddSession(session);
 
         await SendMessageAsync(session, new RequestTextMessage($"user:{session.UserName} session:{session.Id} from {session.RemoteIpAddress}:{session.RemotePort}"), cancellationToken).ConfigureAwait(false);
     }
@@ -47,7 +47,7 @@ public abstract class WebSocketHandlerBase
     /// <param name="cancellationToken"></param>
     public virtual async Task OnDisconnected(IWebSocketSession session, CancellationToken cancellationToken = default)
     {
-        await WebSocketSessionManager.RemoveSessionAsync(session, cancellationToken).ConfigureAwait(false);
+        await SessionManager.RemoveSessionAsync(session, cancellationToken).ConfigureAwait(false);
     }
     
     /// <summary>
@@ -90,7 +90,7 @@ public abstract class WebSocketHandlerBase
     /// <exception cref="ArgumentException"></exception>
     public async Task SendMessageAsync(string userName, RequestMessage message, CancellationToken cancellationToken = default)
     {
-        var sessions = WebSocketSessionManager.GetSession(userName);
+        var sessions = SessionManager.GetSession(userName);
         foreach (var session in sessions)
         {
             await SendMessageAsync(session, message, cancellationToken).ConfigureAwait(false);
@@ -104,7 +104,7 @@ public abstract class WebSocketHandlerBase
     /// <param name="cancellationToken"></param>
     public async Task SendMessageToAllAsync(RequestMessage message, CancellationToken cancellationToken = default)
     {
-        var allSessions = WebSocketSessionManager.GetAllSessions();
+        var allSessions = SessionManager.GetAllSessions();
         if (allSessions != null)
         {
             foreach (var session in allSessions)
@@ -122,7 +122,7 @@ public abstract class WebSocketHandlerBase
     /// <param name="cancellationToken"></param>
     public async Task SendMessageToGroupAsync(string groupId, RequestMessage message, CancellationToken cancellationToken = default)
     {
-        var users = WebSocketSessionManager.GetAllUserFromGroup(groupId);
+        var users = SessionManager.GetAllUserFromGroup(groupId);
         if (users != null)
         {
             foreach (var user in users)
@@ -140,7 +140,7 @@ public abstract class WebSocketHandlerBase
     /// <param name="excepts">不发送id</param>
     public async Task SendMessageToGroupAsync(string groupId, RequestMessage message, params string[] excepts)
     {
-        var users = WebSocketSessionManager.GetAllUserFromGroup(groupId);
+        var users = SessionManager.GetAllUserFromGroup(groupId);
         if (users != null)
         {
             foreach (var user in users)
