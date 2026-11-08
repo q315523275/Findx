@@ -27,6 +27,11 @@ public class RedisModule : StartupModule
     public override int Order => 110;
         
     /// <summary>
+    ///     Option
+    /// </summary>
+    private RedisOptions RedisOptions { set; get; }
+    
+    /// <summary>
     ///     配置模块服务
     /// </summary>
     /// <param name="services"></param>
@@ -35,11 +40,14 @@ public class RedisModule : StartupModule
     {
         // 配置服务
         var configuration = services.GetConfiguration();
-        if (!configuration.GetValue<bool>("Findx:Redis:Enabled"))
-            return services;
-            
+        var section = configuration.GetSection("Findx:Redis");
+
+        RedisOptions = new RedisOptions();
+        section.Bind(RedisOptions);
+        if (!RedisOptions.Enabled) return services;
+
         // 配置参数
-        services.Configure<RedisOptions>(configuration.GetSection("Findx:Redis"));
+        services.Configure<RedisOptions>(section);
 
         // redis 连接池
         services.AddSingleton<IConnectionProvider, ConnectionProvider>();
@@ -72,8 +80,6 @@ public class RedisModule : StartupModule
     /// <param name="app"></param>
     public override void UseModule(IServiceProvider app)
     {
-        var configuration = app.GetRequiredService<IConfiguration>();
-        if (configuration.GetValue<bool>("Findx:Redis:Enabled"))
-            base.UseModule(app);
+        if (RedisOptions.Enabled) base.UseModule(app);
     }
 }

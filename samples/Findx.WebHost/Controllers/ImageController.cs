@@ -31,6 +31,8 @@ public class ImageController : ApiControllerBase
 
     private Task<byte[]> ReadAllBytesAsync(string filePath)
     {
+        // 安全警告：filePath 来自用户请求参数，MapPath 为宽松模式（绝对路径放行），
+        // 生产环境必须自行校验输入（白名单目录/扩展名），否则构成任意文件读取漏洞
         return System.IO.File.ReadAllBytesAsync(_app.MapPath(filePath));
     }
 

@@ -35,4 +35,10 @@ public class ClientCallBackInfo<T>
     /// </summary>
     [JsonIgnore]
     public CancellationTokenRegistration CancellationTokenRegistration { set; get; }
+
+    /// <summary>
+    ///     请求中断注册（客户端断开时清理）
+    /// </summary>
+    [JsonIgnore]
+    public CancellationTokenRegistration AbortCancellationRegistration { set; get; }
 }

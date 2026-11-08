@@ -136,6 +136,34 @@ foreach (var (member, distance) in near)
 - `HKeys` 没有异步版本；`ZRangeByScore` 的同步版 `count` 默认 `-1`，异步版默认 `0`，使用时需显式传参。
 - `HDel` / `SRem` 传入空集合时会删除整个 key。
 
+### 集合类 API 的枚举语义（重要）
+
+`LRange` / `SMembers` / `SRandMembers` / `ZRange` / `ZRangeByScore` / `SearchKeys` / `GeoPos` / `GeoRadius` 等同步方法返回 `IEnumerable<T>`，但实现是 **`yield` 迭代器 —— 延迟执行**：方法返回时尚未访问 Redis，首次 `MoveNext` 才发送命令。异步版本（`LRangeAsync` 等）内部用 `List<T>` 物化，返回时数据已就绪。
+
+| API 形态 | 执行时机 | 重复枚举的后果 |
+|---|---|---|
+| 同步 `LRange` / `SMembers` / `ZRange` / `SearchKeys` / `GeoPos` / `GeoRadius` 等 | 首次枚举才发 Redis 命令 | **再次访问 Redis + 重新反序列化** |
+| 异步 `*Async` 版本 | 方法调用时已完成取数（内部 `List<T>`） | 只遍历内存列表 |
+| `HVals` / `HKeys` | 方法调用时已取数，返回 `Select` 惰性投影 | 不再访问 Redis，但会重复执行逐项类型转换 |
+
+> 关于 `ToList()` 的开销
+
+底层 `RedisValue[]` 在命令返回时已一次性全量拉回，`ToList()` **不会复制 Redis 数据**，只复制元素引用（1000 项约 8KB 的数组分配），反序列化也只发生一次。真正的风险在**同步迭代器被重复枚举**。
+
+```csharp
+// 差：Count() 触发一次 Redis 请求，foreach 再触发一次
+if (redis.LRange("queue", 0, -1).Count() > 0)
+{
+    foreach (var item in redis.LRange("queue", 0, -1)) { ... }
+}
+
+// 好：一次取数后物化，多次遍历只读内存
+var items = redis.LRange("queue", 0, -1).ToList();
+
+// 好：只消费一次，直接 foreach，避免额外数组
+foreach (var item in redis.LRange("queue", 0, -1)) { ... }
+```
+
 ## 分布式锁
 
 `RedisLock` 实现了核心包的 `ILock` 抽象，锁名 `DistributedLock.Redis`。

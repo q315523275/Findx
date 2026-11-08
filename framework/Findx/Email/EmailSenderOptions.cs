@@ -31,6 +31,11 @@ public class EmailSenderOptions : IOptions<EmailSenderOptions>
     public bool EnableSsl { get; set; }
 
     /// <summary>
+    ///     是否忽略SSL证书校验（仅自签名/内网测试环境开启，默认false）
+    /// </summary>
+    public bool EnableSslIgnoreCertificate { get; set; }
+
+    /// <summary>
     ///     显示名称
     /// </summary>
     public string FromDisplayName { get; set; }

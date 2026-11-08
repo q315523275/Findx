@@ -7,18 +7,18 @@ namespace Findx.Module.EleAdminPlus.Shared.Events;
 /// <summary>
 ///     文件上传成功事件
 /// </summary>
-public sealed class FileUploadSuccessEvent: IApplicationEvent, IAsync
+public sealed class FileUploadedEvent: IApplicationEvent, IAsync
 {
     /// <summary>
     ///     Ctor
     /// </summary>
-    public FileUploadSuccessEvent() { }
+    public FileUploadedEvent() { }
 
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="fileInfo"></param>
-    public FileUploadSuccessEvent(SysFileInfo fileInfo)
+    public FileUploadedEvent(SysFileInfo fileInfo)
     {
         FileId = fileInfo.Id;
         FileName = fileInfo.Name;

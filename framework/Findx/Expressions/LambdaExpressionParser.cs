@@ -19,12 +19,14 @@ public static class LambdaExpressionParser
         var bodies = new List<Expression>();
         bodies.AddRange(filterGroup.Filters.Select(x => ParseExpressionBody(parameter, x)));
 
-        var body = filterGroup.Logic switch
-        {
-            FilterOperate.And => bodies.Aggregate(Expression.AndAlso),
-            FilterOperate.Or => bodies.Aggregate(Expression.OrElse),
-            _ => Expression.Constant(true)
-        };
+        var body = bodies.Count == 0
+            ? Expression.Constant(true)
+            : filterGroup.Logic switch
+            {
+                FilterOperate.And => bodies.Aggregate(Expression.AndAlso),
+                FilterOperate.Or => bodies.Aggregate(Expression.OrElse),
+                _ => Expression.Constant(true)
+            };
 
         return Expression.Lambda<Func<T, bool>>(body, parameter);
     }
@@ -133,7 +135,7 @@ public static class LambdaExpressionParser
     private static readonly MethodInfo MethodStringContains = typeof(string).GetMethod("Contains", [typeof(string)]);
     private static readonly MethodInfo MethodStringStartsWith = typeof(string).GetMethod("StartsWith", [typeof(string)]);
     private static readonly MethodInfo MethodStringEndsWith = typeof(string).GetMethod("EndsWith", [typeof(string)]);
-    private static readonly MethodInfo MethodEnumerableContains = typeof(Enumerable).GetMethods().First(a => a.Name == "Contains");
+    private static readonly MethodInfo MethodEnumerableContains = typeof(Enumerable).GetMethods().First(a => a.Name == "Contains" && a.GetParameters().Length == 2);
     
     /// <summary>
     ///     字符串集合转换器字典
@@ -203,7 +205,8 @@ public static class LambdaExpressionParser
     }
     
     
-    private static readonly ConcurrentDictionary<string, Expression> PropertyAccessDict = new();
+    //  缓存属性链（不含 ParameterExpression 实例，避免跨调用参数绑定失败）
+    private static readonly ConcurrentDictionary<string, PropertyInfo[]> PropertyChainDict = new();
     
     /// <summary>
     ///     获取属性表达式
@@ -214,38 +217,44 @@ public static class LambdaExpressionParser
     /// <exception cref="InvalidOperationException"></exception>
     private static Expression GetPropertyExpression(ParameterExpression parameter, FilterCondition condition)
     {
-        // 缓存静态字典
+        //  缓存静态字典：按 类型+字段 缓存属性链，每次用当前 parameter 实例重新构建 MemberAccess
         var key = parameter.Type.FullName + "_" + condition.Field;
-        if (PropertyAccessDict.TryGetValue(key, out var selector)) return selector;
-        
-        // 嵌套字段名，如：User.Name
-        var propertyNames = condition.Field.Split('.');
-        var type = parameter.Type;
-        Expression propertyAccess = parameter;
-        for (var index = 0; index < propertyNames.Length; index++)
+        if (!PropertyChainDict.TryGetValue(key, out var properties))
         {
-            var propertyName = propertyNames[index];
-            var property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-            if (property == null)
-                throw new InvalidOperationException($"指定的属性“{condition.Field}”在类型“{type.FullName}”中不存在。");
-
-            // 子对象类型
-            type = property.PropertyType;
-            // 验证最后一个属性与属性值是否匹配
-            if (index == propertyNames.Length - 1)
+            //  嵌套字段名，如：User.Name
+            var propertyNames = condition.Field.Split('.');
+            var type = parameter.Type;
+            var propertyList = new List<PropertyInfo>(propertyNames.Length);
+            for (var index = 0; index < propertyNames.Length; index++)
             {
-                var flag = CheckFilterConditions(type, condition);
-                if (!flag)
+                var propertyName = propertyNames[index];
+                var property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                if (property == null)
+                    throw new InvalidOperationException($"指定的属性“{condition.Field}”在类型“{type.FullName}”中不存在。");
+                propertyList.Add(property);
+
+                //  子对象类型
+                type = property.PropertyType;
+                //  验证最后一个属性与属性值是否匹配
+                if (index == propertyNames.Length - 1)
                 {
-                    return null;
+                    var flag = CheckFilterConditions(type, condition);
+                    if (!flag)
+                    {
+                        return null;
+                    }
                 }
             }
+            properties = propertyList.ToArray();
+            PropertyChainDict[key] = properties;
+        }
+
+        Expression propertyAccess = parameter;
+        foreach (var property in properties)
+        {
             propertyAccess = Expression.MakeMemberAccess(propertyAccess, property);
         }
-        
-        // 缓存静态字典
-        PropertyAccessDict[key] = propertyAccess;
-        
+
         return propertyAccess;
     }
     

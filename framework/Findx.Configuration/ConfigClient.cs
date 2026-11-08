@@ -4,14 +4,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Common.Atomic;
+using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Serialization;
 using Findx.Utilities;
+using Microsoft.Extensions.Logging;
 
 namespace Findx.Configuration;
 
@@ -26,6 +29,30 @@ public class ConfigClient : IConfigClient, IDisposable
     private readonly AtomicBoolean _polling;
     private Task _pollingTask;
     private bool _requestException = true;
+    private ILogger<ConfigClient> _logger;
+
+    /// <summary>
+    ///     惰性解析日志（引导期 ServiceLocator 可能尚未就绪，解析失败时返回 null）
+    /// </summary>
+    private ILogger<ConfigClient> Logger
+    {
+        get
+        {
+            if (_logger != null) return _logger;
+            
+            try
+            {
+                var factory = ServiceLocator.GetService<ILoggerFactory>();
+                _logger = factory?.CreateLogger<ConfigClient>();
+            }
+            catch
+            {
+                // 忽略：引导阶段服务提供者未就绪
+            }
+
+            return _logger;
+        }
+    }
 
     /// <summary>
     ///     Ctor
@@ -39,7 +66,7 @@ public class ConfigClient : IConfigClient, IDisposable
     {
         Check.NotNullOrWhiteSpace(appId, nameof(appId));
         Check.NotNullOrWhiteSpace(secret, nameof(secret));
-        Check.NotNullOrWhiteSpace(secret, nameof(secret));
+        Check.NotNullOrWhiteSpace(environment, nameof(environment));
         Check.NotNullOrWhiteSpace(servers, nameof(servers));
 
         AppId = appId;
@@ -61,19 +88,20 @@ public class ConfigClient : IConfigClient, IDisposable
     ///     Ctor
     /// </summary>
     /// <param name="options"></param>
-    public ConfigClient(ConfigOptions options): this(options.AppId, options.Secret, options.Environment, options.Servers, options.IsRecovery)
+    public ConfigClient(ConfigOptions options) : this(
+        (options ?? throw new ArgumentNullException(nameof(options))).AppId,
+        options.Secret, options.Environment, options.Servers, options.IsRecovery)
     {
-        Check.NotNull(options, nameof(options));
         if (options.Validate().Any())
-            throw new ArgumentNullException(nameof(options));
+            throw new ArgumentException("配置选项校验未通过", nameof(options));
     }
 
     #region 属性
 
     /// <summary>
-    ///     配置字典
+    ///     配置字典（轮询线程写、业务线程读，使用并发字典）
     /// </summary>
-    private readonly Dictionary<string, ConfigItem> _data = new(StringComparer.OrdinalIgnoreCase);
+    private readonly ConcurrentDictionary<string, ConfigItem> _data = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     ///     应用编号
@@ -162,9 +190,11 @@ public class ConfigClient : IConfigClient, IDisposable
     /// <returns></returns>
     private string GenerateApiUrl()
     {
-        var sign = EncryptUtility.Md5By32($"{AppId}{AppSecret}{Environment}{CurrentDataVersion}");
-        return
-            $"{CurrentServer}/api/config?appId={AppId}&sign={sign}&environment={Environment}&version={CurrentDataVersion}&load={_requestException}";
+        //  防重放签名协议：HMAC-SHA256(appId|environment|version|timestamp|nonce)，时间戳 + nonce 防重放（服务端已兼容旧 MD5 客户端）
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString();
+        var nonce = Guid.NewGuid().ToString("N");
+        var sign = EncryptUtility.HmacSha256($"{AppId}|{Environment}|{CurrentDataVersion}|{timestamp}|{nonce}", AppSecret);
+        return $"{CurrentServer}/api/config?appId={AppId}&sign={sign}&environment={Environment}&version={CurrentDataVersion}&load={_requestException}&timestamp={timestamp}&nonce={nonce}";
     }
 
     /// <summary>
@@ -186,44 +216,56 @@ public class ConfigClient : IConfigClient, IDisposable
     }
 
     /// <summary>
-    ///     加载配置
+    ///     加载配置（IConfigClient 接口成员，无参转发）
     /// </summary>
-    public async Task LoadAsync()
+    public Task LoadAsync()
+    {
+        return LoadAsync(CancellationToken.None);
+    }
+
+    /// <summary>
+    ///     加载配置（带取消令牌）
+    /// </summary>
+    public async Task LoadAsync(CancellationToken cancellationToken)
     {
         try
         {
             CurrentServer = GenerateServer().TrimEnd('/');
             var apiUrl = GenerateApiUrl();
 
-            using var response = await HttpUtil.GetAsync(apiUrl, null, null);
-            if (response.StatusCode == HttpStatusCode.OK)
+            using var response = await HttpUtil.GetAsync(apiUrl, null, null, cancellationToken);
+            if (response.StatusCode != HttpStatusCode.OK)
             {
-                _requestException = false;
-                
-                await using var stream = await response.Content.ReadAsStreamAsync();
-                var configItem = ConvertToConfigItems(stream);
-                //  配置变更
-                if (configItem.Any(x => x.Version > CurrentDataVersion))
-                {
-                    //  更新配置
-                    await AddOrUpdateConfigAsync(configItem);
-                    //  保存备份配置
-                    if (IsRecovery)
-                    {
-                        await SaveObjectFileAsync("appsettings.ConfigCache.json", _data.Values);
-                    }
-                }
-
-                //  监听更新
-                ConfigureChangeListening();
+                //  非 200 视为失败，转入 catch 的容灾/退避路径，避免首次加载静默空配置
+                Logger?.LogWarning("配置中心响应非成功状态码: {StatusCode}", (int)response.StatusCode);
+                throw new HttpRequestException($"配置中心响应异常，状态码: {(int)response.StatusCode}");
             }
+
+            _requestException = false;
+
+            await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var configItem = ConvertToConfigItems(stream);
+            //  配置变更
+            if (configItem.Any(x => x.Version > CurrentDataVersion))
+            {
+                //  更新配置
+                await AddOrUpdateConfigAsync(configItem);
+                //  保存备份配置
+                if (IsRecovery)
+                {
+                    await SaveObjectFileAsync("appsettings.ConfigCache.json", _data.Values, cancellationToken);
+                }
+            }
+
+            //  监听更新
+            ConfigureChangeListening();
         }
         catch (Exception ex)
         {
             if (!_polling.Value && IsRecovery)
             {
                 //  首次请求异常但开启了容灾备份恢复
-                var rows = await GetFileObjectAsync<List<ConfigItem>>("appsettings.ConfigCache.json");
+                var rows = await GetFileObjectAsync<List<ConfigItem>>("appsettings.ConfigCache.json", cancellationToken);
                 await AddOrUpdateConfigAsync(rows);
                 //  监听更新
                 ConfigureChangeListening();
@@ -238,8 +280,15 @@ public class ConfigClient : IConfigClient, IDisposable
                 //  循环中请求异常
                 _requestException = true;
 
-                //  循环存在异常时,进行60秒等待
-                await Task.Delay(30 * 1000);
+                //  循环存在异常时，进行 30 秒等待（支持取消，避免 Dispose 后长时间滞留）
+                try
+                {
+                    await Task.Delay(30 * 1000, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    //  轮询已停止，不再等待
+                }
             }
         }
     }
@@ -257,11 +306,12 @@ public class ConfigClient : IConfigClient, IDisposable
         if (!_polling.Value && CurrentDataVersion > 0)
         {
             _polling.CompareAndSet(false, true);
-            _pollingTask = Task.Factory.StartNew(async () =>
+            //  Task.Run 自动解包 async lambda 的内层 Task，_pollingTask 即轮询循环本身，Dispose 可正确等待
+            _pollingTask = Task.Run(async () =>
             {
                 while (!_cts.IsCancellationRequested)
                 {
-                    await LoadAsync();
+                    await LoadAsync(_cts.Token);
                 }
             }, _cts.Token);
         }
@@ -278,10 +328,17 @@ public class ConfigClient : IConfigClient, IDisposable
         {
             _data[item.DataId] = item;
         }
-        //  有配置更新
+        //  有配置更新（单个回调异常不得中断其余回调与轮询主循环）
         foreach (var callback in _changeCallbacks)
         {
-            await callback(rows);
+            try
+            {
+                await callback(rows);
+            }
+            catch (Exception ex)
+            {
+                Logger?.LogError(ex, "配置变更回调执行异常");
+            }
         }
         //  刷新配置版本号
         CurrentDataVersion = rows.Max(x => x.Version);
@@ -401,6 +458,30 @@ public class ConfigClient : IConfigClient, IDisposable
     public void Dispose()
     {
         _cts?.Cancel();
+
+        //  等待轮询循环退出（最多 2 秒），避免后台任务在释放后继续访问已清理状态。
+        //  正常路径：取消令牌透传 HttpClient.SendAsync，挂起的长轮询请求立即中止，循环毫秒级退出；
+        //  超时路径：循环卡在未响应取消的变更回调时记告警，继续强制释放（应用关闭最多被同步阻塞 2 秒）。
+        if (_pollingTask != null)
+        {
+            try
+            {
+                if (_pollingTask.Wait(TimeSpan.FromSeconds(2)))
+                    Logger?.LogDebug("配置客户端轮询循环已退出");
+                else
+                    Logger?.LogWarning("配置客户端轮询循环未在 2 秒内退出（可能阻塞在未响应取消的变更回调或线程池饥饿），继续强制释放");
+            }
+            catch (AggregateException ex)
+            {
+                //  轮询循环以异常结束：不影响释放，仅记录诊断
+                Logger?.LogDebug(ex, "配置客户端轮询循环以异常结束");
+            }
+            catch (Exception)
+            {
+                //  忽略等待阶段的其他异常
+            }
+        }
+
         _pollingTask?.Dispose();
         _cts?.Dispose();
 

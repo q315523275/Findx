@@ -81,8 +81,13 @@ public class SynchronizedConverter : BasicConverter
             {
                 _kill = true;
 
-                while (_conversionThread.ThreadState == ThreadState.Stopped)
-                { }
+                //CompleteAdding 使阻塞在 Take() 上的 worker 线程得以退出
+                _conversions.CompleteAdding();
+
+                while (_conversionThread.ThreadState != ThreadState.Stopped)
+                {
+                    Thread.Sleep(10);
+                }
 
                 _conversionThread = null;
             }
@@ -93,16 +98,24 @@ public class SynchronizedConverter : BasicConverter
     {
         while (!_kill)
         {
-            // get next conversion task from blocking collection
-            var task = _conversions.Take();
-
-            lock (task)
+            try
             {
-                //run taks on thread that called RunSynchronously method
-                task.RunSynchronously();
+                // get next conversion task from blocking collection
+                var task = _conversions.Take();
 
-                //notify caller thread that task is completed
-                Monitor.Pulse(task);
+                lock (task)
+                {
+                    //run taks on thread that called RunSynchronously method
+                    task.RunSynchronously();
+
+                    //notify caller thread that task is completed
+                    Monitor.Pulse(task);
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                //BlockingCollection 已 CompleteAdding，worker 线程退出
+                break;
             }
         }
     }

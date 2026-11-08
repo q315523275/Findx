@@ -94,14 +94,18 @@ public class TransactionalAttribute : ActionFilterAttribute
 			}
 			default:
 			{
-				if (actionContext.HttpContext.Response.StatusCode < 400)
-				{
+				// OnActionExecuted 时 Result 尚未执行，Response.StatusCode 仍是默认 200，不能据此判断。
+				// 改为读取 Result 自身携带的预期状态码（兼容 net6.0，不使用 IStatusCodeHttpResult）。
+				var statusCode = 200;
+				if (actionContext.Result is StatusCodeResult statusCodeResult)
+					statusCode = statusCodeResult.StatusCode;
+				else if (actionContext.Result is ObjectResult { StatusCode: not null } objectResult)
+					statusCode = objectResult.StatusCode.Value;
+
+				if (statusCode < 400)
 					await unitOfWork.CommitAsync(cancellationToken);
-				}
 				else
-				{
 					await unitOfWork.RollbackAsync(cancellationToken).ConfigureAwait(false);
-				}
 				break;
 			}
 		}

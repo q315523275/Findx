@@ -29,6 +29,9 @@ public class DinkToPdfConverter : IPdfConverter
     /// <returns></returns>
     public Task<byte[]> ConvertAsync(string htmlString, CancellationToken cancellationToken = default)
     {
+        //  底层为同步阻塞转换，仅在启动前响应取消；转换一旦开始无法中断
+        cancellationToken.ThrowIfCancellationRequested();
+
         var doc = new HtmlToPdfDocument
         {
             GlobalSettings =

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 
@@ -7,7 +8,7 @@ namespace Findx.Configuration;
 /// <summary>
 ///     配置提供器
 /// </summary>
-internal class ConfigProvider : ConfigurationProvider
+internal class ConfigProvider : ConfigurationProvider, IDisposable
 {
     private readonly ConfigClient _client;
 
@@ -37,5 +38,13 @@ internal class ConfigProvider : ConfigurationProvider
     public override void Load()
     {
         _client.LoadAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    ///     释放资源（配置系统 Dispose 时释放底层客户端，取消轮询并等待退出）
+    /// </summary>
+    public void Dispose()
+    {
+        _client?.Dispose();
     }
 }

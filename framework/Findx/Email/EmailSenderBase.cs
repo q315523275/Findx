@@ -97,7 +97,11 @@ public abstract class EmailSenderBase : IEmailSender
     protected virtual void NormalizeMail(MailMessage mail)
     {
         if (mail.From == null || mail.From.Address.IsNullOrEmpty())
+        {
+            if (string.IsNullOrEmpty(EmailSenderOptions.FromAddress))
+                throw new InvalidOperationException("邮件发件人地址未配置，请在配置中设置 EmailSenderOptions.FromAddress（发件人地址）。");
             mail.From = new MailAddress(EmailSenderOptions.FromAddress, EmailSenderOptions.FromDisplayName, Encoding.UTF8);
+        }
 
         mail.HeadersEncoding ??= Encoding.UTF8;
         mail.SubjectEncoding ??= Encoding.UTF8;

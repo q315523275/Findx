@@ -1,6 +1,6 @@
 ﻿using Findx.Common;
 
-namespace Findx.ExceptionHandling;
+namespace Findx.Exceptions;
 
 /// <summary>
 ///     异常通知上下文

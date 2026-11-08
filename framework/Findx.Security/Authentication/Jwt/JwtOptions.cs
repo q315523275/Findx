@@ -15,12 +15,12 @@ public class JwtOptions : IOptions<JwtOptions>
     /// <summary>
     ///     获取或设置 发行方
     /// </summary>
-    public string Issuer { get; set; }
+    public string Issuer { get; set; } = "findx";
 
     /// <summary>
     ///     获取或设置 订阅方
     /// </summary>
-    public string Audience { get; set; }
+    public string Audience { get; set; } = "findx";
 
     /// <summary>
     ///     获取或设置 AccessToken有效期分钟数

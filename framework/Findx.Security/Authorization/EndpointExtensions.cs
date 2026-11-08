@@ -54,7 +54,8 @@ public static class EndpointExtensions
     /// </summary>
     public static string GetControllerName(this RouteEndpoint endpoint)
     {
-        return endpoint.RoutePattern.RequiredValues["controller"]?.ToString();
+        //  最小API/健康检查等端点无 controller 路由值，索引器会抛 KeyNotFoundException，用 TryGetValue 兜底
+        return endpoint.RoutePattern.RequiredValues.TryGetValue("controller", out var controller) ? controller?.ToString() : null;
     }
 
     /// <summary>
@@ -62,6 +63,7 @@ public static class EndpointExtensions
     /// </summary>
     public static string GetActionName(this RouteEndpoint endpoint)
     {
-        return endpoint.RoutePattern.RequiredValues["action"]?.ToString();
+        //  最小API/健康检查等端点无 action 路由值，索引器会抛 KeyNotFoundException，用 TryGetValue 兜底
+        return endpoint.RoutePattern.RequiredValues.TryGetValue("action", out var action) ? action?.ToString() : null;
     }
 }

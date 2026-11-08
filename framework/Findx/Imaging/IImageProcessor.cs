@@ -5,6 +5,9 @@ namespace Findx.Imaging;
 /// <summary>
 ///     图片处理器
 /// </summary>
+/// <remarks>
+///     流所有权契约：所有 <c>Stream</c> 入参由调用方负责 Dispose（处理器不接管）；返回的 <c>Task&lt;Stream&gt;</c> 所有权转交调用方，调用方用完必须 Dispose。
+/// </remarks>
 public interface IImageProcessor
 {
     /// <summary>

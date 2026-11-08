@@ -19,7 +19,6 @@ public class InMemoryJobStorage : IJobStorage
     public InMemoryJobStorage()
     {
         _lock = new AsyncLock();
-        // 字典存储也可以
         _jobs = [];
     }
 
@@ -41,9 +40,15 @@ public class InMemoryJobStorage : IJobStorage
     /// <param name="jobs"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task UpdatesAsync(IEnumerable<JobInfo> jobs, CancellationToken cancellationToken = default)
+    public async Task UpdatesAsync(IEnumerable<JobInfo> jobs, CancellationToken cancellationToken = default)
     {
-        return Task.CompletedTask;
+        //  内存版依赖对象引用共享：调度循环通常直接 mutate 同一 JobInfo 引用，
+        //  这里再按 Id 做一次替换/合并，保证传入的副本或外部写入也能落到存储
+        using var asyncLock = await _lock.LockAsync(cancellationToken);
+        foreach (var job in jobs)
+        {
+            _jobs.ReplaceOne(x => x.Id == job.Id, job);
+        }
     }
 
     /// <summary>
@@ -52,18 +57,21 @@ public class InMemoryJobStorage : IJobStorage
     /// <param name="jobId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task<JobInfo> FindAsync(long jobId, CancellationToken cancellationToken = default)
+    public async Task<JobInfo> FindAsync(long jobId, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_jobs.FirstOrDefault(x => x.Id == jobId));
+        using var asyncLock = await _lock.LockAsync(cancellationToken);
+        return _jobs.FirstOrDefault(x => x.Id == jobId);
     }
 
     /// <summary>
     ///     获取全部工作
     /// </summary>
     /// <returns></returns>
-    public Task<IEnumerable<JobInfo>> GetJobsAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<JobInfo>> GetJobsAsync(CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(_jobs.AsEnumerable());
+        //  返回快照，避免锁外枚举活 List
+        using var asyncLock = await _lock.LockAsync(cancellationToken);
+        return _jobs.ToList();
     }
 
     /// <summary>
@@ -76,10 +84,12 @@ public class InMemoryJobStorage : IJobStorage
     public async Task<IEnumerable<JobInfo>> FetchShouldRunJobsAsync(DateTimeOffset nextRunTime, int maxCount, CancellationToken cancellationToken = default)
     {
         using var asyncLock = await _lock.LockAsync(cancellationToken);
+        //  锁内立即物化，避免延迟 LINQ 被调用方在锁外枚举（并发 Insert/Delete 会破坏 List 枚举）
         var tasksThatShouldRun = _jobs.Where(x => x.IsEnable && x.NextRunTime.HasValue && x.NextRunTime < nextRunTime)
                                       .OrderBy(t => t.TryCount)
                                       .ThenBy(t => t.NextRunTime)
-                                      .Take(maxCount);
+                                      .Take(maxCount)
+                                      .ToList();
         return tasksThatShouldRun;
     }
 
@@ -89,10 +99,10 @@ public class InMemoryJobStorage : IJobStorage
     /// <param name="detail"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task InsertAsync(JobInfo detail, CancellationToken cancellationToken = default)
+    public async Task InsertAsync(JobInfo detail, CancellationToken cancellationToken = default)
     {
+        using var asyncLock = await _lock.LockAsync(cancellationToken);
         _jobs.TryAdd(detail);
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -101,9 +111,9 @@ public class InMemoryJobStorage : IJobStorage
     /// <param name="detail"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public Task UpdateAsync(JobInfo detail, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(JobInfo detail, CancellationToken cancellationToken = default)
     {
+        using var asyncLock = await _lock.LockAsync(cancellationToken);
         _jobs.ReplaceOne(x => x.Id == detail.Id, detail);
-        return Task.CompletedTask;
     }
 }

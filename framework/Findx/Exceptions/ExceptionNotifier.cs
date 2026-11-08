@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Findx.Common;
 
-namespace Findx.ExceptionHandling;
+namespace Findx.Exceptions;
 
 /// <summary>
 ///     异常通知器
@@ -39,14 +39,15 @@ public class ExceptionNotifier : IExceptionNotifier
         Check.NotNull(context, nameof(context));
 
         foreach (var exceptionSubscriber in _exceptionSubscribers.OrderBy(x => x.Order))
+        {
             try
             {
                 await exceptionSubscriber.HandleAsync(context, token);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                _logger.LogError(ex, "{AssemblyQualifiedName} 异常订阅器抛出异常!",
-                    exceptionSubscriber.GetType().AssemblyQualifiedName);
+                _logger.LogError(ex, "{AssemblyQualifiedName} 异常订阅器抛出异常!", exceptionSubscriber.GetType().AssemblyQualifiedName);
             }
+        }
     }
 }

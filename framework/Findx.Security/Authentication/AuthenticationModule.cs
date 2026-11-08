@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
-using System.Threading.Tasks;
 using Findx.AspNetCore;
 using Findx.Common;
 using Findx.DependencyInjection;
@@ -84,6 +84,7 @@ public sealed class AuthenticationModule : WebApplicationModuleBase
     /// </summary>
     /// <param name="services"></param>
     /// <param name="builder"></param>
+    /// <exception cref="ArgumentException"></exception>
     /// <returns></returns>
     private static void AddJwtBearer(IServiceCollection services, AuthenticationBuilder builder)
     {
@@ -96,37 +97,47 @@ public sealed class AuthenticationModule : WebApplicationModuleBase
         if (!jwt.Enabled) return;
 
         Check.NotNull(jwt.Secret, nameof(jwt.Secret));
+        //  HS256 对称密钥要求至少 256bit(32字节)，过短可被离线爆破伪造令牌
+        if (Encoding.UTF8.GetByteCount(jwt.Secret) < 32)
+            throw new ArgumentException("Jwt 密钥长度不足，HS256 对称密钥要求至少 32 字节(256bit)", nameof(jwt.Secret));
+
+        //  新版 JwtBearerOptions 已移除 TokenHandler 实例属性；静态关闭入站声明映射一次即可全局生效，
+        //  保持 exp/nbf/iat 等原始短名，供续期中间件按短名读取与过滤
+        JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
         builder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opts =>
         {
             opts.TokenValidationParameters = new TokenValidationParameters
             {
-                ValidateIssuer = true,
-                ValidIssuer = jwt.Issuer ?? "findx",
-                ValidateAudience = true,
-                ValidAudience = jwt.Audience ?? "findx",
+                //  未配置 Issuer/Audience 时不做对应校验，避免弱默认值 "findx"
+                ValidateIssuer = jwt.Issuer.IsNotNullOrWhiteSpace(),
+                ValidIssuer = jwt.Issuer,
+                ValidateAudience = jwt.Audience.IsNotNullOrWhiteSpace(),
+                ValidAudience = jwt.Audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
                 ValidateLifetime = true,
+                //  拒绝无过期时间的令牌，避免外部令牌永不过期
+                RequireExpirationTime = true,
                 LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
                 {
                     var now = DateTime.UtcNow;
                     var clockSkew = validationParameters.ClockSkew;  // 时钟偏移
     
-                    // 检查令牌是否已过期
+                    //  检查令牌是否已过期
                     if (expires.HasValue)
                     {
                         var effectiveExpires = expires.Value.Add(clockSkew);
                         if (effectiveExpires < now) return false;
                     }
                     
-                    // 检查令牌是否已生效（如果有 notBefore 时间）
+                    //  检查令牌是否已生效（如果有 notBefore 时间）
                     if (notBefore.HasValue)
                     {
                         var effectiveNotBefore = notBefore.Value.Add(-clockSkew);
                         if (effectiveNotBefore > now) return false;
                     }
                     
-                    // 三方令牌检查,如服务端强行管理:下线、锁定、单点等
+                    //  三方令牌检查,如服务端强行管理:下线、锁定、单点等
                     var validator = ServiceLocator.GetService<IAdvancedTokenValidator>();
                     if (validator != null)
                     {

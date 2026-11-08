@@ -8,9 +8,8 @@ namespace Findx.Reflection;
 /// </summary>
 public static class AssemblyManager
 {
-   
-    private static Assembly[] _allAssemblies;
-    private static Type[] _allTypes;
+    private static readonly Lazy<Assembly[]> AllAssembliesLazy = new(LoadAllAssemblies, LazyThreadSafetyMode.ExecutionAndPublication);
+    private static readonly Lazy<Type[]> AllTypesLazy = new(LoadAllTypes, LazyThreadSafetyMode.ExecutionAndPublication);
 
     static AssemblyManager()
     {
@@ -25,64 +24,60 @@ public static class AssemblyManager
     /// <summary>
     /// 获取 所有程序集
     /// </summary>
-    public static Assembly[] AllAssemblies
-    {
-        get
-        {
-            if (_allAssemblies == null)
-            {
-                Initialize();
-            }
-
-            return _allAssemblies;
-        }
-    }
+    public static Assembly[] AllAssemblies => AllAssembliesLazy.Value;
 
     /// <summary>
     /// 获取 所有类型
     /// </summary>
-    public static Type[] AllTypes
-    {
-        get
-        {
-            if (_allTypes == null)
-            {
-                Initialize();
-            }
-
-            return _allTypes;
-        }
-    }
+    public static Type[] AllTypes => AllTypesLazy.Value;
 
     /// <summary>
-    ///     初始化
+    ///     初始化（强制触发惰性扫描，并发安全）
     /// </summary>
     public static void Initialize()
     {
+        _ = AllAssembliesLazy.Value;
+        _ = AllTypesLazy.Value;
+    }
+
+    /// <summary>
+    ///     加载所有程序集
+    /// </summary>
+    private static Assembly[] LoadAllAssemblies()
+    {
         if (DependencyContext.Default != null)
         {
-            _allAssemblies = DependencyContext.Default
-                                              .GetDefaultAssemblyNames()
-                                              .Where(x => x.Name != null && !Filters.Any(m => x.Name.StartsWith(m)))
-                                              .Select(Assembly.Load).ToArray();
-            _allTypes = _allAssemblies.SelectMany(m => m.GetTypes()).ToArray();
+            return DependencyContext.Default
+                                     .GetDefaultAssemblyNames()
+                                     .Where(x => x.Name != null && !Filters.Any(m => x.Name.StartsWith(m)))
+                                     .Select(Assembly.Load).ToArray();
         }
-        else
+
+        return AppDomain.CurrentDomain.GetAssemblies()
+                                     .Where(x => x.FullName != null && !Filters.Any(m => x.FullName.StartsWith(m)))
+                                     .ToArray();
+    }
+
+    /// <summary>
+    ///     加载所有类型（单个程序集类型加载失败时容错，避免启动崩溃）
+    /// </summary>
+    private static Type[] LoadAllTypes()
+    {
+        return AllAssembliesLazy.Value.SelectMany(SafeGetTypes).ToArray();
+    }
+
+    /// <summary>
+    ///     安全获取程序集内类型：部分类型加载失败（缺依赖）时跳过失败项
+    /// </summary>
+    private static Type[] SafeGetTypes(Assembly assembly)
+    {
+        try
         {
-            _allAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-                                                    .Where(x => x.FullName != null && !Filters.Any(m => x.FullName.StartsWith(m)))
-                                                    .ToArray();
-            _allTypes = _allAssemblies.SelectMany(m => m.GetTypes()).ToArray();
-            
-            // Console.WriteLine("2:" + _allAssemblies.Select(x => x.FullName).JoinAsString("/"));
-            //
-            // var s3 = AssemblyLoadContext.Default.Assemblies.Where(x => x.FullName != null && !Filters.Any(m => x.FullName.StartsWith(m))).ToArray();
-            // Console.WriteLine("3:" + s3.Select(x => x.FullName).JoinAsString("/"));
-            //
-            // var entryAssembly = Assembly.GetEntryAssembly();
-            // var referencedAssemblies = entryAssembly?.GetReferencedAssemblies();
-            // var s4 = referencedAssemblies?.Where(x => !Filters.Any(m => x.FullName.StartsWith(m)));
-            // Console.WriteLine("4:" + s4?.Select(x => x.FullName).JoinAsString("/"));
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            return ex.Types.Where(t => t != null).ToArray();
         }
     }
 

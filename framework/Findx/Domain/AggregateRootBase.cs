@@ -7,19 +7,19 @@ namespace Findx.Domain;
 /// </summary>
 public abstract class AggregateRootBase : EntityBase<Guid>, IAggregateRoot
 {
-    private List<IDomainEvent> _domainEvents;
+    private readonly List<IDomainEvent> _domainEvents = [];
 
     /// <summary>
-    ///     领域事件集合
+    ///     领域事件集合（返回快照，避免外部枚举期间被修改抛异常）
     /// </summary>
-    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents?.AsReadOnly();
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.ToList();
 
     /// <summary>
     ///     清除领域事件集合
     /// </summary>
     public void ClearDomainEvents()
     {
-        _domainEvents?.Clear();
+        _domainEvents.Clear();
     }
 
     /// <summary>
@@ -28,8 +28,6 @@ public abstract class AggregateRootBase : EntityBase<Guid>, IAggregateRoot
     /// <param name="domainEvent">Domain event.</param>
     protected void AddDomainEvent(IDomainEvent domainEvent)
     {
-        _domainEvents ??= [];
-
         _domainEvents.Add(domainEvent);
     }
 }
@@ -39,19 +37,19 @@ public abstract class AggregateRootBase : EntityBase<Guid>, IAggregateRoot
 /// </summary>
 public abstract class AggregateRootBase<TKey> : EntityBase<TKey>, IAggregateRoot where TKey : IEquatable<TKey>
 {
-    private List<IDomainEvent> _domainEvents;
+    private readonly List<IDomainEvent> _domainEvents = [];
 
     /// <summary>
-    ///     领域事件集合
+    ///     领域事件集合（返回快照，避免外部枚举期间被修改抛异常）
     /// </summary>
-    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents?.AsReadOnly();
+    public IReadOnlyCollection<IDomainEvent> DomainEvents => _domainEvents.ToList();
 
     /// <summary>
     ///     清除领域事件集合
     /// </summary>
     public void ClearDomainEvents()
     {
-        _domainEvents?.Clear();
+        _domainEvents.Clear();
     }
 
     /// <summary>
@@ -60,8 +58,6 @@ public abstract class AggregateRootBase<TKey> : EntityBase<TKey>, IAggregateRoot
     /// <param name="domainEvent">Domain event.</param>
     protected void AddDomainEvent(IDomainEvent domainEvent)
     {
-        _domainEvents ??= [];
-
         _domainEvents.Add(domainEvent);
     }
 }

@@ -36,12 +36,23 @@ public class JobExecutor: IJobExecutor
         _logger.LogDebug("作业 {Name} 记录 {Id} 规定 {RunTime} 实际 {Now}", context.JobExecuteInfo.Name, context.JobExecuteInfo.Id, context.JobExecuteInfo.RunTime, DateTimeOffset.Now);
         try
         {
-            if (job != null) 
+            if (job != null)
                 context.JobResult = await job.RunAsync(context, cancellationToken);
         }
         catch (Exception ex)
         {
+            //  作业被取消（如应用关闭、Host 停止）不作为失败处理，不向外抛出
+            if (ex is OperationCanceledException)
+            {
+                context.JobResult = JobResult.CancelledWithMessage(ex.Message);
+                return;
+            }
+
             _logger.LogError(ex, "作业 {Name} 执行记录 {Id} 执行失败", context.JobExecuteInfo.Name, context.JobExecuteInfo.Id);
+
+            //  置位失败结果并重新抛出，交由上层调度器（JobExecuteDispatcher）统一通知异常管线
+            context.JobResult = JobResult.FromException(ex);
+            throw;
         }
     }
 }

@@ -82,9 +82,13 @@ public class DiskInfo
     /// <returns></returns>
     public static IEnumerable<DiskInfo> GetDockerMerge()
     {
+        //  DriveFormat 是文件系统名（如 overlay），不可能同时包含 docker；
+        //  Docker 容器 overlay 挂载点的宿主机路径通常为 /var/lib/docker/...，
+        //  故改为对驱动器挂载路径（Name）判断是否包含 docker
         return DriveInfo.GetDrives()
-            .Where(x => x.DriveFormat.Equals("overlay", StringComparison.OrdinalIgnoreCase) &&
-                        x.DriveFormat.Contains("docker")).Select(x => new DiskInfo(x));
+            .Where(x => x.IsReady &&
+                        x.DriveFormat.Equals("overlay", StringComparison.OrdinalIgnoreCase) &&
+                        x.Name.Contains("docker")).Select(x => new DiskInfo(x));
     }
 
     /// <summary>
@@ -93,8 +97,9 @@ public class DiskInfo
     /// <returns></returns>
     public static IEnumerable<DiskInfo> GetRealDisk()
     {
+        //  未就绪驱动器（空光驱、未格式化分区）直接访问 TotalSize/DriveFormat 会抛 DriveNotFoundException，先判 IsReady
         var disks = DriveInfo.GetDrives()
-            .Where(x => x.DriveType == DriveType.Fixed && x.TotalSize != 0 && x.DriveFormat != "overlay");
+            .Where(x => x.IsReady && x.DriveType == DriveType.Fixed && x.TotalSize != 0 && x.DriveFormat != "overlay");
         return disks.Select(x => new DiskInfo(x)).Distinct(new DiskInfoEquality());
     }
 

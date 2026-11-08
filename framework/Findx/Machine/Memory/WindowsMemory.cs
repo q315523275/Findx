@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Findx.Machine.Memory;
 
@@ -41,7 +42,12 @@ public class WindowsMemory
         // 初始化结构的大小
         memoryStatusEx.Init();
         // 刷新值
-        if (!GlobalMemoryStatusEx(ref memoryStatusEx)) return default;
+        if (!GlobalMemoryStatusEx(ref memoryStatusEx))
+        {
+            // P/Invoke 失败时记录 Win32 错误码；保持返回默认值，避免监控静默拿到全零
+            Debug.WriteLine($"GlobalMemoryStatusEx 失败，Win32 错误码：{Marshal.GetLastWin32Error()}");
+            return default;
+        }
 
         var totalPhysicalMemory = memoryStatusEx.ullTotalPhys;
         var availablePhysicalMemory = memoryStatusEx.ullAvailPhys;

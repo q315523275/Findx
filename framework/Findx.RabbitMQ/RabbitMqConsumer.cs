@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
-using Findx.ExceptionHandling;
+using Findx.Exceptions;
 using Findx.Locks;
 using Findx.Threading;
 using Microsoft.Extensions.Logging;
@@ -162,8 +162,8 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
                 Queue.AutoDelete,
                 Queue.Arguments, cancellationToken: cancellationToken);
 
-            // var consumer = new AsyncEventingBasicConsumer(Channel);
-            // EventingBasicConsumer开启多线程
+            //  var consumer = new AsyncEventingBasicConsumer(Channel);
+            //  EventingBasicConsumer开启多线程
             var consumer = new AsyncEventingBasicConsumer(Channel);
             consumer.ReceivedAsync += (_, basicDeliverEventArgs) =>
             {
@@ -178,11 +178,11 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
         }
         catch (Exception ex)
         {
-            if (ex is OperationInterruptedException { ShutdownReason.ReplyCode: 406 } operationInterruptedException &&
-                operationInterruptedException.Message.Contains("arg 'x-dead-letter-exchange'"))
+            if (ex is OperationInterruptedException { ShutdownReason.ReplyCode: 406 } operationInterruptedException && operationInterruptedException.Message.Contains("arg 'x-dead-letter-exchange'"))
             {
                 Logger.LogWarning(ex, "RabbitMQConsumer tryCreateChannelAsync");
                 await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex), cancellationToken);
+                return;
             }
 
             Logger.LogWarning(ex, "RabbitMQConsumer tryCreateChannelAsync");
@@ -210,7 +210,9 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
             {
                 if (Queue.AutoAck && Channel != null)
                 {
-                    await Channel.BasicAckAsync(basicDeliverEventArgs.DeliveryTag, false, cancellationToken);
+                    //  处理失败的消息不再直接 ACK 丢弃，改为 Nack 且不重回队列（requeue:false），
+                    //  配合死信队列保留失败消息，避免静默丢消息。
+                    await Channel.BasicNackAsync(basicDeliverEventArgs.DeliveryTag, false, false, cancellationToken);
                 }
 
                 if (FailedCallback != null)
@@ -223,8 +225,15 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
                 // ignored
             }
 
-            Logger.LogError(ex, "RabbitMQConsumer handleIncomingMessageAsync");
-            await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex), cancellationToken);
+            try
+            {
+                Logger.LogError(ex, "RabbitMQConsumer handleIncomingMessageAsync");
+                await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex), cancellationToken);
+            }
+            catch
+            {
+                // ignored：避免事件处理器内抛出未观测异常
+            }
         }
     }
     
@@ -255,7 +264,14 @@ public class RabbitMqConsumer : IRabbitMqConsumer, IDisposable
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "");
-            ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex)).ConfigureAwait(false);
+            try
+            {
+                ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex)).ConfigureAwait(false);
+            }
+            catch
+            {
+                // ignored：避免同步 Dispose 路径上产生未观测异常
+            }
         }
     }
     

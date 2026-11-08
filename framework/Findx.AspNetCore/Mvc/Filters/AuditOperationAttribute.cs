@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Findx.AspNetCore.Extensions;
 using Findx.Data;
@@ -34,19 +35,24 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
     {
         var provider = context.HttpContext.RequestServices;
         var httpContext = context.HttpContext;
-        // 功能识别
+        //  功能识别
         var function = context.GetExecuteFunction();
-        if (function == null) return;
+        //  未识别到功能时仍需执行 Action（否则会短路为空白 200），仅跳过审计落库
+        if (function == null)
+        {
+            await next();
+            return;
+        }
         var serializer = provider.GetRequiredService<IJsonSerializer>();
         var options = provider.GetRequiredService<IOptions<AuditingOptions>>();
         var dict = provider.GetRequiredService<ScopedDictionary>();
 
-        // 数据权限有效角色，即有当前功能权限的角色
+        //  数据权限有效角色，即有当前功能权限的角色
         var functionAuthorization = provider.GetRequiredService<IFunctionAuthorization>();
         var roleName = functionAuthorization.GetOkRoles(function, context.HttpContext.User);
         dict.DataAuthValidRoleNames = roleName;
 
-        // 审计数据初始化
+        //  审计数据初始化
         var operation = new AuditOperationEntry
         {
             FunctionName = function.Name,
@@ -55,7 +61,7 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
             ExecutionTime = DateTime.Now
         };
 
-        // 认证参数
+        //  认证参数
         if (httpContext.User.Identity is { IsAuthenticated: true } and ClaimsIdentity identity)
         {
             operation.UserId = identity.GetUserId();
@@ -66,26 +72,26 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
 
         dict.AuditOperation = operation;
         
-        // 执行业务
+        //  执行业务
         var actionContext = await next();
         
-        // 审计执行判断
+        //  审计执行判断
         if (!options.Value.Enabled || !function.AuditOperationEnabled) return;
         
         operation.EndedTime = DateTime.Now;
         operation.Exception = actionContext.Exception;
 
-        // Mvc参数
+        //  Mvc参数
         dict.AuditOperation.ExtraObject.Add("http.url", context.HttpContext.Request.GetDisplayUrl());
         dict.AuditOperation.ExtraObject.Add("http.path", context.HttpContext.Request.Path);
         dict.AuditOperation.ExtraObject.Add("http.method", context.HttpContext.Request.Method);
         dict.AuditOperation.ExtraObject.Add("http.status_code", actionContext.HttpContext.Response.StatusCode.ToString());
 
-        // 参数报文
+        //  参数报文
         if (options.Value.ExtractRequestBody)
             dict.AuditOperation.ExtraObject.Add("http.request", SerializeConvertArguments(context.ActionArguments, serializer));
 
-        // 返回结果
+        //  返回结果
         if (options.Value.ExtractResponseBody)
         {
             if (actionContext.Exception is FindxException findxException)
@@ -94,7 +100,7 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
                 dict.AuditOperation.ExtraObject.Add("http.response", SerializeConvertResponse(actionContext.Result, serializer));
         }
 
-        // 存储
+        //  存储
         var store = provider.GetService<IAuditStore>();
         if (store != null) 
             await store.SaveAsync(dict.AuditOperation, context.HttpContext.RequestAborted);
@@ -102,7 +108,27 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
 
     // 过滤类型
     private static readonly List<Type> IgnoredTypes = [typeof(IFormFile), typeof(FromServicesAttribute), typeof(Stream)];
-    
+
+    /// <summary>
+    ///     敏感字段名片段（不区分大小写），命中后审计落库时掩码，避免口令/令牌/密钥明文入库
+    /// </summary>
+    private static readonly string[] SensitiveKeyFragments = ["password", "passwd", "pwd", "token", "secret", "authorization", "authcode", "credential", "apikey", "api_key", "accesskey", "access_key"];
+
+    /// <summary>
+    ///     JSON 字符串中敏感键值掩码："key":"value" -> "key":"******"
+    /// </summary>
+    private static readonly Regex SensitiveJsonRegex = new("\"(?<key>[^\"]*(?:password|passwd|pwd|token|secret|authorization|authcode|credential|apikey|accesskey)[^\"]*)\"\\s*:\\s*\"(?<val>[^\"]*)\"", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    /// <summary>
+    ///     是否敏感字段
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
+    private static bool IsSensitiveKey(string key)
+    {
+        return key.IsNotNullOrWhiteSpace() && SensitiveKeyFragments.Any(f => key.Contains(f, StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>
     ///     转换参数报文
     /// </summary>
@@ -118,11 +144,27 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
             var dictionary = new Dictionary<string, object>();
 
             foreach (var argument in arguments)
+            {
                 if (argument.Value != null && IgnoredTypes.Any(t => t.IsInstanceOfType(argument.Value)))
+                {
                     dictionary[argument.Key] = null;
+                }
                 else
+                {
                     dictionary[argument.Key] = argument.Value;
+                }
+            }
 
+
+            //  敏感字段掩码
+            foreach (var key in dictionary.Keys)
+            {
+                if (IsSensitiveKey(key) && dictionary[key] != null)
+                {
+                    dictionary[key] = "******";
+                }
+            }
+            
             return serializer.Serialize(dictionary);
         }
         catch
@@ -144,9 +186,9 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
             switch (result)
             {
                 case ObjectResult objectResult:
-                    return serializer.Serialize(objectResult.Value);
+                    return MaskSensitive(serializer.Serialize(objectResult.Value));
                 case JsonResult jsonResult:
-                    return serializer.Serialize(jsonResult.Value);
+                    return MaskSensitive(serializer.Serialize(jsonResult.Value));
                 case ContentResult contentResult:
                     return contentResult.Content;
             }
@@ -157,5 +199,10 @@ public sealed class AuditOperationAttribute : ActionFilterAttribute
         }
 
         return string.Empty;
+    }
+
+    private static string MaskSensitive(string json)
+    {
+        return json.IsNullOrWhiteSpace() ? json : SensitiveJsonRegex.Replace(json, "\"${key}\":\"******\"");
     }
 }

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Extensions;
@@ -13,27 +12,39 @@ namespace Findx.WebSocketCore.Implementation;
 /// <summary>
 ///     连接管理
 /// </summary>
+/// <remarks>
+///     外层按用户名分组，内层按会话Id精确维护，全程并发安全：
+///     外层 ConcurrentDictionary 保证用户名级原子存取；内层 ConcurrentDictionary 保证同用户多会话的增删与枚举快照安全。
+/// </remarks>
 public class WebSocketSessionManager : IWebSocketSessionManager
 {
-    private readonly ConcurrentDictionary<string, List<IWebSocketSession>> _sessionDic = new();
-    private readonly ConcurrentDictionary<string, List<string>> _groups = new();
-    
+    /// <summary>
+    ///     用户名 -> (会话Id -> 会话)
+    /// </summary>
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<long, IWebSocketSession>> _sessionDic = new();
+
+    /// <summary>
+    ///     组Id -> (用户名 -> 占位标记)
+    /// </summary>
+    private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, byte>> _groups = new();
+
     /// <summary>
     ///     释放资源
     /// </summary>
     /// <returns></returns>
     public async ValueTask DisposeAsync()
     {
-        foreach (var item in _sessionDic)
+        //  先拍快照再逐个移除，避免遍历期间字典被并发修改
+        foreach (var userName in _sessionDic.Keys.ToArray())
         {
-            await RemoveSessionAsync(item.Key);
+            await RemoveSessionAsync(userName).ConfigureAwait(false);
         }
         _sessionDic.Clear();
         _groups.Clear();
     }
 
     /// <summary>
-    ///     连接总数
+    ///     连接总数（按用户名计）
     /// </summary>
     public int Count => _sessionDic.Count;
 
@@ -44,16 +55,16 @@ public class WebSocketSessionManager : IWebSocketSessionManager
     /// <returns></returns>
     public IEnumerable<IWebSocketSession> GetSession(string userName)
     {
-        return _sessionDic.TryGetValue(userName, out var sessions) ? sessions : ArraySegment<IWebSocketSession>.Empty;
+        return _sessionDic.TryGetValue(userName, out var sessions) ? sessions.Values.ToArray() : Array.Empty<IWebSocketSession>();
     }
 
     /// <summary>
-    ///     获取所有客户端
+    ///     获取所有客户端（快照）
     /// </summary>
     /// <returns></returns>
     public IEnumerable<IWebSocketSession> GetAllSessions()
     {
-        return _sessionDic.SelectMany(x => x.Value);
+        return _sessionDic.SelectMany(x => x.Value.Values).ToArray();
     }
 
     /// <summary>
@@ -63,7 +74,7 @@ public class WebSocketSessionManager : IWebSocketSessionManager
     /// <returns></returns>
     public IEnumerable<string> GetAllUserFromGroup(string groupId)
     {
-        return _groups.TryGetValue(groupId, out var group) ? group : null;
+        return _groups.TryGetValue(groupId, out var group) ? group.Keys.ToArray() : null;
     }
 
     /// <summary>
@@ -72,12 +83,9 @@ public class WebSocketSessionManager : IWebSocketSessionManager
     /// <param name="session"></param>
     public void AddSession(IWebSocketSession session)
     {
-        if (!_sessionDic.ContainsKey(session.UserName))
-        {
-            _sessionDic[session.UserName] = [];
-        }
-        
-        _sessionDic[session.UserName].Add(session);
+        //  GetOrAdd 原子建桶，AddOrUpdate 按会话Id登记，杜绝 check-then-act 竞态
+        _sessionDic.GetOrAdd(session.UserName, _ => new ConcurrentDictionary<long, IWebSocketSession>())
+            .AddOrUpdate(session.Id, session, (_, _) => session);
     }
 
     /// <summary>
@@ -87,12 +95,8 @@ public class WebSocketSessionManager : IWebSocketSessionManager
     /// <param name="groupId"></param>
     public void AddToGroup(IWebSocketSession session, string groupId)
     {
-        if (_groups.TryGetValue(groupId, out var group) && group.All(x => x != session.UserName))
-        {
-            group.Add(session.UserName);
-            return;
-        }
-        _groups.TryAdd(groupId, [session.UserName]);
+        _groups.GetOrAdd(groupId, _ => new ConcurrentDictionary<string, byte>())
+            .TryAdd(session.UserName, 0);
     }
 
     /// <summary>
@@ -102,7 +106,13 @@ public class WebSocketSessionManager : IWebSocketSessionManager
     /// <param name="groupId"></param>
     public void RemoveFromGroup(IWebSocketSession session, string groupId)
     {
-        if (_groups.TryGetValue(groupId, out var group)) group.Remove(session.UserName);
+        if (_groups.TryGetValue(groupId, out var group))
+        {
+            group.TryRemove(session.UserName, out _);
+
+            //  组内无人时清理空组key，防止空组key无限累积
+            if (group.IsEmpty) _groups.TryRemove(groupId, out _);
+        }
     }
 
     /// <summary>
@@ -113,12 +123,12 @@ public class WebSocketSessionManager : IWebSocketSessionManager
     public async Task RemoveSessionAsync(string userName, CancellationToken cancellationToken = default)
     {
         if (userName.IsNullOrWhiteSpace()) return;
-        
-        if (_sessionDic.TryRemove(userName, out var sessions) && sessions != null && sessions.Any())
+
+        if (_sessionDic.TryRemove(userName, out var sessions) && sessions != null)
         {
-            foreach (var session in sessions)
+            foreach (var session in sessions.Values)
             {
-                await session.DisposeAsync();
+                await session.DisposeAsync().ConfigureAwait(false);
             }
         }
     }
@@ -131,22 +141,17 @@ public class WebSocketSessionManager : IWebSocketSessionManager
     public async Task RemoveSessionAsync(IWebSocketSession session, CancellationToken cancellationToken = default)
     {
         if (session.UserName.IsNullOrWhiteSpace()) return;
-    
+
         if (_sessionDic.TryGetValue(session.UserName, out var sessions) && sessions != null)
         {
-            //  移除目标session
-            var client = sessions.FirstOrDefault(x => x.Id == session.Id);
-            if (client != null)
+            //  按会话Id精确移除目标session
+            if (sessions.TryRemove(session.Id, out var client) && client != null)
             {
-                await client.DisposeAsync();
-                sessions.Remove(client);
+                await client.DisposeAsync().ConfigureAwait(false);
             }
-            
-            //  判断是否清楚客户连接
-            if (sessions.Count == 0) 
-            {
-                _sessionDic.TryRemove(session.UserName, out _);
-            }
+
+            //  判断是否清除客户连接
+            if (sessions.IsEmpty) _sessionDic.TryRemove(session.UserName, out _);
         }
     }
 }

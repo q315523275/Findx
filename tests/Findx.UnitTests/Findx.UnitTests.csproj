@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Findx.UnitTests</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
+    <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\framework\Findx.Discovery\Findx.Discovery.csproj" />
+    <ProjectReference Include="..\..\framework\Findx.Redis\Findx.Redis.csproj" />
+    <ProjectReference Include="..\..\framework\Findx.FreeSql\Findx.FreeSql.csproj" />
+    <ProjectReference Include="..\..\framework\Findx.Mapster\Findx.Mapster.csproj" />
+    <ProjectReference Include="..\..\framework\Findx.WebSocketCore\Findx.WebSocketCore.csproj" />
+    <ProjectReference Include="..\..\framework\Findx.Swagger\Findx.Swagger.csproj" />
+    <ProjectReference Include="..\..\framework\Findx.Guids.NewId\Findx.Guids.NewId.csproj" />
+    <ProjectReference Include="..\..\components\Findx.Extensions.Scheduler\Findx.Extensions.Scheduler.csproj" />
+    <ProjectReference Include="..\..\components\Findx.Extensions.ConfigurationServer\Findx.Extensions.ConfigurationServer.csproj" />
+  </ItemGroup>
+
+</Project>

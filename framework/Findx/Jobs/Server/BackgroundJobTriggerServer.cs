@@ -2,7 +2,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Common.DisposableEx;
-using Findx.ExceptionHandling;
+using Findx.Exceptions;
 
 namespace Findx.Jobs.Server;
 
@@ -85,11 +85,12 @@ public class BackgroundJobTriggerServer : Disposable, IBackgroundJobTriggerServe
     /// <param name="disposing"></param>
     protected override void OnDispose(bool disposing)
     {
-        if (!disposing)
+        //  基类 Dispose() 仅以 disposing: true 回调此处，托管资源必须在 disposing 分支释放
+        if (disposing)
         {
             _cts?.Cancel();
             _cts?.Dispose();
-            _channel.Writer.Complete();
+            _channel.Writer.TryComplete();
         }
     }
 }

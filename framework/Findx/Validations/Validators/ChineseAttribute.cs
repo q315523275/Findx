@@ -20,8 +20,10 @@ public class ChineseAttribute : ValidationAttribute
     /// </summary>
     public override string FormatErrorMessage(string name)
     {
+        //  不在反射缓存的共享特性实例上写回 ErrorMessage（避免并发校验时修改共享状态）；
+        //  用户未自定义错误消息/资源时本地格式化默认消息，输出与原先一致
         if (ErrorMessage == null && ErrorMessageResourceName == null)
-            ErrorMessage = ErrorMsg;
+            return string.Format(System.Globalization.CultureInfo.CurrentCulture, ErrorMsg, name);
         return base.FormatErrorMessage(name);
     }
 

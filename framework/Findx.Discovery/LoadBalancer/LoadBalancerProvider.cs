@@ -37,30 +37,22 @@ public class LoadBalancerProvider : ILoadBalancerProvider
     {
         try
         {
-            if (_loadBalancers.TryGetValue(serviceName, out var currentLoadBalancer))
-            {
-                if (loadBalancer != currentLoadBalancer.Name)
-                {
-                    currentLoadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, loadBalancer);
-                    AddLoadBalancer(serviceName, currentLoadBalancer);
-                }
-                return currentLoadBalancer;
-            }
+            // 无负载均衡策略每次按需解析最新端点，不做进程级缓存，避免进程级快照不刷新
+            if (loadBalancer == LoadBalancerType.NoLoadBalancer)
+                return await _factory.CreateAsync(serviceName, _discoveryClient, loadBalancer);
 
-            {
-                currentLoadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, loadBalancer);
-                AddLoadBalancer(serviceName, currentLoadBalancer);
+            if (_loadBalancers.TryGetValue(serviceName, out var currentLoadBalancer) && currentLoadBalancer.Name == loadBalancer)
                 return currentLoadBalancer;
-            }
+
+            currentLoadBalancer = await _factory.CreateAsync(serviceName, _discoveryClient, loadBalancer);
+
+            //  AddOrUpdate 原子写入，并发首调最坏多创建一个选择器实例
+            return _loadBalancers.AddOrUpdate(serviceName, currentLoadBalancer, (_, _) => currentLoadBalancer);
         }
         catch (Exception ex)
         {
-            throw new KeyNotFoundException($"unable to find load balancer for {serviceName} exception is {ex}");
+            throw new KeyNotFoundException($"unable to find load balancer for {serviceName} exception is {ex}", ex);
         }
     }
 
-    private void AddLoadBalancer(string key, ILoadBalancer loadBalancer)
-    {
-        _loadBalancers.AddOrUpdate(key, loadBalancer, (_, _) => loadBalancer);
-    }
 }

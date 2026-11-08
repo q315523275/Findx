@@ -18,5 +18,5 @@ public class CorrelationIdOptions: IOptions<CorrelationIdOptions>
     /// <summary>
     ///     value
     /// </summary>
-    public CorrelationIdOptions Value { get; }
+    public CorrelationIdOptions Value => this;
 }

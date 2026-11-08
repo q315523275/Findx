@@ -8,7 +8,11 @@ public class ConsistentHash<T>
 {
     private readonly IHashAlgorithm _hashAlgorithm;
     private readonly SortedDictionary<int, T> _ring = new();
-    private int[] _nodeKeysInRing;
+    /// <summary>
+    ///     节点集合索引，用于 O(1) 判断节点是否在环上（原实现 ContainsValue 需线性扫描整个虚拟节点环）
+    /// </summary>
+    private readonly HashSet<T> _nodes = new();
+    private int[] _nodeKeysInRing = Array.Empty<int>();
 
     /// <summary>
     ///     Ctor
@@ -48,7 +52,7 @@ public class ConsistentHash<T>
     public void Initialize(IEnumerable<T> nodes)
     {
         foreach (var node in nodes) AddNode(node);
-        _nodeKeysInRing = _ring.Keys.ToArray();
+        RebuildKeys();
     }
 
     /// <summary>
@@ -57,8 +61,8 @@ public class ConsistentHash<T>
     /// <param name="node"></param>
     public void Add(T node)
     {
-        AddNode(node);
-        _nodeKeysInRing = _ring.Keys.ToArray();
+        //  节点已存在时无需重复写入虚拟节点，也避免无谓的全量 keys 重建
+        if (AddNode(node)) RebuildKeys();
     }
 
     /// <summary>
@@ -67,8 +71,7 @@ public class ConsistentHash<T>
     /// <param name="node"></param>
     public void Remove(T node)
     {
-        RemoveNode(node);
-        _nodeKeysInRing = _ring.Keys.ToArray();
+        if (RemoveNode(node)) RebuildKeys();
     }
 
     /// <summary>
@@ -78,30 +81,44 @@ public class ConsistentHash<T>
     /// <returns></returns>
     public bool ContainNode(T node)
     {
-        return _ring.ContainsValue(node);
+        return _nodes.Contains(node);
     }
-
 
     /// <summary>
     ///     私有添加节点方法
     /// </summary>
-    /// <param name="node"></param>
-    private void AddNode(T node)
+    private bool AddNode(T node)
     {
+        if (!_nodes.Add(node)) return false;
+
         for (var i = 0; i < VirtualNodeReplicationFactor; i++)
         {
             var hashOfVirtualNode = _hashAlgorithm.Hash(node.GetHashCode().ToString() + i);
             _ring[hashOfVirtualNode] = node;
         }
+
+        return true;
     }
 
-    private void RemoveNode(T node)
+    private bool RemoveNode(T node)
     {
+        if (!_nodes.Remove(node)) return false;
+
         for (var i = 0; i < VirtualNodeReplicationFactor; i++)
         {
             var hashOfVirtualNode = _hashAlgorithm.Hash(node.GetHashCode().ToString() + i);
             _ring.Remove(hashOfVirtualNode);
         }
+
+        return true;
+    }
+
+    /// <summary>
+    ///     重建有序键数组（结构变更后调用，保证查询侧只读该数组）
+    /// </summary>
+    private void RebuildKeys()
+    {
+        _nodeKeysInRing = _ring.Keys.ToArray();
     }
 
     /// <summary>
@@ -111,6 +128,9 @@ public class ConsistentHash<T>
     /// <returns></returns>
     public T GetItemNode(string item)
     {
+        if (_nodeKeysInRing.Length == 0)
+            throw new InvalidOperationException("一致性哈希环没有可用节点");
+
         var hashOfItem = _hashAlgorithm.Hash(item);
         var nearestNodePosition = GetClockwiseNearestNode(_nodeKeysInRing, hashOfItem);
         return _ring[_nodeKeysInRing[nearestNodePosition]];
@@ -145,6 +165,6 @@ public class ConsistentHash<T>
     /// <returns></returns>
     public int GetNodeCount()
     {
-        return _ring.Count();
+        return _ring.Count;
     }
 }

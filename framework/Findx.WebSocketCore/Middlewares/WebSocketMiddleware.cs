@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Buffers;
-using System.IO;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Findx.Extensions;
 using Findx.Security;
 using Findx.WebSocketCore.Abstractions;
 using Findx.WebSocketCore.Extensions;
@@ -113,7 +113,7 @@ public class WebSocketMiddleware
                     }
                     else
                     {
-                        await using var ms = Pool.MemoryStream.Rent();
+                        using var handle = Pool.MemoryStream.Get(out var ms);
                         await ms.WriteAsync(buffer[..result.Count], cancellationToken);
                         do
                         {
@@ -121,8 +121,8 @@ public class WebSocketMiddleware
                             if (result.Count > 0) await ms.WriteAsync(buffer[..result.Count], cancellationToken);
                         } while (!result.EndOfMessage);
 
-                        ms.Seek(0, SeekOrigin.Begin);
-                        var message = ResponseMessage.BinaryStreamMessage(ms);
+                        var messageBytes = ms.ToArray();
+                        var message = ResponseMessage.BinaryMessage(messageBytes);
                         await HandleAsync(session, message, result, cancellationToken);
                     }
                 }

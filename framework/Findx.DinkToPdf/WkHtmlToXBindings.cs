@@ -26,7 +26,7 @@ public static unsafe class WkHtmlToXBindings
     [DllImport(DLLNAME, CharSet = CHARSET, CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr wkhtmltopdf_create_global_settings();
 
-    [DllImport(DLLNAME, CharSet = CHARSET)]
+    [DllImport(DLLNAME, CharSet = CHARSET, CallingConvention = CallingConvention.Cdecl)]
     public static extern int wkhtmltopdf_set_global_setting(IntPtr settings,
         [MarshalAs((short)CustomUnmanagedType.LPUTF8Str)]
         string name,
@@ -34,7 +34,7 @@ public static unsafe class WkHtmlToXBindings
         string value);
 
 
-    [DllImport(DLLNAME, CharSet = CHARSET)]
+    [DllImport(DLLNAME, CharSet = CHARSET, CallingConvention = CallingConvention.Cdecl)]
     public static unsafe extern int wkhtmltopdf_get_global_setting(IntPtr settings,
         [MarshalAs((short)CustomUnmanagedType.LPUTF8Str)]
         string name,
@@ -46,14 +46,14 @@ public static unsafe class WkHtmlToXBindings
     [DllImport(DLLNAME, CharSet = CHARSET, CallingConvention = CallingConvention.Cdecl)]
     public static extern IntPtr wkhtmltopdf_create_object_settings();
 
-    [DllImport(DLLNAME, CharSet = CHARSET)]
+    [DllImport(DLLNAME, CharSet = CHARSET, CallingConvention = CallingConvention.Cdecl)]
     public static extern int wkhtmltopdf_set_object_setting(IntPtr settings,
         [MarshalAs((short)CustomUnmanagedType.LPUTF8Str)]
         string name,
         [MarshalAs((short)CustomUnmanagedType.LPUTF8Str)]
         string value);
 
-    [DllImport(DLLNAME, CharSet = CHARSET)]
+    [DllImport(DLLNAME, CharSet = CHARSET, CallingConvention = CallingConvention.Cdecl)]
     public static unsafe extern int wkhtmltopdf_get_object_setting(IntPtr settings,
         [MarshalAs((short)CustomUnmanagedType.LPUTF8Str)]
         string name,

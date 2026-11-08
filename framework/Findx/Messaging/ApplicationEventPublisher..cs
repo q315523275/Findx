@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Findx.Common;
 using Findx.DependencyInjection;
-using Findx.ExceptionHandling;
+using Findx.Exceptions;
 
 namespace Findx.Messaging;
 

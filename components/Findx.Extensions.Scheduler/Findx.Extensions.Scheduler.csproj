@@ -4,18 +4,19 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>disable</Nullable>
         <LangVersion>default</LangVersion>
-        <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
-        <RootNamespace>Findx.Component.DistributedScheduler</RootNamespace>
+        <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+        <PackageVersion>11.1.2026.1111</PackageVersion>
+        <Description>Findx分布式任务调度扩展组件（Master选举 + Worker能力注册 + HTTP分发）</Description>
         <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Findx.AspNetCore" Version="11.1.2026.810" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Models\" />
+      <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.Redis\Findx.Redis.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.FreeSql\Findx.FreeSql.csproj" />
     </ItemGroup>
 
 </Project>

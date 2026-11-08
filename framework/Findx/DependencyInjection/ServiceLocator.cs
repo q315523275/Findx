@@ -10,9 +10,9 @@ namespace Findx.DependencyInjection;
 /// </summary>
 public static class ServiceLocator
 {
-    private static IServiceProvider _provider;
+    private static volatile IServiceProvider _provider;
 
-    private static IServiceCollection _services;
+    private static volatile IServiceCollection _services;
     
     /// <summary>
     ///     获取 ServiceProvider是否为可用
@@ -26,6 +26,7 @@ public static class ServiceLocator
     {
         get
         {
+            _provider.ThrowIfNull();
             var scopedResolver = _provider.GetService<IScopedServiceResolver>();
             return scopedResolver is { ResolveEnabled: true } ? scopedResolver.ScopedProvider : null;
         }
@@ -37,6 +38,7 @@ public static class ServiceLocator
     /// <returns></returns>
     public static bool InScoped()
     {
+        _provider.ThrowIfNull();
         var scopedResolver = _provider.GetService<IScopedServiceResolver>();
         return scopedResolver is { ResolveEnabled: true };
     }
@@ -166,7 +168,8 @@ public static class ServiceLocator
             var user = GetService<IPrincipal>();
             return user as ClaimsPrincipal;
         }
-        catch (Exception)
+        // 仅吞掉解析失败类异常（DI 未注册 IPrincipal 时返回匿名），致命异常（OOM/内存访问违规）不拦截
+        catch (Exception ex) when (ex is not OutOfMemoryException and not AccessViolationException)
         {
             return null;
         }
@@ -178,6 +181,7 @@ public static class ServiceLocator
     /// <returns>AsyncServiceScope,需手动释放</returns>
     public static AsyncServiceScope CreateAsyncScope()
     {
+        _provider.ThrowIfNull();
         return _provider.CreateAsyncScope();
     }
 }

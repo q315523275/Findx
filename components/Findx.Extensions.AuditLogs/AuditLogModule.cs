@@ -2,7 +2,9 @@ using System.ComponentModel;
 using Findx.Data;
 using Findx.Extensions.AuditLogs.EventHandling;
 using Findx.Extensions.AuditLogs.Events;
+using Findx.Extensions.AuditLogs.Options;
 using Findx.Extensions.AuditLogs.ServiceDefaults;
+using Findx.Extensions.AuditLogs.Services;
 using Findx.Messaging;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,9 +35,14 @@ public class AuditLogModule: StartupModule
     /// <returns></returns>
     public override IServiceCollection ConfigureServices(IServiceCollection services)
     {
+        //  GxP 完整性配置（Findx:AuditLog:EnableIntegrity）
+        var configuration = services.GetConfiguration();
+        services.Configure<AuditLogOptions>(configuration.GetSection("Findx:AuditLog"));
+
         services.AddScoped<IAuditStore, AuditStoreServices>();
         services.AddScoped<IApplicationEventHandler<AuditLogSaveEvent>, AuditLogSaveEventHandler>();
-        
+        services.AddScoped<AuditLogIntegrityValidator>();
+
         return base.ConfigureServices(services);
     }
 }

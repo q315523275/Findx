@@ -14,7 +14,8 @@ public class CustomAllowedValuesAttribute: ValidationAttribute
     /// <param name="allowedValues"></param>
     public CustomAllowedValuesAttribute(params string[] allowedValues)
     {
-        _allowedValues = allowedValues;
+        //  允许外部以 null 调用构造函数，兜底为空数组避免校验时 NullReferenceException
+        _allowedValues = allowedValues ?? [];
     }
 
     /// <summary>

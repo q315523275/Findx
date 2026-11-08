@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
-using Findx.Extensions;
 using Microsoft.Extensions.Logging;
 using NLog;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -33,5 +31,7 @@ public class NLogLoggerProvider : ILoggerProvider
     public void Dispose()
     {
         _loggers?.Clear();
+        LogManager.Flush();
+        LogManager.Shutdown();
     }
 }

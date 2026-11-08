@@ -186,7 +186,7 @@ public static class ImageSharpExtension
     /// <returns></returns>
     public static async Task<byte[]> SaveAndGetAllBytesAsync(this Image originalImage, IImageFormat imageFormat, CancellationToken cancellationToken = default)
     {
-        using var memoryStream = Pool.MemoryStream.Rent();
+        using var handle = Pool.MemoryStream.Get(out var memoryStream);
         await originalImage.SaveAsync(memoryStream, imageFormat, cancellationToken: cancellationToken);
         return memoryStream.ToArray();
     }
@@ -201,9 +201,9 @@ public static class ImageSharpExtension
     /// <returns></returns>
     public static async Task<Stream> SaveAndGetAllStreamAsync(this Image originalImage, IImageFormat imageFormat, CancellationToken cancellationToken = default)
     {
-        var memoryStream = Pool.MemoryStream.Rent();
+        using var handle = Pool.MemoryStream.Get(out var memoryStream);
         await originalImage.SaveAsync(memoryStream, imageFormat, cancellationToken: cancellationToken);
-        memoryStream.Position = 0;
-        return memoryStream;
+        var bytes = memoryStream.ToArray();
+        return new MemoryStream(bytes);
     }
 }

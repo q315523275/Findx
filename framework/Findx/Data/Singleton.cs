@@ -22,6 +22,7 @@ public class Singleton
 /// <typeparam name="T">要创建单例的类型。</typeparam>
 public class Singleton<T> : Singleton
 {
+    private static readonly object SyncLock = new();
     private static T _instance;
 
     /// <summary>
@@ -32,8 +33,12 @@ public class Singleton<T> : Singleton
         get => _instance;
         set
         {
-            _instance = value;
-            AllSingletons[typeof(T)] = value;
+            // 锁内同步写入实例与字典，保证并发下两处状态一致
+            lock (SyncLock)
+            {
+                _instance = value;
+                AllSingletons[typeof(T)] = value;
+            }
         }
     }
 }

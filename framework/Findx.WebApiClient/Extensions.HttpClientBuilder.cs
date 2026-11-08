@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.Common;
@@ -48,9 +49,8 @@ internal static class Extensions
 
         httpClientBuilder.AddTransientHttpErrorPolicy(builder =>
         {
-            return builder.Or<TaskCanceledException>()
-                          .Or<OperationCanceledException>()
-                          .Or<HttpRequestException>()
+            //  注意：不重试 TaskCanceledException/OperationCanceledException——那是调用方主动取消，重试已取消的请求只会放大无效负载
+            return builder.Or<HttpRequestException>()
                           .Or<TimeoutException>()
                           .Or<TimeoutRejectedException>()
                           .OrResult(res => res.StatusCode == HttpStatusCode.TooManyRequests)
@@ -136,7 +136,8 @@ internal static class Extensions
                 .FallbackAsync(
                     _ => Task.FromResult(new HttpResponseMessage
                     {
-                        Content = new StringContent(fallbackRspResult),
+                        // 显式指定 UTF-8 + application/json，避免消费方按 JSON 反序列化时因缺 Content-Type 失败
+                        Content = new StringContent(fallbackRspResult, Encoding.UTF8, "application/json"),
                         StatusCode = (HttpStatusCode)fallbackRspStatus
                     }),
                     res =>

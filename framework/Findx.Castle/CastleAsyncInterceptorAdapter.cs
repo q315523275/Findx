@@ -27,7 +27,7 @@ namespace Findx.Castle
 
             await _interceptor.InterceptAsync(adapter);
 
-            return (TResult)adapter.ReturnValue;
+            return adapter.ReturnValue == null ? default : (TResult)adapter.ReturnValue;
         }
     }
 }

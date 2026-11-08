@@ -1,5 +1,4 @@
-﻿using System.Buffers;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using Findx.Common;
 using Findx.Extensions;
 
@@ -104,7 +103,7 @@ public static class EncryptUtility
     public static string AesDecrypt(string content, string key = AesKey)
     {
         var toDecryptArray = Convert.FromBase64String(content);
-        return Encoding.Default.GetString(AesDecrypt(toDecryptArray, key));
+        return Encoding.UTF8.GetString(AesDecrypt(toDecryptArray, key));
     }
 
     /// <summary>

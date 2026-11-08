@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Findx.Common;
 using Findx.Common.DisposableEx;
 using Findx.DependencyInjection;
-using Findx.ExceptionHandling;
+using Findx.Exceptions;
 
 namespace Findx.Jobs.Client;
 
@@ -16,6 +16,7 @@ public class JobExecuteDispatcher: Disposable, IJobExecuteDispatcher
     private readonly IExceptionNotifier _exceptionNotifier;
     private readonly Channel<JobExecuteInfo> _channel;
     private readonly CancellationTokenSource _cts;
+    private readonly List<Task> _workers;
 
     /// <summary>
     ///     Ctor
@@ -27,11 +28,13 @@ public class JobExecuteDispatcher: Disposable, IJobExecuteDispatcher
     {
         _logger = logger;
         _exceptionNotifier = exceptionNotifier;
-        _channel = Channel.CreateUnbounded<JobExecuteInfo>();
+
+        //  使用有界通道，消费积压超容量后写入端等待，防止内存无上限增长
+        _channel = Channel.CreateBounded<JobExecuteInfo>(new BoundedChannelOptions(options.Value.JobChannelCapacity) { FullMode = BoundedChannelFullMode.Wait });
         _cts = new CancellationTokenSource();
-        
-        // StartConsuming(_cancellationToken.Token);
-        Task.WhenAll(Enumerable.Range(0, options.Value.ClientPoolSize).Select(_ => Task.Factory.StartNew(async () => await ProcessingAsync(_channel.Reader, _cts.Token), _cts.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default)));
+
+        //  启动消费线程并持有任务引用，便于释放时等待其退出
+        _workers = Enumerable.Range(0, options.Value.ClientPoolSize).Select(_ => Task.Run(() => ProcessingAsync(_channel.Reader, _cts.Token))).ToList();
     }
 
     /// <summary>
@@ -61,7 +64,7 @@ public class JobExecuteDispatcher: Disposable, IJobExecuteDispatcher
                 try
                 {
                     await using var scope = ServiceLocator.CreateAsyncScope();
-                    var jobExecutor = scope.ServiceProvider.GetService<IJobExecutor>();
+                    var jobExecutor = scope.ServiceProvider.GetRequiredService<IJobExecutor>();
                     var context = new JobExecuteContext(scope.ServiceProvider, message);
                     await jobExecutor.ExecuteAsync(context, cancellationToken);
                 }
@@ -85,11 +88,25 @@ public class JobExecuteDispatcher: Disposable, IJobExecuteDispatcher
     /// <param name="disposing"></param>
     protected override void OnDispose(bool disposing)
     {
-        if (!disposing)
+        //  基类 Dispose()/DisposeAsync() 仅回调 OnDispose(true) 且无终结器，托管资源释放必须放在 disposing 分支
+        if (!disposing) return;
+
+        //  取消消费令牌并关闭通道写入，通知所有消费循环退出
+        _cts.Cancel();
+        _channel.Writer.Complete();
+
+        try
         {
-            _cts?.Cancel();
-            _cts?.Dispose();
-            _channel.Writer.Complete();
+            //  同步等待消费线程退出，避免后台线程与 CTS 泄漏
+            Task.WhenAll(_workers).GetAwaiter().GetResult();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "等待作业执行消费线程退出时发生异常");
+        }
+        finally
+        {
+            _cts.Dispose();
         }
     }
 }

@@ -281,16 +281,42 @@ var html = await _razorViewRender.RenderViewToStringAsync("~/Views/Report/Index.
 ## 请求与响应扩展
 
 ```csharp
-context.GetClientIp();               // X-Forwarded-For[0] → REMOTE_ADDR → RemoteIpAddress → 127.0.0.1
+context.GetClientIp();               // 客户端 IP，代理场景按 TrustedProxies 白名单右剥离（见下）
 request.GetUserAgentString();
 request.GetUserAgent();              // 解析为 UserAgent 对象
 request.IsAjaxRequest();
 request.IsJsonContextType();
 ```
 
-> 注意事项
+### 客户端 IP 解析（代理场景）
 
-`GetClientIp` 在所有来源都取不到 IP 时会抛异常，而限速、防重等过滤器每次请求都会调用它。
+`GetClientIp()` **默认不信任 `X-Forwarded-For`**：以直连 TCP 对端 `RemoteIpAddress` 为准，仅当直连对端命中可信代理白名单时才解析 XFF，并从右往左剥离可信代理段，返回第一个不可信地址。取不到任何地址时返回空字符串。
+
+| 配置键 | 说明 |
+|---|---|
+| `Findx:HttpRequest:TrustedProxies` | 可信反代/负载均衡的 IP 或 CIDR 网段；支持 JSON 数组或逗号分隔字符串。为空表示完全不信任 XFF |
+| `Findx:HttpRequest:TrustForwardedHeaders` | 旧开关，仅在**未配置白名单**时生效，取 XFF **最右段**（单层代理下即客户端 IP）；配置白名单后忽略 |
+
+```json
+"Findx": {
+  "HttpRequest": {
+    "TrustedProxies": [ "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "127.0.0.1/32" ]
+  }
+}
+```
+
+| 场景 | 返回 |
+|---|---|
+| 未配置白名单 + 公网直连 | `RemoteIpAddress`（IPv4-mapped 转 IPv4，回环统一 `127.0.0.1`） |
+| 直连对端命中白名单 + 有 XFF | 右剥离可信段后第一个不可信地址；全部段都可信则回退 `RemoteIpAddress` |
+| 直连对端未命中白名单 | 忽略 XFF，返回 `RemoteIpAddress` |
+| 白名单与旧开关同时配置 | 以白名单为准 |
+
+> 前提：代理必须**追加**而非原样透传 XFF，如 Nginx `proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`。若代理把客户端传入的头原样转发，任何算法都无法识别伪造地址。
+
+> 不要与 `UseForwardedHeaders` 同时启用：中间件会先改写 `RemoteIpAddress`，本解析逻辑再读原始 XFF 会把结果覆盖回可伪造值。若采用官方中间件方案，注意 .NET 6+ 的 `KnownNetworks` 默认仅含回环地址，需显式添加代理网段，并按代理层数设置 `ForwardLimit`。
+
+> 影响面：`RateLimiter`、`InternalNetworkLimiter`、`AuditOperation` 均依赖该结果。未配置白名单时它们拿到的是代理 IP，会导致限流配额被所有用户共享、`InternalNetworkLimiter` 把外部请求误判为内网，生产环境务必配置 `TrustedProxies`。
 
 ## 请求管道事件
 

@@ -158,7 +158,7 @@ public class GlobalSettings : ISettings
     {
         get 
         {
-            return _margins.GetMarginValue(_margins.Left);
+            return (_margins ??= new MarginSettings()).GetMarginValue(_margins.Left);
         }
     }
 
@@ -170,7 +170,7 @@ public class GlobalSettings : ISettings
     {
         get
         {
-            return _margins.GetMarginValue(_margins.Right);
+            return (_margins ??= new MarginSettings()).GetMarginValue(_margins.Right);
         }
     }
 
@@ -182,7 +182,7 @@ public class GlobalSettings : ISettings
     {
         get
         {
-            return _margins.GetMarginValue(_margins.Top);
+            return (_margins ??= new MarginSettings()).GetMarginValue(_margins.Top);
         }
     }
 
@@ -194,7 +194,7 @@ public class GlobalSettings : ISettings
     {
         get
         {
-            return _margins.GetMarginValue(_margins.Bottom);
+            return (_margins ??= new MarginSettings()).GetMarginValue(_margins.Bottom);
         }
     }
 

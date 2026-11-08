@@ -62,23 +62,27 @@ public abstract class WebSocketHandlerBase
         if (session is not { State: WebSocketState.Open }) return;
         
         ReadOnlyMemory<byte> payload;
+        WebSocketMessageType messageType;
 
         switch (message)
         {
             case RequestTextMessage textMessage:
                 payload = MemoryMarshal.AsMemory<byte>(textMessage.Text.ToBytes());
+                messageType = WebSocketMessageType.Text;
                 break;
             case RequestBinaryMessage binaryMessage:
                 payload = MemoryMarshal.AsMemory<byte>(binaryMessage.Data);
+                messageType = WebSocketMessageType.Binary;
                 break;
             case RequestBinarySegmentMessage segmentMessage:
                 payload = segmentMessage.Data.AsMemory();
+                messageType = WebSocketMessageType.Binary;
                 break;
             default:
                 throw new ArgumentException($"Unknown message type: {message.GetType()}");
         }
-        
-        await session.SendAsync(payload, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
+
+        await session.SendAsync(payload, messageType, true, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

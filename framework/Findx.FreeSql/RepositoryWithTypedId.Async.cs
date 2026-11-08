@@ -587,10 +587,10 @@ public partial class RepositoryWithTypedId<TEntity, TKey>
     public async Task<long> CountAsync(Expression<Func<TEntity, bool>> whereExpression = null, CancellationToken cancellationToken = default)
     {
         if (whereExpression == null)
-            return (await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
-                .WithTransaction(UnitOfWork?.Transaction).CountAsync(cancellationToken)).To<int>();
-        return (await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression)
-            .WithTransaction(UnitOfWork?.Transaction).CountAsync(cancellationToken)).To<int>();
+            return await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal)
+                .WithTransaction(UnitOfWork?.Transaction).CountAsync(cancellationToken);
+        return await _fsql.Select<TEntity>().AsTable(AsTableSelectValueInternal).Where(whereExpression)
+            .WithTransaction(UnitOfWork?.Transaction).CountAsync(cancellationToken);
     }
 
     /// <summary>

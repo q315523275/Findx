@@ -8,6 +8,7 @@ namespace Findx;
 /// </summary>
 public static class GlobalListener
 {
+    //  端口快照在进程启动时抓取一次；运行期新监听不反映，若需运行期精确判定可改为调用时实时获取
     private static readonly IPGlobalProperties Global = IPGlobalProperties.GetIPGlobalProperties();
     private static readonly HashSet<int> TcpListenPorts = GetListenPorts(Global.GetActiveTcpListeners);
     private static readonly HashSet<int> UdpListenPorts = GetListenPorts(Global.GetActiveUdpListeners);
@@ -125,6 +126,6 @@ public static class GlobalListener
             if (canFunc(port))
                 return port;
 
-        throw new Exception("当前无可用的端口");
+        throw new InvalidOperationException("当前无可用的端口");
     }
 }

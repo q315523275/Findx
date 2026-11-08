@@ -12,7 +12,10 @@ namespace Findx.AspNetCore.Mvc.Middlewares;
 /// </summary>
 public class CorrelationIdMiddleware
 {
-    private readonly IOptions<CorrelationIdOptions> _options;
+    /// <summary>
+    ///    配置值快照：每请求直接读取，避免重复走 IOptions.Value
+    /// </summary>
+    private readonly CorrelationIdOptions _optionsValue;
     
     private readonly ICorrelationIdProvider _correlationIdProvider;
     
@@ -28,7 +31,7 @@ public class CorrelationIdMiddleware
     {
         _correlationIdProvider = correlationIdProvider;
         _next = next;
-        _options = options;
+        _optionsValue = options.Value;
     }
     
     /// <summary>
@@ -40,7 +43,7 @@ public class CorrelationIdMiddleware
         var correlationId = GetCorrelationIdFromRequest(context);
         using (_correlationIdProvider.Change(correlationId))
         {
-            CheckAndSetCorrelationIdOnResponse(context, _options.Value, correlationId);
+            CheckAndSetCorrelationIdOnResponse(context, _optionsValue, correlationId);
             await _next(context);
         }
     }
@@ -52,11 +55,12 @@ public class CorrelationIdMiddleware
     /// <returns></returns>
     protected virtual string GetCorrelationIdFromRequest(HttpContext context)
     {
-        var correlationId = context.Request.Headers[_options.Value.HttpHeaderName];
+        var headerName = _optionsValue.HttpHeaderName;
+        var correlationId = context.Request.Headers[headerName];
         if (correlationId.IsNullOrEmpty())
         {
             correlationId = Guid.NewGuid().ToString("N");
-            context.Request.Headers[_options.Value.HttpHeaderName] = correlationId;
+            context.Request.Headers[headerName] = correlationId;
         }
 
         return correlationId;

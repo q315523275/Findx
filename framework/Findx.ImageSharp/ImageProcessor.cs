@@ -20,7 +20,7 @@ using FontStyle = SixLabors.Fonts.FontStyle;
 namespace Findx.ImageSharp;
 
 /// <summary>
-/// 图片处理器
+///     图片处理器
 /// </summary>
 public sealed class ImageProcessor : IImageProcessor
 {
@@ -201,7 +201,7 @@ public sealed class ImageProcessor : IImageProcessor
 
         var encoder = GetCompressEncoder(imageFormat, quality);
         
-        using var memoryStream = Pool.MemoryStream.Rent();
+        using var handle = Pool.MemoryStream.Get(out var memoryStream);
         await originalImage.SaveAsync(memoryStream, encoder, cancellationToken: cancellationToken);
         return memoryStream.ToArray();
     }
@@ -224,10 +224,10 @@ public sealed class ImageProcessor : IImageProcessor
 
         var encoder = GetCompressEncoder(imageFormat, quality);
 
-        var memoryStream = Pool.MemoryStream.Rent();
+        using var handle = Pool.MemoryStream.Get(out var memoryStream);
         await originalImage.SaveAsync(memoryStream, encoder, cancellationToken: cancellationToken);
-        memoryStream.Position = 0;
-        return memoryStream;
+        var bytes = memoryStream.ToArray();
+        return new MemoryStream(bytes);
 
     }
 

@@ -42,19 +42,19 @@ public class MapsterMapperModule : StartupModule
     /// <param name="provider"></param>
     public override void UseModule(IServiceProvider provider)
     {
-        var option = provider.GetService<IOptions<MappingOptions>>();
+        var option = provider.GetService<IOptions<MappingOptions>>() ?? Options.Create(new MappingOptions());
 
-        // 设置不区分大小写
+        //  设置不区分大小写
         if (option is { Value.IgnoreCase: true })
             TypeAdapterConfig.GlobalSettings.Default.NameMatchingStrategy(NameMatchingStrategy.IgnoreCase);
 
-        // 设置忽略Null值映射
+        //  设置忽略Null值映射
         if (option is { Value.IgnoreNullValues: true })
             TypeAdapterConfig.GlobalSettings.Default.IgnoreNullValues(true);
 
-        // 设置指定属性的字段映射
+        //  设置指定属性的字段映射
         TypeAdapterConfig.GlobalSettings.Default.IgnoreAttribute(typeof(IgnoreMappingAttribute));
-        TypeAdapterConfig<string, DateTime?>.NewConfig().MapWith(src => src.IsNotNullOrWhiteSpace() ? null : DateTime.Parse(src));
+        TypeAdapterConfig<string, DateTime?>.NewConfig().MapWith(src => src.IsNullOrWhiteSpace() ? null : DateTime.Parse(src));
             
         MapperExtensions.SetMapper(provider.GetRequiredService<IObjectMapper>());
 

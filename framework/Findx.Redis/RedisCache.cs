@@ -10,6 +10,12 @@ namespace Findx.Redis;
 
 public class RedisCache : ICache
 {
+    /// <summary>
+    ///     计数器 key 前缀：缓存值以 Hash 结构存储，计数器以 String 结构存储，
+    ///     加前缀隔离数据结构，避免同一 key 触发 WRONGTYPE。
+    /// </summary>
+    private const string CounterKeyPrefix = "incr:";
+
     private readonly IRedisClient _redisClient;
 
     /// <summary>
@@ -69,6 +75,7 @@ public class RedisCache : ICache
         var r = _redisClient.HSet(key, key, valueString, When.NotExists);
         if (r)
         {
+            _redisClient.HDel(key, "SlidingExpiration");
             _redisClient.Expire(key, absoluteExpiration);
             return true;
         }
@@ -81,7 +88,8 @@ public class RedisCache : ICache
         var r = _redisClient.HSet(key, key, valueString, When.NotExists);
         if (r)
         {
-            _redisClient.Expire(key, absoluteExpiration - DateTime.Now);
+            _redisClient.HDel(key, "SlidingExpiration");
+            _redisClient.Expire(key, absoluteExpiration.ToUniversalTime() - DateTime.UtcNow);
             return true;
         }
         return false;
@@ -110,6 +118,7 @@ public class RedisCache : ICache
     {
         var valueString = typeof(T).IsPrimitiveExtendedIncludingNullable(true) ? value.ToString() : value.ToJson();
         _redisClient.HSet(key, key, valueString);
+        _redisClient.HDel(key, "SlidingExpiration");
         _redisClient.Expire(key, absoluteExpiration);
     }
 
@@ -117,7 +126,8 @@ public class RedisCache : ICache
     {
         var valueString = typeof(T).IsPrimitiveExtendedIncludingNullable(true) ? value.ToString() : value.ToJson();
         _redisClient.HSet(key, key, valueString);
-        _redisClient.Expire(key, absoluteExpiration - DateTime.Now);
+        _redisClient.HDel(key, "SlidingExpiration");
+        _redisClient.Expire(key, absoluteExpiration.ToUniversalTime() - DateTime.UtcNow);
     }
 
     public void Add<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions)
@@ -163,6 +173,7 @@ public class RedisCache : ICache
         var r = await _redisClient.HSetAsync(key, key, valueString, When.NotExists, cancellationToken);
         if (r)
         {
+            await _redisClient.HDelAsync(key, "SlidingExpiration", cancellationToken);
             await _redisClient.ExpireAsync(key, absoluteExpiration, cancellationToken);
             return true;
         }
@@ -175,7 +186,8 @@ public class RedisCache : ICache
         var r = await _redisClient.HSetAsync(key, key, valueString, When.NotExists, cancellationToken);
         if (r)
         {
-            await _redisClient.ExpireAsync(key, absoluteExpiration - DateTime.Now, cancellationToken);
+            await _redisClient.HDelAsync(key, "SlidingExpiration", cancellationToken);
+            await _redisClient.ExpireAsync(key, absoluteExpiration.ToUniversalTime() - DateTime.UtcNow, cancellationToken);
             return true;
         }
         return false;
@@ -204,6 +216,7 @@ public class RedisCache : ICache
     {
         var valueString = typeof(T).IsPrimitiveExtendedIncludingNullable(true) ? value.ToString() : value.ToJson();
         await _redisClient.HSetAsync(key, key, valueString, cancellationToken: cancellationToken);
+        await _redisClient.HDelAsync(key, "SlidingExpiration", cancellationToken);
         await _redisClient.ExpireAsync(key, absoluteExpiration, cancellationToken);
     }
 
@@ -211,7 +224,8 @@ public class RedisCache : ICache
     {
         var valueString = typeof(T).IsPrimitiveExtendedIncludingNullable(true) ? value.ToString() : value.ToJson();
         await _redisClient.HSetAsync(key, key, valueString, cancellationToken: cancellationToken);
-        await _redisClient.ExpireAsync(key, absoluteExpiration - DateTime.Now, cancellationToken);
+        await _redisClient.HDelAsync(key, "SlidingExpiration", cancellationToken);
+        await _redisClient.ExpireAsync(key, absoluteExpiration.ToUniversalTime() - DateTime.UtcNow, cancellationToken);
     }
 
     public async Task AddAsync<T>(string key, T value, SlidingExpirationOptions slidingExpirationOptions, CancellationToken cancellationToken = default)
@@ -234,29 +248,33 @@ public class RedisCache : ICache
     
     public long Increment(string key, long value = 1, TimeSpan? absoluteExpiration = null)
     {
-        var r = _redisClient.IncrBy(key, value);
-        if (absoluteExpiration.HasValue) _redisClient.Expire(key, absoluteExpiration.Value);
+        var cacheKey = CounterKeyPrefix + key;
+        var r = _redisClient.IncrBy(cacheKey, value);
+        if (absoluteExpiration.HasValue) _redisClient.Expire(cacheKey, absoluteExpiration.Value);
         return r;
     }
 
     public long Decrement(string key, long value = 1, TimeSpan? absoluteExpiration = null)
     {
-        var r = _redisClient.DecrBy(key, value);
-        if (absoluteExpiration.HasValue) _redisClient.Expire(key, absoluteExpiration.Value);
+        var cacheKey = CounterKeyPrefix + key;
+        var r = _redisClient.DecrBy(cacheKey, value);
+        if (absoluteExpiration.HasValue) _redisClient.Expire(cacheKey, absoluteExpiration.Value);
         return r;
     }
 
     public async Task<long> IncrementAsync(string key, long value = 1, TimeSpan? absoluteExpiration = null, CancellationToken token = default)
     {
-        var r = await _redisClient.IncrByAsync(key, value, token);
-        if (absoluteExpiration.HasValue) await _redisClient.ExpireAsync(key, absoluteExpiration.Value, token);
+        var cacheKey = CounterKeyPrefix + key;
+        var r = await _redisClient.IncrByAsync(cacheKey, value, token);
+        if (absoluteExpiration.HasValue) await _redisClient.ExpireAsync(cacheKey, absoluteExpiration.Value, token);
         return r;
     }
 
     public async Task<long> DecrementAsync(string key, long value = 1, TimeSpan? absoluteExpiration = null, CancellationToken token = default)
     {
-        var r = await _redisClient.DecrByAsync(key, value, token);
-        if (absoluteExpiration.HasValue) await _redisClient.ExpireAsync(key, absoluteExpiration.Value, token);
+        var cacheKey = CounterKeyPrefix + key;
+        var r = await _redisClient.DecrByAsync(cacheKey, value, token);
+        if (absoluteExpiration.HasValue) await _redisClient.ExpireAsync(cacheKey, absoluteExpiration.Value, token);
         return r;
     }
 }

@@ -7,7 +7,7 @@ namespace Findx.Reflection;
 /// </summary>
 public class DirectoryAssemblyFinder : IAssemblyFinder
 {
-    private static readonly Dictionary<string, IEnumerable<Assembly>> CacheDict = new();
+    private static readonly ConcurrentDictionary<string, Assembly[]> CacheDict = new();
 
     private readonly string _path;
 
@@ -41,7 +41,8 @@ public class DirectoryAssemblyFinder : IAssemblyFinder
         var files = Directory.EnumerateFiles(_path, "*.*", SearchOption.TopDirectoryOnly)
                              .Where(s => s.EndsWith(".dll") || s.EndsWith(".exe"));
         
-        var assemblies = files.Select(AssemblyLoadContext.Default.LoadFromAssemblyPath).Distinct();
+        //  物化后再缓存：缓存里存的是真实加载结果，而非延迟执行的 LINQ 查询
+        var assemblies = files.Select(AssemblyLoadContext.Default.LoadFromAssemblyPath).Distinct().ToArray();
         
         CacheDict[_path] = assemblies;
         

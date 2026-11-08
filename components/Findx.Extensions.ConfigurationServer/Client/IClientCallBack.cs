@@ -14,8 +14,9 @@ public interface IClientCallBack : IDisposable
     /// <param name="traceIdentifier"></param>
     /// <param name="clientIpAddress"></param>
     /// <param name="timeout"></param>
+    /// <param name="requestAborted">请求中断令牌（客户端断开时取消等待）</param>
     /// <returns></returns>
-    Task<ConfigDataChangeDto> NewCallBackTaskAsync(string appId, string traceIdentifier, string clientIpAddress, int timeout);
+    Task<ConfigDataChangeDto> NewCallBackTaskAsync(string appId, string traceIdentifier, string clientIpAddress, int timeout, CancellationToken requestAborted = default);
 
     /// <summary>
     ///     执行回调任务

@@ -34,7 +34,7 @@ public class VerifyCoder : IVerifyCoder
     /// <param name="fontFamilyProvider"></param>
     public VerifyCoder(IFontFamilyProvider fontFamilyProvider)
     {
-        _fontFamilies = new List<FontFamily>();
+        _fontFamilies = [];
         _fontFamilyProvider = fontFamilyProvider;
         InitFonts();
     }
@@ -62,7 +62,7 @@ public class VerifyCoder : IVerifyCoder
         // imgText.Mutate(ctx => ctx.GaussianBlur());
 
         // 读取流
-        using var ms = Pool.MemoryStream.Rent();
+        using var handle = Pool.MemoryStream.Get(out var ms);
         await imgText.SaveAsPngAsync(ms);
         return ms.ToArray();
     }
@@ -82,9 +82,10 @@ public class VerifyCoder : IVerifyCoder
         // imgText.Mutate(ctx => ctx.GaussianBlur(0.4f));
         
         // 读取流
-        var ms = Pool.MemoryStream.Rent();
+        using var handle = Pool.MemoryStream.Get(out var ms);
         await imgText.SaveAsPngAsync(ms);
-        return ms;
+        var bytes = ms.ToArray();
+        return new MemoryStream(bytes);
     }
 
     public Task SetFontAsync(string fontFamilyPath, CancellationToken cancellationToken = default)

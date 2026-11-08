@@ -26,12 +26,13 @@ public class ApplicationContext : IApplicationContext
         AppSetting = configuration;
         RootPath = environment.ContentRootPath; // AppContext.BaseDirectory;
         
+        //  未配置 Id 时每次启动生成新 Guid（偏"实例 ID"语义）；若需跨重启稳定标识（注册中心/服务发现场景），必须显式配置 Findx:Application:Id
         ApplicationId = options.Value.Id ?? Guid.NewGuid().ToString();
         ApplicationName = options.Value.Name ?? environment.ApplicationName;
         Port = options.Value.Port > 0 ? options.Value.Port : GlobalListener.GetAvailablePort(5000);
-        // 验证端口是否被占用
+        //  验证端口是否被占用
         if (options.Value.AvailablePort && !GlobalListener.CanListen(Port)) Port = GlobalListener.GetAvailablePort(5000);
-        Uris = options.Value.Uris ?? $"htt" + $"p://*:{Port}";
+        Uris = options.Value.Uris ?? $"http://*:{Port}";
 
         _version = new Lazy<string>(() => options.Value.Version ?? GetType().Assembly.GetProductVersion());
         _instanceIp = new Lazy<string>(() => options.Value.InstanceIp ?? HostUtility.ResolveHostAddress(HostUtility.ResolveHostName()));
@@ -92,12 +93,13 @@ public class ApplicationContext : IApplicationContext
 
     /// <summary>
     ///     获取绝对路径
+    ///     宽松模式：绝对路径直接放行（支持挂载盘等 RootPath 之外路径），仅做规范化解析 ../；调用方需自行约束输入范围
     /// </summary>
     /// <param name="virtualPath"></param>
     /// <returns></returns>
     public string MapPath(string virtualPath)
     {
-        return Path.Combine(RootPath, virtualPath.RemovePreFix("~/"));
+        return Path.GetFullPath(Path.Combine(RootPath, virtualPath.RemovePreFix("~/")));
     }
 
     /// <summary>

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Findx.ExceptionHandling;
+namespace Findx.Exceptions;
 
 /// <summary>
 ///     Ctor

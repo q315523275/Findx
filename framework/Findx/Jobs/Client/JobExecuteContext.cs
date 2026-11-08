@@ -31,5 +31,6 @@ public class JobExecuteContext
     /// <summary>
     ///     任务信息
     /// </summary>
-    public JobResult JobResult { set; get; } = JobResult.Success;
+    // 每实例独立结果对象，避免与共享的 JobResult.Success 单例相互污染
+    public JobResult JobResult { set; get; } = new() { IsSuccess = true };
 }

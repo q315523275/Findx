@@ -37,18 +37,31 @@ public static class CacheType
     public const string DefaultRedis = "redis.default";
 }
 ```
->使用
+> 使用
 
-```js
-private readonly ICacheFactory _cacheFactory;
-public xxx(ICacheFactory cacheFactory)
+```csharp
+public class OrderService
 {
-    _cacheFactory = cacheFactory
-}
-xx()
-{
-    var cache = _cacheFactory.Create(CacheType.DefaultMemory);   
-    cache.xxxxx.
+    private readonly ICache _cache;
+
+    public OrderService(ICacheFactory cacheFactory)
+    {
+        _cache = cacheFactory.Create(CacheType.DefaultMemory);
+    }
+
+    public async Task<string> GetAsync(string orderNo, CancellationToken ct)
+        => await _cache.GetOrAddAsync($"order:{orderNo}", _ => LoadOrderAsync(orderNo, ct), TimeSpan.FromMinutes(10));
 }
 ```
+
+## 实现要点与注意事项
+
+| 关注点 | 行为 |
+|---|---|
+| 并发字典 | `InMemoryCache` 基于 `ConcurrentDictionary`，取值-写入统一走 `AddOrUpdate` 语义，避免并发下产生孤儿对象丢计数 |
+| 前缀删除 | `RemoveByPrefix` 是**全量键扫描**（O(n)，逐个匹配前缀后删除），属运维级操作，不要放在请求热路径 |
+| 滑动过期 | 本地缓存支持滑动过期；Redis 端**仅支持相对/绝对过期，滑动过期未实现** |
+| TTL 语义 | Redis 端 `Ttl` 在键无过期时间时返回 `-1` |
+| 键生成 | 内置 `ICacheKeyGenerator`，按多段字符串组合生成键，避免手写 `string.Format` 造成键风格不统一 |
+| 多实现 | `ICacheFactory` 继承 `IServiceFactory<ICache>`，Net8+ 可直接 `GetService(typeof(ICache), 服务名)` 取指定实现 |
 

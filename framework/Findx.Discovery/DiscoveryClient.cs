@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,6 +20,8 @@ public class DiscoveryClient : IDiscoveryClient
     private readonly IOptionsMonitor<DiscoveryOptions> _options;
 
     private readonly IServiceEndPointProvider _serviceEndPointProvider;
+
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _cacheLocks = new();
 
     private const string ServiceEndPointsKeyPrefix = "ServiceEndPoints:";
 
@@ -77,24 +80,41 @@ public class DiscoveryClient : IDiscoveryClient
     /// <returns></returns>
     public async Task<IReadOnlyList<IServiceEndPoint>> GetServiceEndPointsAsync(string serviceName, string group = null, bool passingOnly = true, string tag = null, CancellationToken cancellationToken = default)
     {
-        if (Options.Cache)
-        {
-            var cache = _cacheFactory.Create(Options.CacheStrategy);
+        var cacheKey = $"{ServiceEndPointsKeyPrefix}{serviceName}";
 
-            var instanceData = await cache.GetAsync<IReadOnlyList<IServiceEndPoint>>($"{ServiceEndPointsKeyPrefix}{serviceName}", cancellationToken).ConfigureAwait(false);
-            if (instanceData is { Count: > 0 }) 
+        if (!Options.Cache)
+            return await _serviceEndPointProvider.GetServiceEndPointsAsync(serviceName, group, passingOnly, tag, cancellationToken).ConfigureAwait(false);
+
+        var cache = _cacheFactory.Create(Options.CacheStrategy);
+
+        var instanceData = await cache.GetAsync<IReadOnlyList<IServiceEndPoint>>(cacheKey, cancellationToken).ConfigureAwait(false);
+        if (instanceData is { Count: > 0 })
+            return instanceData;
+
+        //  缓存未命中时按 key 串行化回源，避免缓存击穿；等待期间其他请求可能已完成回源
+        var semaphore = _cacheLocks.GetOrAdd(cacheKey, _ => new SemaphoreSlim(1, 1));
+
+        await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+        try
+        {
+            //  双检：等待期间已有其他请求写缓存则直接复用
+            instanceData = await cache.GetAsync<IReadOnlyList<IServiceEndPoint>>(cacheKey, cancellationToken).ConfigureAwait(false);
+            if (instanceData is { Count: > 0 })
                 return instanceData;
+
+            var instances = await _serviceEndPointProvider.GetServiceEndPointsAsync(serviceName, group, passingOnly, tag, cancellationToken).ConfigureAwait(false);
+
+            //  空结果（服务缩容到 0 实例或 Consul 瞬时异常返回空）不写入缓存，避免故障窗口被 CacheTtl 放大
+            if (instances is { Count: > 0 })
+                await cache.AddAsync(cacheKey, instances, TimeSpan.FromSeconds(Options.CacheTtl), cancellationToken).ConfigureAwait(false);
+
+            return instances;
         }
-
-        var instances = await _serviceEndPointProvider.GetServiceEndPointsAsync(serviceName, group, passingOnly, tag, cancellationToken);
-
-        if (!Options.Cache) return instances;
+        finally
         {
-            var cache = _cacheFactory.Create(Options.CacheStrategy);
-            await cache.AddAsync($"{ServiceEndPointsKeyPrefix}{serviceName}", instances, TimeSpan.FromSeconds(Options.CacheTtl), cancellationToken);
+            semaphore.Release();
         }
-
-        return instances;
     }
 
     /// <summary>

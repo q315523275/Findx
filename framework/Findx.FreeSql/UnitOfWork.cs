@@ -37,8 +37,13 @@ public class UnitOfWork : UnitOfWorkBase
             _fsql.Ado.MasterPool.Return(_conn);
             _conn = null;
         }
-        
-        if (Transaction != null) Transaction = null;
+
+        //  释放事务对象（Commit/Rollback 后显式 Dispose，再置空引用）
+        if (Transaction != null)
+        {
+            Transaction.Dispose();
+            Transaction = null;
+        }
     }
 
     /// <summary>
@@ -89,13 +94,12 @@ public class UnitOfWork : UnitOfWorkBase
     }
 
     /// <summary>
-    ///     保存变更数据
+    ///     保存变更数据（FreeSql 仓储即时执行命令，无变更缓冲需要 flush）
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     protected override Task InternalSaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // 当前不支持
         return Task.CompletedTask;
     }
     

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Findx.DependencyInjection;
 
-namespace Findx.ExceptionHandling;
+namespace Findx.Exceptions;
 
 /// <summary>
 ///     异常订阅器

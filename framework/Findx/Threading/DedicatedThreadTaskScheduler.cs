@@ -6,7 +6,7 @@ namespace Findx.Threading;
 /// <summary>
 ///     专用线程任务调度程序
 /// </summary>
-internal sealed  class DedicatedThreadTaskScheduler : TaskScheduler
+internal sealed  class DedicatedThreadTaskScheduler : TaskScheduler, IDisposable
 {
     /// <summary>
     ///     任务集合
@@ -23,13 +23,19 @@ internal sealed  class DedicatedThreadTaskScheduler : TaskScheduler
     ///     获取需要执行任务
     /// </summary>
     /// <returns></returns>
-    protected override IEnumerable<Task>? GetScheduledTasks() => _tasks;
+    protected override IEnumerable<Task>? GetScheduledTasks() => _tasks.ToArray();
     
     /// <summary>
     ///     添加任务
     /// </summary>
     /// <param name="task"></param>
-    protected override void QueueTask(Task task) => _tasks.Add(task);
+    protected override void QueueTask(Task task)
+    {
+        //  集合已标记完成（Dispose 后）不再接收新任务
+        if (_tasks.IsAddingCompleted)
+            throw new InvalidOperationException("DedicatedThreadTaskScheduler has been disposed");
+        _tasks.Add(task);
+    }
     
     /// <summary>
     ///     尝试执行任务内联
@@ -38,7 +44,7 @@ internal sealed  class DedicatedThreadTaskScheduler : TaskScheduler
     /// <param name="taskWasPreviouslyQueued"></param>
     /// <returns></returns>
     protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => false;
-    
+
     /// <summary>
     ///     Ctor
     /// </summary>
@@ -48,14 +54,40 @@ internal sealed  class DedicatedThreadTaskScheduler : TaskScheduler
         _threads = new Thread[threadCount];
         for (var index = 0; index < threadCount; index++)
         {
-            _threads[index] = new Thread(_ =>
+            var thread = new Thread(_ =>
             {
                 while (true)
                 {
-                    TryExecuteTask(_tasks.Take());
+                    try
+                    {
+                        var task = _tasks.Take();
+                        TryExecuteTask(task);
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        //  CompleteAdding 后 Take 抛出，线程正常退出
+                        break;
+                    }
                 }
-            });
+            })
+            {
+                //  后台线程：即使忘记 Dispose 也不会阻止进程退出
+                IsBackground = true
+            };
+            _threads[index] = thread;
         }
         Array.ForEach(_threads, it => it.Start());
+    }
+
+    /// <summary>
+    ///     停止调度并等待所有线程退出
+    /// </summary>
+    public void Dispose()
+    {
+        _tasks.CompleteAdding();
+        foreach (var thread in _threads)
+        {
+            thread.Join(TimeSpan.FromSeconds(2));
+        }
     }
 }

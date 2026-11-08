@@ -40,7 +40,13 @@ public class JobOptions : IOptions<JobOptions>
 	///		客户端池大小
 	/// </summary>
 	public int ClientPoolSize { set; get; } = 5;
-	
+
+	/// <summary>
+	///     客户端执行通道容量（有界）
+	///     <para>超出后写入端等待，防止消费积压导致内存无上限增长</para>
+	/// </summary>
+	public int JobChannelCapacity { set; get; } = 1024;
+
 	/// <summary>
 	///     option
 	/// </summary>

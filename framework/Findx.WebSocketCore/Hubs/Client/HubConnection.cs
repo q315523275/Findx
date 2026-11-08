@@ -1,19 +1,15 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.IO;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Findx.Common;
 using Findx.Common.Atomic;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Locks;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IO;
 
 namespace Findx.WebSocketCore.Hubs.Client;
 
@@ -22,8 +18,6 @@ namespace Findx.WebSocketCore.Hubs.Client;
 /// </summary>
 public class HubConnection: IAsyncDisposable
 {
-    private static readonly RecyclableMemoryStreamManager MemoryStreamPool = new();
-    
     private readonly AsyncLock _lock = new();
 
     private readonly CancellationTokenSource _cts;
@@ -224,16 +218,16 @@ public class HubConnection: IAsyncDisposable
                         }
                         else
                         {
-                            await using var ms = MemoryStreamPool.GetStream();
+                            using var handle = Pool.MemoryStream.Get(out var ms);
                             await ms.WriteAsync(buffer[..result.Count], _cts.Token);
                             do
                             {
                                 result = await ClientWebSocket.ReceiveAsync(buffer, _cts.Token).ConfigureAwait(false);
                                 if (result.Count > 0) await ms.WriteAsync(buffer[..result.Count], _cts.Token);
                             } while (!result.EndOfMessage);
-                            ms.Seek(0, SeekOrigin.Begin);
                             
-                            message = ResponseMessage.BinaryStreamMessage(ms);
+                            var messageBytes = ms.ToArray();
+                            message = ResponseMessage.BinaryMessage(messageBytes);
                         }
                         
                         if (message != null)

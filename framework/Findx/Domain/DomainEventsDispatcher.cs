@@ -39,8 +39,9 @@ public class DomainEventsDispatcher : IDomainEventsDispatcher
     {
         var domainEvents = _domainEventsProvider.GetAllDomainEvents();
 
-        _domainEventsProvider.ClearAllDomainEvents();
-
+        // 全部派发成功后再清空队列：若在派发前清空，任一处理器抛异常会导致剩余事件永久丢失
         foreach (var domainEvent in domainEvents) await _eventBus.PublishAsync(domainEvent);
+
+        _domainEventsProvider.ClearAllDomainEvents();
     }
 }

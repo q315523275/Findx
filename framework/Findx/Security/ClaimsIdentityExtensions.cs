@@ -13,6 +13,9 @@ public static class ClaimsIdentityExtensions
     /// <summary>
     ///     获取指定类型的Claim
     /// </summary>
+    /// <param name="identity"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     public static Claim GetClaimFirstOrDefault(this IIdentity identity, string type)
     {
         Check.NotNull(identity, nameof(identity));
@@ -22,6 +25,9 @@ public static class ClaimsIdentityExtensions
     /// <summary>
     ///     获取指定类型的Claim值
     /// </summary>
+    /// <param name="identity"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     public static string GetClaimValueFirstOrDefault(this IIdentity identity, string type)
     {
         Check.NotNull(identity, nameof(identity));
@@ -31,28 +37,33 @@ public static class ClaimsIdentityExtensions
     /// <summary>
     ///     获取指定类型的所有Claim值
     /// </summary>
+    /// <param name="identity"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     public static IEnumerable<Claim> GetClaims(this IIdentity identity, string type)
     {
         Check.NotNull(identity, nameof(identity));
-        return identity is not ClaimsIdentity claimsIdentity
-            ? Array.Empty<Claim>()
+        return identity is not ClaimsIdentity claimsIdentity ? Array.Empty<Claim>()
             : claimsIdentity.Claims.Where(m => m.Type == type);
     }
 
     /// <summary>
     ///     获取指定类型的所有Claim值
     /// </summary>
+    /// <param name="identity"></param>
+    /// <param name="type"></param>
+    /// <returns></returns>
     public static IEnumerable<string> GetClaimValues(this IIdentity identity, string type)
     {
         Check.NotNull(identity, nameof(identity));
-        return identity is not ClaimsIdentity claimsIdentity
-            ? null
-            : claimsIdentity.Claims.Where(m => m.Type == type).Select(m => m.Value);
+        return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.Claims.Where(m => m.Type == type).Select(m => m.Value);
     }
+
 
     /// <summary>
     ///     获取用户ID
     /// </summary>
+    /// <param name="identity"></param>
     public static T GetUserId<T>(this IIdentity identity)
     {
         Check.NotNull(identity, nameof(identity));
@@ -67,9 +78,7 @@ public static class ClaimsIdentityExtensions
     public static string GetUserId(this IIdentity identity)
     {
         Check.NotNull(identity, nameof(identity));
-        return identity is not ClaimsIdentity claimsIdentity
-            ? null
-            : claimsIdentity.FindFirst(ClaimTypes.UserId)?.Value;
+        return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.UserId)?.Value;
     }
 
     /// <summary>
@@ -78,9 +87,7 @@ public static class ClaimsIdentityExtensions
     public static string GetUserName(this IIdentity identity)
     {
         Check.NotNull(identity, nameof(identity));
-        return identity is not ClaimsIdentity claimsIdentity
-            ? null
-            : claimsIdentity.FindFirst(ClaimTypes.UserName)?.Value;
+        return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.UserName)?.Value;
     }
 
     /// <summary>
@@ -98,9 +105,7 @@ public static class ClaimsIdentityExtensions
     public static string GetNickname(this IIdentity identity)
     {
         Check.NotNull(identity, nameof(identity));
-        return identity is not ClaimsIdentity claimsIdentity
-            ? null
-            : claimsIdentity.FindFirst(ClaimTypes.Nickname)?.Value;
+        return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.Nickname)?.Value;
     }
 
     /// <summary>
@@ -109,9 +114,7 @@ public static class ClaimsIdentityExtensions
     public static string GetTenantId(this IIdentity identity)
     {
         Check.NotNull(identity, nameof(identity));
-        return identity is not ClaimsIdentity claimsIdentity
-            ? null
-            : claimsIdentity.FindFirst(ClaimTypes.TenantId)?.Value;
+        return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.TenantId)?.Value;
     }
     
     /// <summary>
@@ -131,9 +134,7 @@ public static class ClaimsIdentityExtensions
     public static string GetOrgId(this IIdentity identity)
     {
         Check.NotNull(identity, nameof(identity));
-        return identity is not ClaimsIdentity claimsIdentity
-            ? null
-            : claimsIdentity.FindFirst(ClaimTypes.OrgId)?.Value;
+        return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.OrgId)?.Value;
     }
     
     /// <summary>
@@ -153,9 +154,7 @@ public static class ClaimsIdentityExtensions
     public static string GetOrgName(this IIdentity identity)
     {
         Check.NotNull(identity, nameof(identity));
-        return identity is not ClaimsIdentity claimsIdentity
-            ? null
-            : claimsIdentity.FindFirst(ClaimTypes.OrgName)?.Value;
+        return identity is not ClaimsIdentity claimsIdentity ? null : claimsIdentity.FindFirst(ClaimTypes.OrgName)?.Value;
     }
 
     /// <summary>
@@ -176,13 +175,21 @@ public static class ClaimsIdentityExtensions
     private static readonly char[] Separator = [','];
 
     /// <summary>
+    ///     角色解析缓存：同一请求内多个授权点会重复取角色，按 ClaimsIdentity 实例缓存，避免重复遍历与 Split
+    ///     <para>ClaimsIdentity 生命周期结束后由弱引用表自动回收；运行期增删角色 claim 后如需立即生效需自行清理缓存</para>
+    /// </summary>
+    private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<ClaimsIdentity, string[]> RolesCache = new();
+
+    /// <summary>
     ///     获取所有角色
     /// </summary>
     public static IEnumerable<string> GetRoles(this IIdentity identity)
     {
         Check.NotNull(identity, nameof(identity));
-        if (identity is not ClaimsIdentity claimsIdentity) return Array.Empty<string>();
-        // 不知道什么原因，netcore认证组建会自动将自定义role key转换为 System.Security.Claims.ClaimTypes.Role key
-        return claimsIdentity.FindAll(System.Security.Claims.ClaimTypes.Role).SelectMany(m => m.Value.Split(Separator, StringSplitOptions.RemoveEmptyEntries));
+        if (identity is not ClaimsIdentity claimsIdentity) return [];
+        //  不知道什么原因，netcore认证组建会自动将自定义role key转换为 System.Security.Claims.ClaimTypes.Role key
+        return RolesCache.GetValue(claimsIdentity, static ci => ci.FindAll(System.Security.Claims.ClaimTypes.Role)
+                                                                  .SelectMany(m => m.Value.Split(Separator, StringSplitOptions.RemoveEmptyEntries))
+                                                                  .ToArray());
     }
 }

@@ -59,8 +59,11 @@ public class FindxBuilder : IFindxBuilder
     public IFindxBuilder AddModules(params Type[] exceptModuleTypes)
     {
         var source = _sourceModules;
-        var exceptModules = source.Where(m => exceptModuleTypes.Contains(m.GetType()));
-        source = source.Except(exceptModules).ToList();
+        if (exceptModuleTypes is { Length: > 0 })
+        {
+            var exceptSet = exceptModuleTypes.ToHashSet();
+            source = source.Where(m => !exceptSet.Contains(m.GetType())).ToList();
+        }
         foreach (var module in source) AddModule(module.GetType());
         return this;
     }
@@ -73,14 +76,14 @@ public class FindxBuilder : IFindxBuilder
     /// <exception cref="Exception"></exception>
     private IFindxBuilder AddModule(Type type)
     {
-        if (!type.IsBaseOn(typeof(StartupModule))) throw new Exception($"要加载的StartupModule型“{type}”不派生于基类 StartupModule");
+        if (!type.IsBaseOn(typeof(StartupModule))) throw new InvalidOperationException($"要加载的StartupModule型“{type}”不派生于基类 StartupModule");
 
         if (_modules.Any(m => m.GetType() == type)) return this;
 
         var tmpModules = new StartupModule[_modules.Count];
         _modules.CopyTo(tmpModules);
         var module = _sourceModules.FirstOrDefault(m => m.GetType() == type);
-        if (module == null) throw new Exception($"类型为“{type.FullName}”的模块实例无法找到");
+        if (module == null) throw new InvalidOperationException($"类型为“{type.FullName}”的模块实例无法找到");
         _modules.TryAdd(module);
 
         // 添加依赖模块
@@ -89,7 +92,7 @@ public class FindxBuilder : IFindxBuilder
         {
             var dependModule = _sourceModules.FirstOrDefault(m => m.GetType() == dependType);
             if (dependModule == null)
-                throw new Exception($"加载模块{module.GetType().FullName}时无法找到依赖模块{dependType.FullName}");
+                throw new InvalidOperationException($"加载模块{module.GetType().FullName}时无法找到依赖模块{dependType.FullName}");
             _modules.TryAdd(dependModule);
         }
 

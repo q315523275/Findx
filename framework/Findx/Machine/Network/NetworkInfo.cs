@@ -36,10 +36,11 @@ public class NetworkInfo
     /// <exception cref="NotSupportedException">当前网卡不支持 IPV4</exception>
     public Rate GetIpv4Speed()
     {
-        // 当前网卡不支持 IPV4
+        //  当前网卡不支持 IPV4
         if (!IsSupportIpv4) return default;
         var ipv4Statistics = NetworkInterface.GetIPv4Statistics();
-        var speed = new Rate(DateTime.Now, ipv4Statistics.BytesReceived, ipv4Statistics.BytesSent);
+        //  使用 UtcNow 避免墙钟回拨（NTP/DST）导致采样间隔为负
+        var speed = new Rate(DateTime.UtcNow, ipv4Statistics.BytesReceived, ipv4Statistics.BytesSent);
         return speed;
     }
 
@@ -50,7 +51,8 @@ public class NetworkInfo
     public Rate IpvSpeed()
     {
         var ipvStatistics = NetworkInterface.GetIPStatistics();
-        var speed = new Rate(DateTime.Now, ipvStatistics.BytesReceived, ipvStatistics.BytesSent);
+        //  使用 UtcNow 避免墙钟回拨（NTP/DST）导致采样间隔为负
+        var speed = new Rate(DateTime.UtcNow, ipvStatistics.BytesReceived, ipvStatistics.BytesSent);
         return speed;
     }
 
@@ -112,9 +114,16 @@ public class NetworkInfo
     /// <returns></returns>
     public static (SizeInfo Received, SizeInfo Sent) GetSpeed(Rate oldRate, Rate newRate)
     {
+        var interval = (newRate.StartTime - oldRate.StartTime).TotalSeconds;
+
+        //  采样间隔过短（四舍五入为 0）或系统时间回拨导致间隔非正时，直接返回 0，
+        //  避免 receive/0 得到 Infinity 强转 long 变成 long.MinValue
+        if (interval <= 0)
+            return (SizeInfo.Get(0), SizeInfo.Get(0));
+
         var receive = newRate.ReceivedLength - oldRate.ReceivedLength;
         var send = newRate.SendLength - oldRate.SendLength;
-        var interval = Math.Round((newRate.StartTime - oldRate.StartTime).TotalSeconds, 2);
+        interval = Math.Round(interval, 2);
 
         var rSpeed = (long)(receive / interval);
         var sSpeed = (long)(send / interval);

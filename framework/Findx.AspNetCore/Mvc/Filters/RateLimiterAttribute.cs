@@ -18,7 +18,7 @@ namespace Findx.AspNetCore.Mvc.Filters;
 /// <summary>
 ///     限速过滤器
 /// </summary>
-[AttributeUsage(AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public class RateLimiterAttribute : ActionFilterAttribute
 {
     /// <summary>
@@ -83,7 +83,8 @@ public class RateLimiterAttribute : ActionFilterAttribute
                 ClientIpAddress = context.HttpContext.GetClientIp(), 
                 UserAgent = context.HttpContext.Request.GetUserAgentString()
             };
-            await eventBus.PublishAsync(eventData, context.HttpContext.RequestAborted);
+            if (eventBus != null)
+                await eventBus.PublishAsync(eventData, context.HttpContext.RequestAborted);
             
             context.Result = new JsonResult(CommonResult.Fail("429", $"Too many requests in {Period}. Try again later."));
         }
@@ -106,9 +107,11 @@ public class RateLimiterAttribute : ActionFilterAttribute
 
         if (currentUser.Identity != null && Type == RateLimitType.User && currentUser.Identity.IsAuthenticated)
             clientId = $"{currentUser.Identity.GetUserId()}_";
-
-        if (Type == RateLimitType.Ip)
+        else if (Type == RateLimitType.Ip)
             clientId = $"{context.HttpContext.GetClientIp()}_";
+        else if (Type == RateLimitType.User)
+            // 未认证用户回退到 IP 维度，避免空 key 导致所有匿名请求共享同一计数桶
+            clientId = $"anon_{context.HttpContext.GetClientIp()}_";
 
         return Key.IsNullOrWhiteSpace() ? $"RL:{clientId}{context.HttpContext.Request.Path}" : $"RL:{clientId}{Key}";
     }

@@ -25,6 +25,8 @@ internal class StreamPool: IPool<MemoryStream>
     /// <param name="clear"></param>
     public void Return(MemoryStream obj, bool clear = false)
     {
-        obj?.Dispose();
+        if (obj is null) return;
+        if (clear) obj.SetLength(0);
+        obj.Dispose();
     }
 }

@@ -40,7 +40,8 @@ public class SimpleJobScheduler : IJobScheduler
     {
         var jobType = typeof(TJob);
         var jobDetail = CreateJobDetail(jobType, parameter);
-        var nextRunTime = DateTimeOffset.UtcNow.LocalDateTime;
+        //  统一使用 UTC 瞬时值，避免 DateTime Kind（Local/Unspecified）混用导致跨时区偏移
+        var nextRunTime = DateTimeOffset.UtcNow;
 
         jobDetail.IsSingle = true;
         jobDetail.NextRunTime = delay.HasValue ? nextRunTime.Add(delay.Value) : nextRunTime;
@@ -62,7 +63,8 @@ public class SimpleJobScheduler : IJobScheduler
         var jobType = typeof(TJob);
         var jobDetail = CreateJobDetail(jobType, parameter);
         jobDetail.IsSingle = true;
-        jobDetail.NextRunTime = dateTime ?? DateTimeOffset.UtcNow.LocalDateTime;
+        //  调用方传入的 DateTime 保持原有隐式转换语义（按 Kind 解释为瞬时值），空值回退当前 UTC 时间
+        jobDetail.NextRunTime = dateTime.HasValue ? dateTime.Value : DateTimeOffset.UtcNow;
 
         await _storage.InsertAsync(jobDetail, cancellationToken);
         return jobDetail.Id;
@@ -82,7 +84,7 @@ public class SimpleJobScheduler : IJobScheduler
         var jobDetail = CreateJobDetail(jobType, parameter);
         jobDetail.IsSingle = false;
         jobDetail.FixedDelay = delay.TotalSeconds;
-        jobDetail.NextRunTime = DateTimeOffset.UtcNow.Add(delay).LocalDateTime;
+        jobDetail.NextRunTime = DateTimeOffset.UtcNow.Add(delay);
 
         await _storage.InsertAsync(jobDetail, cancellationToken);
         return jobDetail.Id;
@@ -116,9 +118,7 @@ public class SimpleJobScheduler : IJobScheduler
     /// <returns></returns>
     public async Task<long> ScheduleAsync(Type jobType, CancellationToken cancellationToken = default)
     {
-        var attribute =
-            SingletonDictionary<Type, JobAttribute>.Instance.GetOrAdd(jobType,
-                () => jobType.GetAttribute<JobAttribute>());
+        var attribute = GetJobAttribute(jobType);
 
         Check.NotNull(attribute, nameof(attribute));
 
@@ -129,7 +129,7 @@ public class SimpleJobScheduler : IJobScheduler
             var span = TimeSpanUtility.ToTimeSpan(attribute.Interval);
             jobDetail.IsSingle = false;
             jobDetail.FixedDelay = span.TotalSeconds;
-            jobDetail.NextRunTime = DateTimeOffset.UtcNow.Add(span).LocalDateTime;
+            jobDetail.NextRunTime = DateTimeOffset.UtcNow.Add(span);
         }
 
         if (!attribute.Cron.IsNullOrWhiteSpace())
@@ -196,9 +196,9 @@ public class SimpleJobScheduler : IJobScheduler
     {
         var detail = new JobInfo
         {
-            CreatedTime = DateTimeOffset.UtcNow.LocalDateTime,
+            CreatedTime = DateTimeOffset.UtcNow,
             IsEnable = true,
-            NextRunTime = DateTimeOffset.UtcNow.LocalDateTime,
+            NextRunTime = DateTimeOffset.UtcNow,
             Id = SnowflakeIdUtility.Default().NextId(),
             Parameter = _serializer.Serialize(parameter ?? new Dictionary<string, string>()),
             Name = jobType.Name,
@@ -206,7 +206,7 @@ public class SimpleJobScheduler : IJobScheduler
             TryCount = 0
         };
 
-        var attribute = SingletonDictionary<Type, JobAttribute>.Instance.GetOrAdd(jobType, () => jobType.GetAttribute<JobAttribute>());
+        var attribute = GetJobAttribute(jobType);
         if (attribute != null)
         {
             detail.Name = attribute.Name;
@@ -214,5 +214,24 @@ public class SimpleJobScheduler : IJobScheduler
         }
 
         return detail;
+    }
+
+    /// <summary>
+    ///     获取作业类型上的特性注解（带全局缓存）
+    ///     <para>注意：ConcurrentDictionary 不允许写入 null 值，未标注特性的类型只返回 null、不入缓存</para>
+    /// </summary>
+    /// <param name="jobType"></param>
+    /// <returns></returns>
+    private static JobAttribute GetJobAttribute(Type jobType)
+    {
+        var cache = (ConcurrentDictionary<Type, JobAttribute>)SingletonDictionary<Type, JobAttribute>.Instance;
+        if (cache.TryGetValue(jobType, out var cached))
+            return cached;
+
+        var attribute = jobType.GetAttribute<JobAttribute>();
+        if (attribute != null)
+            cache.TryAdd(jobType, attribute);
+
+        return attribute;
     }
 }

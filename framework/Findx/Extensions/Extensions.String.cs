@@ -11,6 +11,30 @@ namespace Findx.Extensions;
 /// </summary>
 public static partial class Extensions
 {
+    #region 预编译正则（避免每次调用重复构造/编译正则表达式）
+
+    /// <summary>
+    ///     15位身份证号结构正则（地区码6 + 年份2 + 月份2 + 日期2 + 顺序码3，无校验位）
+    /// </summary>
+    private static readonly Regex IdentityCard15Regex = new(@"^(\d{6})(\d{2})(\d{2})(\d{2})(\d{3})$", RegexOptions.Compiled);
+
+    /// <summary>
+    ///     18位身份证号结构正则
+    /// </summary>
+    private static readonly Regex IdentityCard18Regex = new(@"^(\d{6})(\d{4})(\d{2})(\d{2})(\d{3})([0-9Xx])$", RegexOptions.Compiled);
+
+    /// <summary>
+    ///     非 ASCII 字符正则
+    /// </summary>
+    private static readonly Regex NonAsciiRegex = new(@"[^\u0000-\u00ff]", RegexOptions.Compiled);
+
+    /// <summary>
+    ///     Unicode 转义序列正则
+    /// </summary>
+    private static readonly Regex UnicodeEscapeRegex = new(@"\\u([0-9a-fA-F]{4})", RegexOptions.Compiled);
+
+    #endregion
+
     #region 字符判断：Null、空、全英文、包含...
 
     /// <summary>
@@ -134,13 +158,13 @@ public static partial class Extensions
         string[] array;
         if (value.Length == 15)
         {
-            regex = new Regex(@"^(\d{6})(\d{2})(\d{2})(\d{2})(\d{3})_");
+            regex = IdentityCard15Regex;
             if (!regex.Match(value).Success) return false;
             array = regex.Split(value);
             return DateTime.TryParse($"{"19" + array[2]}-{array[3]}-{array[4]}", out _);
         }
 
-        regex = new Regex(@"^(\d{6})(\d{4})(\d{2})(\d{2})(\d{3})([0-9Xx])$");
+        regex = IdentityCard18Regex;
         if (!regex.Match(value).Success) return false;
         array = regex.Split(value);
         if (!DateTime.TryParse($"{array[2]}-{array[3]}-{array[4]}", out _)) return false;
@@ -817,8 +841,7 @@ public static partial class Extensions
     /// <param name="source">要进行编号的字符串</param>
     public static string ToUnicodeString(this string source)
     {
-        var regex = new Regex(@"[^\u0000-\u00ff]");
-        return regex.Replace(source, m => $@"\u{(short)m.Value[0]:x4}");
+        return NonAsciiRegex.Replace(source, m => $@"\u{(short)m.Value[0]:x4}");
     }
 
     /// <summary>
@@ -826,8 +849,7 @@ public static partial class Extensions
     /// </summary>
     public static string FromUnicodeString(this string source)
     {
-        var regex = new Regex(@"\\u([0-9a-fA-F]{4})", RegexOptions.Compiled);
-        return regex.Replace(source,
+        return UnicodeEscapeRegex.Replace(source,
             m =>
             {
                 if (short.TryParse(m.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InstalledUICulture, out var s)) 
@@ -920,7 +942,15 @@ public static partial class Extensions
     /// </summary>
     public static bool IsMatchNumber(this string value)
     {
-        return IsMatch(value, @"\d");
+        if (value == null) return false;
+
+        //  等价原正则 @"\d"：逐字符判断，避免每次调用进入正则引擎（\d 默认匹配 Unicode 数字，与 char.IsDigit 一致）
+        for (var i = 0; i < value.Length; i++)
+        {
+            if (char.IsDigit(value[i])) return true;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -928,8 +958,16 @@ public static partial class Extensions
     /// </summary>
     public static bool IsMatchNumber(this string value, int length)
     {
-        var regex = new Regex(@"^\d{" + length + "}$");
-        return regex.IsMatch(value);
+        //  原实现每次按长度拼接 pattern 再 new Regex，这里改为字符区间判断（零正则、零分配）
+        if (value == null || value.Length != length) return false;
+
+        for (var i = 0; i < length; i++)
+        {
+            var c = value[i];
+            if (c < '0' || c > '9') return false;
+        }
+
+        return true;
     }
 
     #endregion

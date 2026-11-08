@@ -599,30 +599,21 @@ public class InMemoryCache : ICache, IDisposable
     /// <param name="key"></param>
     /// <param name="valueFactory"></param>
     /// <param name="expire"></param>
-    /// <returns></returns>
+    /// <returns>始终返回当前字典中的有效缓存项</returns>
     private CacheItem GetOrAddItem(string key, Func<string, object> valueFactory, TimeSpan? expire)
     {
-        CacheItem item;
-        do
-        {
-            if (_cache.TryGetValue(key, out item) && item != null)
-            {
-                if (!item.Expired) return item;
+        //  已存在且未过期：直接返回
+        if (_cache.TryGetValue(key, out var existing) && existing is { Expired: false })
+            return existing;
 
-                if (expire.HasValue)
-                    item.Set(valueFactory(key), expire.Value);
-                else
-                    item.Set(valueFactory(key));
-                
-                return item;
-            }
+        //  不存在或已过期：创建新项，通过 AddOrUpdate 原子入字典
+        //  并发窗口内后到者复用先到者写入的未过期项，确保 Increment/Decrement 永不作用在孤儿对象上
+        var newItem = expire.HasValue ? new CacheItem(valueFactory(key), expire.Value) : new CacheItem(valueFactory(key));
+        var item = _cache.AddOrUpdate(key, newItem, (_, old) => old is { Expired: false } ? old : newItem);
 
-            item = expire.HasValue ? new CacheItem(valueFactory(key), expire.Value) : new CacheItem(valueFactory(key));
-            
-        } while (!_cache.TryAdd(key, item));
+        //  只有真正由本次写入生效时才累计写入次数
+        if (ReferenceEquals(item, newItem)) Interlocked.Increment(ref _writes);
 
-        Interlocked.Increment(ref _writes);
-        
         return item;
     }
     

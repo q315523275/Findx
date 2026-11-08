@@ -53,9 +53,9 @@ public static partial class Extensions
 
         httpClientBuilder.AddTransientHttpErrorPolicy(builder =>
         {
-            return builder.Or<TaskCanceledException>()
-                          .Or<OperationCanceledException>()
-                          .Or<HttpRequestException>()
+            //  不重试客户端主动取消（TaskCanceled/OperationCanceled），避免对已中止请求继续打上游；
+            //  仅保留超时策略自身引发的 TimeoutRejectedException 与瞬态 HTTP 错误。
+            return builder.Or<HttpRequestException>()
                           .Or<TimeoutException>()
                           .Or<TimeoutRejectedException>()
                           .OrResult(res => res.StatusCode == HttpStatusCode.TooManyRequests)

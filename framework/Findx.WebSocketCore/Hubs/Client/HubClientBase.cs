@@ -17,7 +17,7 @@ namespace Findx.WebSocketCore.Hubs.Client;
 public abstract class HubClientBase: IHubClient
 {
     /// <summary>
-    /// 获取 网络通信连接
+    ///     获取 网络通信连接
     /// </summary>
     protected HubConnection HubConnection { get; set; }
     
@@ -32,19 +32,19 @@ public abstract class HubClientBase: IHubClient
     public string Version { get; set; }
 
     /// <summary>
-    ///     获取或设置 当前网络是否通畅
+    ///     获取 当前网络是否通畅（代理为底层连接状态）
     /// </summary>
-    public bool IsNetConnected { get; } = true;
-    
+    public bool IsNetConnected => HubConnection?.State == HubConnectionState.Connected;
+
     /// <summary>
     ///     获取 通信是否正在连接
     /// </summary>
     public bool IsHubConnected => HubConnection?.State == HubConnectionState.Connected;
-    
+
     /// <summary>
     ///     获取 通信是否正在连接
     /// </summary>
-    protected bool IsHubConnecting => new[] { HubConnectionState.Connecting, HubConnectionState.Reconnecting }.Contains(HubConnection.State);
+    protected bool IsHubConnecting => new[] { HubConnectionState.Connecting, HubConnectionState.Reconnecting }.Contains(HubConnection?.State ?? HubConnectionState.Disconnected);
     
     /// <summary>
     ///     网络通信初始化
@@ -95,7 +95,8 @@ public abstract class HubClientBase: IHubClient
     /// <returns></returns>
     public virtual async Task StopAsync()
     {
-        if (!IsHubConnected)
+        //  未初始化或已断开则无需处理；Connecting/Reconnecting 等中间态也要主动停止，不再静默返回
+        if (HubConnection is null || HubConnection.State == HubConnectionState.Disconnected)
         {
             return;
         }
@@ -107,11 +108,18 @@ public abstract class HubClientBase: IHubClient
     ///     重启通信
     /// </summary>
     /// <returns></returns>
-    public virtual async  Task<CommonResult> ReStartAsync()
+    public virtual async Task<CommonResult> ReStartAsync()
     {
         await StopAsync();
-        while (HubConnection.State != HubConnectionState.Disconnected)
+
+        //  等待停止完成设置30s超时上限，防止状态卡在中间态时无限轮询
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+        while ((HubConnection?.State ?? HubConnectionState.Disconnected) != HubConnectionState.Disconnected)
         {
+            if (DateTime.UtcNow > deadline)
+            {
+                return CommonResult.Fail("connection.restart.timeout", "等待通信停止超时，已放弃重启");
+            }
             await Task.Delay(50);
         }
         return await StartAsync();
@@ -123,7 +131,7 @@ public abstract class HubClientBase: IHubClient
     public virtual async Task SendAsync(RequestMessage message, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken = default)
     {
         await WaitForConnectedAsync();
-        HubConnection.SendAsync(message, messageType, endOfMessage, cancellationToken);
+        await HubConnection.SendAsync(message, messageType, endOfMessage, cancellationToken);
     }
     
     
@@ -170,13 +178,13 @@ public abstract class HubClientBase: IHubClient
     /// <returns></returns>
     protected virtual async Task WaitForConnectedAsync()
     {
-        // 已连接
+        //  已连接
         if (IsHubConnected)
         {
             return;
         }
 
-        // 等待正在连接
+        //  等待正在连接
         while (IsHubConnecting)
         {
             await Task.Delay(200);
@@ -188,14 +196,7 @@ public abstract class HubClientBase: IHubClient
 
         while (!IsHubConnected)
         {
-            int delay;
-            while (!IsNetConnected)
-            {
-                delay = RandomUtility.RandomInt(6, 12);
-                await TimeSpan.FromMilliseconds(delay).CountDownAsync(span => { Console.WriteLine($"当前网络不通畅，延时{span.TotalMilliseconds}秒后重试"); return Task.CompletedTask; });
-            }
-
-            delay = RandomUtility.RandomInt(3, 8);
+            var delay = RandomUtility.RandomInt(3, 8);
             await TimeSpan.FromMilliseconds(delay).CountDownAsync(span => { Console.WriteLine($"服务器连接失败，延时{span.TotalMilliseconds}秒后重试"); return Task.CompletedTask; });
             await StartAsync();
         }

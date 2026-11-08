@@ -113,6 +113,21 @@ public class AuditLogInfo: EntityBase<long>
     /// </summary>
     public string Comments { set; get; }
 
+    /// <summary>
+    ///     本记录哈希（GxP 完整性开启时计算，SHA256 哈希链）
+    /// </summary>
+    public string AuditHash { set; get; }
+
+    /// <summary>
+    ///     上一条审计哈希（链衔接）
+    /// </summary>
+    public string PrevAuditHash { set; get; }
+
+    /// <summary>
+    ///     哈希算法
+    /// </summary>
+    public string HashAlgorithm { set; get; }
+
 
     /// <summary>
     ///     获取或设置 审计实体信息集合

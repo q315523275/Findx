@@ -7,6 +7,7 @@ using Findx.Logging;
 using Findx.NewId;
 using Findx.Security;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -50,11 +51,11 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
             if (functions is { Count: > 0 }) return functions;
         }
 
-        // 耗时大致20毫秒左右
+        //  耗时大致20毫秒左右
         var result = new List<MvcFunction>();
         var controllerActionList = _actionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>();
         
-        // Controller循环
+        //  Controller循环
         foreach (var item in controllerActionList)
         {
             var routeValues = item.RouteValues;
@@ -84,8 +85,9 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
                 result.Add(controller);
             }
 
-            // Action
-            var methodHttp = item.MethodInfo.GetAttribute<HttpMethodAttribute>();
+            //  Action
+            //  未显式标注 HttpMethod 特性的约定式路由 Action，按 GET 兜底，避免后续 methodHttp.HttpMethods 空引用
+            var methodHttp = item.MethodInfo.GetAttribute<HttpMethodAttribute>() ?? new HttpGetAttribute();
             var methodAuthorize = item.MethodInfo.GetAttribute<PreAuthorizeAttribute>() ??
                                   item.MethodInfo.GetAttribute<AuthorizeAttribute>();
             FunctionAccessType methodAccessType;
@@ -95,9 +97,9 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
                 methodAccessType = controller.AccessType;
             else
                 methodAccessType = GetFunctionAccessType(methodAuthorize);
-            // 角色资源
+            //  角色资源
             string actionRoles = null;
-            // 权限资源
+            //  权限资源
             string actionAuthority = null;
             if (methodAccessType is FunctionAccessType.RoleLimit or FunctionAccessType.RoleAuthorityLimit)
                 actionRoles = methodAuthorize == null ? controller.Roles : methodAuthorize?.Roles;
@@ -108,7 +110,7 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
             var auditOperationEnabled = !item.MethodInfo.HasAttribute<DisableAuditingAttribute>() &&
                                         controller.AuditOperationEnabled;
 
-            // 请求方法循环
+            //  请求方法循环
             foreach (var httpMethod in methodHttp.HttpMethods.Distinct())
             {
                 var function = new MvcFunction
@@ -149,29 +151,29 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
     private FunctionAccessType GetFunctionAccessType(AuthorizeAttribute authorizeAttribute)
     {
         var typeAccessType = FunctionAccessType.Anonymous;
-        // 匿名访问
+        //  匿名访问
         if (authorizeAttribute == null)
         {
             typeAccessType = FunctionAccessType.Anonymous;
         }
         else if (authorizeAttribute is PreAuthorizeAttribute preAuthorizeAttribute)
         {
-            // 限定登陆访问
+            //  限定登陆访问
             if (preAuthorizeAttribute.Roles.IsNullOrWhiteSpace() && preAuthorizeAttribute.Authority.IsNullOrWhiteSpace())
                 typeAccessType = FunctionAccessType.Login;
-            // 限定角色、权限资源访问
+            //  限定角色、权限资源访问
             else if (preAuthorizeAttribute.Authority.IsNotNullOrWhiteSpace() && preAuthorizeAttribute.Roles.IsNotNullOrWhiteSpace())
                 typeAccessType = FunctionAccessType.RoleAuthorityLimit;
-            // 限定权限资源访问
+            //  限定权限资源访问
             else if (preAuthorizeAttribute.Authority.IsNotNullOrWhiteSpace())
                 typeAccessType = FunctionAccessType.AuthorityLimit;
-            // 限定角色访问
+            //  限定角色访问
             else if (preAuthorizeAttribute.Roles.IsNotNullOrWhiteSpace())
                 typeAccessType = FunctionAccessType.RoleLimit;
         }
         else
         {
-            // 限定登陆访问、限定角色访问
+            //  限定登陆访问、限定角色访问
             typeAccessType = authorizeAttribute.Roles.IsNullOrWhiteSpace() ? FunctionAccessType.Login : FunctionAccessType.RoleLimit; 
         }
 

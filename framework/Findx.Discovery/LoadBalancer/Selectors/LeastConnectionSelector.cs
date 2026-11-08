@@ -12,7 +12,7 @@ namespace Findx.Discovery.LoadBalancer.Selectors;
 /// </summary>
 public class LeastConnectionSelector : ILoadBalancer
 {
-    private static readonly object SyncLock = new();
+    private readonly object SyncLock = new();
     private readonly List<Lease> _leases;
     private readonly string _serviceName;
     private readonly Func<Task<IReadOnlyList<IServiceEndPoint>>> _services;

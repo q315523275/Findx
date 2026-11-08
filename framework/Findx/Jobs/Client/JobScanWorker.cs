@@ -27,15 +27,17 @@ public class JobScanWorker : BackgroundService
     /// </summary>
     /// <param name="stoppingToken"></param>
     /// <returns></returns>
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var jobTypes = _jobFinder.FindAll(true);
 
         foreach (var jobType in jobTypes)
-            // 需要自动载入执行的任务
+        {
+            //  需要自动载入执行的任务
             if (jobType.HasAttribute<JobAttribute>())
-                _scheduler.ScheduleAsync(jobType, stoppingToken);
-
-        return Task.CompletedTask;
+            {
+                await _scheduler.ScheduleAsync(jobType, stoppingToken);
+            }
+        }
     }
 }

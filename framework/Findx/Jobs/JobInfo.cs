@@ -1,4 +1,5 @@
-﻿using Findx.Data;
+﻿using System.Threading;
+using Findx.Data;
 using Findx.Utilities;
 
 namespace Findx.Jobs;
@@ -41,7 +42,16 @@ public class JobInfo : EntityBase<long>
     /// <summary>
     ///     执行次数
     /// </summary>
-    public int TryCount { get; set; }
+    public int TryCount
+    {
+        get => _tryCount;
+        set => _tryCount = value;
+    }
+
+    /// <summary>
+    ///     执行次数 backing field（Increment 内用 Interlocked 原子自增）
+    /// </summary>
+    private int _tryCount;
 
     /// <summary>
     ///     是否单次任务
@@ -87,7 +97,9 @@ public class JobInfo : EntityBase<long>
     /// </summary>
     public void Increment(DateTimeOffset dateTimeOffset)
     {
-        TryCount++;
+        //  计数原子自增；注意 IsRunning/LastRunTime/NextRunTime 多字段切换不是原子的，
+        //  调用方应在存储层锁内串行操作同一 JobInfo 实例（见 InMemoryJobStorage）
+        Interlocked.Increment(ref _tryCount);
         IsRunning = false;
         LastRunTime = NextRunTime;
         if (IsSingle)

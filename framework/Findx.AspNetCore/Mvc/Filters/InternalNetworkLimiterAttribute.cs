@@ -33,7 +33,7 @@ public class InternalNetworkLimiterAttribute : ActionFilterAttribute
         else
         {
             var provider = context.HttpContext.RequestServices;
-            // 触发统计计算
+            //  触发统计计算
             var eventBus = provider.GetService<IEventBus>();
             var eventData = new InternalNetworkLimitedEvent
             {
@@ -41,7 +41,8 @@ public class InternalNetworkLimiterAttribute : ActionFilterAttribute
                 ClientIpAddress = context.HttpContext.GetClientIp(), 
                 UserAgent = context.HttpContext.Request.GetUserAgentString()
             };
-            await eventBus.PublishAsync(eventData, context.HttpContext.RequestAborted);
+            if (eventBus != null)
+                await eventBus.PublishAsync(eventData, context.HttpContext.RequestAborted);
             
             context.Result = new JsonResult(CommonResult.Fail("403", $"The network ({ipv4Address}) request has been intercepted."));
         }

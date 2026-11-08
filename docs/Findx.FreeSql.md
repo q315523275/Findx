@@ -322,8 +322,24 @@ public class SlowSqlHandler : IApplicationEventHandler<SqlExecutionSlowEvent>, I
 - `Aop.AuditValue` 采集属性新值
 - `Aop.CurdAfter` 采集 `AuditSqlRawEntry`（含 SQL、表名、耗时、参数）
 
+> 敏感参数脱敏
+
+`AuditSqlRaw` 采集参数值时，列名或参数名命中敏感关键字的值统一替换为 `***`，避免密码、令牌、证件号明文落日志。
+
+匹配规则：**忽略大小写的子串包含**（`OrdinalIgnoreCase` + `Contains`），因此 `user_password`、`ACCESS_TOKEN`、`bank_card_no` 都会命中。关键字清单：
+
+```
+password / passwd / pwd / secret / token / credential
+idcard / id_no / phone / mobile / email
+bankcard / bank_card / salt / authorization
+```
+
+判定结果按「列名/参数名 → 是否敏感」缓存（`ConcurrentDictionary`，上限 4096），未命中才遍历关键字；上限用于防御动态 SQL 产生海量非常规参数名导致缓存膨胀。
+
 > 注意事项
 
 - 实体上的 `[EntityExtension(DisableAuditing = true)]` 可关闭该实体的审计。
 - 需引入 `Findx.Extensions.AuditLogs` 或自行实现 `IAuditStore`，否则审计只记录不持久化。
 - 不使用实体状态追踪，因此**无法获取实体属性变更之前的值**（`OriginalValue` 未赋值）。
+- 脱敏只作用于 `AuditSqlRaw` 的参数值，实体属性审计（`AuditEntityEntry`）按实体字段走各自的序列化逻辑，敏感字段建议在实体或存储层再做一次过滤。
+- 审计上报组件（`IAuditEntityReport`）在模块启动时从根容器解析并缓存，避免每次 AOP 回调都走 `ServiceLocator`；未注册该组件时按"只记录不持久化"降级。

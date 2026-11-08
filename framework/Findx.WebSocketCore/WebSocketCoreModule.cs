@@ -53,6 +53,7 @@ public class WebSocketCoreModule : StartupModule
     public override void OnShutdown(IServiceProvider provider)
     {
         var sessionManager = provider.GetService<IWebSocketSessionManager>();
-        sessionManager.DisposeAsync();
+        //  同步等待会话管理器释放完成，避免应用关闭时未等会话收尾即退出
+        sessionManager?.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 }

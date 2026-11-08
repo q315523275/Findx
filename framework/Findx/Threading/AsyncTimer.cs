@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Findx.DependencyInjection;
-using Findx.ExceptionHandling;
+using Findx.Exceptions;
 
 namespace Findx.Threading;
 
@@ -115,7 +115,8 @@ public class AsyncTimer : ITransientDependency
         catch (Exception ex)
         {
             Logger?.LogError(ex, "");
-            await ExceptionNotifier?.NotifyAsync(new ExceptionNotificationContext(ex))!;
+            if (ExceptionNotifier != null)
+                await ExceptionNotifier.NotifyAsync(new ExceptionNotificationContext(ex));
         }
         finally
         {

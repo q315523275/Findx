@@ -56,9 +56,15 @@ public sealed class AsyncLock : IDisposable
     public async Task<IDisposable> LockAsync(TimeSpan timeout, CancellationToken cancellationToken)
     {
         if (timeout <= TimeSpan.Zero)
+        {
             await _mutex.WaitAsync(cancellationToken);
+        }
         else
-            await _mutex.WaitAsync(timeout, cancellationToken);
+        {
+            var acquired = await _mutex.WaitAsync(timeout, cancellationToken);
+            if (!acquired) throw new TimeoutException($"AsyncLock 获取锁超时, timeout={timeout}");
+        }
+
         return new AsyncLockReleaser(_mutex);
     }
 

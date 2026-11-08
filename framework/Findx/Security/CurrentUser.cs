@@ -73,7 +73,7 @@ public class CurrentUser : ICurrentUser, ITransientDependency
     /// <summary>
     ///     角色集合
     /// </summary>
-    public IEnumerable<string> Roles => FindClaims(ClaimTypes.Role).Select(c => c.Value).Distinct();
+    public IEnumerable<string> Roles => _principal?.Identity == null ? [] : _principal.Identity.GetRoles().Distinct();
 
 
     /// <summary>
@@ -102,7 +102,7 @@ public class CurrentUser : ICurrentUser, ITransientDependency
     /// <returns></returns>
     public IEnumerable<Claim> GetAllClaims()
     {
-        if (_principal.Identity is not ClaimsIdentity claimsIdentity) return [];
+        if (_principal?.Identity is not ClaimsIdentity claimsIdentity) return [];
         return claimsIdentity.Claims;
     }
 

@@ -44,7 +44,10 @@ public static partial class Extensions
         }
 
         using var sr = new StreamReader(stream, encoding);
-        sr.BaseStream.Seek(0, SeekOrigin.Begin);
+        if (stream.CanSeek)
+        {
+            sr.BaseStream.Seek(0, SeekOrigin.Begin);
+        }
         return await sr.ReadToEndAsync();
     }
     
@@ -83,9 +86,20 @@ public static partial class Extensions
 
             var buffer = new byte[(int)len];
 
-            _ = await stream.ReadAsync(buffer.AsMemory(0, (int)len));
+            //  ReadAsync 不保证一次读满请求字节数，需循环读取直到读完或 EOF
+            var offset = 0;
+            while (offset < buffer.Length)
+            {
+                var read = await stream.ReadAsync(buffer.AsMemory(offset, buffer.Length - offset));
+                if (read == 0)
+                {
+                    break;
+                }
+                offset += read;
+            }
 
-            return buffer;
+            //  流 Length 与实际读取长度不一致时，按实际读取字节返回
+            return offset == buffer.Length ? buffer : buffer.AsMemory(0, offset).ToArray();
         }
         catch
         {
@@ -228,7 +242,7 @@ public static partial class Extensions
                 }
             }
 
-            return true;
+            // 继续读取剩余部分，直到任一流读完（EOF）才判定相等
         }
     }
 }

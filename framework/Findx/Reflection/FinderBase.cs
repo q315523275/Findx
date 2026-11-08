@@ -8,10 +8,7 @@ public abstract class FinderBase<TItem> : IFinder<TItem>
 {
     private readonly SemaphoreSlim _lockObj = new(1, 1);
 
-    /// <summary>
-    ///     项缓存
-    /// </summary>
-    protected readonly List<TItem> ItemsCache = [];
+    private TItem[] _items = [];
 
     /// <summary>
     ///     是否已查找过
@@ -39,11 +36,11 @@ public abstract class FinderBase<TItem> : IFinder<TItem>
         _lockObj.Wait();
         try
         {
-            if (fromCache && Found) return ItemsCache;
-            var items = FindAllItems();
+            if (fromCache && Found) return _items;
+            var items = FindAllItems().ToArray();
             Found = true;
-            ItemsCache.Clear();
-            ItemsCache.AddRange(items);
+            //  原子替换引用，避免 Clear+AddRange 期间并发枚举抛"集合已修改"
+            _items = items;
             return items;
         }
         finally

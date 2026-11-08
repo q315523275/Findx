@@ -11,9 +11,14 @@ public class SwaggerOptions
     public ICollection<SwaggerEndpoint> Endpoints { get; set; } = new List<SwaggerEndpoint>();
 
     /// <summary>
-    ///     是否启用
+    ///     是否启用（默认关闭，生产环境需显式配置开启，避免 Swagger 文档意外暴露）
     /// </summary>
-    public bool Enabled { get; set; } = true;
+    public bool Enabled { get; set; } = false;
+
+    /// <summary>
+    ///     额外包含的 XML 注释文件路径清单（相对应用基目录或绝对路径），默认仅加载入口程序集 XML
+    /// </summary>
+    public ICollection<string> XmlCommentFiles { get; set; } = new List<string>();
 
     /// <summary>
     ///     所有参数是否启用小驼峰

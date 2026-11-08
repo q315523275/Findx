@@ -29,6 +29,10 @@ public sealed class PdfTools : ITools
         {
             IsLoaded = true;
         }
+        else
+        {
+            throw new InvalidOperationException("wkhtmltopdf_init failed. libwkhtmltox may be missing or incompatible with the current process architecture.");
+        }
     }
 
     public bool ExtendedQt()
@@ -170,12 +174,12 @@ public sealed class PdfTools : ITools
 
     public string GetPhaseDescription(IntPtr converter, int phase)
     {
-        return Marshal.PtrToStringAnsi(WkHtmlToXBindings.wkhtmltopdf_phase_description(converter, phase));
+        return Marshal.PtrToStringUTF8(WkHtmlToXBindings.wkhtmltopdf_phase_description(converter, phase));
     }
 
     public string GetProgressString(IntPtr converter)
     {
-        return Marshal.PtrToStringAnsi(WkHtmlToXBindings.wkhtmltopdf_progress_string(converter));
+        return Marshal.PtrToStringUTF8(WkHtmlToXBindings.wkhtmltopdf_progress_string(converter));
     }
 
     #region IDisposable Support
@@ -188,30 +192,20 @@ public sealed class PdfTools : ITools
         {
             if (disposing)
             {
-                // TODO: dispose managed state (managed objects).
+                // 仅显式 Dispose 时反初始化进程级库；
+                // 终结器路径绝不调用 deinit，避免 GC 线程在转换进行中反初始化库导致崩溃。
+                WkHtmlToXBindings.wkhtmltopdf_deinit();
+                IsLoaded = false;
             }
-
-            //free unmanaged resources (unmanaged objects) and override a finalizer below.
-            WkHtmlToXBindings.wkhtmltopdf_deinit();
-            // TODO: set large fields to null.
 
             _disposedValue = true;
         }
     }
 
-    // TODO: override a finalizer only if Dispose(bool disposing) above has code to free unmanaged resources.
-    ~PdfTools()
-    {
-        // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-        Dispose(false);
-    }
-
     // This code added to correctly implement the disposable pattern.
     void IDisposable.Dispose()
     {
-        // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
         Dispose(true);
-        // TODO: uncomment the following line if the finalizer is overridden above.
         GC.SuppressFinalize(this);
     }
 

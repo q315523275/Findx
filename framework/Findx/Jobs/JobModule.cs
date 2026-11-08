@@ -46,9 +46,12 @@ public class JobModule : StartupModule
 
         services.Configure<JobOptions>(section);
 
-        // 任务调度
-        services.AddSingleton<IBackgroundScheduleServer, BackgroundScheduleServer>();
-        services.AddSingleton<IBackgroundTimeWheelServer, BackgroundTimeWheelServer>();
+        //  任务调度（注意：调度服务与时间轮服务的单例实例必须与 HostedService 为同一对象，
+        //  否则经接口注入的推送方与 hosted 实例的消费方会各持一份状态，时间轮中的任务将永不执行）
+        services.AddSingleton<BackgroundScheduleServer>();
+        services.AddSingleton<BackgroundTimeWheelServer>();
+        services.AddSingleton<IBackgroundScheduleServer>(sp => sp.GetRequiredService<BackgroundScheduleServer>());
+        services.AddSingleton<IBackgroundTimeWheelServer>(sp => sp.GetRequiredService<BackgroundTimeWheelServer>());
         services.AddSingleton<IBackgroundJobTriggerServer, BackgroundJobTriggerServer>();
         services.AddSingleton<IBackgroundJobExecuteNotifyServer, InMemoryExecuteNotify>();
         services.AddSingleton<IBackgroundScheduleElector, BackgroundScheduleElector>();
@@ -58,7 +61,7 @@ public class JobModule : StartupModule
         services.AddSingleton<IJobScheduler, SimpleJobScheduler>();
         services.AddScoped<IJobExecutor, JobExecutor>();
         
-        // 自动注册作业
+        //  自动注册作业
         var dict = new JobWorkSet();
         var jobFinder = services.GetOrAddSingletonInstance<IJobFinder>(() => new JobFinder());
         var jobTypes = jobFinder.FindAll(true);
@@ -67,14 +70,14 @@ public class JobModule : StartupModule
             services.AddTransient(jobType);
             if (jobType.FullName != null)
             {
-                dict.Add(jobType.FullName, jobType);
+                dict.TryAdd(jobType.FullName, jobType);
             }
         }
 
         services.AddSingleton(dict);
         
-        services.AddHostedService<BackgroundScheduleServer>();
-        services.AddHostedService<BackgroundTimeWheelServer>();
+        services.AddHostedService(sp => sp.GetRequiredService<BackgroundScheduleServer>());
+        services.AddHostedService(sp => sp.GetRequiredService<BackgroundTimeWheelServer>());
         services.AddHostedService<JobScanWorker>();
 
         return services;

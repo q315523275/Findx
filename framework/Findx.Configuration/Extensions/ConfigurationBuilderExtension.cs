@@ -56,7 +56,7 @@ public static partial class ConfigurationBuilderExtension
     public static IConfigurationBuilder AddFindxConfig(this IConfigurationBuilder configurationBuilder)
     {
         var config = configurationBuilder.Build();
-        var options = config.GetSection("Findx:Config").Get<ConfigOptions>();
+        var options = config.GetSection("Findx:Config").Get<ConfigOptions>() ?? new ConfigOptions { Enabled = false };
         if (options.Enabled) configurationBuilder.Add(new ConfigSource(new ConfigClient(options)));
         return configurationBuilder;
     }

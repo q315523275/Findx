@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Findx.DependencyInjection;
 using Findx.Extensions;
@@ -14,17 +15,23 @@ namespace Findx.NLog.LayoutRenderX;
 [LayoutRenderer("TraceIdentifier")]
 public class TraceIdentifierLayoutRenderer: LayoutRenderer
 {
+    // 注册/首次使用时一次性捕获，避免每条日志都做服务定位
+    private static readonly Lazy<ICorrelationIdProvider> CorrelationIdProvider =
+        new(ServiceLocator.GetService<ICorrelationIdProvider>);
+
+    private static readonly Lazy<IHttpContextAccessor> HttpContextAccessor =
+        new(ServiceLocator.GetService<IHttpContextAccessor>);
+
     protected override void Append(StringBuilder builder, LogEventInfo logEvent)
     {
-        var correlationIdProvider = ServiceLocator.GetService<ICorrelationIdProvider>();
-        var httpContextAccessor = ServiceLocator.GetService<IHttpContextAccessor>();
-        if (correlationIdProvider != null && correlationIdProvider.Get().IsNotNullOrWhiteSpace())
+        var correlationId = CorrelationIdProvider.Value?.Get();
+        if (correlationId.IsNotNullOrWhiteSpace())
         {
-            builder.Append(correlationIdProvider.Get());
+            builder.Append(correlationId);
         }
-        else if (httpContextAccessor is { HttpContext: not null })
+        else if (HttpContextAccessor.Value?.HttpContext is not null)
         {
-            builder.Append(httpContextAccessor.HttpContext.TraceIdentifier);
+            builder.Append(HttpContextAccessor.Value.HttpContext.TraceIdentifier);
         }
     }
 }

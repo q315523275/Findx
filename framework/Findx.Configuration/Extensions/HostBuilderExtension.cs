@@ -41,7 +41,7 @@ public static partial class HostBuilderExtension
     {
         builder.ConfigureAppConfiguration((_, conf) =>
         {
-            var options = conf.Build().GetSection("Findx:Config").Get<ConfigOptions>();
+            var options = conf.Build().GetSection("Findx:Config").Get<ConfigOptions>() ?? new ConfigOptions { Enabled = false };
             conf.AddFindxConfig(options);
         });
         return builder;

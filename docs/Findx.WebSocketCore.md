@@ -154,6 +154,29 @@ public override async Task ReceiveAsync(IWebSocketSession client, ResponseMessag
 
 中间件按 4KB 分片接收，使用 `ArrayPool<byte>` 与池化 `MemoryStream` 拼接分片消息，完整后才回调 Handler。
 
+### AsTextAsync 的读取语义
+
+`ResponseMessage` 有两种载体：`ResponseMessageType.Memory`（`ReadOnlyMemory<byte>`）与 `ResponseMessageType.Stream`（`MemoryStream`）。`AsTextAsync()` 统一按 UTF-8 解码，行为如下：
+
+| 关注点 | 行为 |
+|---|---|
+| 编码 | 固定 `Encoding.UTF8`（`Encoding.Default` 在 .NET Core+ 实际也是 UTF-8） |
+| BOM | 开启 `detectEncodingFromByteOrderMarks`，流开头 `EF BB BF` 会被识别并**跳过**，不会把 `\uFEFF` 残留在首字符（否则 JSON 反序列化会因非法首字符失败） |
+| 流所有权 | `leaveOpen = true`，读取完成不关闭调用方持有的 `MemoryStream` |
+| 重复读取 | 流已读到末尾（`Position >= Length`）时自动回到起点，同一 `ResponseMessage` 可重复 `AsTextAsync()` 拿到完整文本 |
+| 中间续读 | 仅在"已读完"时重置位置；如果手动把 `Position` 设到中间，读取从该位置开始，不会被强制拉回 0 |
+| 空流 | `Stream` 为 null 时返回空字符串 |
+
+```csharp
+var text1 = await message.AsTextAsync();   // 第一次：读全量
+var text2 = await message.AsTextAsync();   // 第二次：Position 已到末尾，自动重置后仍返回全量
+```
+
+> 注意事项
+
+- 不要在 `AsTextAsync()` 之后继续从同一个 `MemoryStream` 读，流位置已在末尾；需要复用请先 `Position = 0`。
+- 大消息建议走 `Stream` 载体（`BinaryStreamMessage`），避免 `ReadOnlyMemory` 整块驻留。
+
 ## 会话管理
 
 ```csharp

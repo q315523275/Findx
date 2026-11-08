@@ -9,7 +9,9 @@ namespace Findx.Security;
 /// </summary>
 public abstract class FunctionHandlerBase<TFunction> : IFunctionHandler where TFunction : class, IEntity<long>, IFunction, new()
 {
-    private readonly Dictionary<string, TFunction> _functionDict = new(StringComparer.OrdinalIgnoreCase);
+    //  volatile：刷新/清空通过整体替换引用（写），查功能通过读引用。volatile 保证写对读线程及时可见，
+    //  避免读线程长期命中旧缓存（引用赋值本身原子，不会撕裂，volatile 只补可见性与顺序语义）
+    private volatile ConcurrentDictionary<string, TFunction> _functionDict = new(StringComparer.OrdinalIgnoreCase);
     private readonly StartupLogger _startupLogger;
     private readonly IFunctionStore<TFunction> _store;
 
@@ -39,13 +41,15 @@ public abstract class FunctionHandlerBase<TFunction> : IFunctionHandler where TF
     /// </summary>
     public async Task RefreshCacheAsync(CancellationToken cancellationToken = default)
     {
-        _functionDict.Clear();
+        // 构建新字典后原子替换引用，避免刷新期间并发读抛"集合已修改"或读到半填状态
+        var newDict = new ConcurrentDictionary<string, TFunction>(StringComparer.OrdinalIgnoreCase);
         var rows = await _store.QueryFromDatabaseAsync(cancellationToken);
         foreach (var item in rows)
         {
-            _functionDict[$"{item.Area}_{item.Controller}_{item.Action}_{item.HttpMethod}"] = item;
+            newDict[$"{item.Area}_{item.Controller}_{item.Action}_{item.HttpMethod}"] = item;
         }
-        _startupLogger.LogInformation($"刷新功能信息缓存，从数据库获取到 {_functionDict.Count} 个功能信息", GetType().Name);
+        _functionDict = newDict;
+        _startupLogger.LogInformation($"刷新功能信息缓存，从数据库获取到 {newDict.Count} 个功能信息", GetType().Name);
     }
 
     /// <summary>
@@ -53,7 +57,7 @@ public abstract class FunctionHandlerBase<TFunction> : IFunctionHandler where TF
     /// </summary>
     public Task ClearCacheAsync(CancellationToken cancellationToken = default)
     {
-        _functionDict.Clear();
+        _functionDict = new ConcurrentDictionary<string, TFunction>(StringComparer.OrdinalIgnoreCase);
         return Task.CompletedTask;
     }
 

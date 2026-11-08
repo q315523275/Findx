@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
-using Findx.Common;
 using Findx.Extensions;
 using Findx.Serialization;
 
@@ -24,29 +23,33 @@ public class DefaultRabbitMqSerializer : IRabbitMqSerializer
     /// <returns></returns>
     public byte[] Serialize<T>(T obj)
     {
-        Check.NotNull(obj, nameof(obj));
-        
+        //  允许发布 null 消息（空信号/事件占位），序列化为空字节，与反序列化端默认值语义对齐
+        if (obj is null)
+        {
+            return [];
+        }
+
         var type= typeof(T);
 
-        // 快速路径：byte[] 直接返回
+        //  快速路径：byte[] 直接返回
         if (type == typeof(byte[]))
         {
             return obj.As<byte[]>();
         }
 
-        // 快速路径：字符串处理
+        //  快速路径：字符串处理
         if (type == typeof(string))
         {
             return obj.As<string>().ToBytes();
         }
 
-        // 处理原始数值类型和decimal
+        //  处理原始数值类型和decimal（统一不变文化，与反序列化端 InvariantCulture 解析对齐）
         if (IsPrimitiveOrDecimal(type))
         {
-            return obj.ToString().ToBytes();
+            return Convert.ToString(obj, CultureInfo.InvariantCulture)!.ToBytes();
         }
 
-        // 其他类型使用JSON反序列化
+        //  其他类型使用JSON反序列化
         return JsonSerializer.SerializeToUtf8Bytes(obj, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
     }
 
@@ -63,25 +66,25 @@ public class DefaultRabbitMqSerializer : IRabbitMqSerializer
             type = type.GetUnNullableType();
         }
 
-        // 处理字符串类型
+        //  处理字符串类型
         if (type == typeof(string))
         {
             return GetStringFromBytes(value.Span);
         }
         
-        // 处理字节数组类型
+        //  处理字节数组类型
         if (type == typeof(byte[]))
         {
             return value.ToArray();
         }
 
-        // 处理原始数值类型和decimal
+        //  处理原始数值类型和decimal
         if (IsPrimitiveOrDecimal(type))
         {
             return HandlePrimitiveFromBytes(value.Span, type);
         }
 
-        // 其他类型使用JSON反序列化
+        //  其他类型使用JSON反序列化
         return JsonSerializer.Deserialize(value.Span, type, SystemTextJsonSerializerOptions.CreateJsonSerializerOptions());
     }
     
@@ -93,7 +96,7 @@ public class DefaultRabbitMqSerializer : IRabbitMqSerializer
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static string GetStringFromBytes(ReadOnlySpan<byte> span)
     {
-        // 小字符串栈分配优化
+        //  小字符串栈分配优化
         if (span.Length <= 256)
         {
             Span<char> chars = stackalloc char[span.Length];
@@ -149,7 +152,7 @@ public class DefaultRabbitMqSerializer : IRabbitMqSerializer
         {
             var typeCode = TypeCodeCache.GetOrAdd(targetType, Type.GetTypeCode);
 
-            // 优先使用Utf8Parser直接解析二进制
+            //  优先使用Utf8Parser直接解析二进制
             return typeCode switch
             {
                 // 二进制直接转换
@@ -160,7 +163,7 @@ public class DefaultRabbitMqSerializer : IRabbitMqSerializer
                 // TypeCode.Boolean when span.Length >= sizeof(bool) => 
                 //     BitConverter.ToBoolean(span),
 
-                // Utf8Parser优化路径
+                //  Utf8Parser优化路径
                 TypeCode.Int64 when Utf8Parser.TryParse(span, out long longVal, out _) => 
                     longVal,
                 TypeCode.Decimal when Utf8Parser.TryParse(span, out decimal decimalVal, out _) => 
@@ -168,18 +171,13 @@ public class DefaultRabbitMqSerializer : IRabbitMqSerializer
                 TypeCode.Single when Utf8Parser.TryParse(span, out float floatVal, out _) => 
                     floatVal,
                 
-                // 字符串解析回退
-                _ => ConvertFromString(
-                    Encoding.UTF8.GetString(span), 
-                    targetType, 
-                    typeCode)
+                //  字符串解析回退
+                _ => ConvertFromString(Encoding.UTF8.GetString(span), targetType, typeCode)
             };
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException(
-                $"Failed to convert {span.Length} bytes to {targetType.Name}. " +
-                $"Hex: {BitConverter.ToString(span.ToArray())}", ex);
+            throw new InvalidOperationException($"Failed to convert {span.Length} bytes to {targetType.Name}. " + $"Hex: {BitConverter.ToString(span.ToArray())}", ex);
         }
     }
 }

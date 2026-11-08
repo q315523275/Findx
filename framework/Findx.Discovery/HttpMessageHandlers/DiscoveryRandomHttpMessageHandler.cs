@@ -37,7 +37,7 @@ public class DiscoveryRandomHttpMessageHandler : DelegatingHandler
         
         // ReSharper disable once PossibleNullReferenceException
         var loadBalancer = await _loadBalancerManager.GetAsync(current.Host).ConfigureAwait(false);
-        var serviceInfo = await loadBalancer.ResolveServiceEndPointAsync().ConfigureAwait(false);
+        var serviceInfo = await loadBalancer.ResolveServiceEndPointAsync(cancellationToken).ConfigureAwait(false);
         request.RequestUri = serviceInfo.ToUri(current.Scheme, current.PathAndQuery);
 
         var nowTime = DateTime.Now;
@@ -48,7 +48,7 @@ public class DiscoveryRandomHttpMessageHandler : DelegatingHandler
         finally
         {
             request.RequestUri = current;
-            await loadBalancer.UpdateStatsAsync(serviceInfo, DateTime.Now - nowTime);
+            await loadBalancer.UpdateStatsAsync(serviceInfo, DateTime.Now - nowTime, cancellationToken);
         }
     }
 }

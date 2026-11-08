@@ -18,7 +18,7 @@ namespace Findx.AspNetCore.Mvc.Filters;
 /// <summary>
 ///     防止重复提交过滤器
 /// </summary>
-[AttributeUsage(AttributeTargets.Method)]
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public class AntiDuplicateRequestAttribute : ActionFilterAttribute
 {
     /// <summary>
@@ -80,7 +80,8 @@ public class AntiDuplicateRequestAttribute : ActionFilterAttribute
                 ClientIpAddress = context.HttpContext.GetClientIp(), 
                 UserAgent = context.HttpContext.Request.GetUserAgentString()
             };
-            await eventBus.PublishAsync(eventData, context.HttpContext.RequestAborted);
+            if (eventBus != null)
+                await eventBus.PublishAsync(eventData, context.HttpContext.RequestAborted);
             
             context.Result = new JsonResult(CommonResult.Fail("4019", "重复提交,请稍后再试"));
         }
@@ -110,10 +111,19 @@ public class AntiDuplicateRequestAttribute : ActionFilterAttribute
         var userId = string.Empty;
 
         if (currentUser.Identity != null && Type == LockType.User && currentUser.Identity.IsAuthenticated)
+        {
             userId = $"{currentUser.Identity.GetUserId()}_";
-
-        if (Type == LockType.Ip)
-            userId = $"{context.HttpContext.GetClientIp()}_";
+        }
+        else
+        {
+            userId = Type switch
+            {
+                LockType.Ip => $"{context.HttpContext.GetClientIp()}_",
+                //  未认证用户回退到 IP 维度，避免空 key 导致所有匿名请求共享同一把锁
+                LockType.User => $"anon_{context.HttpContext.GetClientIp()}_",
+                _ => userId
+            };
+        }
 
         return Key.IsNullOrWhiteSpace() ? $"ADR:{userId}{context.HttpContext.Request.Path}" : $"ADR:{userId}{Key}";
     }

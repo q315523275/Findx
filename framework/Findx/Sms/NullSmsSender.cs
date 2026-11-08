@@ -25,8 +25,8 @@ public class NullSmsSender : ISmsSender
     /// <returns></returns>
     public Task SendAsync(SmsMessage sms, CancellationToken token = default)
     {
-        _logger.LogWarning("Unable to find SMS provider");
-
+        //  Null 对象模式：不实际发送短信，仅记录日志，避免未配置短信通道时直接抛异常中断业务
+        _logger.LogDebug("NullSmsSender 不实际发送短信，接收号码：{Phone}，内容：{Text}", sms.Phone, sms.Text);
         return Task.CompletedTask;
     }
 }

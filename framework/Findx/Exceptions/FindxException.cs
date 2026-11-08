@@ -39,7 +39,8 @@ public class FindxException : Exception
     public FindxException(string code, string message, Exception exception) : base(message, exception)
     {
         ErrorCode = code;
-        ErrorMessage = message + exception.Message;
+        //  不拼接内部异常消息：内部异常可能含 SQL 表名/路径/连接串等敏感信息，经全局异常处理器会泄漏给前端；排障信息走日志（InnerException/StackTrace）
+        ErrorMessage = message;
     }
 
     /// <summary>

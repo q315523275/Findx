@@ -79,14 +79,28 @@ public class SettingController : AreaApiControllerBase
     }
 
     /// <summary>
-    ///     删除配置信息
+    ///     删除配置信息（删除前留档历史）
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpDelete("delete"), Description("删除")]
-    public async Task<CommonResult> DeleteAsync(long id)
+    public async Task<CommonResult> DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
-        await _configDataRepo.DeleteAsync(id);
+        var model = await _configDataRepo.GetAsync(id, cancellationToken);
+        if (model == null)
+            return CommonResult.Fail("no.found", "源配置信息不存在");
+
+        //  删除前归档历史
+        var hisConfig = model.MapTo<ConfigHistoryInfo>();
+        hisConfig.SetEmptyKey();
+        hisConfig.CheckCreationAudited<ConfigHistoryInfo, long>(_principal);
+
+        await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigDataInfo>(true, true, cancellationToken);
+        await _historyRepo.WithUnitOfWork(uow).InsertAsync(hisConfig, cancellationToken);
+        await _configDataRepo.WithUnitOfWork(uow).DeleteAsync(id, cancellationToken);
+        await uow.CommitAsync(cancellationToken);
+
         return CommonResult.Success();
     }
 
@@ -99,7 +113,7 @@ public class SettingController : AreaApiControllerBase
     public async Task<CommonResult> HistoryAsync(long id)
     {
         var model = await _configDataRepo.GetAsync(id);
-        if (model != null)
+        if (model == null)
             return CommonResult.Fail("no.found", "源配置信息不存在");
         
         var whereExp = PredicateBuilder.New<ConfigHistoryInfo>()
@@ -126,48 +140,47 @@ public class SettingController : AreaApiControllerBase
         var dbConfig = await _configDataRepo.FirstAsync(x => x.DataId == req.DataId, cancellationToken);
         if (dbConfig == null)
         {
-            // 新配置
+            //  新配置
             
             var model = req.MapTo<ConfigDataInfo>();
             model.SetEmptyKey();
             model.CheckCreationAudited<ConfigDataInfo, long>(_principal);
-            model.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
+            //  版本号使用 UTC 毫秒（全局单调递增，替代本地时间字符串，避免跨时区节点版本乱序）
+            model.Version = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             model.Md5 = EncryptUtility.Md5By32(req.Content);
-            // 保存并通知集群
+            //  保存并通知集群
             await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigDataInfo>(true, true, cancellationToken);
             await _configDataRepo.WithUnitOfWork(uow).InsertAsync(model, cancellationToken);
-            // 发布ConfigDataChangeEvent事件,等待执行
-            await _eventBus.PublishAsync(model.MapTo<ConfigDataChangeEvent>(), cancellationToken);
-            // 提交事物
+            //  提交事务后再发布变更事件：保证客户端读到已提交数据，事件失败不回滚配置
             await uow.CommitAsync(cancellationToken);
+            await _eventBus.PublishAsync(model.MapTo<ConfigDataChangeEvent>(), cancellationToken);
         }
         else if (dbConfig.Md5 != EncryptUtility.Md5By32(req.Content))
         {
             // 修改配置
             
-            // 历史记录
+            //  历史记录
             var hisConfig = dbConfig.MapTo<ConfigHistoryInfo>();
             hisConfig.SetEmptyKey();
             hisConfig.CheckCreationAudited<ConfigHistoryInfo, long>(_principal);
-            // 修改内容
+            //  修改内容
             dbConfig.CheckUpdateAudited<ConfigDataInfo, long>(_principal);
             dbConfig.Comments = req.Comments;
             dbConfig.DataType = req.DataType;
             dbConfig.Content = req.Content;
-            dbConfig.Version = DateTime.Now.ToString("yyyyMMddHHmmssfff").To<long>();
+            dbConfig.Version = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             dbConfig.Md5 = EncryptUtility.Md5By32(req.Content);
-            // 保存并通知集群
+            //  保存并通知集群
             await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<ConfigDataInfo>(true, true, cancellationToken);
             await _configDataRepo.WithUnitOfWork(uow).UpdateAsync(dbConfig, ignoreColumns: x => new { x.Environment, x.AppId, x.CreatedTime, x.CreatorId }, cancellationToken: cancellationToken);
             await _historyRepo.WithUnitOfWork(uow).InsertAsync(hisConfig, cancellationToken);
-            // 发布ConfigDataChangeEvent事件,等待执行
-            await _eventBus.PublishAsync(dbConfig.MapTo<ConfigDataChangeEvent>(), cancellationToken);
-            // 提交事物
+            //  提交事务后再发布变更事件：保证客户端读到已提交数据，事件失败不回滚配置
             await uow.CommitAsync(cancellationToken);
+            await _eventBus.PublishAsync(dbConfig.MapTo<ConfigDataChangeEvent>(), cancellationToken);
         }
         else
         {
-            // 修改配置,但是配置内容未修改
+            //  修改配置,但是配置内容未修改
             dbConfig.CheckUpdateAudited<ConfigDataInfo, long>(_principal);
             dbConfig.Comments = req.Comments;
             dbConfig.DataType = req.DataType;

@@ -18,7 +18,7 @@ public class ValidationException : Exception
     public ValidationException(Type target, IList<ValidationResult> validationResults)
     {
         TargetType = target;
-        ValidationResults = validationResults;
+        ValidationResults = validationResults ?? Array.Empty<ValidationResult>();
     }
 
     /// <summary>

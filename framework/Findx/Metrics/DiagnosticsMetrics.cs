@@ -32,7 +32,8 @@ public class DiagnosticsMetrics : IMetricsClient
     /// <param name="value"></param>
     public void Counter(string name, long value = 1)
     {
-        var counter = _counters.GetOrAdd(_prefix + name, _meterInstance.CreateCounter<long>(name));
+        //  使用工厂委托重载：仅在键缺失时才创建仪器，避免每次调用都向 Meter 重复注册同名仪器
+        var counter = _counters.GetOrAdd(_prefix + name, k => _meterInstance.CreateCounter<long>(k));
         counter.Add(value);
     }
 
@@ -43,7 +44,7 @@ public class DiagnosticsMetrics : IMetricsClient
     /// <param name="value"></param>
     public void Gauge(string name, double value)
     {
-        var gauge = _gauges.GetOrAdd(_prefix + name, new GaugeInfo(_meterInstance, name));
+        var gauge = _gauges.GetOrAdd(_prefix + name, k => new GaugeInfo(_meterInstance, k));
         gauge.Value = value;
     }
 
@@ -54,7 +55,7 @@ public class DiagnosticsMetrics : IMetricsClient
     /// <param name="milliseconds"></param>
     public void Timer(string name, long milliseconds)
     {
-        var timer = _timers.GetOrAdd(_prefix + name, _meterInstance.CreateHistogram<double>(name, "ms"));
+        var timer = _timers.GetOrAdd(_prefix + name, k => _meterInstance.CreateHistogram<double>(k, "ms"));
         timer.Record(milliseconds);
     }
 

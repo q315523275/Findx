@@ -79,6 +79,25 @@
 -   Findx.Module.EleAdminPlus Swagger 在线地址：http://106.54.160.19:10020/swagger/index.html
 -   EleAdminPlus Vue通用管理后端 在线地址：http://106.54.160.19:8080/  admin 123456
 
+## 📚 文档索引
+
+| 主题 | 文档 |
+|---|---|
+| 框架核心（通用扩展、实体约定、仓储、事件总线、锁、池、工具集等） | [docs/Findx.md](docs/Findx.md) |
+| 模块化与自动注入 | [docs/Module.md](docs/Module.md) |
+| Aspect 切面与审计 | [docs/Aspect.md](docs/Aspect.md) / [docs/Auditing.md](docs/Auditing.md) |
+| 缓存（本地 / Redis） | [docs/Cache.md](docs/Cache.md) |
+| 一致性哈希 | [docs/ConsistentHash.md](docs/ConsistentHash.md) |
+| 认证授权（JWT / Cookie / 功能权限） | [docs/Findx.Security.md](docs/Findx.Security.md) |
+| AspNetCore（过滤器、中间件、客户端 IP 解析、Crud） | [docs/Findx.AspNetCore.md](docs/Findx.AspNetCore.md) |
+| FreeSql（数据源、审计脱敏、事务、慢 SQL） | [docs/Findx.FreeSql.md](docs/Findx.FreeSql.md) |
+| Redis（客户端、集合枚举语义、分布式锁） | [docs/Findx.Redis.md](docs/Findx.Redis.md) |
+| WebSocketCore（服务端、会话、响应消息读取） | [docs/Findx.WebSocketCore.md](docs/Findx.WebSocketCore.md) |
+| 服务发现与负载均衡 | [docs/Findx.Discovery.md](docs/Findx.Discovery.md) / [docs/Findx.Discovery.Consul.md](docs/Findx.Discovery.Consul.md) |
+| 定时任务 / Cron | [docs/Cron.md](docs/Cron.md) |
+| 配置中心 | [docs/Findx.Configuration.md](docs/Findx.Configuration.md) |
+| 其余组件（NLog / MailKit / Mapster / Swagger / 图像 / IP / 规则引擎 / RabbitMQ 等） | 见 `docs/` 目录同名文件 |
+
 ## 📙 启动
 
 ```

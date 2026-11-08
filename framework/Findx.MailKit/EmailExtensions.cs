@@ -236,7 +236,7 @@ public static class EmailExtensions
             part.ContentType.Parameters.Clear();
             part.ContentDisposition.Parameters.Clear();
             
-            var fileName = attachment.Name;
+            var fileName = attachment.Name ?? "attachment";
             part.ContentType.Parameters.Add(charset, "name", fileName);
             part.ContentDisposition.Parameters.Add(charset, "filename", fileName);
             

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Findx.DependencyInjection;
@@ -31,8 +32,12 @@ public class RedisLock : LockBase, IServiceNameAware
 
     public override async Task RenewAsync(string resource, string lockId, TimeSpan timeUntilExpires, CancellationToken cancellationToken = default)
     {
-        if (await _redisClient.StringGetAsync(GenerateNewLockKey(resource), cancellationToken) == lockId)
-            await _redisClient.ExpireAsync(GenerateNewLockKey(resource), timeUntilExpires, cancellationToken);
+        //  Lua 原子续期：仅当锁当前持有者 token 仍匹配时才延长 TTL，
+        //  避免 StringGet+Expire 两步非原子导致误续期他人持有的锁。
+        var lockKey = GenerateNewLockKey(resource);
+        var script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('pexpire', KEYS[1], ARGV[2]) else return 0 end";
+        var milliseconds = ((long)timeUntilExpires.TotalMilliseconds).ToString(CultureInfo.InvariantCulture);
+        await _redisClient.EvalAsync(script, lockKey, [lockId, milliseconds]);
     }
 
     public string Name => "DistributedLock.Redis";

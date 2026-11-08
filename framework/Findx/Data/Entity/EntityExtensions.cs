@@ -30,20 +30,24 @@ public static class EntityExtensions
     /// <returns></returns>
     public static EntityExtensionAttribute GetEntityExtensionAttribute(this Type entityType)
     {
-        var attribute = SingletonDictionary<Type, EntityExtensionAttribute>.Instance.GetOrAdd(entityType, () =>
+        var dict = SingletonDictionary<Type, EntityExtensionAttribute>.Instance;
+
+        //  命中路径：直接读取，不创建闭包/委托（原实现每次调用都会分配一个捕获 entityType 的 lambda）
+        if (dict.TryGetValue(entityType, out var cached)) return cached;
+
+        //  未命中路径：反射解析一次后写入字典（并发下可能重复构建，但结果幂等）
+        return dict.GetOrAdd(entityType, static type =>
         {
-            var attribute = entityType.GetAttribute<EntityExtensionAttribute>() ?? new EntityExtensionAttribute();
+            var attribute = type.GetAttribute<EntityExtensionAttribute>() ?? new EntityExtensionAttribute();
 
             // 是否包含软删除
-            attribute.HasSoftDeletable ??= entityType.IsBaseOn<ISoftDeletable>();
+            attribute.HasSoftDeletable ??= type.IsBaseOn<ISoftDeletable>();
 
             // 是否包含表分片
-            attribute.HasTableSharding ??= entityType.IsBaseOn<ITableSharding>();
+            attribute.HasTableSharding ??= type.IsBaseOn<ITableSharding>();
 
             return attribute;
         });
-
-        return attribute;
     }
 
     /// <summary>

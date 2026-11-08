@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Findx.Configuration;
@@ -26,8 +27,9 @@ internal static class HttpUtil
     /// <param name="url"></param>
     /// <param name="headers"></param>
     /// <param name="timeout"></param>
+    /// <param name="cancellationToken">取消令牌</param>
     /// <returns></returns>
-    public static async Task<HttpResponseMessage> GetAsync(string url, Dictionary<string, string> headers, int? timeout)
+    public static async Task<HttpResponseMessage> GetAsync(string url, Dictionary<string, string> headers, int? timeout, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -39,9 +41,11 @@ internal static class HttpUtil
             }
         }
 
-        if (!timeout.HasValue) return await HttpClient.SendAsync(request);
-        
-        using var cts = new System.Threading.CancellationTokenSource();
+        if (!timeout.HasValue)
+            return await HttpClient.SendAsync(request, cancellationToken);
+
+        //  合并调用方取消令牌与超时令牌
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         cts.CancelAfter(timeout.Value);
         return await HttpClient.SendAsync(request, cts.Token);
     }

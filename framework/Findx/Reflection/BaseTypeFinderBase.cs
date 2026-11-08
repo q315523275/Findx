@@ -12,6 +12,6 @@ public abstract class BaseTypeFinderBase<TBaseType> : FinderBase<Type>, ITypeFin
     /// <returns></returns>
     protected override IEnumerable<Type> FindAllItems()
     {
-        return AssemblyManager.FindTypesByAttribute<TBaseType>();
+        return AssemblyManager.FindTypesByBase<TBaseType>();
     }
 }

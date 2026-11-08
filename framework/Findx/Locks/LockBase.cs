@@ -30,32 +30,32 @@ public abstract class LockBase : ILock
         {
             try
             {
-                gotLock = await TryLockAsync(resource, lockId, timeUntilExpires.Value);
+                gotLock = await TryLockAsync(resource, lockId, timeUntilExpires.Value, cancellationToken);
             }
             catch
             {
                 // ignored
             }
 
-            // 拿到锁
-            // 线程取消
-            // 不需要等待争抢锁
+            //  拿到锁
+            //  线程取消
+            //  不需要等待争抢锁
             if (gotLock || cancellationToken.IsCancellationRequested || !isWait)
                 break;
 
-            // 循环相关计算
+            //  循环相关计算
             var delayAmount = timeUntilExpires.Value;
 
-            // delay a minimum of 50ms
+            //  delay a minimum of 50ms
             if (delayAmount < TimeSpan.FromMilliseconds(50))
                 delayAmount = TimeSpan.FromMilliseconds(50);
 
-            // delay a maximum of 3 seconds
+            //  delay a maximum of 3 seconds
             if (delayAmount > TimeSpan.FromSeconds(3))
                 delayAmount = TimeSpan.FromSeconds(3);
 
-            // 到达最大等待时间
-            if (startTime.Add(timeUntilExpires.Value) >= DateTime.Now.Add(-delayAmount))
+            //  到达最大等待时间，剩余时间不足一个 delay 周期则直接返回争抢不到
+            if (DateTime.Now.Add(delayAmount) >= startTime.Add(timeUntilExpires.Value))
                 break;
 
             await Task.Delay(delayAmount, cancellationToken);

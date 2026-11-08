@@ -13,7 +13,7 @@ public interface IFunctionStore<TFunction>
     /// </summary>
     /// <param name="functions"></param>
     /// <param name="cancellationToken"></param>
-    Task SyncToDatabaseAsync(IEnumerable<TFunction> functions, CancellationToken cancellationToken = default);
+    Task SyncToDatabaseAsync(List<TFunction> functions, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     从存储器同步功能信息

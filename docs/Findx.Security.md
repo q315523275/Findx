@@ -305,6 +305,24 @@ public class MyFunctionAuthorization : FunctionAuthorizationBase
 
 `SuperRoleName` 命中的角色在角色校验时直接返回 `Ok`（超级管理员后门）。
 
+### 角色串解析与缓存
+
+功能的 `Roles` 字段是**逗号分隔的角色名串**，解析规则与缓存行为如下：
+
+| 关注点 | 行为 |
+|---|---|
+| 分隔与裁剪 | `Split(',', RemoveEmptyEntries \| TrimEntries)`；`"admin, ops"` 解析为 `["admin","ops"]`（旧实现会得到 `" ops"`，导致带空格的角色永远匹配不上） |
+| 空串 | `Roles` 为空/null 时规约为空数组，`RoleLimit` 功能直接 `Forbidden`（fail-closed） |
+| 函数级缓存 | 角色串 → 角色数组按字符串缓存（`ConcurrentDictionary`，上限 2048），避免每次授权都做 `Split` 分配 |
+| 身份级缓存 | `IIdentity.GetRoles()` 结果按 `ClaimsIdentity` 缓存（`ConditionalWeakTable`），同一身份重复授权不再遍历 claim |
+| 超管比较 | `SuperRoleName` 与用户角色按 `OrdinalIgnoreCase` 比较；未配置时规约为空串，不匹配任何角色 |
+
+> 注意事项
+
+- **运行期增删角色 claim 后，`GetRoles()` 缓存不会失效**（`ClaimsIdentity` 实例未变）。需要角色即时生效时，请重新登录/重建 `ClaimsIdentity`，或等待请求结束换新身份对象。
+- 用户角色为 `"a,b"` 这种逗号串（多角色塞进一个 claim）时会被拆开，与功能 `Roles` 逐项比对。
+- 比较全部使用 `Ordinal`（不做区域性大小写折叠），角色名建议统一使用小写英文标识。
+
 ## 端点资源在线管理
 
 `IFunctionStore<TFunction>` 抽象负责功能信息的持久化，默认实现 `MvcFunctionStore` **仅存内存**，进程重启丢失。

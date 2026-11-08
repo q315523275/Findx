@@ -32,7 +32,7 @@ public class FileSystemEntry: IFileEntry
     /// <summary>
     ///     文件所在文件夹目录
     /// </summary>
-    public string DirectoryPath => _path[..^Name.Length].TrimEnd('/');
+    public string DirectoryPath => _path[..^Name.Length].TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar);
     
     /// <summary>
     ///     最后修改时间

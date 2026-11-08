@@ -6,6 +6,7 @@ using Findx.Modularity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Discovery.Consul;
@@ -71,9 +72,25 @@ public class ConsulDiscoveryModule : StartupModule
         var optionsMonitor = provider.GetRequiredService<IOptionsMonitor<DiscoveryOptions>>();
         if (optionsMonitor.CurrentValue.Enabled && optionsMonitor.CurrentValue.Deregister)
         {
-            var consulServiceRegistry = provider.GetRequiredService<IConsulServiceRegistry>();
-            var consulRegistration = provider.GetRequiredService<IConsulRegistration>();
-            consulServiceRegistry.DeregisterAsync(consulRegistration).ConfigureAwait(false).GetAwaiter();
+            try
+            {
+                var consulServiceRegistry = provider.GetRequiredService<IConsulServiceRegistry>();
+                var consulRegistration = provider.GetRequiredService<IConsulRegistration>();
+
+                //  阻塞等待注销请求真正发出；原写法只取 awaiter 未 GetResult，进程退出时 HTTP 请求尚未完成
+                consulServiceRegistry.DeregisterAsync(consulRegistration).ConfigureAwait(false).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    provider.GetService<ILogger<ConsulDiscoveryModule>>()?.LogWarning(ex, "Consul 服务注销失败，将等待健康检查 CriticalTimeout 后由 Consul 端摘除");
+                }
+                catch
+                {
+                    // 关闭阶段日志失败不再向外抛，不阻断 base.OnShutdown
+                }
+            }
         }
         base.OnShutdown(provider);
     }

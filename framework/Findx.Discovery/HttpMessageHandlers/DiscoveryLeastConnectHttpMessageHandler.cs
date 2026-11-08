@@ -36,8 +36,8 @@ public class DiscoveryLeastConnectHttpMessageHandler : DelegatingHandler
         current.ThrowIfNull();
 
         // ReSharper disable once PossibleNullReferenceException
-        var loadBalancer = await _loadBalancerProvider.GetAsync(current.Host, LoadBalancerType.RoundRobin).ConfigureAwait(false);
-        var serviceInfo = await loadBalancer.ResolveServiceEndPointAsync().ConfigureAwait(false);
+        var loadBalancer = await _loadBalancerProvider.GetAsync(current.Host, LoadBalancerType.LeastConnection).ConfigureAwait(false);
+        var serviceInfo = await loadBalancer.ResolveServiceEndPointAsync(cancellationToken).ConfigureAwait(false);
         request.RequestUri = serviceInfo.ToUri(current.Scheme, current.PathAndQuery);
 
         var nowTime = DateTime.Now;
@@ -48,7 +48,7 @@ public class DiscoveryLeastConnectHttpMessageHandler : DelegatingHandler
         finally
         {
             request.RequestUri = current;
-            await loadBalancer.UpdateStatsAsync(serviceInfo, DateTime.Now - nowTime);
+            await loadBalancer.UpdateStatsAsync(serviceInfo, DateTime.Now - nowTime, cancellationToken);
         }
     }
 }

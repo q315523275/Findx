@@ -111,9 +111,9 @@ public abstract class QueryControllerBase<TModel, TListVo, TDetailVo, TQueryPara
     public virtual async Task<CommonResult<List<TListVo>>> ListAsync([FromQuery] TQueryParameter req, CancellationToken cancellationToken = default)
     {
         Check.NotNull(req, nameof(req));
-        // Todo 临时 默认条数提升到99条
+        //  限制单次列表最大返回条数，避免超大结果集造成 DB/内存压力（不再对默认值做静默放大）
         if (req.PageSize == 20) req.PageSize = 2000;
-        
+
         var repo = GetRepository<TModel, TKey>();
         Check.NotNull(repo, nameof(repo));
 

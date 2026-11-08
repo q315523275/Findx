@@ -46,11 +46,15 @@ public class RoundRobinSelector : ILoadBalancer
         if (!services.Any())
             throw new ArgumentNullException($"{_serviceName}");
 
-        Interlocked.Increment(ref _last);
+        var n = Interlocked.Increment(ref _last);
 
-        if (_last >= services.Count) Interlocked.Exchange(ref _last, 0);
+        //  按自增返回值取模定位，避免“自增后再判断/重置”与“读取 _last 索引”之间的多线程竞态；
+        //  兼容 int 长期自增溢出回绕后取模得到负数下标的情况
+        var index = (n - 1) % services.Count;
 
-        return services[_last];
+        if (index < 0) index += services.Count;
+
+        return services[index];
     }
 
     /// <summary>

@@ -84,11 +84,12 @@ public class RedisClient : IRedisClient
     }
 
     /// <summary>
-    ///     查找键名
+    ///     查找键名 注意性能
     /// </summary>
     /// <param name="pattern">匹配项</param>
     /// <param name="count"></param>
     /// <returns>匹配上的所有键名</returns>
+    /// <remarks>迭代器延迟执行：首次枚举才发起 Redis 命令，重复枚举会再次访问 Redis；需多次遍历/取 Count 时请先 ToList() 物化，仅一次消费请直接 foreach 避免额外复制。</remarks>
     public IEnumerable<string> SearchKeys(string pattern, int? count)
     {
         var endpoints = _connection?.GetEndPoints();
@@ -532,6 +533,7 @@ public class RedisClient : IRedisClient
     /// </summary>
     /// <param name="key">key</param>
     /// <returns></returns>
+    /// <remarks>底层命令在方法调用时已取数完成，返回值为惰性投影；重复枚举不会再访问 Redis，但会重复执行逐项转换，建议只遍历一次。</remarks>
     public IEnumerable<string> HVals(string key)
     {
         return _cache.HashValues(key).Select(x => x.ToString());
@@ -553,6 +555,7 @@ public class RedisClient : IRedisClient
     /// </summary>
     /// <param name="key">key</param>
     /// <returns></returns>
+    /// <remarks>底层命令在方法调用时已取数完成，返回值为惰性投影；重复枚举不会再访问 Redis，但会重复执行逐项转换，建议只遍历一次。</remarks>
     public IEnumerable<string> HKeys(string key)
     {
         return _cache.HashKeys(key).Select(x => x.ToString());
@@ -879,6 +882,7 @@ public class RedisClient : IRedisClient
     /// <param name="stop"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+    /// <remarks>迭代器延迟执行：首次枚举才发起 Redis 命令，重复枚举会再次访问 Redis；需多次遍历/取 Count 时请先 ToList() 物化，仅一次消费请直接 foreach 避免额外复制。</remarks>
     public IEnumerable<T> LRange<T>(string cacheKey, long start, long stop)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1317,6 +1321,7 @@ public class RedisClient : IRedisClient
     /// <param name="cacheKey"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+    /// <remarks>迭代器延迟执行：首次枚举才发起 Redis 命令，重复枚举会再次访问 Redis；需多次遍历/取 Count 时请先 ToList() 物化，仅一次消费请直接 foreach 避免额外复制。</remarks>
     public IEnumerable<T> SMembers<T>(string cacheKey)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1333,6 +1338,7 @@ public class RedisClient : IRedisClient
     /// <param name="count"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+    /// <remarks>迭代器延迟执行：首次枚举才发起 Redis 命令，重复枚举会再次访问 Redis；需多次遍历/取 Count 时请先 ToList() 物化，仅一次消费请直接 foreach 避免额外复制。</remarks>
     public IEnumerable<T> SRandMembers<T>(string cacheKey, int count = 1)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1603,6 +1609,7 @@ public class RedisClient : IRedisClient
     /// <param name="stop"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+    /// <remarks>迭代器延迟执行：首次枚举才发起 Redis 命令，重复枚举会再次访问 Redis；需多次遍历/取 Count 时请先 ToList() 物化，仅一次消费请直接 foreach 避免额外复制。</remarks>
     public IEnumerable<T> ZRange<T>(string cacheKey, long start, long stop)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1622,6 +1629,7 @@ public class RedisClient : IRedisClient
     /// <param name="offset"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
+    /// <remarks>迭代器延迟执行：首次枚举才发起 Redis 命令，重复枚举会再次访问 Redis；需多次遍历/取 Count 时请先 ToList() 物化，仅一次消费请直接 foreach 避免额外复制。</remarks>
     public IEnumerable<T> ZRangeByScore<T>(string cacheKey, double min, double max, long count = -1, long offset = 0)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -1814,7 +1822,7 @@ public class RedisClient : IRedisClient
     /// <param name="cancellationToken"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    public async Task<IEnumerable<T>> ZRangeByScoreAsync<T>(string cacheKey, double start, double stop, long count = 0, long offset = 0, CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<T>> ZRangeByScoreAsync<T>(string cacheKey, double start, double stop, long count = -1, long offset = 0, CancellationToken cancellationToken = default)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
 
@@ -2021,6 +2029,7 @@ public class RedisClient : IRedisClient
     /// <param name="cacheKey"></param>
     /// <param name="members"></param>
     /// <returns></returns>
+    /// <remarks>迭代器延迟执行：首次枚举才发起 Redis 命令，重复枚举会再次访问 Redis；需多次遍历/取 Count 时请先 ToList() 物化，仅一次消费请直接 foreach 避免额外复制。</remarks>
     public IEnumerable<(decimal longitude, decimal latitude)?> GeoPos(string cacheKey, IEnumerable<string> members)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));
@@ -2072,6 +2081,7 @@ public class RedisClient : IRedisClient
     /// <param name="count"></param>
     /// <param name="order"></param>
     /// <returns></returns>
+    /// <remarks>迭代器延迟执行：首次枚举才发起 Redis 命令，重复枚举会再次访问 Redis；需多次遍历/取 Count 时请先 ToList() 物化，仅一次消费请直接 foreach 避免额外复制。</remarks>
     public IEnumerable<(string member, double? distance)> GeoRadius(string cacheKey, string member, double radius, string unit = "m", int count = -1, ListSortDirection order = ListSortDirection.Ascending)
     {
         Check.NotNullOrWhiteSpace(cacheKey, nameof(cacheKey));

@@ -13,11 +13,14 @@ namespace Findx.Storage;
 /// </summary>
 public class FileSystemStorage : IFileStorage, IServiceNameAware
 {
+    //  System.Threading.Lock 为 .NET 9+ 类型，net6.0/net8.0 目标框架不可用，保持 object 以三框架兼容
     private readonly object _lockObject = new();
 
     private readonly ILogger<FileSystemStorage> _logger;
 
     private readonly string _mediaRootFolder;
+
+    private readonly bool _allowOutsideRoot;
 
     /// <summary>
     ///     Ctor
@@ -32,6 +35,8 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
         _logger = logger;
 
         _mediaRootFolder = settingProvider.GetValue<string>("Findx:Storage:Folder:DefaultFolder") ?? app.MapPath("~/");
+        //  默认严格模式：所有操作限定在存储根目录内；仅挂载盘等特殊部署显式配置 Findx:Storage:Folder:AllowOutsideRoot=true 才放开
+        _allowOutsideRoot = settingProvider.GetValue<bool>("Findx:Storage:Folder:AllowOutsideRoot");
     }
 
     /// <summary>
@@ -63,11 +68,12 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
         {
             lock (_lockObject)
             {
-                var directory = Path.GetDirectoryName(targetPath);
+                var targetFullPath = ResolvePath(targetPath);
+                var directory = Path.GetDirectoryName(targetFullPath);
                 if (directory != null)
-                    DirectoryUtility.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
+                    DirectoryUtility.CreateIfNotExists(directory);
 
-                File.Copy(Path.Combine(_mediaRootFolder, path), Path.Combine(_mediaRootFolder, targetPath), overwrite);
+                File.Copy(ResolvePath(path), targetFullPath, overwrite);
             }
         }
         catch (Exception ex)
@@ -95,7 +101,7 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
 
         try
         {
-            File.Delete(Path.Combine(_mediaRootFolder, path));
+            File.Delete(ResolvePath(path));
         }
         catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
         {
@@ -116,28 +122,34 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
     /// <exception cref="NotImplementedException"></exception>
     public Task<int> DeleteFilesAsync(string searchPattern = null, CancellationToken cancellation = default)
     {
+        //  显式防御：null/空模式不再静默清空整个存储根目录
+        if (string.IsNullOrWhiteSpace(searchPattern))
+            throw new ArgumentNullException(nameof(searchPattern));
+
         var count = 0;
 
-        if (searchPattern == null || string.IsNullOrEmpty(searchPattern) || searchPattern == "*")
+        //  仅显式传 "*" 时才允许清空整个存储根目录
+        if (searchPattern == "*")
         {
             if (Directory.Exists(_mediaRootFolder))
             {
-                count += Directory.EnumerateFiles(_mediaRootFolder, "*,*", SearchOption.AllDirectories).Count();
+                count += Directory.EnumerateFiles(_mediaRootFolder, "*", SearchOption.AllDirectories).Count();
                 Directory.Delete(_mediaRootFolder, true);
             }
 
             return Task.FromResult(count);
         }
 
+        //  搜索模式同样走路径解析：默认严格模式拒绝越界/绝对路径，显式开启 AllowOutsideRoot 时保持原宽松行为
         searchPattern = searchPattern.NormalizePath();
-        var path = Path.Combine(_mediaRootFolder, searchPattern);
+        var path = ResolvePath(searchPattern);
 
         if (path[^1] == Path.DirectorySeparatorChar || path.EndsWith(Path.DirectorySeparatorChar + "*"))
         {
             var directory = Path.GetDirectoryName(path);
             if (Directory.Exists(directory))
             {
-                count += Directory.EnumerateFiles(directory, "*,*", SearchOption.AllDirectories).Count();
+                count += Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Count();
                 Directory.Delete(directory, true);
                 return Task.FromResult(count);
             }
@@ -147,7 +159,7 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
 
         if (Directory.Exists(path))
         {
-            count += Directory.EnumerateFiles(path, "*,*", SearchOption.AllDirectories).Count();
+            count += Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Count();
             Directory.Delete(path, true);
             return Task.FromResult(count);
         }
@@ -172,7 +184,7 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
         Check.NotNull(path, nameof(path));
 
         path = path.NormalizePath();
-        return Task.FromResult(File.Exists(Path.Combine(_mediaRootFolder, path)));
+        return Task.FromResult(File.Exists(ResolvePath(path)));
     }
 
     /// <summary>
@@ -187,7 +199,7 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
 
         path = path.NormalizePath();
 
-        var fileInfo = new FileInfo(Path.Combine(_mediaRootFolder, path));
+        var fileInfo = new FileInfo(ResolvePath(path));
         if (!fileInfo.Exists)
             return Task.FromResult<FileSystemInfo>(null);
 
@@ -210,9 +222,9 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
 
         try
         {
-            return Task.FromResult<Stream>(File.OpenRead(Path.Combine(_mediaRootFolder, path)));
+            return Task.FromResult<Stream>(File.OpenRead(ResolvePath(path)));
         }
-        catch (IOException ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+        catch (IOException ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
             if (_logger.IsEnabled(LogLevel.Trace))
                 _logger.LogTrace(ex, "Error trying to get file stream: {Path}", path);
@@ -240,12 +252,12 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
         {
             lock (_lockObject)
             {
-                var directory = Path.GetDirectoryName(newPath);
+                var newFullPath = ResolvePath(newPath);
+                var directory = Path.GetDirectoryName(newFullPath);
                 if (directory != null)
-                    DirectoryUtility.CreateIfNotExists(Path.Combine(_mediaRootFolder, directory));
+                    DirectoryUtility.CreateIfNotExists(directory);
 
-                var oldFullPath = Path.Combine(_mediaRootFolder, path);
-                var newFullPath = Path.Combine(_mediaRootFolder, newPath);
+                var oldFullPath = ResolvePath(path);
                 try
                 {
                     File.Move(oldFullPath, newFullPath);
@@ -280,10 +292,14 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
         Check.NotNull(stream, nameof(stream));
 
         path = path.NormalizePath();
-        var file = Path.Combine(_mediaRootFolder, path);
+        var file = ResolvePath(path);
 
         try
         {
+            //  保存整个流内容：从流起始位置拷贝
+            if (stream.CanSeek)
+                stream.Seek(0, SeekOrigin.Begin);
+            
             await using var fileStream = CreateFileStream(file);
             await stream.CopyToAsync(fileStream, cancellationToken);
             return true;
@@ -308,7 +324,7 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
         Check.NotNull(byteArray, nameof(byteArray));
 
         path = path.NormalizePath();
-        var file = Path.Combine(_mediaRootFolder, path);
+        var file = ResolvePath(path);
 
         try
         {
@@ -343,5 +359,29 @@ public class FileSystemStorage : IFileStorage, IServiceNameAware
             DirectoryUtility.CreateIfNotExists(directory);
 
         return File.Create(filePath);
+    }
+
+    /// <summary>
+    ///     解析存储路径
+    ///     默认严格模式：规范化后必须落在存储根目录（_mediaRootFolder）内，绝对路径与 ../ 越界一律拒绝（防路径穿越）；
+    ///     仅当显式配置 Findx:Storage:Folder:AllowOutsideRoot=true（如挂载盘场景）时才允许根目录之外的路径。
+    /// </summary>
+    /// <param name="path">存储路径（相对存储根目录）</param>
+    /// <returns>规范化后的绝对路径</returns>
+    private string ResolvePath(string path)
+    {
+        var fullPath = Path.GetFullPath(Path.Combine(_mediaRootFolder, path));
+
+        if (_allowOutsideRoot)
+            return fullPath;
+
+        //  前缀 containment 校验：root 统一补尾分隔符，避免 "/data/root2" 被 "/data/root" 前缀误判为合法
+        var rootFullPath = Path.GetFullPath(_mediaRootFolder);
+        var rootWithSeparator = rootFullPath.EndsWith(Path.DirectorySeparatorChar) ? rootFullPath : rootFullPath + Path.DirectorySeparatorChar;
+
+        if (!fullPath.StartsWith(rootWithSeparator, StringComparison.Ordinal))
+            throw new InvalidOperationException($"存储路径越界，仅允许在存储根目录内（{rootFullPath}）：{path}");
+
+        return fullPath;
     }
 }

@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using Findx.Common;
 using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Extensions;
+using Findx.Logging;
 using Findx.Modularity;
 using FreeSql;
 using FreeSql.Aop;
@@ -38,6 +41,16 @@ public class FreeSqlModule : StartupModule
     private FreeSqlOptions FreeSqlOptions { set; get; }
 
     /// <summary>
+    ///     应用根服务容器（UseModule 时缓存），供 AOP 回调解析单例服务，避免每次 CRUD 走 ServiceLocator 的双层查找
+    /// </summary>
+    private IServiceProvider _serviceProvider;
+
+    /// <summary>
+    ///     审计报告服务（单例，首次解析后缓存，不再重复从容器解析）
+    /// </summary>
+    private IAuditEntityReport _auditEntityReport;
+
+    /// <summary>
     ///     配置服务注册
     /// </summary>
     /// <param name="services"></param>
@@ -57,6 +70,13 @@ public class FreeSqlModule : StartupModule
         var freeSqlClient = services.GetOrAddSingletonInstance(() => new FreeSqlClient(FreeSqlOptions));
         foreach (var item in FreeSqlOptions.DataSource)
         {
+            //  PrintSql 是调试开关：每条 SQL 都会拼接 StringBuilder 并输出日志，生产误开会带来明显 CPU/IO 开销
+            if (item.Value.PrintSql)
+            {
+                services.GetOrAddSingletonInstance(() => new StartupLogger())
+                        .Log(LogLevel.Warning, $"数据源[{item.Key}]已开启 PrintSql，生产环境建议关闭", nameof(FreeSqlModule));
+            }
+
             // FreeSql构建开始
             var fsql = new FreeSqlBuilder().UseConnectionString(item.Value.DbType, item.Value.ConnectionString)
                                            .UseAutoSyncStructure(item.Value.UseAutoSyncStructure)
@@ -118,10 +138,10 @@ public class FreeSqlModule : StartupModule
 
         var auditEntityReport = new ServiceDescriptor(typeof(IAuditEntityReport), typeof(FreeSqlAuditEntityReport), ServiceLifetime.Singleton);
         services.Replace(auditEntityReport);
-        
+
         // Entity属性字典初始化
         SingletonDictionary<Type, EntityExtensionAttribute>.Instance.ThrowIfNull();
-
+        
         return services;
     }
     
@@ -198,11 +218,11 @@ public class FreeSqlModule : StartupModule
     /// </summary>
     /// <param name="option"></param>
     /// <param name="e"></param>
-    private static void Aop_CurdBefore_AuditEntity(CurdBeforeEventArgs e, FreeSqlConnectionConfig option)
+    private void Aop_CurdBefore_AuditEntity(CurdBeforeEventArgs e, FreeSqlConnectionConfig option)
     {
         if ((!option.AuditEntity && !option.AuditSqlRaw) || e.EntityType.GetEntityExtensionAttribute().DisableAuditing || e.CurdType == CurdType.Select) return;
         
-        var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
+        var auditEntityReport = ResolveAuditEntityReport();
         if (auditEntityReport != null && option.AuditEntity)
         {
             var auditEntity = new AuditEntityEntry
@@ -214,18 +234,62 @@ public class FreeSqlModule : StartupModule
             auditEntityReport.AuditEntity(auditEntity);
         }
     }
-    
-    
+
+    /// <summary>
+    ///     审计日志中需脱敏的参数名关键字（列名或参数名命中即掩码）
+    /// </summary>
+    private static readonly string[] SensitiveParameterKeywords =
+    {
+        "password", "passwd", "pwd", "secret", "token", "credential", "idcard", "id_no",
+        "phone", "mobile", "email", "bankcard", "bank_card", "salt", "authorization"
+    };
+
+    /// <summary>
+    ///     列名/参数名敏感判定缓存：字段名集合有限，命中后避免每次都对 15 个关键字做 Contains
+    /// </summary>
+    private static readonly ConcurrentDictionary<string, bool> SensitiveParameterCache = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    ///     敏感判定缓存上限（防御动态 SQL 产生大量非常规参数名导致缓存膨胀）
+    /// </summary>
+    private const int SensitiveParameterCacheLimit = 4096;
+
+    /// <summary>
+    ///     判断列名/参数名是否属于敏感字段
+    /// </summary>
+    private static bool IsSensitiveParameter(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return false;
+
+        if (SensitiveParameterCache.TryGetValue(name, out var cached)) return cached;
+
+        var sensitive = false;
+        foreach (var keyword in SensitiveParameterKeywords)
+        {
+            if (name.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+            {
+                sensitive = true;
+                break;
+            }
+        }
+
+        if (SensitiveParameterCache.Count < SensitiveParameterCacheLimit)
+            SensitiveParameterCache[name] = sensitive;
+
+        return sensitive;
+    }
+
+
     /// <summary>
     ///     AOP实体审计
     /// </summary>
     /// <param name="option"></param>
     /// <param name="e"></param>
-    private static void Aop_CurdAfter_AuditSqlRaw(CurdAfterEventArgs e, FreeSqlConnectionConfig option)
+    private void Aop_CurdAfter_AuditSqlRaw(CurdAfterEventArgs e, FreeSqlConnectionConfig option)
     {
         if ((!option.AuditEntity && !option.AuditSqlRaw) || e.EntityType.GetEntityExtensionAttribute().DisableAuditing || e.CurdType == CurdType.Select) return;
         
-        var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
+        var auditEntityReport = ResolveAuditEntityReport();
         if (auditEntityReport != null && option.AuditSqlRaw)
         {
             var auditSqlRawEntry = new AuditSqlRawEntry
@@ -241,12 +305,14 @@ public class FreeSqlModule : StartupModule
             {
                 foreach (var pa in e.DbParms)
                 {
+                    //  敏感列/参数值脱敏，避免密码、令牌、证件号等明文落入审计日志
+                    var masked = IsSensitiveParameter(pa.SourceColumn) || IsSensitiveParameter(pa.ParameterName) ? "***" : pa.Value?.ToString();
                     auditSqlRawEntry.DbParameters.Add(new AuditSqlRawParameterEntry
                     {
                         DbType = pa.DbType.ToString(),
                         SourceColumn = pa.SourceColumn,
                         ParameterName = pa.ParameterName,
-                        Value = pa.Value?.ToString()
+                        Value = masked
                     });
                 }
             }
@@ -306,7 +372,7 @@ public class FreeSqlModule : StartupModule
     /// <param name="option"></param>
     /// <param name="e"></param>
     /// <param name="fsql"></param>
-    private static void Aop_AuditValue_AuditProperty(AuditValueEventArgs e, FreeSqlConnectionConfig option, IFreeSql fsql)
+    private void Aop_AuditValue_AuditProperty(AuditValueEventArgs e, FreeSqlConnectionConfig option, IFreeSql fsql)
     {
         if (!option.AuditEntity) return;
         
@@ -315,7 +381,8 @@ public class FreeSqlModule : StartupModule
         
         if (!ServiceLocator.InScoped()) return;
         
-        var auditEntityReport = ServiceLocator.GetService<IAuditEntityReport>();
+        //  该回调按"列"触发（N 个字段即 N 次），使用缓存后的单例服务，避免每次列值都经过 ServiceLocator 双重查找
+        var auditEntityReport = ResolveAuditEntityReport();
         if (auditEntityReport != null && e.Value != null && !e.Column.CsName.Equals("Id", StringComparison.OrdinalIgnoreCase))
         {
             string entityId;
@@ -339,11 +406,21 @@ public class FreeSqlModule : StartupModule
     }
         
     /// <summary>
+    ///     解析审计报告服务
+    ///     <para>IAuditEntityReport 为单例注册，首次解析后缓存，避免每 CRUD/每字段都经过 ServiceLocator 的双层查找</para>
+    /// </summary>
+    private IAuditEntityReport ResolveAuditEntityReport()
+    {
+        return _auditEntityReport ??= (_serviceProvider?.GetService<IAuditEntityReport>() ?? ServiceLocator.GetService<IAuditEntityReport>());
+    }
+
+    /// <summary>
     ///     启用模块
     /// </summary>
     /// <param name="app"></param>
     public override void UseModule(IServiceProvider app)
     {
+        _serviceProvider = app;
         if (FreeSqlOptions.Enabled) base.UseModule(app);
     }
 }

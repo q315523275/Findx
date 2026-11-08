@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Findx.Swagger.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
@@ -68,7 +69,7 @@ public class SwaggerModule : WebApplicationModuleBase
             AddCustomOptions(_swaggerOptions, options);
 
             // 添加注释
-            AddXmlComments(options);
+            AddXmlComments(options, _swaggerOptions);
 
             // 添加过滤器
             AddDocumentFilter(options);
@@ -212,11 +213,25 @@ public class SwaggerModule : WebApplicationModuleBase
     ///     添加Xml注释
     /// </summary>
     /// <param name="options"></param>
-    private static void AddXmlComments(SwaggerGenOptions options)
+    /// <param name="swaggerOptions"></param>
+    private static void AddXmlComments(SwaggerGenOptions options, SwaggerOptions swaggerOptions)
     {
-        foreach (var file in Directory.GetFiles(AppContext.BaseDirectory, "*.xml"))
+        //  仅加载入口程序集 XML，避免把依赖程序集自带的 XML 全部引入导致注释串台/告警
+        var entryAssembly = Assembly.GetEntryAssembly();
+        if (entryAssembly != null)
         {
-            options.IncludeXmlComments(file);
+            var entryXml = Path.Combine(AppContext.BaseDirectory, entryAssembly.GetName().Name + ".xml");
+            if (File.Exists(entryXml))
+                options.IncludeXmlComments(entryXml);
+        }
+
+        //  显式配置的额外 XML 注释文件清单（相对路径基于应用基目录）
+        foreach (var file in swaggerOptions.XmlCommentFiles ?? new List<string>())
+        {
+            if (string.IsNullOrWhiteSpace(file)) continue;
+            var path = Path.IsPathRooted(file) ? file : Path.Combine(AppContext.BaseDirectory, file);
+            if (File.Exists(path))
+                options.IncludeXmlComments(path);
         }
     }
 
@@ -227,11 +242,11 @@ public class SwaggerModule : WebApplicationModuleBase
     /// <param name="options"></param>
     private static void AddCustomOptions(SwaggerOptions customOptions, SwaggerGenOptions options)
     {
-        // 参数描述小驼峰
+        //  参数描述小驼峰
         if (customOptions is { AllParametersInCamelCase: true })
             options.DescribeAllParametersInCamelCase();
 
-        // 自定义架构编号
-        options.CustomSchemaIds(x => x.ToString());
+        //  自定义架构编号：使用完整类型名（嵌套类型 "+" 展开为 "."），避免 ToString() 反引号/跨程序集同名撞 id
+        options.CustomSchemaIds(x => x.FullName?.Replace("+", ".") ?? x.Name);
     }
 }

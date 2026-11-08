@@ -13,6 +13,11 @@ public class StartupLogger
     public IList<LogInfo> LogInfos { get; } = new List<LogInfo>();
 
     /// <summary>
+    ///     保护 <see cref="LogInfos"/> 读写的锁对象
+    /// </summary>
+    private readonly object _syncRoot = new();
+
+    /// <summary>
     ///     Information日志
     /// </summary>
     /// <param name="message"></param>
@@ -45,7 +50,10 @@ public class StartupLogger
         {
             LogLevel = logLevel, Message = message, LogName = logName, Exception = exception, CreatedTime = DateTime.Now
         };
-        LogInfos.Add(log);
+        lock (_syncRoot)
+        {
+            LogInfos.Add(log);
+        }
     }
 
     /// <summary>
@@ -55,7 +63,13 @@ public class StartupLogger
     public void Print(IServiceProvider provider)
     {
         IDictionary<string, ILogger> dict = new Dictionary<string, ILogger>();
-        foreach (var info in LogInfos.OrderBy(m => m.CreatedTime))
+        LogInfo[] logs;
+        lock (_syncRoot)
+        {
+            //  锁内取快照，避免枚举过程中与并发 Add 竞争
+            logs = LogInfos.OrderBy(m => m.CreatedTime).ToArray();
+        }
+        foreach (var info in logs)
         {
             if (info.Message.IsNullOrWhiteSpace())
                 continue;

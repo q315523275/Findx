@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Findx.Discovery.Abstractions;
 
@@ -27,4 +28,26 @@ public class ConfigServiceEndPoint: IServiceEndPoint
     ///     元数据
     /// </summary>
     public IDictionary<string, string> Metadata { get; set; } = new Dictionary<string, string>();
+
+    /// <summary>
+    ///     Equals
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    public override bool Equals(object obj)
+    {
+        if (obj is ConfigServiceEndPoint other)
+            return Host == other.Host && Port == other.Port;
+
+        return false;
+    }
+
+    /// <summary>
+    ///     HashCode
+    /// </summary>
+    /// <returns></returns>
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Host, Port);
+    }
 }

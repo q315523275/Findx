@@ -20,7 +20,7 @@ public class LinuxMemory
         ulong totalVirtualMemory = 0; // 虚拟内存字节数
         ulong availableVirtualMemory = 0; // 可用虚拟内存字节数
 
-        // 总内存、可用内存
+        //  总内存、可用内存
         var dic = CommonUtility.ReadInfo("/proc/meminfo");
         if (dic == null) return default;
 
@@ -37,7 +37,11 @@ public class LinuxMemory
             totalVirtualMemory = str.RemovePostFix(" kB").To<ulong>() * 1024;
 
         if (dic.TryGetValue("VmallocUsed", out str))
-            availableVirtualMemory = totalVirtualMemory - str.RemovePostFix(" kB").To<ulong>() * 1024;
+        {
+            //  VmallocUsed 大于 VmallocTotal 时（容器/特殊内核）避免 ulong 无符号下溢
+            var virtualUsed = str.RemovePostFix(" kB").To<ulong>() * 1024;
+            availableVirtualMemory = totalVirtualMemory > virtualUsed ? totalVirtualMemory - virtualUsed : 0;
+        }
 
         return new MemoryValue(totalPhysicalMemory, availablePhysicalMemory, usedPercentage, totalVirtualMemory,
             availableVirtualMemory);

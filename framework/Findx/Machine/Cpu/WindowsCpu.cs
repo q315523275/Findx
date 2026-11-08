@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Findx.Machine.Cpu;
@@ -53,6 +54,11 @@ public class WindowsCpu
     /// <returns></returns>
     public static CpuTime GetCpuTime()
     {
-        return !GetSystemTimes(out var lpIdleTime, out var lpKernelTime, out var lpUserTime) ? default : GetCpuTime(lpIdleTime, lpKernelTime, lpUserTime);
+        if (GetSystemTimes(out var lpIdleTime, out var lpKernelTime, out var lpUserTime))
+            return GetCpuTime(lpIdleTime, lpKernelTime, lpUserTime);
+
+        // P/Invoke 失败时记录 Win32 错误码；保持返回默认值，避免打断监控主流程
+        Debug.WriteLine($"GetSystemTimes 失败，Win32 错误码：{Marshal.GetLastWin32Error()}");
+        return default;
     }
 }

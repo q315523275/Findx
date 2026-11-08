@@ -28,7 +28,7 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// 释放非托管和（可选）托管的资源。
+    ///     释放非托管和（可选）托管的资源。
     /// </summary>
     /// <param name="disposing"><c>true</c>释放托管和非托管资源 <c>false</c> 只释放非托管资源.</param>
     protected virtual void OnDispose(bool disposing)
@@ -36,13 +36,13 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// 异步释放资源
+    ///     异步释放资源
     /// </summary>
     /// <returns></returns>
     [DebuggerStepThrough]
     public ValueTask DisposeAsync()
     {
-        // 是否已释放
+        //  是否已释放
         var wasDisposed = Interlocked.Exchange(ref _isDisposed, DisposedFlag);
         if (wasDisposed != DisposedFlag)
         {
@@ -54,18 +54,18 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    ///  释放非托管和（可选）托管的资源。
+    ///     释放非托管和（可选）托管的资源。
     /// </summary>
-    /// &lt;param name="disposing"&gt;&lt;c&gt;true&lt;/c&gt;释放托管和非托管资源 &lt;c&gt;false&lt;/c&gt; 只释放非托管资源.&lt;/param&gt;
+    /// <param name="disposing"><c>true</c>释放托管和非托管资源 <c>false</c> 只释放非托管资源.</param>
     protected virtual ValueTask OnDisposeAsync(bool disposing)
     {
-        // 默认实现执行同步处置。
+        //  默认实现执行同步处置。
         OnDispose(disposing);
         return default;
     }
 
     /// <summary>
-    /// 当前实例是否已被释放。
+    ///     当前实例是否已被释放。
     /// </summary>
     // ReSharper disable once MemberCanBePrivate.Global
     protected internal bool IsDisposed
@@ -80,37 +80,35 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     #region Utils for inheritors
 
     /// <summary>
-    /// 检查资源是否已释放
+    ///     检查资源是否已释放
     /// </summary>
     /// <exception cref="ObjectDisposedException"></exception>
     [DebuggerStepThrough]
     protected internal void CheckDisposed()
     {
-        if (IsDisposed)
-            throw new ObjectDisposedException(GetType().FullName);
+        if (IsDisposed) throw new ObjectDisposedException(GetType().FullName);
     }
 
     /// <summary>
-    /// 检查资源是否已释放
+    ///     检查资源是否已释放
     /// </summary>
     /// <param name="errorMessage"></param>
     /// <exception cref="ObjectDisposedException"></exception>
     [DebuggerStepThrough]
     protected internal void CheckDisposed(string errorMessage)
     {
-        if (IsDisposed)
-            throw new ObjectDisposedException(GetType().FullName, errorMessage);
+        if (IsDisposed) throw new ObjectDisposedException(GetType().FullName, errorMessage);
     }
 
     /// <summary>
-    /// 释放集合资源
+    ///     释放集合资源
     /// </summary>
     /// <param name="enumerable"></param>
     protected static void DisposeEnumerable(IEnumerable enumerable)
     {
         if (enumerable != null)
         {
-            foreach (object obj2 in enumerable)
+            foreach (var obj2 in enumerable)
             {
                 DisposeMember(obj2);
             }
@@ -119,7 +117,7 @@ public abstract class Disposable : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
-    /// 释放字典资源
+    ///     释放字典资源
     /// </summary>
     /// <param name="dictionary"></param>
     /// <typeparam name="TK"></typeparam>

@@ -87,6 +87,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "samples\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.IP", "framework\Findx.IP\Findx.IP.csproj", "{DAE01A0F-F29C-4DAE-905A-9F27B906C334}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{C5F6C819-B27D-4E12-A346-C68B2D8F66D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Findx.UnitTests", "tests\Findx.UnitTests\Findx.UnitTests.csproj", "{C8212918-C8AB-41A4-B067-EFE7F5604B33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -241,6 +245,10 @@ Global
 		{DAE01A0F-F29C-4DAE-905A-9F27B906C334}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DAE01A0F-F29C-4DAE-905A-9F27B906C334}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DAE01A0F-F29C-4DAE-905A-9F27B906C334}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8212918-C8AB-41A4-B067-EFE7F5604B33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8212918-C8AB-41A4-B067-EFE7F5604B33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8212918-C8AB-41A4-B067-EFE7F5604B33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8212918-C8AB-41A4-B067-EFE7F5604B33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -283,6 +291,7 @@ Global
 		{C288FDA3-095A-4BA3-B7E4-F90334FAE495} = {298F30E3-70D0-4D99-938C-C776C9FF488D}
 		{CF8EB6A2-9F5F-459F-A41A-58E7E69F4CDD} = {298F30E3-70D0-4D99-938C-C776C9FF488D}
 		{DAE01A0F-F29C-4DAE-905A-9F27B906C334} = {B66E551E-1813-4080-BC15-E2D9888B8308}
+		{C8212918-C8AB-41A4-B067-EFE7F5604B33} = {C5F6C819-B27D-4E12-A346-C68B2D8F66D9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7630DAB2-2CEC-407B-81D8-220E7EF09F33}

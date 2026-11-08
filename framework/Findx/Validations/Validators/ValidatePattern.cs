@@ -24,7 +24,7 @@ public static class ValidatePattern
     ///     Url验证正则表达式
     /// </summary>
     public const string UrlPattern =
-        @"^http(s?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?$";
+        @"^http(s?):\/\/([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(\?[\w\-\.,@?^=%&:\/~\+#]*)?$";
 
     /// <summary>
     ///     英文字母验证正则表达式

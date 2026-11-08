@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Findx.ExceptionHandling;
+namespace Findx.Exceptions;
 
 /// <summary>
 ///     异常订阅器基类

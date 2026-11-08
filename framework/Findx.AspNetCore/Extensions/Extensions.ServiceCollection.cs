@@ -28,12 +28,20 @@ public static partial class Extensions
     /// <returns></returns>
     public static IServiceCollection AddCorsAccessor(this IServiceCollection services)
     {
-        // 配置服务
+        //  配置服务
         var corsOptions = new CorsOptions();
         var configuration = services.GetConfiguration();
         var section = configuration.GetSection("Findx:Cors");
         section.Bind(corsOptions);
-        
+
+        //  安全约束：AllowCredentials 不允许与 AllowAnyOrigin 共存（CORS 协议禁止，运行时会抛异常）。
+        //  若开启了凭据却未显式配置 WithOrigins，则自动退化为不允许凭据，避免启动后首个跨域请求崩溃。
+        if (corsOptions.AllowCredentials && !corsOptions.WithOrigins.Any())
+        {
+            corsOptions.AllowCredentials = false;
+            corsOptions.DisallowCredentials = true;
+        }
+
         services.AddCors(options =>
         {
             options.AddPolicy("findx.cors", policyBuilder =>

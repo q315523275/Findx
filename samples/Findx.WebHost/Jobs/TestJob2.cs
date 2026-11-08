@@ -9,7 +9,7 @@ namespace Findx.WebHost.Jobs;
 /// <summary>
 ///     test job
 /// </summary>
-[Job(Cron = "*/6 * * * * ?", Name = "演示自动任务2")]
+[Job(Cron = "*/6 * * * * ?", Name = "演示自动任务222222")]
 public class TestJob2: IJob
 {
     /// <summary>

@@ -96,6 +96,10 @@ public class ChannelPool : IChannelPool
 
         if (poolItem.Channel.IsClosed)
         {
+            //  先对旧池项 Release，确保 Monitor.PulseAll 一定发出，
+            //  唤醒阻塞在旧池项 Acquire() 上的等待者（它们醒来后会检测到 IsClosed 并走重建分支），
+            //  否则等待者将永久挂起。注意必须在 poolItem 被重新赋值之前调用。
+            poolItem.Release();
             await poolItem.DisposeAsync();
             Channels.TryRemove(channelName, out _);
 

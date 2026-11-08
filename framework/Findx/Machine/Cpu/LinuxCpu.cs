@@ -26,9 +26,13 @@ public class LinuxCpu
             foreach (var item in text)
             {
                 if (!item.StartsWith("cpu")) continue;
-                var values = item.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToArray();
+                var values = item.Split(" ", StringSplitOptions.RemoveEmptyEntries);
+                //  行格式：cpu user nice system idle iowait irq softirq steal ...
+                //  字段不足 6 个时该行格式异常，跳过避免越界
+                if (values.Length < 6) continue;
                 systemTime += (ulong)values[1..].Select(decimal.Parse).Sum();
-                idleTime += ulong.Parse(values[4]);
+                //  按 Linux 惯例 iowait 计入空闲时间
+                idleTime += ulong.Parse(values[4]) + ulong.Parse(values[5]);
             }
         }
         catch (Exception ex)
@@ -36,7 +40,8 @@ public class LinuxCpu
             Debug.WriteLine(ex.ToString());
             Debug.Assert(false, ex.Message);
             throw new PlatformNotSupportedException(
-                $"{RuntimeInformation.OSArchitecture.ToString()}    {Environment.OSVersion.Platform.ToString()} {Environment.OSVersion}");
+                $"{RuntimeInformation.OSArchitecture.ToString()}    {Environment.OSVersion.Platform.ToString()} {Environment.OSVersion}",
+                ex);
         }
 
         return new CpuTime(idleTime, systemTime);

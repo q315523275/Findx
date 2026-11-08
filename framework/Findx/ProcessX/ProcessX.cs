@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Findx;
+using Findx.Extensions;
 
 // https://github.com/Cysharp/ProcessX/blob/master/src/ProcessX/ProcessX.cs
 
@@ -466,7 +467,7 @@ public static class ProcessX
         try
         {
             // var ms = new MemoryStream();
-            using var ms = Pool.MemoryStream.Rent();
+            using var handle = Pool.MemoryStream.Get(out var ms);
             await stream.CopyToAsync(ms, 81920, cancellationToken);
             var result = ms.ToArray();
             completion.TrySetResult(result);

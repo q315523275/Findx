@@ -34,6 +34,9 @@ internal static class JwtTokenHelper
     {
         var secret = options.Secret;
         Check.NotNull(secret, nameof(secret));
+        //  HS256 对称密钥要求至少 256bit(32字节)，与验证侧启动校验保持一致
+        if (Encoding.UTF8.GetByteCount(secret) < 32)
+            throw new ArgumentException("Jwt 密钥长度不足，HS256 对称密钥要求至少 32 字节(256bit)", nameof(secret));
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using Findx.DependencyInjection;
 using Findx.Extensions;
 using Findx.Reflection;
+using Microsoft.Extensions.Logging;
 
 namespace Findx.RabbitMQ;
 
@@ -22,6 +24,7 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
     private readonly IRabbitConsumerFinder _finder;
     private readonly IMethodInfoFinder _methodFinder;
     private readonly IRabbitMqSerializer _serializer;
+    private readonly ILogger<RabbitConsumerBuilder> _logger;
 
     /// <summary>
     ///     Ctor
@@ -30,20 +33,23 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
     /// <param name="methodFinder"></param>
     /// <param name="factory"></param>
     /// <param name="serializer"></param>
-    public RabbitConsumerBuilder(IRabbitConsumerFinder finder, IMethodInfoFinder methodFinder, IRabbitMqConsumerFactory factory, IRabbitMqSerializer serializer)
+    /// <param name="logger"></param>
+    public RabbitConsumerBuilder(IRabbitConsumerFinder finder, IMethodInfoFinder methodFinder, IRabbitMqConsumerFactory factory, IRabbitMqSerializer serializer, ILogger<RabbitConsumerBuilder> logger)
     {
         _finder = finder;
         _methodFinder = methodFinder;
         _factory = factory;
         _serializer = serializer;
+        _logger = logger;
         ConsumerList = [];
 
-        MethodParameterType = new Dictionary<MethodInfo, Type>();
-        MethodHandlers = new Dictionary<MethodInfo, Func<object, object[], object>>();
+        // 消息回调在运行期并发执行，缓存必须线程安全
+        MethodParameterType = new ConcurrentDictionary<MethodInfo, Type>();
+        MethodHandlers = new ConcurrentDictionary<MethodInfo, Func<object, object[], object>>();
     }
 
-    private IDictionary<MethodInfo, Type> MethodParameterType { get; }
-    private IDictionary<MethodInfo, Func<object, object[], object>> MethodHandlers { get; }
+    private ConcurrentDictionary<MethodInfo, Type> MethodParameterType { get; }
+    private ConcurrentDictionary<MethodInfo, Func<object, object[], object>> MethodHandlers { get; }
 
     /// <summary>
     ///     构建
@@ -62,7 +68,14 @@ public class RabbitConsumerBuilder : IRabbitConsumerBuilder
             var routingKeyDict = group.GroupBy(x => x.RoutingKey).ToDictionary(x => x.Key, x => x);
 
             var consumer = _factory.Create(exchangeDeclareConfiguration, queueDeclareConfiguration, defaultQueue.ConnectionName);
-            
+
+            //  接线失败回调：业务处理失败的消息已 Nack(requeue:false) 进入死信，这里记录失败现场
+            consumer.FailedCallback = (channel, eventArgs, cancellationToken) =>
+            {
+                _logger.LogError("RabbitMQ message handling failed, exchange: {Exchange}, routingKey: {RoutingKey}", eventArgs.Exchange, eventArgs.RoutingKey);
+                return Task.CompletedTask;
+            };
+
             consumer.OnMessageReceived(async (channel, eventArgs) =>
             {
                 // direct模式指定routingKey

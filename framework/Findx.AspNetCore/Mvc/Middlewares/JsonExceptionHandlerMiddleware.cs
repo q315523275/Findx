@@ -3,9 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Findx.Data;
-using Findx.ExceptionHandling;
 using Findx.Exceptions;
-using Findx.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Logging;
@@ -29,8 +27,7 @@ public class JsonExceptionHandlerMiddleware
     /// <param name="next"></param>
     /// <param name="logger"></param>
     /// <param name="exceptionNotifier"></param>
-    public JsonExceptionHandlerMiddleware(RequestDelegate next, ILogger<JsonExceptionHandlerMiddleware> logger,
-        IExceptionNotifier exceptionNotifier)
+    public JsonExceptionHandlerMiddleware(RequestDelegate next, ILogger<JsonExceptionHandlerMiddleware> logger, IExceptionNotifier exceptionNotifier)
     {
         _next = next;
         _logger = logger;
@@ -80,7 +77,7 @@ public class JsonExceptionHandlerMiddleware
             
             if (context == null || context.Response.HasStarted) return;
             
-            // 开启异常,方便外层组件熔断等功能使用
+            //  开启异常,方便外层组件熔断等功能使用
             context.Response.Clear();
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             context.Response.ContentType = "text/plain;charset=utf-8";
@@ -96,9 +93,12 @@ public class JsonExceptionHandlerMiddleware
     /// <param name="message"></param>
     private static async Task WriteOkFailAsync(HttpContext context, string code, string message)
     {
+        //  响应已开始发送时无法再 Clear/重写，直接放弃避免二次异常（与通用 catch 分支一致）
+        if (context.Response.HasStarted) return;
+
         context.Response.Clear();
         context.Response.StatusCode = (int)HttpStatusCode.OK;
-        context.Response.ContentType = "application/json;charset=utf-8"; ;
+        context.Response.ContentType = "application/json;charset=utf-8";
         await context.Response.WriteAsJsonAsync(CommonResult.Fail(code, message));
     }
 }

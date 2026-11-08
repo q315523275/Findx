@@ -4,7 +4,7 @@ using Findx.Data;
 using Findx.DependencyInjection;
 using Findx.Email;
 using Findx.Events;
-using Findx.ExceptionHandling;
+using Findx.Exceptions;
 using Findx.Extensions;
 using Findx.Locks;
 using Findx.Mapping;

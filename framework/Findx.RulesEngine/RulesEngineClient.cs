@@ -18,8 +18,10 @@ public class RulesEngineClient: IRulesEngineClient
     public string Name => "Microsoft";
     
     private readonly MicrosoftRulesEngine::RulesEngine.RulesEngine _rulesEngine;
-    
+
     private readonly ILogger<RulesEngineClient> _logger;
+
+    private readonly object _syncRoot = new();
 
     /// <summary>
     ///     Ctor
@@ -60,16 +62,27 @@ public class RulesEngineClient: IRulesEngineClient
 
     public Response RegisterRule(string ruleRaw)
     {
-        var workflow = ruleRaw.ToObject<Workflow>();
-        if (workflow == null)
-            return new ErrorResponse(new Error("rules.setting.error", "规则Json数据格式不匹配"));
+        try
+        {
+            var workflow = ruleRaw.ToObject<Workflow>();
+            if (workflow == null)
+                return new ErrorResponse(new Error("rules.setting.error", "规则Json数据格式不匹配"));
 
-        if (workflow.WorkflowName.IsNullOrWhiteSpace())
-            return new ErrorResponse(new Error("rules.setting.error", "规则Json数据缺失规则名称"));
+            if (workflow.WorkflowName.IsNullOrWhiteSpace())
+                return new ErrorResponse(new Error("rules.setting.error", "规则Json数据缺失规则名称"));
 
-        _rulesEngine.AddOrUpdateWorkflow(workflow);
+            lock (_syncRoot)
+            {
+                _rulesEngine.AddOrUpdateWorkflow(workflow);
+            }
 
-        return new OkResponse();
+            return new OkResponse();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogWarning(ex, "注册规则Json格式异常");
+            return new ErrorResponse(new Error(ex.Message, "规则引擎Json格式序列化异常"));
+        }
     }
 
     public async Task<Response> ExecuteAsync<TRequest>(string ruleName, TRequest data, CancellationToken cancellationToken = default)
@@ -95,16 +108,25 @@ public class RulesEngineClient: IRulesEngineClient
 
     public void RemoveRule(string ruleName)
     {
-        _rulesEngine.RemoveWorkflow(ruleName);
+        lock (_syncRoot)
+        {
+            _rulesEngine.RemoveWorkflow(ruleName);
+        }
     }
 
     public IEnumerable<string> GetRegisteredRules()
     {
-        return _rulesEngine.GetAllRegisteredWorkflowNames();
+        lock (_syncRoot)
+        {
+            return _rulesEngine.GetAllRegisteredWorkflowNames();
+        }
     }
 
     public void ClearAllRules()
     {
-        _rulesEngine.ClearWorkflows();
+        lock (_syncRoot)
+        {
+            _rulesEngine.ClearWorkflows();
+        }
     }
 }
