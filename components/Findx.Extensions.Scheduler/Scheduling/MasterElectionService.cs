@@ -1,5 +1,6 @@
 using Findx.Common;
 using Findx.Extensions;
+using Findx.Extensions.Scheduler.Options;
 using Findx.Locks;
 using Findx.Redis;
 using Microsoft.Extensions.DependencyInjection;

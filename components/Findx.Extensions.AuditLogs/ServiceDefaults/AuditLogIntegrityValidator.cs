@@ -2,7 +2,7 @@ using Findx.Data;
 using Findx.Extensions.AuditLogs.Models;
 using Microsoft.Extensions.Logging;
 
-namespace Findx.Extensions.AuditLogs.Services;
+namespace Findx.Extensions.AuditLogs.ServiceDefaults;
 
 /// <summary>
 ///     AuditLogs 审计完整性校验：按 Id 升序重算每条记录哈希并与库中值比对、校验链衔接

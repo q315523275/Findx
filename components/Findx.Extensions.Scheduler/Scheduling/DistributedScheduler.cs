@@ -1,3 +1,4 @@
+using Findx.Extensions.Scheduler.Options;
 using Findx.Extensions.Scheduler.Storage;
 using Findx.Utilities;
 using Microsoft.Extensions.Hosting;
@@ -15,6 +16,8 @@ public class DistributedScheduler : BackgroundService
     private readonly MasterElectionService _electionService;
     private readonly ScheduledJobStorage _storage;
     private readonly JobDispatcher _dispatcher;
+    private readonly SchedulerDispatchQueue _dispatchQueue;
+    private readonly SchedulerJobBuffer _buffer;
     private readonly JobResultHandler _resultHandler;
     private readonly InFlightExecutionRegistry _inFlightRegistry;
     private readonly ILogger<DistributedScheduler> _logger;
@@ -23,13 +26,16 @@ public class DistributedScheduler : BackgroundService
     ///     Ctor
     /// </summary>
     public DistributedScheduler(IOptions<SchedulerOptions> options, MasterElectionService electionService,
-        ScheduledJobStorage storage, JobDispatcher dispatcher, JobResultHandler resultHandler,
-        InFlightExecutionRegistry inFlightRegistry, ILogger<DistributedScheduler> logger)
+        ScheduledJobStorage storage, JobDispatcher dispatcher, SchedulerDispatchQueue dispatchQueue,
+        SchedulerJobBuffer buffer, JobResultHandler resultHandler, InFlightExecutionRegistry inFlightRegistry,
+        ILogger<DistributedScheduler> logger)
     {
         _options = options;
         _electionService = electionService;
         _storage = storage;
         _dispatcher = dispatcher;
+        _dispatchQueue = dispatchQueue;
+        _buffer = buffer;
         _resultHandler = resultHandler;
         _inFlightRegistry = inFlightRegistry;
         _logger = logger;
@@ -43,8 +49,12 @@ public class DistributedScheduler : BackgroundService
         var opts = _options.Value;
         await Task.Delay(TimeSpan.FromSeconds(3), stoppingToken);
 
+        //  周期按毫秒计，每轮用「周期 - 本轮耗时」做补偿，避免扫描耗时累积成调度漂移
+        var intervalMs = Math.Max(1, opts.SchedulerScanIntervalSeconds) * 1000;
+
         while (!stoppingToken.IsCancellationRequested)
         {
+            var startTime = DateTime.Now;
             try
             {
                 // 只有 Master 统一调度；Standby 空转等待选举
@@ -59,110 +69,65 @@ public class DistributedScheduler : BackgroundService
                 _logger.LogError(ex, "调度循环异常");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(Math.Max(1, opts.SchedulerScanIntervalSeconds)), stoppingToken);
+            var costMs = (DateTime.Now - startTime).TotalMilliseconds;
+            var delayMs = intervalMs - costMs;
+            if (delayMs > 0)
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(delayMs), stoppingToken);
+            }
         }
     }
 
     /// <summary>
-    ///     扫描到期任务：先处理重试到期（RetryAtTime，CAS 清标记后重发），再处理周期到期
-    ///     （CAS 抢占推进 NextRunTime，抢到者负责分发；过期即补触发一次，不补多个错过周期）
+    ///     扫描到期任务（内存窗口）：重试到期优先，其次周期到期。
+    ///     <para>窗口查询由 SchedulerJobBuffer 负责（耗尽的刷新在后台进行），CAS 抢占在分发线程执行，
+    ///     调度线程本身不做任何数据库往返与网络调用。</para>
     /// </summary>
     private async Task ScanAndDispatchAsync(CancellationToken cancellationToken)
     {
-        var now = DateTime.Now;
-        var dueJobs = await _storage.GetDueJobsAsync(now, cancellationToken);
-        if (dueJobs.Count == 0) return;
+        var dueItems = await _buffer.ScanDueAsync(DateTime.Now, cancellationToken);
+        if (dueItems.Count == 0) return;
 
-        _logger.LogDebug("扫描到 {Count} 个到期任务", dueJobs.Count);
+        _logger.LogDebug("扫描到 {Count} 个到期任务", dueItems.Count);
 
-        foreach (var job in dueJobs)
+        foreach (var item in dueItems)
         {
             if (cancellationToken.IsCancellationRequested) break;
+            await EnqueueOrDispatchAsync(item, cancellationToken);
+        }
+    }
 
-            if (string.IsNullOrWhiteSpace(job.CronExpression))
-            {
-                _logger.LogWarning("任务 [{JobName}] Cron 表达式为空，跳过", job.JobName);
-                continue;
-            }
+    /// <summary>
+    ///     入队分发；队列饱和时降级为「本线程 CAS + 同步分发」，保证到期任务不被丢弃
+    /// </summary>
+    private async Task EnqueueOrDispatchAsync(DispatchItem item, CancellationToken cancellationToken)
+    {
+        if (_dispatchQueue.TryEnqueue(item)) return;
 
-            // 分支一：重试到期（上次失败退避到点）——先于周期分支处理，避免重试长期积压
-            if (job.RetryAtTime != null && job.RetryAtTime <= now)
-            {
-                var expectedRetry = job.RetryAtTime.Value;
-                var claimedRetry = await _storage.ClaimRetryAsync(job.Id, expectedRetry, cancellationToken);
-                if (!claimedRetry)
-                {
-                    _logger.LogDebug("任务 [{JobName}] 重试时刻已被抢占，跳过", job.JobName);
-                    continue;
-                }
+        _logger.LogWarning("任务 [{JobName}] 分发队列已满，本次降级为同步分发", item.Job.JobName);
 
-                // 重试以独立 period 标记（区别于正常周期），执行权锁 key 不冲突
-                var retryPeriod = "R:" + expectedRetry.ToString("O");
-                var retryDispatched = await _dispatcher.DispatchAsync(job, retryPeriod, job.TryCount, cancellationToken);
-                if (!retryDispatched)
-                {
-                    await _resultHandler.HandleFailureAsync(new InFlightExecution
-                    {
-                        TraceId = Guid.NewGuid().ToString("N"),
-                        JobId = job.Id,
-                        JobName = job.JobName,
-                        HandlerType = job.HandlerType,
-                        Parameter = job.Parameter,
-                        Period = retryPeriod,
-                        Attempt = job.TryCount,
-                        WorkerAddress = string.Empty,
-                        StartTime = now,
-                        CronExpression = job.CronExpression
-                    }, "重试分发失败：无可执行节点或 Worker 不可达", cancellationToken);
-                }
-                continue;
-            }
+        var claimed = item.Kind == DispatchKind.Retry
+            ? await _storage.ClaimRetryAsync(item.Job.Id, item.ExpectedTime, cancellationToken)
+            : await _storage.ClaimDueAsync(item.Job.Id, item.ExpectedTime, item.NewNextRunTime, item.LastRunTime, cancellationToken);
+        if (!claimed)
+        {
+            _buffer.Remove(item.Job.Id);
+            return;
+        }
 
-            // 分支二：周期到期
-            DateTime newNext;
-            try
-            {
-                newNext = CronUtility.GetNextOccurrence(job.CronExpression, now);
-                if (newNext == default)
-                {
-                    _logger.LogWarning("任务 [{JobName}] Cron 表达式 {Cron} 无法计算下次触发时间，跳过", job.JobName, job.CronExpression);
-                    continue;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "任务 [{JobName}] Cron 表达式 {Cron} 解析失败", job.JobName, job.CronExpression);
-                continue;
-            }
+        var allDispatched = true;
+        foreach (var period in item.Periods)
+        {
+            var dispatched = await _dispatcher.DispatchAsync(item.Job, period, item.Attempt, cancellationToken);
+            if (dispatched) continue;
 
-            // 周期 CAS 抢占：仅当 NextRunTime 仍等于扫描时读到的值才推进，防止并发 Master 重复分发
-            var expectedNext = job.NextRunTime!.Value;
-            var claimed = await _storage.ClaimDueAsync(job.Id, expectedNext, newNext, now, cancellationToken);
-            if (!claimed)
-            {
-                _logger.LogDebug("任务 [{JobName}] 周期 {Period} 已被抢占，跳过", job.JobName, expectedNext);
-                continue;
-            }
+            allDispatched = false;
+            break;
+        }
 
-            var period = expectedNext.ToString("O");
-            var dispatched = await _dispatcher.DispatchAsync(job, period, job.TryCount, cancellationToken);
-            if (!dispatched)
-            {
-                // 分发失败（无可用节点/HTTP 异常）按失败路径退避重试，避免本轮任务直接丢失
-                await _resultHandler.HandleFailureAsync(new InFlightExecution
-                {
-                    TraceId = Guid.NewGuid().ToString("N"),
-                    JobId = job.Id,
-                    JobName = job.JobName,
-                    HandlerType = job.HandlerType,
-                    Parameter = job.Parameter,
-                    Period = period,
-                    Attempt = job.TryCount,
-                    WorkerAddress = string.Empty,
-                    StartTime = now,
-                    CronExpression = job.CronExpression
-                }, "分发失败：无可执行节点或 Worker 不可达", cancellationToken);
-            }
+        if (!allDispatched)
+        {
+            await _resultHandler.HandleFailureAsync(item.ToFailedFlight(), "分发失败：无可执行节点或 Worker 不可达", cancellationToken);
         }
     }
 

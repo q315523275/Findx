@@ -17,6 +17,16 @@ public class ScheduledJobStorage
     private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
+    ///     任务定义变更通知：增删改、失败退避、死信推进后触发，供 Master 内存窗口标脏（下次调度后台重查）
+    /// </summary>
+    public event Action JobsChanged;
+
+    /// <summary>
+    ///     通知任务定义已变更
+    /// </summary>
+    private void NotifyChanged() => JobsChanged?.Invoke();
+
+    /// <summary>
     ///     Ctor
     /// </summary>
     public ScheduledJobStorage(IServiceProvider serviceProvider, ILogger<ScheduledJobStorage> logger)
@@ -54,6 +64,7 @@ public class ScheduledJobStorage
             job.NextRunTime = CronUtility.GetNextOccurrence(job.CronExpression, DateTimeOffset.Now);
 
         await WithRepositoryAsync(async repo => { await repo.InsertAsync(job, cancellationToken); }, cancellationToken);
+        NotifyChanged();
         return job;
     }
 
@@ -62,7 +73,9 @@ public class ScheduledJobStorage
     /// </summary>
     public async Task<int> UpdateAsync(ScheduledJob job, CancellationToken cancellationToken = default)
     {
-        return await WithRepositoryAsync(repo => repo.UpdateAsync(job, cancellationToken: cancellationToken), cancellationToken);
+        var affected = await WithRepositoryAsync(repo => repo.UpdateAsync(job, cancellationToken: cancellationToken), cancellationToken);
+        NotifyChanged();
+        return affected;
     }
 
     /// <summary>
@@ -78,7 +91,9 @@ public class ScheduledJobStorage
     /// </summary>
     public async Task<int> DeleteAsync(long id, CancellationToken cancellationToken = default)
     {
-        return await WithRepositoryAsync(repo => repo.DeleteAsync(id, cancellationToken), cancellationToken);
+        var affected = await WithRepositoryAsync(repo => repo.DeleteAsync(id, cancellationToken), cancellationToken);
+        NotifyChanged();
+        return affected;
     }
 
     /// <summary>
@@ -98,6 +113,19 @@ public class ScheduledJobStorage
             repo => repo.SelectAsync(x => x.Status == JobStatus.Normal &&
                                           ((x.NextRunTime != null && x.NextRunTime <= now) ||
                                            (x.RetryAtTime != null && x.RetryAtTime <= now)), cancellationToken: cancellationToken),
+            cancellationToken);
+    }
+
+    /// <summary>
+    ///     查询窗口内任务（启用 且（NextRunTime 或 RetryAtTime 落在窗口终点之前））。
+    ///     <para>含已过期未触发的任务：Master 拉进内存后补触发一次，再按 Cron 推进。</para>
+    /// </summary>
+    public async Task<List<ScheduledJob>> GetWindowJobsAsync(DateTime windowEnd, CancellationToken cancellationToken = default)
+    {
+        return await WithRepositoryAsync(
+            repo => repo.SelectAsync(x => x.Status == JobStatus.Normal &&
+                                          ((x.NextRunTime != null && x.NextRunTime <= windowEnd) ||
+                                           (x.RetryAtTime != null && x.RetryAtTime <= windowEnd)), cancellationToken: cancellationToken),
             cancellationToken);
     }
 
@@ -141,6 +169,7 @@ public class ScheduledJobStorage
                 x => x.Id == id,
                 cancellationToken),
             cancellationToken);
+        NotifyChanged();
     }
 
     /// <summary>
@@ -151,6 +180,7 @@ public class ScheduledJobStorage
         await WithRepositoryAsync(
             repo => repo.UpdateColumnsAsync(x => new ScheduledJob { TryCount = 0, RetryAtTime = null }, x => x.Id == id, cancellationToken),
             cancellationToken);
+        NotifyChanged();
     }
 
     /// <summary>
@@ -189,5 +219,6 @@ public class ScheduledJobStorage
                 x => x.Id == id,
                 cancellationToken),
             cancellationToken);
+        NotifyChanged();
     }
 }

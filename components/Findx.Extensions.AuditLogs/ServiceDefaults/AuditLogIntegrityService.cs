@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Findx.Extensions.AuditLogs.Models;
 
-namespace Findx.Extensions.AuditLogs.Services;
+namespace Findx.Extensions.AuditLogs.ServiceDefaults;
 
 /// <summary>
 ///     审计哈希计算（SHA256 哈希链）。算法与主框架 Findx.AuditHashUtility 一致；

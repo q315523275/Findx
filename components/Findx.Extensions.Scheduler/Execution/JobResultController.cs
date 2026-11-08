@@ -1,6 +1,7 @@
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions.Scheduler.Models;
+using Findx.Extensions.Scheduler.Options;
 using Findx.Extensions.Scheduler.Scheduling;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;

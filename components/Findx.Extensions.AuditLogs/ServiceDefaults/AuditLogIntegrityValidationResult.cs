@@ -1,4 +1,4 @@
-namespace Findx.Extensions.AuditLogs.Services;
+namespace Findx.Extensions.AuditLogs.ServiceDefaults;
 
 /// <summary>
 ///     审计完整性校验结果

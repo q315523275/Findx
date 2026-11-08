@@ -1,4 +1,5 @@
-using Findx.Extensions;
+using Findx.Extensions.Scheduler.Execution;
+using Findx.Extensions.Scheduler.Options;
 using Findx.Extensions.Scheduler.Scheduling;
 using Findx.Extensions.Scheduler.Storage;
 using Findx.Jobs;
@@ -61,11 +62,21 @@ public class SchedulerModule : StartupModule
         services.AddSingleton<JobResultHandler>();
         services.AddSingleton<WorkerRegistry>();
         services.AddSingleton<MasterElectionService>();
+
+        // 分发队列：调度循环入队（纯内存），Redis 取锁 / Worker HTTP 投递 / 失败入库在独立消费线程执行
+        services.AddSingleton<SchedulerJobBuffer>();
+        services.AddSingleton<SchedulerDispatchQueue>();
         services.AddSingleton<DistributedScheduler>();
 
         services.AddHostedService(sp => sp.GetRequiredService<WorkerRegistry>());
         services.AddHostedService(sp => sp.GetRequiredService<MasterElectionService>());
+        services.AddHostedService(sp => sp.GetRequiredService<SchedulerDispatchQueue>());
         services.AddHostedService(sp => sp.GetRequiredService<DistributedScheduler>());
+
+        // Worker 端执行受理：接口入队即返回，执行与结果回调在独立消费线程完成
+        services.AddSingleton<JobResultReporter>();
+        services.AddSingleton<JobExecutionQueue>();
+        services.AddHostedService(sp => sp.GetRequiredService<JobExecutionQueue>());
 
         // IJob 类型查找器（单例，Worker 能力扫描与执行注册共用）
         services.GetOrAddSingletonInstance<IJobFinder>(() => new JobFinder());

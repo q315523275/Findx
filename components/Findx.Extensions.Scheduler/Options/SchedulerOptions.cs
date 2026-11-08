@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace Findx.Extensions.Scheduler;
+namespace Findx.Extensions.Scheduler.Options;
 
 /// <summary>
 ///     分布式调度组件配置项（配置节 Findx:Scheduler）
@@ -66,7 +66,7 @@ public class SchedulerOptions : IOptions<SchedulerOptions>
     /// <summary>
     ///     Master 到期扫描循环间隔（秒）
     /// </summary>
-    public int SchedulerScanIntervalSeconds { set; get; } = 5;
+    public int SchedulerScanIntervalSeconds { set; get; } = 10;
 
     /// <summary>
     ///     单周期最大重试次数（超过后写死信表）
@@ -103,6 +103,58 @@ public class SchedulerOptions : IOptions<SchedulerOptions>
     ///     分发策略名称（当前内置 RoundRobin；Weight 字段已预留权重扩展位）
     /// </summary>
     public string DispatchStrategy { set; get; } = "RoundRobin";
+
+    /// <summary>
+    ///     Master 分发队列容量（有界通道）。调度循环只入队不等待网络；队列满时降级为同步分发并告警，任务不丢弃
+    /// </summary>
+    public int DispatchQueueCapacity { set; get; } = 4096;
+
+    /// <summary>
+    ///     独立分发线程数：Redis 取锁 + HTTP 投递 + 失败入库都在这些线程里执行，不占用调度扫描线程
+    /// </summary>
+    public int DispatchWorkerCount { set; get; } = 4;
+
+    /// <summary>
+    ///     分发 HTTP 超时（秒）。仅约束「投递到 Worker」这一步，避免单个 Worker 假死拖住整轮调度
+    /// </summary>
+    public int DispatchHttpTimeoutSeconds { set; get; } = 5;
+
+    /// <summary>
+    ///     Worker 端执行受理队列容量（有界通道）。受理接口入队即返回，队列满时返回失败让 Master 走重试
+    /// </summary>
+    public int ExecutionQueueCapacity { set; get; } = 1024;
+
+    /// <summary>
+    ///     Worker 端执行线程数：长任务只占用自己的执行线程，不影响受理接口响应
+    /// </summary>
+    public int ExecutionWorkerCount { set; get; } = 8;
+
+    /// <summary>
+    ///     预取窗口（秒）：Master 每次把「窗口内即将到期」的任务一次性拉到内存，窗口内调度不再查库
+    /// </summary>
+    public int LookaheadWindowSeconds { set; get; } = 60;
+
+    /// <summary>
+    ///     预取窗口刷新间隔（秒）：超过该间隔或窗口耗尽时后台重查一次，调度线程不等查询结果
+    /// </summary>
+    public int LookaheadRefreshSeconds { set; get; } = 30;
+
+    /// <summary>
+    ///     错过周期（misfire）处理策略：任务迟到超过一个预取窗口时的行为。
+    ///     默认 FireOnceNow（补触发一次，保持与原逻辑一致）；DoNothing 只推进不触发，适合积压场景控冲击
+    /// </summary>
+    public SchedulerMisfireStrategy MisfireStrategy { set; get; } = SchedulerMisfireStrategy.FireOnceNow;
+
+    /// <summary>
+    ///     是否补齐「过去错过的多个触发点」（对齐内存版 Server 的 while 入环语义）。
+    ///     默认 false：同一轮到一个周期只触发一次；true 时补跑该任务在 now 之前的所有触发点
+    /// </summary>
+    public bool CatchUpWithinWindow { set; get; } = false;
+
+    /// <summary>
+    ///     单轮单任务最多补触发次数（仅 CatchUpWithinWindow 生效），防止秒级任务一次性补跑过多
+    /// </summary>
+    public int CatchUpMaxCount { set; get; } = 30;
 
     /// <summary>
     ///     机器间接口共享令牌（配置后请求须携带 X-Scheduler-Token 头一致才放行）；留空则不校验

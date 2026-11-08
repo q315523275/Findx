@@ -4,7 +4,6 @@ using Findx.Extensions.AuditLogs.EventHandling;
 using Findx.Extensions.AuditLogs.Events;
 using Findx.Extensions.AuditLogs.Options;
 using Findx.Extensions.AuditLogs.ServiceDefaults;
-using Findx.Extensions.AuditLogs.Services;
 using Findx.Messaging;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,5 +1,6 @@
 using Findx.Extensions;
 using Findx.Extensions.Scheduler.Models;
+using Findx.Extensions.Scheduler.Options;
 using Findx.Locks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -94,6 +95,8 @@ public class JobDispatcher
         try
         {
             var httpClient = _httpClientFactory.CreateClient();
+            //  只约束「投递」这一步：Worker 假死时 5 秒即失败并进入重试，不再让单次分发挂住几十秒
+            httpClient.Timeout = TimeSpan.FromSeconds(Math.Max(1, opts.DispatchHttpTimeoutSeconds));
             var response = await httpClient.PostAsJsonAsync($"{worker.Address}/api/scheduler/jobs/execute", request, headers, cancellationToken);
             if (!response.IsSuccessStatusCode)
             {

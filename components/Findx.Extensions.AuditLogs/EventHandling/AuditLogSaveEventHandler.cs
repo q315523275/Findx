@@ -3,7 +3,7 @@ using Findx.Data;
 using Findx.Extensions.AuditLogs.Events;
 using Findx.Extensions.AuditLogs.Models;
 using Findx.Extensions.AuditLogs.Options;
-using Findx.Extensions.AuditLogs.Services;
+using Findx.Extensions.AuditLogs.ServiceDefaults;
 using Findx.Messaging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -1,6 +1,7 @@
 using Findx.Common;
 using Findx.Extensions;
 using Findx.Extensions.Scheduler.Models;
+using Findx.Extensions.Scheduler.Options;
 using Findx.Extensions.Scheduler.Storage;
 using Findx.Redis;
 using Microsoft.Extensions.Logging;
