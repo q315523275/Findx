@@ -1,0 +1,79 @@
+{
+  "processKey": "leave",
+  "processName": "请假审批",
+  "root": {
+    "nodeName": "发起人",
+    "nodeKey": "root",
+    "type": 0,
+    "childNode": {
+      "nodeName": "直属主管审批",
+      "nodeKey": "leaderApprove",
+      "type": 1,
+      "props": {
+        "assignee": [
+          { "type": "user", "id": "1001", "name": "张主管" }
+        ],
+        "performType": 0,
+        "expireDay": 1
+      },
+      "childNode": {
+        "nodeName": "请假天数判断",
+        "nodeKey": "daysJudge",
+        "type": 3,
+        "childNode": {
+          "nodeName": "人事抄送",
+          "nodeKey": "hrCopy",
+          "type": 2,
+          "props": {
+            "assignee": [
+              { "type": "dept", "id": "2001", "name": "人事部" }
+            ]
+          },
+          "childNode": null
+        },
+        "conditionNodes": [
+          {
+            "nodeName": "三天以内",
+            "nodeKey": "daysSmall",
+            "type": 3,
+            "props": {
+              "expression": "days <= 3"
+            },
+            "childNode": {
+              "nodeName": "人事备案",
+              "nodeKey": "hrRecord",
+              "type": 1,
+              "props": {
+                "assignee": [
+                  { "type": "role", "id": "hr", "name": "人事角色" }
+                ],
+                "performType": 0
+              },
+              "childNode": null
+            }
+          },
+          {
+            "nodeName": "超过三天",
+            "nodeKey": "daysLarge",
+            "type": 3,
+            "props": {},
+            "childNode": {
+              "nodeName": "总经理会签",
+              "nodeKey": "gmCountersign",
+              "type": 1,
+              "props": {
+                "assignee": [
+                  { "type": "user", "id": "1002", "name": "李总" },
+                  { "type": "user", "id": "1003", "name": "王总" }
+                ],
+                "performType": 1,
+                "expireDay": 2
+              },
+              "childNode": null
+            }
+          }
+        ]
+      }
+    }
+  }
+}
