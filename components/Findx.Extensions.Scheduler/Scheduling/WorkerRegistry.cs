@@ -31,8 +31,11 @@ public class WorkerRegistry : BackgroundService
     /// <summary>
     ///     Ctor
     /// </summary>
-    public WorkerRegistry(IOptions<SchedulerOptions> options, IRedisClientProvider redisClientProvider,
-        IJobFinder jobFinder, ILogger<WorkerRegistry> logger)
+    /// <param name="options"></param>
+    /// <param name="redisClientProvider"></param>
+    /// <param name="jobFinder"></param>
+    /// <param name="logger"></param>
+    public WorkerRegistry(IOptions<SchedulerOptions> options, IRedisClientProvider redisClientProvider, IJobFinder jobFinder, ILogger<WorkerRegistry> logger)
     {
         _options = options;
         _redisClientProvider = redisClientProvider;

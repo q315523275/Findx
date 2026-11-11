@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
+using Findx.Extensions.WorkflowCore.Enums;
 
 namespace Findx.Extensions.WorkflowCore.Entity;
 
@@ -16,7 +17,22 @@ public class FlwInstanceInfo: FullEntityBase
     ///     流程定义ID
     /// </summary>
     public long ProcessId { get; set; }
-    
+
+    /// <summary>
+    ///     流程编码（冗余存储，避免每次按 ID 回查定义表）
+    /// </summary>
+    public string ProcessKey { get; set; }
+
+    /// <summary>
+    ///     流程名称
+    /// </summary>
+    public string ProcessName { get; set; }
+
+    /// <summary>
+    ///     实例状态（FlowLong 原生只在历史实例表记录状态，这里冗余一份以便运行中查询）
+    /// </summary>
+    public FlwInstanceState InstanceState { get; set; }
+
     /// <summary>
     ///     父流程实例ID
     /// </summary>

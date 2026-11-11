@@ -123,9 +123,11 @@ public class MasterElectionService : BackgroundService
     ///     把本节点地址写入 MasterInfo key，供 Worker 回调；TTL 约为锁租期 3 倍，随持锁周期续约。
     ///     仅持锁者允许写——双 Master 窗口内旧主不得覆盖新主地址，避免 Worker 回调错节点
     /// </summary>
+    /// <param name="rLock"></param>
+    /// <param name="cancellationToken"></param>
     private async Task WriteMasterInfoAsync(RLock rLock, CancellationToken cancellationToken)
     {
-        // 写前校验持锁归属：锁已失效（易主/续期失败）则不再更新 MasterInfo
+        //  写前校验持锁归属：锁已失效（易主/续期失败）则不再更新 MasterInfo
         if (rLock == null || !rLock.IsLocked()) return;
 
         var opts = _options.Value;
@@ -136,7 +138,6 @@ public class MasterElectionService : BackgroundService
             StartedAt = DateTime.Now
         };
 
-        await _redisClient.StringSetAsync(opts.MasterInfoKey, info.ToJson(),
-            TimeSpan.FromSeconds(Math.Max(3, opts.MasterLockTtlSeconds * 3)), When.Always, cancellationToken);
+        await _redisClient.StringSetAsync(opts.MasterInfoKey, info.ToJson(), TimeSpan.FromSeconds(Math.Max(3, opts.MasterLockTtlSeconds * 3)), When.Always, cancellationToken);
     }
 }

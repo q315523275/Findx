@@ -1,7 +1,6 @@
 using System.Data;
 using System.Data.Common;
 using System.Threading.Tasks;
-using Findx.Common;
 using Findx.Events;
 using Findx.Exceptions;
 

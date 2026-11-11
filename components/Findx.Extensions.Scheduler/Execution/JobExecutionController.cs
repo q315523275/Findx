@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions.Scheduler.Models;
@@ -23,6 +22,8 @@ public class JobExecutionController : AreaApiControllerBase
     /// <summary>
     ///     Ctor
     /// </summary>
+    /// <param name="options"></param>
+    /// <param name="executionQueue"></param>
     public JobExecutionController(IOptions<SchedulerOptions> options, JobExecutionQueue executionQueue)
     {
         _options = options;
@@ -32,11 +33,14 @@ public class JobExecutionController : AreaApiControllerBase
     /// <summary>
     ///     接收 Master 分发的任务：校验后入队即返回（受理语义），不在请求线程里执行 Job
     /// </summary>
+    /// <param name="request"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("execute")]
     [Description("受理任务执行")]
     public CommonResult ExecuteAsync([FromBody] DispatchRequest request, CancellationToken cancellationToken)
     {
-        // 机器间接口共享令牌校验（配置 ClusterToken 后启用）
+        //  机器间接口共享令牌校验（配置 ClusterToken 后启用）
         if (!TryAuthorize(out var authResult)) return authResult;
 
         if (request == null || string.IsNullOrWhiteSpace(request.HandlerType))

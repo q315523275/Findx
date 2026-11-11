@@ -1,6 +1,5 @@
 using Findx.Extensions.Scheduler.Options;
 using Findx.Extensions.Scheduler.Storage;
-using Findx.Utilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -4,6 +4,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Expressions;
 using Findx.Extensions.WorkflowCore.Dtos.Model;
+using Findx.Extensions.WorkflowCore.Engine;
 using Findx.Extensions.WorkflowCore.Entity;
 using Findx.Mapping;
 using Findx.Module.EleAdminPlus.Shared.ServiceDefaults;
@@ -116,6 +117,62 @@ public class ModelController: AreaApiControllerBase
         
         await repo.SaveAsync(model, cancellationToken);
         
+        return CommonResult.Success();
+    }
+
+    /// <summary>
+    ///     模型详情（含模型 JSON 内容）
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpGet("detail")]
+    public async Task<CommonResult> DetailAsync([FromQuery] long id, CancellationToken cancellationToken)
+    {
+        var repo = GetRepository<FlwProcessInfo, long>();
+        var model = await repo.GetAsync(id, cancellationToken);
+        if (model == null) return CommonResult.Fail("404", "流程模型不存在");
+
+        return CommonResult.Success(model);
+    }
+
+    /// <summary>
+    ///     发布模型：校验模型 JSON，同编码的其它可用版本置为历史版本，当前记录升级版本并置为可用
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpPost("publish")]
+    public async Task<CommonResult> PublishAsync([FromQuery] long id, CancellationToken cancellationToken)
+    {
+        var repo = GetRepository<FlwProcessInfo, long>();
+
+        var model = await repo.GetAsync(id, cancellationToken);
+        if (model == null) return CommonResult.Fail("404", "流程模型不存在");
+
+        try
+        {
+            FlwModelParser.Parse(model.ModelContent, model.Code, model.Name, model.Type);
+        }
+        catch (FlwModelException ex)
+        {
+            return CommonResult.Fail("500", ex.Message);
+        }
+
+        var sameCodeModels = await repo.SelectAsync(x => x.Code == model.Code && x.Id != model.Id, cancellationToken: cancellationToken);
+        foreach (var item in sameCodeModels.Where(x => x.Status == 1))
+        {
+            item.Status = 2;
+            item.CheckUpdateAudited<FlwProcessInfo, long>(HttpContext.User);
+            await repo.UpdateAsync(item, cancellationToken: cancellationToken);
+        }
+
+        model.Version = model.Version <= 0 ? 1 : model.Version;
+        model.Status = 1;
+        model.CheckUpdateAudited<FlwProcessInfo, long>(HttpContext.User);
+        repo.Attach(model.Clone());
+        await repo.SaveAsync(model, cancellationToken);
+
         return CommonResult.Success();
     }
 }

@@ -11,7 +11,7 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 [Table("flw_instance_ext")]
 [EntityExtension(DataSource = "Workflow")]
 [Description("扩展流程实例表")]
-public class FlwExtInstanceInfo: EntityBase<long>
+public class FlwExtInstanceInfo: EntityBase
 {
     /// <summary>
     ///     程实例ID

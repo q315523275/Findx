@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\framework\Findx.Swagger\Findx.Swagger.csproj" />
     <ProjectReference Include="..\..\framework\Findx.Guids.NewId\Findx.Guids.NewId.csproj" />
     <ProjectReference Include="..\..\components\Findx.Extensions.Scheduler\Findx.Extensions.Scheduler.csproj" />
+    <ProjectReference Include="..\..\components\Findx.Extensions.WorkflowCore\Findx.Extensions.WorkflowCore.csproj" />
     <ProjectReference Include="..\..\components\Findx.Extensions.ConfigurationServer\Findx.Extensions.ConfigurationServer.csproj" />
   </ItemGroup>
 
