@@ -42,6 +42,8 @@ public class InstanceController: FlwControllerBase
             ProcessKey = req.ProcessKey,
             ProcessId = req.ProcessId,
             BusinessKey = req.BusinessKey,
+            BusinessType = req.BusinessType,
+            BusinessId = req.BusinessId,
             Variables = req.Variables,
             InstanceNo = req.InstanceNo,
             Priority = req.Priority,
@@ -60,6 +62,17 @@ public class InstanceController: FlwControllerBase
     {
         var engine = GetRequiredService<IFlowLongEngine>();
         await engine.RevokeAsync(req.InstanceId, CurrentActor, req.Comment, cancellationToken);
+        return CommonResult.Success();
+    }
+
+    /// <summary>
+    ///     强制终止（管理员 / 业务作废场景，不校验发起人）
+    /// </summary>
+    [HttpPost("terminate")]
+    public async Task<CommonResult> TerminateAsync([FromBody] InstanceRevokeDto req, CancellationToken cancellationToken)
+    {
+        var engine = GetRequiredService<IFlowLongEngine>();
+        await engine.TerminateAsync(req.InstanceId, CurrentActor, req.Comment, cancellationToken);
         return CommonResult.Success();
     }
 

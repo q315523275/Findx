@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 using Findx.Extensions.WorkflowCore.Enums;
@@ -9,7 +9,6 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 ///     历史任务表（已完成/拒绝/撤销/终止的任务归档）
 /// </summary>
 [Table("flw_task_his")]
-[EntityExtension(DataSource = "Workflow")]
 [Description("历史任务表")]
 public class FlwHisTaskInfo: FlwTaskInfo
 {

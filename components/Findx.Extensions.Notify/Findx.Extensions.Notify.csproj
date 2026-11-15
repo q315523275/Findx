@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>disable</Nullable>
+        <LangVersion>default</LangVersion>
+        <TargetFrameworks>net6.0;net8.0;net10.0</TargetFrameworks>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+        <PackageVersion>11.1.2026.1111</PackageVersion>
+        <Description>Findx消息通知扩展组件（企业微信群机器人/应用消息、钉钉群机器人、SMTP邮件、微信公众号模板消息）</Description>
+        <RepositoryUrl>https://github.com/q315523275/findx</RepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\framework\Findx\Findx.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+      <ProjectReference Include="..\..\framework\Findx.FreeSql\Findx.FreeSql.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -44,6 +44,11 @@ public interface IFlowLongEngine
     Task JumpAsync(long taskId, FlwCreator actor, string targetNodeKey, string comment = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    ///     强制终止（管理员/业务作废场景，不校验发起人）
+    /// </summary>
+    Task TerminateAsync(long instanceId, FlwCreator actor, string comment = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     ///     完成触发器/子流程挂起任务
     /// </summary>
     Task CompleteTriggerAsync(long taskId, FlwCreator actor, string comment = null, CancellationToken cancellationToken = default);

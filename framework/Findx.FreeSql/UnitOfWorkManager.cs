@@ -51,4 +51,25 @@ public class UnitOfWorkManager : UnitOfWorkManagerBase
     {
         return _options.CurrentValue.Primary;
     }
+
+    /// <summary>
+    ///     归一化数据源标识
+    ///     <para>DataSourceSharing 会让多个键指向同一个 IFreeSql，此时必须归到实际数据源键，否则会各建一个工作单元（各开连接、各开事务），跨数据源的写入就不是原子的</para>
+    /// </summary>
+    /// <param name="primary"></param>
+    /// <returns></returns>
+    protected override string NormalizePrimary(string primary)
+    {
+        if (string.IsNullOrWhiteSpace(primary)) return GetDataSourcePrimary();
+        if (!_clients.TryGetValue(primary, out var fsql)) return primary;
+
+        //  以配置里的真实数据源为基准，共享同一实例的别名归一到它
+        foreach (var item in _options.CurrentValue.DataSource)
+        {
+            if (_clients.TryGetValue(item.Key, out var candidate) && ReferenceEquals(candidate, fsql))
+                return item.Key;
+        }
+
+        return primary;
+    }
 }

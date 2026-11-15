@@ -16,16 +16,27 @@ public partial class FlowLongEngine: IFlowLongEngine
     private readonly IUnitOfWorkManager _unitOfWorkManager;
     private readonly ILogger<FlowLongEngine> _logger;
     private readonly IFlwActorProvider _actorProvider;
+    private readonly FlwBusinessAdapterRegistry _adapterRegistry;
+    private readonly IEnumerable<IFlwInstanceListener> _instanceListeners;
+    private readonly IFlwTaskNotifier _taskNotifier;
+
+    //  一次流程操作内的提交后回调（通知等副作用），与引擎事务解耦
+    private FlwPostCommitQueue _postCommit = new();
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    public FlowLongEngine(FlwStore store, IUnitOfWorkManager unitOfWorkManager, ILogger<FlowLongEngine> logger, IFlwActorProvider actorProvider = null)
+    public FlowLongEngine(FlwStore store, IUnitOfWorkManager unitOfWorkManager, ILogger<FlowLongEngine> logger,
+        IFlwActorProvider actorProvider = null, FlwBusinessAdapterRegistry adapterRegistry = null,
+        IEnumerable<IFlwInstanceListener> instanceListeners = null, IFlwTaskNotifier taskNotifier = null)
     {
         _store = store;
         _unitOfWorkManager = unitOfWorkManager;
         _logger = logger;
         _actorProvider = actorProvider;
+        _adapterRegistry = adapterRegistry;
+        _instanceListeners = instanceListeners;
+        _taskNotifier = taskNotifier;
     }
 
     /// <inheritdoc />
@@ -39,10 +50,29 @@ public partial class FlowLongEngine: IFlowLongEngine
 
         var model = FlwModelParser.Parse(process.ModelContent, process.Code, process.Name, process.Type);
 
+        _postCommit = new FlwPostCommitQueue();
+
         await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<FlwInstanceInfo>(true, cancellationToken);
         _store.AttachUnitOfWork(uow);
+
+        //  业务类型显式传入优先，否则取流程定义上的
+        var businessType = string.IsNullOrWhiteSpace(args.BusinessType) ? process.BusinessType : args.BusinessType;
+        var adapter = _adapterRegistry?.Get(businessType);
+        if (adapter != null && args.BusinessId <= 0)
+            throw new FlwEngineException($"流程[{process.Name}]已绑定业务类型[{businessType}]，发起时业务主键不能为空");
+
         try
         {
+            FlwBusinessInfo business = null;
+            if (adapter != null)
+            {
+                business = await adapter.LoadAsync(args.BusinessId, cancellationToken);
+                var checkContext = new FlwBusinessContext { Business = business, UnitOfWork = uow, Operator = args.Creator };
+                var allowed = await adapter.OnBeforeStartAsync(checkContext, cancellationToken);
+                if (!allowed) throw new FlwEngineException($"业务单据[{args.BusinessId}]不满足发起条件");
+                business ??= new FlwBusinessInfo { BusinessType = businessType, BusinessId = args.BusinessId, BusinessCode = args.BusinessKey };
+            }
+
             var instance = await _store.CreateInstanceAsync(process, process.ModelContent, args, 0, cancellationToken);
             var execution = new FlwExecution
             {
@@ -54,7 +84,16 @@ public partial class FlowLongEngine: IFlowLongEngine
 
             await ExecuteNodeAsync(execution, model.Root.ChildNode, cancellationToken);
             await _store.SaveInstanceAsync(instance, cancellationToken);
+
+            //  发起成功：业务侧在此把单据置为「待审核」，与实例落库同一事务
+            if (adapter != null)
+            {
+                var context = new FlwBusinessContext { Instance = instance, Business = business, UnitOfWork = uow, Operator = args.Creator };
+                await adapter.OnInstanceStateChangedAsync(context, FlwInstanceState.Running, cancellationToken);
+            }
+
             await uow.CommitAsync(cancellationToken);
+            await _postCommit.FlushAsync(_logger, cancellationToken);
             return instance;
         }
         catch
@@ -103,19 +142,26 @@ public partial class FlowLongEngine: IFlowLongEngine
                 //  顺签：只为第一人建任务，其余人员排在任务上，前一人办结后再依次放行
                 if (node.Props?.PerformType == FlwPerformType.SequenceSign && actors.Count > 1)
                 {
-                    var sequenceTask = await _store.CreateTaskAsync(execution.Instance, node, new List<FlwTaskActorInfo> { actors[0] }, cancellationToken);
+                    var sequenceActors = new List<FlwTaskActorInfo> { actors[0] };
+                    var sequenceTask = await _store.CreateTaskAsync(execution.Instance, node, sequenceActors, cancellationToken);
                     await _store.SetSequenceActorsAsync(sequenceTask, actors.Skip(1).ToList(), cancellationToken);
+                    QueueTaskNotify(execution.Instance, sequenceTask, sequenceActors);
                     return;
                 }
 
-                await _store.CreateTaskAsync(execution.Instance, node, actors, cancellationToken);
+                var task = await _store.CreateTaskAsync(execution.Instance, node, actors, cancellationToken);
+                QueueTaskNotify(execution.Instance, task, actors);
                 return;
             }
 
             case FlwNodeType.CarbonCopy:
             {
                 var actors = await ResolveActorsAsync(execution, node, cancellationToken);
-                if (actors.Count > 0) await _store.CreateTaskAsync(execution.Instance, node, actors, cancellationToken);
+                if (actors.Count > 0)
+                {
+                    var ccTask = await _store.CreateTaskAsync(execution.Instance, node, actors, cancellationToken);
+                    QueueTaskNotify(execution.Instance, ccTask, actors);
+                }
                 await ExecuteNodeAsync(execution, node.ChildNode, cancellationToken);
                 return;
             }
@@ -155,7 +201,8 @@ public partial class FlowLongEngine: IFlowLongEngine
             case FlwNodeType.Trigger:
             {
                 //  触发器任务由外部（定时器/HTTP 回调）完成后调用 CompleteTriggerAsync 继续
-                await _store.CreateTaskAsync(execution.Instance, node, new List<FlwTaskActorInfo>(), cancellationToken);
+                var triggerTask = await _store.CreateTaskAsync(execution.Instance, node, new List<FlwTaskActorInfo>(), cancellationToken);
+                QueueTaskNotify(execution.Instance, triggerTask, null);
                 return;
             }
 
@@ -167,5 +214,77 @@ public partial class FlowLongEngine: IFlowLongEngine
                 await ExecuteNodeAsync(execution, node.ChildNode, cancellationToken);
                 return;
         }
+    }
+
+    /// <summary>
+    ///     任务产生通知：入提交后队列，事务回滚则不会发出
+    /// </summary>
+    private void QueueTaskNotify(FlwInstanceInfo instance, FlwTaskInfo task, List<FlwTaskActorInfo> actors)
+    {
+        if (_taskNotifier == null || task == null) return;
+        _postCommit.Add(token => _taskNotifier.NotifyAsync(new FlwTaskNotifyContext
+        {
+            Instance = instance,
+            Task = task,
+            Actors = actors ?? new List<FlwTaskActorInfo>(),
+            Expired = false
+        }, token));
+    }
+
+    /// <summary>
+    ///     实例状态变化：同步回调业务适配器（引擎事务内）
+    /// </summary>
+    private async Task NotifyInstanceStateChangedAsync(FlwExecution execution, FlwInstanceState state, CancellationToken cancellationToken)
+    {
+        var adapter = _adapterRegistry?.Get(execution.Instance?.BusinessType);
+        if (adapter == null) return;
+
+        var business = await adapter.LoadAsync(execution.Instance.BusinessId, cancellationToken);
+        var context = new FlwBusinessContext
+        {
+            Instance = execution.Instance,
+            Business = business,
+            UnitOfWork = _store.CurrentUnitOfWork,
+            Operator = execution.Operator
+        };
+        await adapter.OnInstanceStateChangedAsync(context, state, cancellationToken);
+    }
+
+    /// <summary>
+    ///     实例完结通知：入提交后队列，失败只记日志
+    /// </summary>
+    private void QueueInstanceFinished(FlwExecution execution, FlwInstanceState state)
+    {
+        if (_instanceListeners == null || execution?.Instance == null) return;
+        var listeners = _instanceListeners.ToList();
+        if (listeners.Count == 0) return;
+
+        var instance = execution.Instance;
+        var duration = instance.CreatedTime == null
+            ? 0
+            : (decimal)Math.Round((DateTime.Now - instance.CreatedTime.Value).TotalSeconds, 2);
+
+        _postCommit.Add(async token =>
+        {
+            var adapter = _adapterRegistry?.Get(instance.BusinessType);
+            var business = adapter == null ? null : await adapter.LoadAsync(instance.BusinessId, token);
+            foreach (var listener in listeners)
+            {
+                try
+                {
+                    await listener.OnInstanceFinishedAsync(new FlwInstanceFinishedContext
+                    {
+                        Instance = instance,
+                        Business = business,
+                        State = state,
+                        Duration = duration
+                    }, token);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex, "流程实例[{InstanceId}]完结监听器执行失败", instance.Id);
+                }
+            }
+        });
     }
 }

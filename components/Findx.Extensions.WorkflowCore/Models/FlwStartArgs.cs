@@ -21,6 +21,16 @@ public class FlwStartArgs
     public string BusinessKey { get; set; }
 
     /// <summary>
+    ///     业务类型标识；为空时取流程定义上的 BusinessType
+    /// </summary>
+    public string BusinessType { get; set; }
+
+    /// <summary>
+    ///     业务主键
+    /// </summary>
+    public long BusinessId { get; set; }
+
+    /// <summary>
     ///     流程变量
     /// </summary>
     public Dictionary<string, object> Variables { get; set; }

@@ -37,6 +37,21 @@ public class ModelAddDto: IRequest
     ///     实例地址
     /// </summary>
     public string InstanceUrl { get; set; }
+
+    /// <summary>
+    ///     业务类型标识（外挂业务单据时填写，如 pms.order）
+    /// </summary>
+    public string BusinessType { get; set; }
+
+    /// <summary>
+    ///     流程级表单定义 JSON（对接动态表单时使用）
+    /// </summary>
+    public string FormSchema { get; set; }
+
+    /// <summary>
+    ///     流程模型定义 JSON（发布前会做完整校验）
+    /// </summary>
+    public string ModelContent { get; set; }
     
     /// <summary>
     ///     使用范围 0:全员 1:指定人员(业务关联) 2:均不可提交

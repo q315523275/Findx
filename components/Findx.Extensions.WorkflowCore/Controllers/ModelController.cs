@@ -72,10 +72,11 @@ public class ModelController: AreaApiControllerBase
 
         var whereExpression = CreateWhereExpression(req);
         var orderByExpression = CreateOrderExpression(req);
-        
-        var rs = await repo.PagedAsync<ModelSimplifyDto>(req.PageNo, req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
 
-        return CommonResult.Success(rs);
+        //  先分页实体再映射 DTO：直接 ToListAsync<ModelSimplifyDto> 时 Id 映射不到，列表拿不到主键就无法发布
+        var paged = await repo.PagedAsync(req.PageNo, req.PageSize, whereExpression, sortConditions: orderByExpression, cancellationToken: cancellationToken);
+        var rows = paged.Rows.Select(x => x.MapTo<ModelSimplifyDto>()).ToList();
+        return CommonResult.Success(new PageResult<List<ModelSimplifyDto>>(paged.PageNo, paged.PageSize, paged.TotalRows, rows));
     }
 
     /// <summary>
@@ -94,10 +95,13 @@ public class ModelController: AreaApiControllerBase
         model.CheckOrg<FlwProcessInfo, long>(HttpContext.User);
         model.CheckOwner<FlwProcessInfo, long>(HttpContext.User);
         model.CheckTenant<FlwProcessInfo, Guid>(HttpContext.User);
-        
+
+        //  InsertAsync 不补主键，必须显式生成雪花 Id，否则落库恒为 0
+        model.SetEmptyKey();
+
         await repo.InsertAsync(model, cancellationToken);
-        
-        return CommonResult.Success();
+
+        return CommonResult.Success(model.Id);
     }
     
     /// <summary>
@@ -112,11 +116,26 @@ public class ModelController: AreaApiControllerBase
         var repo = GetRepository<FlwProcessInfo, long>();
         
         var model = req.MapTo<FlwProcessInfo>();
-        repo.Attach(model.Clone());
         model.CheckUpdateAudited<FlwProcessInfo, long>(HttpContext.User);
-        
-        await repo.SaveAsync(model, cancellationToken);
-        
+
+        //  显式更新列：Attach(Clone) + Save 的变更比对在这种"整对象覆盖"场景下检测不出差异
+        await repo.UpdateColumnsAsync(x => new FlwProcessInfo
+        {
+            Name = model.Name,
+            Icon = model.Icon,
+            Type = model.Type,
+            InstanceUrl = model.InstanceUrl,
+            BusinessType = model.BusinessType,
+            FormSchema = model.FormSchema,
+            ModelContent = model.ModelContent,
+            UseScope = model.UseScope,
+            Sort = model.Sort,
+            Comments = model.Comments,
+            LastUpdater = model.LastUpdater,
+            LastUpdaterId = model.LastUpdaterId,
+            LastUpdatedTime = model.LastUpdatedTime
+        }, x => x.Id == model.Id, cancellationToken);
+
         return CommonResult.Success();
     }
 
@@ -170,8 +189,15 @@ public class ModelController: AreaApiControllerBase
         model.Version = model.Version <= 0 ? 1 : model.Version;
         model.Status = 1;
         model.CheckUpdateAudited<FlwProcessInfo, long>(HttpContext.User);
-        repo.Attach(model.Clone());
-        await repo.SaveAsync(model, cancellationToken);
+        //  Attach + Save 走的是"比对变更列"路径，这里 Attach 的是已改过的副本，比对不出差异，状态不会落库
+        await repo.UpdateColumnsAsync(x => new FlwProcessInfo
+        {
+            Status = 1,
+            Version = model.Version,
+            LastUpdater = model.LastUpdater,
+            LastUpdaterId = model.LastUpdaterId,
+            LastUpdatedTime = model.LastUpdatedTime
+        }, x => x.Id == model.Id, cancellationToken);
 
         return CommonResult.Success();
     }

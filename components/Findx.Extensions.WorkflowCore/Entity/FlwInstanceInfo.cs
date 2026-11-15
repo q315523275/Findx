@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 using Findx.Extensions.WorkflowCore.Enums;
@@ -9,7 +9,6 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 ///     流程实例表
 /// </summary>
 [Table("flw_instance")]
-[EntityExtension(DataSource = "Workflow")]
 [Description("流程实例表")]
 public class FlwInstanceInfo: FullEntityBase
 {
@@ -52,10 +51,21 @@ public class FlwInstanceInfo: FullEntityBase
     ///     业务编码
     /// </summary>
     public string BusinessCode { get; set; }
+
+    /// <summary>
+    ///     业务类型标识（发起时从流程定义带入，或由调用方显式指定）
+    /// </summary>
+    public string BusinessType { get; set; }
+
+    /// <summary>
+    ///     业务主键（与 BusinessType 组合反查单据与实例）
+    /// </summary>
+    public long BusinessId { get; set; }
     
     /// <summary>
     ///     变量json
     /// </summary>
+    [global::FreeSql.DataAnnotations.Column(StringLength = -1)]
     public string Variable { get; set; }
     
     /// <summary>

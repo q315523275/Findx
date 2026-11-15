@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 using Findx.Extensions.WorkflowCore.Enums;
@@ -9,7 +9,6 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 ///     流程定义表
 /// </summary>
 [Table("flw_process")]
-[EntityExtension(DataSource = "Workflow")]
 [Description("流程定义表")]
 public class FlwProcessInfo: FullEntityBase, ICloneable<FlwProcessInfo>, ISort, ITenant
 {
@@ -47,6 +46,18 @@ public class FlwProcessInfo: FullEntityBase, ICloneable<FlwProcessInfo>, ISort, 
     ///     使用范围 0:全员 1:指定人员(业务关联) 2:均不可提交
     /// </summary>
     public int UseScope { get; set; }
+
+    /// <summary>
+    ///     业务类型标识，如 pms.order；外挂业务单据时与宿主 IFlwBusinessAdapter.BusinessType 对应
+    ///     <para>内生型（纯表单审批）可填自定义标识，如 flow.leave</para>
+    /// </summary>
+    public string BusinessType { get; set; }
+
+    /// <summary>
+    ///     流程级表单定义 JSON（对接动态表单时使用，节点可通过 props.formSchema 覆盖）
+    /// </summary>
+    [global::FreeSql.DataAnnotations.Column(StringLength = -1)]
+    public string FormSchema { get; set; }
     
     /// <summary>
     ///     流程状态 0:不可用 1:可用 2:历史版本
@@ -56,6 +67,7 @@ public class FlwProcessInfo: FullEntityBase, ICloneable<FlwProcessInfo>, ISort, 
     /// <summary>
     ///     流程模型定义JSON内容
     /// </summary>
+    [global::FreeSql.DataAnnotations.Column(StringLength = -1)]
     public string ModelContent { get; set; }
     
     /// <summary>

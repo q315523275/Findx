@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 using Findx.Extensions.WorkflowCore.Enums;
@@ -9,7 +9,6 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 ///     任务表（活动任务）
 /// </summary>
 [Table("flw_task")]
-[EntityExtension(DataSource = "Workflow")]
 [Description("任务表")]
 public class FlwTaskInfo: EntityBase, ITenant
 {
@@ -51,6 +50,7 @@ public class FlwTaskInfo: EntityBase, ITenant
     /// <summary>
     ///     任务变量 json
     /// </summary>
+    [global::FreeSql.DataAnnotations.Column(StringLength = -1)]
     public string Variable { get; set; }
 
     /// <summary>

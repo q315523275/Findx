@@ -1,5 +1,3 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
 namespace Findx.Extensions.WorkflowCore.Entity;
@@ -9,12 +7,9 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 /// </summary>
 public abstract class EntityBase: EntityBase<long>, IFullAudited<long>
 {
-    /// <summary>
-    ///     编号Id
-    /// </summary>
-    [Key]
-    [Column(name: "id")]
-    public override long Id { get; set; }
+    //  Id 沿用 EntityBase<long> 的虚属性，这里不要 override：
+    //  FreeSql 按声明所在类型解析主键元数据，重写会让主键映射丢失；
+    //  主键由 IKeyGenerator<long>（雪花）在插入前生成，不依赖数据库自增
 
     /// <summary>
     ///     创建人

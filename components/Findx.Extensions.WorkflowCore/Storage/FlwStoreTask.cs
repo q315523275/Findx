@@ -1,4 +1,4 @@
-using Findx.Data;
+﻿using Findx.Data;
 using Findx.Extensions.WorkflowCore.Entity;
 using Findx.Extensions.WorkflowCore.Enums;
 using Findx.Extensions.WorkflowCore.Models;
@@ -52,7 +52,7 @@ public partial class FlwStore
             Comment = comment,
             Action = action
         };
-        await Repo<FlwHisTaskInfo>().InsertAsync(hisTask, cancellationToken);
+        await InsertAsync(hisTask, cancellationToken);
 
         if (actors.Count > 0)
         {
@@ -72,7 +72,7 @@ public partial class FlwStore
                 CreatorId = x.CreatorId,
                 CreatedTime = x.CreatedTime
             }).ToList();
-            await Repo<FlwHisTaskActorInfo>().InsertAsync(hisActors, cancellationToken);
+            await InsertAsync(hisActors, cancellationToken);
             await Repo<FlwTaskActorInfo>().DeleteAsync(x => x.TaskId == task.Id, cancellationToken);
         }
 
@@ -121,7 +121,7 @@ public partial class FlwStore
                 CreatorId = x.CreatorId,
                 CreatedTime = x.CreatedTime
             }).ToList();
-            await Repo<FlwHisTaskActorInfo>().InsertAsync(hisActors, cancellationToken);
+            await InsertAsync(hisActors, cancellationToken);
             await Repo<FlwTaskActorInfo>().DeleteAsync(x => x.TaskId == task.Id, cancellationToken);
         }
 
@@ -134,7 +134,7 @@ public partial class FlwStore
             item.CreatorId = TryParseLong(actor?.Id);
             item.CreatedTime = now;
         }
-        await Repo<FlwTaskActorInfo>().InsertAsync(actors, cancellationToken);
+        await InsertAsync(actors, cancellationToken);
 
         task.Assignor = actor?.Name;
         task.AssignorId = actor?.Id;
@@ -158,7 +158,7 @@ public partial class FlwStore
             item.CreatorId = TryParseLong(actor?.Id);
             item.CreatedTime = now;
         }
-        await Repo<FlwTaskActorInfo>().InsertAsync(actors, cancellationToken);
+        await InsertAsync(actors, cancellationToken);
     }
 
     /// <summary>

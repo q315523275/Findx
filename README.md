@@ -95,6 +95,9 @@
 | WebSocketCore（服务端、会话、响应消息读取） | [docs/Findx.WebSocketCore.md](docs/Findx.WebSocketCore.md) |
 | 服务发现与负载均衡 | [docs/Findx.Discovery.md](docs/Findx.Discovery.md) / [docs/Findx.Discovery.Consul.md](docs/Findx.Discovery.Consul.md) |
 | 定时任务 / Cron | [docs/Cron.md](docs/Cron.md) |
+| 分布式任务调度（Master/Worker 选举、预取窗口、重试与死信） | [docs/Findx.Extensions.Scheduler.md](docs/Findx.Extensions.Scheduler.md) |
+| 工作流（树形审批流、8 张表、会签/或签/顺签、超时扫描） | [docs/Findx.Extensions.WorkflowCore.md](docs/Findx.Extensions.WorkflowCore.md) |
+| 消息通知（企业微信 / 钉钉 / 邮件 / 公众号 / 小程序订阅） | [docs/Findx.Extensions.Notify.md](docs/Findx.Extensions.Notify.md) |
 | 配置中心 | [docs/Findx.Configuration.md](docs/Findx.Configuration.md) |
 | 其余组件（NLog / MailKit / Mapster / Swagger / 图像 / IP / 规则引擎 / RabbitMQ 等） | 见 `docs/` 目录同名文件 |
 

@@ -106,6 +106,24 @@ public partial class FlowLongEngine
     }
 
     /// <inheritdoc />
+    public Task TerminateAsync(long instanceId, FlwCreator actor, string comment = null, CancellationToken cancellationToken = default)
+    {
+        return ExecuteInTransactionAsync(async () =>
+        {
+            var instance = await _store.GetInstanceAsync(instanceId, cancellationToken);
+            if (instance == null) throw new FlwEngineException($"流程实例不存在：{instanceId}");
+            if (instance.InstanceState != FlwInstanceState.Running) throw new FlwEngineException("流程实例已结束，不能终止");
+
+            //  强制终止：管理员/业务作废等场景，不要求发起人身份
+            var execution = await BuildExecutionAsync(instance, actor, cancellationToken);
+            if (actor != null) execution.Operator = actor;
+            execution.Instance.LastUpdater = actor?.Name;
+            await CompleteInstanceAsync(execution, FlwInstanceState.Terminated, cancellationToken);
+            await _store.SaveInstanceAsync(execution.Instance, cancellationToken);
+        }, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public Task TransferAsync(long taskId, FlwCreator actor, FlwCreator target, CancellationToken cancellationToken = default)
     {
         return ExecuteInTransactionAsync(async () =>
@@ -232,6 +250,8 @@ public partial class FlowLongEngine
 
     private async Task ExecuteInTransactionAsync(Func<Task> action, CancellationToken cancellationToken)
     {
+        _postCommit = new FlwPostCommitQueue();
+
         await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<FlwInstanceInfo>(true, cancellationToken);
         _store.AttachUnitOfWork(uow);
         try
@@ -244,6 +264,9 @@ public partial class FlowLongEngine
             await uow.RollbackAsync(cancellationToken);
             throw;
         }
+
+        //  提交后再发通知；单个失败不影响已提交的数据
+        await _postCommit.FlushAsync(_logger, cancellationToken);
     }
 }
 

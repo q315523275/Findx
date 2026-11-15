@@ -22,4 +22,11 @@ public class WorkflowCoreOptions
     ///     单次扫描任务数量上限
     /// </summary>
     public int ScanBatchSize { get; set; } = 200;
+
+    /// <summary>
+    ///     8 张工作流表所在的数据源标识
+    ///     <para>为空则跟随主数据源；配置后由模块写入实体的 EntityExtension.DataSource</para>
+    ///     <para>推荐宿主用 DataSourceSharing 把该标识别名到主库，这样既有独立标识、又与业务单据共用一个事务</para>
+    /// </summary>
+    public string DataSource { get; set; }
 }

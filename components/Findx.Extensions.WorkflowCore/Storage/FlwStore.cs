@@ -1,4 +1,5 @@
-using Findx.Data;
+﻿using Findx.Data;
+using Findx.NewId;
 using Findx.Extensions.WorkflowCore.Entity;
 using Findx.Extensions.WorkflowCore.Enums;
 using Findx.Extensions.WorkflowCore.Models;
@@ -12,14 +13,16 @@ namespace Findx.Extensions.WorkflowCore.Storage;
 public partial class FlwStore
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IKeyGenerator<long> _keyGenerator;
     private IUnitOfWork _unitOfWork;
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    public FlwStore(IServiceProvider serviceProvider)
+    public FlwStore(IServiceProvider serviceProvider, IKeyGenerator<long> keyGenerator)
     {
         _serviceProvider = serviceProvider;
+        _keyGenerator = keyGenerator;
     }
 
     /// <summary>
@@ -30,11 +33,44 @@ public partial class FlwStore
         _unitOfWork = unitOfWork;
     }
 
+    /// <summary>
+    ///     当前绑定的工作单元（业务适配器回写单据时复用，保证同事务）
+    /// </summary>
+    public IUnitOfWork CurrentUnitOfWork => _unitOfWork;
+
     private IRepository<TEntity, long> Repo<TEntity>() where TEntity : class, IEntity<long>
     {
         var repo = _serviceProvider.GetRequiredService<IRepository<TEntity, long>>();
         if (_unitOfWork != null) repo.UnitOfWork = _unitOfWork;
         return repo;
+    }
+
+    /// <summary>
+    ///     生成主键（long 统一走 IKeyGenerator&lt;long&gt; 雪花算法，不依赖数据库自增）
+    /// </summary>
+    public long NewKey() => _keyGenerator.Create();
+
+    /// <summary>
+    ///     插入单条并补雪花主键（Repository.InsertAsync 不会自动补 Id，只有 Save 路径会）
+    /// </summary>
+    private async Task InsertAsync<TEntity>(TEntity entity, CancellationToken cancellationToken) where TEntity : class, IEntity<long>
+    {
+        if (entity.Id.Equals(default(long))) entity.Id = NewKey();
+        await Repo<TEntity>().InsertAsync(entity, cancellationToken);
+    }
+
+    /// <summary>
+    ///     批量插入并补雪花主键
+    /// </summary>
+    private async Task InsertAsync<TEntity>(IEnumerable<TEntity> entities, CancellationToken cancellationToken) where TEntity : class, IEntity<long>
+    {
+        var list = entities?.ToList() ?? new List<TEntity>();
+        if (list.Count == 0) return;
+        foreach (var entity in list)
+        {
+            if (entity.Id.Equals(default(long))) entity.Id = NewKey();
+        }
+        await Repo<TEntity>().InsertAsync(list, cancellationToken);
     }
 
     #region 流程定义
@@ -97,6 +133,8 @@ public partial class FlwStore
             Priority = args.Priority,
             InstanceNo = string.IsNullOrWhiteSpace(args.InstanceNo) ? BuildInstanceNo() : args.InstanceNo,
             BusinessCode = args.BusinessKey,
+            BusinessType = string.IsNullOrWhiteSpace(args.BusinessType) ? process.BusinessType : args.BusinessType,
+            BusinessId = args.BusinessId,
             Variable = FlwJsonHelper.Serialize(args.Variables ?? new Dictionary<string, object>()),
             CurrentNodeName = process.Name,
             CurrentNodeCode = "root",
@@ -111,7 +149,7 @@ public partial class FlwStore
         instance.Owner = args.Creator?.Name;
         instance.OwnerId = TryParseLong(args.Creator?.Id);
 
-        await Repo<FlwInstanceInfo>().InsertAsync(instance, cancellationToken);
+        await InsertAsync(instance, cancellationToken);
 
         var his = new FlwHisInstanceInfo
         {
@@ -136,7 +174,7 @@ public partial class FlwStore
         };
         his.Owner = instance.Owner;
         his.OwnerId = instance.OwnerId;
-        await Repo<FlwHisInstanceInfo>().InsertAsync(his, cancellationToken);
+        await InsertAsync(his, cancellationToken);
 
         var ext = new FlwExtInstanceInfo
         {
@@ -152,7 +190,7 @@ public partial class FlwStore
             LastUpdaterId = instance.CreatorId,
             LastUpdatedTime = now
         };
-        await Repo<FlwExtInstanceInfo>().InsertAsync(ext, cancellationToken);
+        await InsertAsync(ext, cancellationToken);
 
         return instance;
     }
@@ -278,7 +316,7 @@ public partial class FlwStore
             LastUpdaterId = instance.LastUpdaterId,
             LastUpdatedTime = now
         };
-        await Repo<FlwTaskInfo>().InsertAsync(task, cancellationToken);
+        await InsertAsync(task, cancellationToken);
 
         foreach (var actor in actors)
         {
@@ -288,7 +326,7 @@ public partial class FlwStore
             actor.CreatorId = instance.LastUpdaterId;
             actor.CreatedTime = now;
         }
-        if (actors.Count > 0) await Repo<FlwTaskActorInfo>().InsertAsync(actors, cancellationToken);
+        if (actors.Count > 0) await InsertAsync(actors, cancellationToken);
 
         return task;
     }

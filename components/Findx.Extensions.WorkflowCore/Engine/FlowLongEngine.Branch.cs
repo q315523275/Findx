@@ -84,6 +84,10 @@ public partial class FlowLongEngine
         await _store.ArchiveNodeTasksAsync(execution.Instance.Id, null, taskState, action, execution.Operator, null, cancellationToken);
         await _store.FinishInstanceAsync(execution.Instance, state, cancellationToken);
 
+        //  业务回写走事务内同步回调（与实例落库同生共死），完结通知走提交后队列
+        await NotifyInstanceStateChangedAsync(execution, state, cancellationToken);
+        QueueInstanceFinished(execution, state);
+
         if (execution.Instance.ParentInstanceId > 0 && state == FlwInstanceState.Approved)
             await AdvanceParentAsync(execution.Instance, cancellationToken);
     }

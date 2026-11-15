@@ -28,7 +28,7 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <returns></returns>
     public async Task<IUnitOfWork> GetUnitOfWorkAsync(string primary, bool enableTransaction, bool beginTransaction, CancellationToken cancellationToken = default)
     {
-        var primaryKey = primary ?? GetDataSourcePrimary();
+        var primaryKey = NormalizePrimary(primary ?? GetDataSourcePrimary());
         var unitOfWork = _scopedDictionary.GetUnitOfWork(primaryKey);
         if (unitOfWork != null)
         {
@@ -94,4 +94,15 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// </summary>
     /// <returns></returns>
     protected abstract string GetDataSourcePrimary();
+
+    /// <summary>
+    ///     归一化数据源标识
+    ///     <para>多个标识共享同一连接时（如 FreeSql 的 DataSourceSharing 别名），归到同一标识才能复用同一个工作单元，否则会各开一个连接、各开一个事务</para>
+    /// </summary>
+    /// <param name="primary">数据源标识</param>
+    /// <returns></returns>
+    protected virtual string NormalizePrimary(string primary)
+    {
+        return primary;
+    }
 }

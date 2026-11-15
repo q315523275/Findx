@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
 
@@ -8,7 +8,6 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 ///     历史流程实例表
 /// </summary>
 [Table("flw_instance_his")]
-[EntityExtension(DataSource = "Workflow")]
 [Description("历史流程实例表")]
 public class FlwHisInstanceInfo: FullEntityBase
 {
@@ -40,6 +39,7 @@ public class FlwHisInstanceInfo: FullEntityBase
     /// <summary>
     ///     变量json
     /// </summary>
+    [global::FreeSql.DataAnnotations.Column(StringLength = -1)]
     public string Variable { get; set; }
     
     /// <summary>
