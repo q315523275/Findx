@@ -34,6 +34,6 @@ public class ApiResponse
     /// </summary>
     public bool IsOk()
     {
-        return Errcode == null || Errcode == 0;
+        return Errcode is null or 0;
     }
 }

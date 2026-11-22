@@ -9,15 +9,15 @@ namespace Findx.Extensions.WorkflowCore.Engine;
 public partial class FlowLongEngine
 {
     /// <inheritdoc />
-    public Task<List<FlwTaskInfo>> GetTodoTasksAsync(FlwCreator actor, int top = 100, CancellationToken cancellationToken = default)
+    public Task<List<FlwTaskInfo>> GetTodoTasksAsync(FlwCreator actor, int skip = 0, int top = 100, CancellationToken cancellationToken = default)
     {
-        return _store.QueryTodoAsync(actor, top, cancellationToken);
+        return _store.QueryTodoAsync(actor, skip, top, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<List<FlwHisTaskInfo>> GetDoneTasksAsync(FlwCreator actor, int top = 100, CancellationToken cancellationToken = default)
+    public Task<List<FlwHisTaskInfo>> GetDoneTasksAsync(FlwCreator actor, int skip = 0, int top = 100, CancellationToken cancellationToken = default)
     {
-        return _store.QueryDoneAsync(actor, top, cancellationToken);
+        return _store.QueryDoneAsync(actor, skip, top, cancellationToken);
     }
 
     /// <inheritdoc />

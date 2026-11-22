@@ -3,7 +3,7 @@ using Findx.Data;
 namespace Findx.Extensions.ConfigurationServer.Dtos;
 
 /// <summary>
-/// 更新App Dto
+///     更新应用信息Dto
 /// </summary>
 public class UpdateAppDto: CreateAppDto, IRequest<long>
 {

@@ -14,8 +14,7 @@ public sealed class AccessTokenProvider
     /// </summary>
     /// <param name="fetch">拉取令牌的委托，返回 (令牌, 有效期秒)</param>
     /// <param name="cancellationToken"></param>
-    public async Task<string> GetAsync(Func<CancellationToken, Task<(string Token, int ExpiresIn)>> fetch,
-        CancellationToken cancellationToken = default)
+    public async Task<string> GetAsync(Func<CancellationToken, Task<(string Token, int ExpiresIn)>> fetch, CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrEmpty(_token) && _expiresAt > DateTime.Now) return _token;
 

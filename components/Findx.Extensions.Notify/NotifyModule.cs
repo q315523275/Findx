@@ -1,11 +1,12 @@
-using Findx.Extensions;
 using Findx.Extensions.Notify.Channels;
 using Findx.Extensions.Notify.Scheduling;
-using Findx.Extensions.Notify.Services;
+using Findx.Extensions.Notify.ServiceDefaults;
 using Findx.Extensions.Notify.Storage;
 using Findx.Modularity;
+using Findx.Notifications;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Findx.Extensions.Notify;
 
@@ -54,7 +55,10 @@ public class NotifyModule : StartupModule
         services.AddSingleton<NotifyDispatchQueue>();
         services.AddHostedService(sp => sp.GetRequiredService<NotifyDispatchQueue>());
 
-        services.AddSingleton<INotifySender, NotifySender>();
+        //  INotifySender 与框架的 IUserNotifier 共用同一个发送器实例（通道路由与日志都在里面）
+        services.AddSingleton<NotifySender>();
+        services.AddSingleton<INotifySender>(sp => sp.GetRequiredService<NotifySender>());
+        services.Replace(ServiceDescriptor.Singleton<IUserNotifier>(sp => sp.GetRequiredService<NotifySender>()));
 
         return base.ConfigureServices(services);
     }

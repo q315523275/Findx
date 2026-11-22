@@ -44,4 +44,9 @@ public class JobResultReport
     ///     执行节点地址
     /// </summary>
     public string WorkerAddress { get; set; }
+
+    /// <summary>
+    ///     执行过程日志（执行端捕获，按行拼接；调度端截断后落库）
+    /// </summary>
+    public string Logs { get; set; }
 }

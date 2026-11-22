@@ -15,6 +15,12 @@ public class NotifyOptions
     public bool Enabled { get; set; } = true;
 
     /// <summary>
+    ///     默认通道：通过框架 IUserNotifier 契约发通知时，按这里配置的通道广播
+    ///     <para>组件内部直接用 INotifySender 时可逐条指定通道，不受此项影响</para>
+    /// </summary>
+    public NotifyChannel[] DefaultChannels { get; set; } = [NotifyChannel.WeCom];
+
+    /// <summary>
     ///     单次发送超时（秒）
     /// </summary>
     public int TimeoutSeconds { get; set; } = 10;

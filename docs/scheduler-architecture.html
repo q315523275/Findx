@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Findx 分布式调度架构说明</title>
+<style>
+:root{
+  --ink:#0f172a; --body:#334155; --muted:#64748b; --line:#e2e8f0; --bg:#f6f8fb;
+  --teal:#0f766e; --teal-soft:#ecfdf5; --amber:#b45309; --amber-soft:#fffbeb; --red:#dc2626;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--body);
+  font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+  font-size:15px;line-height:1.75;-webkit-font-smoothing:antialiased}
+a{color:var(--teal);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.hero{background:linear-gradient(135deg,#0b3d3a 0%,#0f766e 55%,#115e59 100%);color:#fff;padding:56px 0 44px}
+.wrap{max-width:1600px;margin:0 auto;padding:0 32px}
+.eyebrow{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;opacity:.8;margin:0 0 12px}
+.hero h1{margin:0;font-size:38px;line-height:1.25;font-weight:700;letter-spacing:-.5px}
+.hero p.lead{margin:14px 0 0;font-size:15.5px;max-width:820px;opacity:.92}
+.chips{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.chip{border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.10);
+  padding:5px 12px;border-radius:999px;font-size:12.5px;letter-spacing:.02em}
+
+.layout{max-width:1600px;margin:0 auto;padding:34px 32px 72px;display:grid;grid-template-columns:220px 1fr;gap:44px;align-items:start}
+nav.toc{position:sticky;top:24px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px 16px;box-shadow:0 6px 22px rgba(15,23,42,.05)}
+nav.toc h2{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px 6px;font-weight:600}
+nav.toc a{display:block;padding:7px 10px;border-radius:8px;font-size:13.5px;color:#475569;border-left:3px solid transparent}
+nav.toc a:hover{background:var(--teal-soft);text-decoration:none}
+nav.toc a.active{background:var(--teal-soft);color:var(--teal);border-left-color:var(--teal);font-weight:600}
+nav.toc .hint{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px;color:#94a3b8;line-height:1.6}
+
+main{min-width:0}
+section{background:#fff;border:1px solid var(--line);border-radius:16px;padding:30px 34px;margin-bottom:24px;box-shadow:0 6px 26px rgba(15,23,42,.045)}
+section h2{margin:0 0 6px;font-size:23px;color:var(--ink);letter-spacing:-.2px}
+section h2 .num{display:inline-block;min-width:34px;color:var(--teal);font-weight:700}
+section .sub{margin:0 0 18px;color:var(--muted);font-size:13.5px}
+h3{font-size:16px;color:var(--ink);margin:24px 0 8px}
+p{margin:10px 0}
+ul,ol{margin:10px 0 10px 22px}
+li{margin:5px 0}
+
+.figure{margin:18px 0 8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:auto}
+.figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:12.5px;color:var(--muted);margin-top:8px;text-align:center}
+
+.grid{display:grid;gap:16px}
+.grid.two{grid-template-columns:1fr 1fr}
+.grid.three{grid-template-columns:repeat(3,1fr)}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fcfdfe}
+.card h4{margin:0 0 8px;font-size:14.5px;color:var(--ink)}
+.card p{margin:0;font-size:13.5px;color:#475569}
+.card.teal{border-top:3px solid var(--teal)}
+.card.amber{border-top:3px solid var(--amber)}
+.card.red{border-top:3px solid var(--red)}
+
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#f8fafc;color:var(--ink);font-weight:600;font-size:13px}
+td code,th code,p code,li code{background:#f1f5f9;border-radius:5px;padding:1px 5px;font-family:Menlo,monospace;font-size:12.5px}
+table.small{font-size:13px}
+
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:600;letter-spacing:.02em}
+.pill.teal{background:var(--teal-soft);color:var(--teal)}
+.pill.amber{background:var(--amber-soft);color:var(--amber)}
+.pill.gray{background:#f1f5f9;color:#475569}
+.pill.red{background:#fef2f2;color:var(--red)}
+
+.steps{counter-reset:step;list-style:none;margin:16px 0 8px 0;padding:0}
+.steps li{counter-increment:step;position:relative;padding:12px 16px 12px 54px;margin:0 0 10px;border:1px solid var(--line);border-radius:10px;background:#fcfdfe}
+.steps li::before{content:counter(step);position:absolute;left:14px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.steps li strong{display:block;color:var(--ink);font-size:14px;margin-bottom:2px}
+.steps li span{font-size:13px;color:#475569}
+
+.note{border-left:4px solid var(--amber);background:var(--amber-soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0;font-size:13.5px}
+.note strong{color:var(--amber)}
+.calm{border-left:4px solid var(--teal);background:var(--teal-soft);padding:12px 16px;border-radius:0 10px 10px 0;margin:16px 0;font-size:13.5px}
+
+footer{max-width:1600px;margin:0 auto;padding:0 32px 60px;color:#94a3b8;font-size:12.5px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+#toTop{position:fixed;right:24px;bottom:24px;width:42px;height:42px;border-radius:50%;border:1px solid var(--line);
+  background:#fff;color:var(--teal);font-size:18px;cursor:pointer;box-shadow:0 6px 20px rgba(15,23,42,.12);display:none}
+#toTop:hover{background:var(--teal-soft)}
+
+@media (max-width:1080px){
+  .layout{grid-template-columns:1fr;gap:20px}
+  nav.toc{position:static;order:-1}
+  nav.toc a{display:inline-block;margin:2px 4px 2px 0;border-left:0;border-bottom:2px solid transparent}
+  nav.toc a.active{border-left:0;border-bottom-color:var(--teal)}
+  .grid.two,.grid.three{grid-template-columns:1fr}
+  .hero h1{font-size:30px}
+}
+@media print{
+  body{background:#fff}
+  nav.toc,#toTop{display:none}
+  .layout{display:block;padding:0}
+  section{box-shadow:none;border:0;padding:0 0 18px;page-break-inside:avoid}
+  .hero{background:#fff;color:#0f172a;padding:0 0 20px}
+  .chip{border-color:#cbd5e1;color:#475569;background:#fff}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">Findx.Extensions.Scheduler · V3 · 2026-11</p>
+    <h1>Findx 分布式调度架构说明</h1>
+    <p class="lead">调度端与执行端彻底分离：调度端只依赖 MySQL 与 HTTP，执行端<strong>零数据库连接</strong>，全部通过协议通信。
+    不引入 Redis、消息队列、注册中心；正确性由数据库 CAS 与唯一键保证，中间件能力全部收敛为接口，后续可按需替换实现。</p>
+    <div class="chips">
+      <span class="chip">数据源 jobs（MySQL）</span>
+      <span class="chip">机器间协议 HTTP</span>
+      <span class="chip">调度端 / 执行端 同进程可分离</span>
+      <span class="chip">至少一次投递</span>
+      <span class="chip">失败退避 → 死信隔离</span>
+      <span class="chip">执行日志：明细 + 摘要</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <h2>目录</h2>
+    <a href="#overview">1 设计概览</a>
+    <a href="#arch">2 架构总览</a>
+    <a href="#flow">3 一次触发的完整链路</a>
+    <a href="#states">4 执行状态机</a>
+    <a href="#model">5 数据模型</a>
+    <a href="#protocol">6 机器间协议</a>
+    <a href="#admin">7 管理面 API</a>
+    <a href="#logs">8 执行日志</a>
+    <a href="#retry">9 重试 · 死信 · 兜底</a>
+    <a href="#config">10 配置项</a>
+    <a href="#perf">11 性能与容量</a>
+    <a href="#guarantees">12 不变量与边界</a>
+    <div class="hint">建议在 1440px 以上宽度浏览；图可单独导出 SVG。按 Ctrl/Cmd+P 可直接打印为 PDF。</div>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <h2><span class="num">1</span>设计概览</h2>
+      <p class="sub">为什么去 Redis：不是嫌它快，而是"在途执行只活在 Master 进程内存"——换主即丢。</p>
+
+      <div class="grid three">
+        <div class="card teal"><h4>关键路径只依赖 DB + HTTP</h4><p>选主、领取、投递受理、结果终结、心跳、日志，全部落在四张表与五个 HTTP 接口上；不引入额外中间件，部署即"两个服务 + 一个库"。</p></div>
+        <div class="card teal"><h4>中间件能力接口化</h4><p><code>IMasterLease</code> / <code>IPeriodClaimer</code> / <code>IExecutionLedger</code> / <code>IWorkerDirectory</code> / <code>IExecutionLogStore</code> 收敛为抽象，换 Redis/etcd 只替换实现，调度链路代码不动。</p></div>
+        <div class="card teal"><h4>正确性由 CAS 与唯一键保证</h4><p>租约只减少无效扫描，不承载正确性；"同一周期不重复触发"由任务行 CAS + 执行行 <code>ExecutionKey</code> 唯一键共同保证。</p></div>
+      </div>
+
+      <h3>与内存版 Jobs 的关系</h3>
+      <p>同一套 <code>IJob</code> 与 <code>JobExecuteContext</code>，由 <code>Findx:Jobs:ScheduleType</code> 决定内核：<code>Simple</code> 走内存版（单机、无账本），<code>Distributed</code> 走本组件（多节点、DB 账本）。组件启动时强制校验二者互斥，避免双内核同时点火。</p>
+
+      <div class="calm"><strong>一句话定位：</strong>把「什么时候跑、谁来跑、跑完没有」三件事全部落到数据库账本上；进程只是执行者，不是状态持有者。</div>
+    </section>
+
+    <section id="arch">
+      <h2><span class="num">2</span>架构总览</h2>
+      <p class="sub">左：调度端（租约唯一，1 主 N 备）· 右：执行端（N 节点，各自承载不同 IJob）· 下：唯一协调介质</p>
+      <figure class="figure">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1080" viewBox="0 0 1600 1080" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<defs>
+<marker id="arrowhead" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+  <path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/>
+</marker>
+<marker id="arrowheadgray" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+  <path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/>
+</marker>
+</defs>
+<text x="60" y="54" font-size="30" fill="#0f172a" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Findx 分布式调度架构（DB + HTTP 轻量版）</text>
+<text x="60" y="86" font-size="14" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">调度 / 执行彻底分离：只依赖 MySQL + HTTP，执行端零 DB 连接；无 Redis、无消息队列 · Findx.Extensions.Scheduler V3</text>
+<line x1="1270" y1="48" x2="1312" y2="48" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="1322" y="52" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">HTTP 协议调用</text>
+<line x1="1270" y1="72" x2="1312" y2="72" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowheadgray)"/>
+<text x="1322" y="76" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">数据库读写 / CAS</text>
+<rect x="44" y="120" width="672" height="673" rx="14" fill="none" stroke="#0f766e" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="60" y="142" font-size="13.5" fill="#0f766e" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">调度端 Master（租约唯一：1 主 N 备）</text>
+<rect x="884" y="120" width="672" height="673" rx="14" fill="none" stroke="#1d4ed8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="900" y="142" font-size="13.5" fill="#1d4ed8" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">执行端 Worker（N 节点，各自承载不同的 IJob）</text>
+<rect x="44" y="812" width="1512" height="200" rx="14" fill="none" stroke="#b45309" stroke-width="1.2" stroke-dasharray="6 5"/>
+<rect x="60" y="150" width="640" height="92" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.2"/>
+<text x="78" y="177" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">① MasterElectionService · 选主与租约</text>
+<text x="78" y="200" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">scheduler_master 条件 UPDATE 抢租约（TTL 15s，续期 5s）</text>
+<text x="78" y="220" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">非主节点只待命；优雅停机主动释放，换主从表接管</text>
+<rect x="60" y="254" width="640" height="92" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.2"/>
+<text x="78" y="281" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">② DistributedScheduler · 到期扫描</text>
+<text x="78" y="304" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">每 5s 扫 NextRunTime &lt;= now（预取窗口 60s，30s 刷新）</text>
+<text x="78" y="324" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">周期到期与失败重试到期统一进分发队列，不依赖进程内存</text>
+<rect x="60" y="358" width="640" height="92" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.2"/>
+<text x="78" y="385" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">③ SchedulerDispatchQueue · 领取与投递</text>
+<text x="78" y="408" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">预取 → 候选预检 → 周期领取 → 投递；未受理按退避回写</text>
+<text x="78" y="428" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">队列 4096、消费 4 线程；同一周期只有一次领取能成功</text>
+<rect x="60" y="462" width="640" height="92" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.2"/>
+<text x="78" y="489" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">④ DatabasePeriodClaimer · 周期领取（单事务）</text>
+<text x="78" y="512" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">任务行 NextRunTime CAS + 插入执行行，同一事务提交</text>
+<text x="78" y="532" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">ExecutionKey = jobId:period:attempt 唯一键 → 同周期不重复触发</text>
+<rect x="60" y="566" width="640" height="92" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.2"/>
+<text x="78" y="593" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑤ JobDispatcher / JobResultHandler · 分发与收敛</text>
+<text x="78" y="616" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">按 HandlerType 精确匹配存活节点能力，POST /jobs/execute</text>
+<text x="78" y="636" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">回调 CAS 终结；失败 1s→60s 指数退避最多 5 次 → 死信隔离待人工放行</text>
+<rect x="60" y="670" width="640" height="92" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.2"/>
+<text x="78" y="697" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑥ 管理面与维护 · Admin / 日志接收 / 兜底</text>
+<text x="78" y="720" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">trigger · kill · executions · workers · capabilities · master</text>
+<text x="78" y="740" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">日志分片落库 + 超时兜底（Claimed 30s / Dispatched 10min）+ 保留 30 天清理</text>
+<rect x="900" y="150" width="640" height="92" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="918" y="177" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">① WorkerRegistry · 心跳与能力注册</text>
+<text x="918" y="200" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">每 10s 上报节点地址 + IJob 实现清单（60s 重扫），TTL 45s 判活</text>
+<text x="918" y="220" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">scheduler_worker.Capabilities 记录“本节点能跑哪些任务”</text>
+<rect x="900" y="254" width="640" height="92" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="918" y="281" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">② JobExecutionController · 受理</text>
+<text x="918" y="304" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">/jobs/execute 入队即返回（队列满 503）；/jobs/kill 取消在跑执行</text>
+<text x="918" y="324" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">只有执行端提供服务，纯调度节点一律 503</text>
+<rect x="900" y="358" width="640" height="92" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="918" y="385" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">③ JobExecutionQueue · 执行队列</text>
+<text x="918" y="408" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">并发 8、容量 1024；每条执行开 AsyncLocal 日志作用域</text>
+<text x="918" y="428" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">注入 context.LogRecorder：任务可主动写过程日志（空实现安全）</text>
+<rect x="900" y="462" width="640" height="92" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="918" y="489" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">④ JobExecutor + IJob · 真正执行</text>
+<text x="918" y="512" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">按 HandlerType 解析实现；解析不到显式失败，绝不上报成功</text>
+<text x="918" y="532" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">执行结果、Message、耗时回填后回调调度端</text>
+<rect x="900" y="566" width="640" height="92" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="918" y="593" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑤ ExecutionLogCollector · 日志采集</text>
+<text x="918" y="616" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">环形 300 条 / 单条 800 字符；每 50 条切一片（单片 ≤8000 字符）</text>
+<text x="918" y="636" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">ILogger 旁路采集（不替换既有输出）；脱敏默认关闭，开关打开即生效</text>
+<rect x="900" y="670" width="640" height="92" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.2"/>
+<text x="918" y="697" font-size="16.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑥ ExecutionLogShipper + JobResultShipper（批量 + 并发）· 上报</text>
+<text x="918" y="720" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">日志：有界队列 4096（满丢最旧）→ 攒批 20 片 / 2s → POST /jobs/logs</text>
+<text x="918" y="740" font-size="12.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">结果：POST /jobs/result，失败退避 3 次；带 Message 与日志尾部摘要</text>
+<line x1="716" y1="232" x2="878" y2="232" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="797.0" y="224" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">① 投递 execute / kill</text>
+<line x1="878" y1="352" x2="716" y2="352" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="797.0" y="344" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">② 结果回调 result</text>
+<line x1="878" y1="472" x2="716" y2="472" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="797.0" y="464" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">③ 日志分片 logs</text>
+<line x1="878" y1="592" x2="716" y2="592" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="797.0" y="584" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">④ 心跳 beat / offline</text>
+<line x1="380" y1="793" x2="380" y2="812" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowheadgray)"/>
+<line x1="1220" y1="793" x2="1220" y2="812" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowheadgray)"/>
+<text x="390" y="809" font-size="10.5" fill="#64748b" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">SQL/CAS</text>
+<text x="1230" y="809" font-size="10.5" fill="#64748b" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">SQL/CAS</text>
+<text x="66" y="838" font-size="15.5" fill="#92400e" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">MySQL · 数据源 jobs（无 Redis / 无消息队列 / 无注册中心）</text>
+<rect x="66" y="852" width="348" height="142" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+<text x="82" y="879" font-size="15" fill="#92400e" font-weight="700" text-anchor="start" font-family="Menlo, monospace">scheduler_master</text>
+<text x="82" y="907" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· 主租约：LockKey / Owner / LeaseUntil</text>
+<text x="82" y="928" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· 抢租约与续期是同一条条件 UPDATE</text>
+<text x="82" y="949" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· 只有持有者扫描与分发（减少无效扫描）</text>
+<rect x="442" y="852" width="348" height="142" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+<text x="458" y="879" font-size="15" fill="#92400e" font-weight="700" text-anchor="start" font-family="Menlo, monospace">scheduler_worker</text>
+<text x="458" y="907" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· 节点：NodeName / Address</text>
+<text x="458" y="928" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· Capabilities(JSON) 任务清单 + LastHeartbeat</text>
+<text x="458" y="949" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· TTL 判活，分发按能力精确匹配</text>
+<rect x="818" y="852" width="348" height="142" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+<text x="834" y="879" font-size="15" fill="#92400e" font-weight="700" text-anchor="start" font-family="Menlo, monospace">scheduler_execution</text>
+<text x="834" y="907" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· 账本：TraceId(uk) / ExecutionKey(uk)</text>
+<text x="834" y="928" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· State / WorkerAddress / DispatchAt / FinishAt</text>
+<text x="834" y="949" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· Message / JobLog 尾部摘要 / Error</text>
+<text x="834" y="970" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· 换主后从表接管在途，不再依赖进程内存</text>
+<rect x="1194" y="852" width="348" height="142" rx="10" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+<text x="1210" y="879" font-size="15" fill="#92400e" font-weight="700" text-anchor="start" font-family="Menlo, monospace">scheduler_execution_log</text>
+<text x="1210" y="907" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· 日志明细：TraceId + Sequence 分片追加</text>
+<text x="1210" y="928" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· Content / IsFinal / CreatedTime</text>
+<text x="1210" y="949" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· idx(TraceId, id) 主键游标分页</text>
+<text x="1210" y="970" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">· 随账本按同一批 TraceId 清理</text>
+<text x="60" y="1036" font-size="13" fill="#334155" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">投递语义：至少一次 · 执行幂等靠 ExecutionKey 唯一键 · 换主不丢在途 · 失败退避 → 死信隔离（人工放行）· 执行日志：明细全量 + 回调摘要</text>
+<text x="60" y="1060" font-size="12.5" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">链路闭环：到期扫描 → 周期领取（事务）→ 能力匹配投递 → 执行（日志边跑边报）→ 结果回调 → 成功归零 / 失败退避 / 死信隔离</text>
+</svg>
+      </figure>
+      <figcaption>图 1 · 组件分层与四类机器间协议（实线 HTTP，虚线数据库读写） · <a href="images/分布式调度架构.png">原尺寸 PNG</a></figcaption>
+
+      <h3>三方职责</h3>
+      <table>
+        <thead><tr><th style="width:150px">角色</th><th>职责</th><th style="width:230px">不负责</th></tr></thead>
+        <tbody>
+        <tr><td><span class="pill teal">调度端</span></td><td>选主与租约、到期扫描、预取、周期领取、能力匹配投递、结果收敛、超时兜底（独立节拍）、日志落库、历史清理、管理面</td><td>不执行任务本体；不因为持有租约而获得"唯一触发权"</td></tr>
+        <tr><td><span class="pill teal">执行端</span></td><td>心跳与能力注册、受理入队、并发执行、日志采集与分片上报、结果回调</td><td>不决定"何时该跑"；不直接改任务调度状态</td></tr>
+        <tr><td><span class="pill amber">MySQL</span></td><td>唯一事实来源：租约、节点能力、执行账本、日志明细</td><td>不做业务计算；不承载调度逻辑</td></tr>
+        </tbody>
+      </table>
+      <p>调度端与执行端是同一组件的两个开关（<code>SchedulerEnabled</code> / <code>WorkerEnabled</code>），可同进程部署，也可大小节点分离；纯调度节点收到 <code>execute</code> / <code>kill</code> 一律 503，纯执行节点收到 <code>beat</code> / <code>offline</code> 返回 503。</p>
+
+      <h3>部署拓扑示例</h3>
+      <figure class="figure">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="800" viewBox="0 0 1600 800" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<defs><marker id="arrowhead" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/></marker></defs>
+<text x="60" y="54" font-size="30" fill="#0f172a" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">部署拓扑示例：2 纯调度 + 3 执行 + 1 库</text>
+<text x="60" y="84" font-size="14" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">同构部署、租约互斥；调度端只管“何时 / 谁跑”，执行端只管“能不能跑”</text>
+<rect x="60" y="140" width="300" height="84" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="76" y="167" font-size="15" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">运维 / 内部系统</text>
+<text x="76" y="192" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">运维平台 · 手动触发 · 执行记录查询</text>
+<text x="378" y="170" font-size="11.5" fill="#64748b" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">HTTPS + Token</text>
+<line x1="360" y1="180" x2="468" y2="180" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<rect x="44" y="240" width="700" height="150" rx="14" fill="none" stroke="#0f766e" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="58" y="262" font-size="12.5" fill="#0f766e" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">调度层：同构节点，全开 SchedulerEnabled（谁当主由租约决定）</text>
+<rect x="60" y="300" width="300" height="76" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.3"/>
+<text x="76" y="327" font-size="15" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Node-A · 当前主</text>
+<text x="76" y="352" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">SchedulerEnabled=true / WorkerEnabled=false</text>
+<text x="76" y="373" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">扫描 · 领取 · 投递 · 结果收敛 · 管理面</text>
+<rect x="400" y="300" width="300" height="76" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.3"/>
+<text x="416" y="327" font-size="15" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Node-B · 备节点</text>
+<text x="416" y="352" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">同样参与抢租约，未持有时只待命</text>
+<text x="416" y="373" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">主机失联超过 TTL 15s 后接替</text>
+<line x1="230" y1="224" x2="230" y2="298" stroke="#64748b" stroke-width="2" marker-end="url(#arrowhead)"/>
+<line x1="210" y1="420" x2="900" y2="420" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="520" y="410" font-size="11" fill="#0f766e" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">① 投递 execute / kill（任一主 → 任一具备该任务的执行节点）</text>
+<line x1="900" y1="446" x2="210" y2="446" stroke="#475569" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowhead)"/>
+<text x="540" y="464" font-size="11" fill="#475569" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">② 结果 result · 日志 logs · 心跳 beat（执行 → 当前主）</text>
+<rect x="44" y="470" width="1500" height="154" rx="14" fill="none" stroke="#1d4ed8" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="58" y="492" font-size="12.5" fill="#1d4ed8" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">执行层：各节点承载的 IJob 不同，心跳上报能力清单（60s 重扫）</text>
+<rect x="60" y="528" width="290" height="76" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<text x="76" y="555" font-size="15" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Node-W1 · 引物</text>
+<text x="76" y="580" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">引物设计 / 通用任务 IJob</text>
+<text x="76" y="601" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">心跳 10s，能力 TTL 45s 判活</text>
+<rect x="380" y="528" width="290" height="76" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<text x="396" y="555" font-size="15" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Node-W2 · 测序</text>
+<text x="396" y="580" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">测序分析 / ab1 分拣 IJob</text>
+<text x="396" y="601" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">执行队列并发 8，日志分片上报</text>
+<rect x="700" y="528" width="290" height="76" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<text x="716" y="555" font-size="15" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Node-W3 · 报表</text>
+<text x="716" y="580" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">报表 / 数据同步 IJob</text>
+<text x="716" y="601" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">可与 W1/W2 互为备份能力</text>
+<rect x="44" y="652" width="1500" height="122" rx="14" fill="none" stroke="#b45309" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="58" y="674" font-size="12.5" fill="#b45309" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">数据层：MySQL 单库（数据源 jobs），仅调度节点读写（租约/节点注册/账本/日志明细）；执行节点无数据库连接，登记/结果/日志走协议</text>
+<rect x="66" y="692" width="288" height="58" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+<text x="80" y="724" font-size="13.5" fill="#92400e" font-weight="700" text-anchor="start" font-family="Menlo, monospace">scheduler_master</text>
+<rect x="382" y="692" width="288" height="58" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+<text x="396" y="724" font-size="13.5" fill="#92400e" font-weight="700" text-anchor="start" font-family="Menlo, monospace">scheduler_worker</text>
+<rect x="698" y="692" width="288" height="58" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+<text x="712" y="724" font-size="13.5" fill="#92400e" font-weight="700" text-anchor="start" font-family="Menlo, monospace">scheduler_execution</text>
+<rect x="1014" y="692" width="288" height="58" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.2"/>
+<text x="1028" y="724" font-size="13.5" fill="#92400e" font-weight="700" text-anchor="start" font-family="Menlo, monospace">scheduler_execution_log</text>
+<line x1="210" y1="376" x2="210" y2="650" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 6" opacity="0.5"/>
+<line x1="530" y1="376" x2="530" y2="650" stroke="#64748b" stroke-width="1.2" stroke-dasharray="4 6" opacity="0.5"/>
+<rect x="1060" y="280" width="480" height="86" rx="10" fill="#fcfdfe" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1076" y="306" font-size="14" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">故障转移</text>
+<text x="1076" y="330" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">主失联超过 15s，备节点通过租约接替；在途执行由账本接管，不依赖进程内存。</text>
+<rect x="1060" y="384" width="480" height="86" rx="10" fill="#fcfdfe" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1076" y="410" font-size="14" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">同进程形态</text>
+<text x="1076" y="434" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">小规模可 Scheduler + Worker 同开：省机器，但执行与管理面共享同一进程。</text>
+<rect x="1060" y="488" width="480" height="86" rx="10" fill="#fcfdfe" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1076" y="514" font-size="14" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">扩容执行节点</text>
+<text x="1076" y="538" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">新增节点只要部署 IJob 实现并开启 WorkerEnabled，心跳上报能力后即可被调度。</text>
+</svg>
+      </figure>
+      <figcaption>图 2 · 2 个纯调度节点 + 3 个执行节点 + 1 个 MySQL 库 · <a href="images/分布式调度部署拓扑.png">原尺寸 PNG</a></figcaption>
+      <p>典型形态：两台 <b>纯调度节点</b>同构部署、都开 <code>SchedulerEnabled</code>，谁当主由 <code>scheduler_master</code> 租约决定，备节点待命并在主机失联 15s 内接替；<b>执行节点</b>按业务拆分（引物、测序、报表各一台），各自只注册自己部署的 <code>IJob</code>，调度端按 <code>HandlerType</code> 精确匹配后再投递——部署错任务不会"跑到别的机器上"。只有<b>调度节点</b>连库（租约、账本、日志明细都在调度端写）；<b>执行节点不注册任何数据库原语、没有数据库连接</b>，心跳 / 结果 / 日志三件事全部经 <code>ISchedulerMasterChannel</code> 协议上送（当前 HTTP，可换 RPC）。不引入注册中心或消息队列。</p>
+      <div class="calm"><strong>最少部署：</strong>1 台机器同时开 <code>SchedulerEnabled</code> 与 <code>WorkerEnabled</code> 即可跑通全部链路；扩到多台时只需复制节点并打开对应开关，账本与日志不需要迁移。</div>
+    </section>
+
+    <section id="flow">
+      <h2><span class="num">3</span>一次触发的完整链路</h2>
+      <p class="sub">从"到期"到"收敛"，每一步的观察点都能在表里查到</p>
+      <ol class="steps">
+        <li><strong>到期扫描</strong><span><code>DistributedScheduler</code> 每 5s 扫 <code>NextRunTime &lt;= now</code>；预取窗口 60s、30s 刷新，失败重试到期优先。</span></li>
+        <li><strong>候选预检</strong><span>按 <code>HandlerType</code> 精确匹配存活节点能力；无节点时 <code>DeferCycleAsync</code> 只推周期锚点，<b>不建执行行、不消耗重试次数</b>。</span></li>
+        <li><strong>周期领取（单事务）</strong><span>任务行 <code>NextRunTime</code> CAS + 插入执行行同一事务提交；<code>ExecutionKey = jobId:period:attempt</code> 唯一键兜底，同周期只有一次领取能成功。</span></li>
+        <li><strong>投递</strong><span><code>POST /api/scheduler/jobs/execute</code>，执行端入队即返回 202；队列满返回 503 → 未受理，按退避回写。</span></li>
+        <li><strong>受理确认</strong><span><code>MarkDispatched</code>：仅当状态为 <code>Claimed</code> 时 <code>Claimed → Dispatched</code>；未受理则 <code>Claimed</code> 30s 后由兜底转 <code>Failed</code>。</span></li>
+        <li><strong>执行</strong><span>执行队列并发 8；每条执行开 <code>AsyncLocal</code> 日志作用域并注入 <code>context.LogRecorder</code>。</span></li>
+        <li><strong>日志分片上报</strong><span>每 50 条切一片 → 有界队列 → 攒批 20 片 / 2s → <code>POST /api/scheduler/jobs/logs</code> → 明细表逐片追加。</span></li>
+        <li><strong>结果回调</strong><span><code>POST /api/scheduler/jobs/result</code>（失败退避 3 次），带 <code>Message</code> 与日志尾部摘要；服务端 CAS 终结，重复回调只有一条成功。</span></li>
+        <li><strong>收敛</strong><span>成功：<code>TryCount</code> 归零、<code>LastRunTime</code> 更新、<code>NextRunTime</code> 推向下周期；失败：指数退避后 <code>RetryAtTime</code>；用尽：任务转 <code>Dead</code> 待人工放行。</span></li>
+      </ol>
+
+      <div class="note"><strong>关键取舍：</strong>投递是"至少一次"，不是"恰好一次"。业务侧若需严格幂等，用执行行 <code>ExecutionKey</code> 做业务侧去重键，而不是指望调度层不重发。</div>
+
+      <h3>时序图：扫描 → 投递 → 执行 → 日志 → 回调</h3>
+      <figure class="figure">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="920" viewBox="0 0 1600 920" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<defs><marker id="ah" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/></marker>
+<marker id="ahg" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#475569"/></marker></defs>
+<text x="60" y="54" font-size="30" fill="#0f172a" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">一次执行的时序：从到期扫描到结果收敛（含日志分片）</text>
+<text x="60" y="86" font-size="14" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">横轴三条泳道：调度端 / MySQL / 执行端；所有状态变化都能在库表里看到</text>
+<rect x="150" y="104" width="300" height="58" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.3"/>
+<text x="300.0" y="140" font-size="15" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">调度端 Master</text>
+<line x1="300" y1="162" x2="300" y2="810" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5 5"/>
+<rect x="620" y="104" width="240" height="58" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<text x="740.0" y="140" font-size="15" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">MySQL · 数据源 jobs</text>
+<line x1="740" y1="162" x2="740" y2="810" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5 5"/>
+<rect x="1080" y="104" width="300" height="58" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<text x="1230.0" y="140" font-size="15" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">执行端 Worker</text>
+<line x1="1230" y1="162" x2="1230" y2="810" stroke="#cbd5e1" stroke-width="1.4" stroke-dasharray="5 5"/>
+<line x1="300" y1="186" x2="740" y2="186" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="520.0" y="175" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">① 每 5s 扫描 NextRunTime ≤ now（预取窗口 60s）</text>
+<line x1="300" y1="230" x2="740" y2="230" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="520.0" y="219" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">② 单事务：任务行 NextRunTime CAS + 插入执行行（ExecutionKey 唯一）</text>
+<line x1="740" y1="274" x2="300" y2="274" stroke="#475569" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ahg)"/>
+<text x="520.0" y="263" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">读候选：按 HandlerType 匹配存活节点（能力来自心跳快照）</text>
+<line x1="300" y1="318" x2="1230" y2="318" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="765.0" y="307" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">③ POST /jobs/execute（入队即 202；队列满 / 纯调度节点 503）</text>
+<line x1="1230" y1="356" x2="300" y2="356" stroke="#475569" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#ahg)"/>
+<text x="765.0" y="345" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">202 Accepted</text>
+<line x1="300" y1="396" x2="740" y2="396" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="520.0" y="385" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">④ MarkDispatched：Claimed → Dispatched（未受理则 30s 后兜底转 Failed）</text>
+<path d="M1230,436 L1480,436 L1480,454 L1230,454" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="1355.0" y="425" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">并发执行（并发 8）+ 开日志作用域</text>
+<line x1="1230" y1="492" x2="300" y2="492" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="765.0" y="481" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑤ POST /jobs/logs：满 50 条切一片</text>
+<line x1="300" y1="534" x2="740" y2="534" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="520.0" y="523" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">追加 scheduler_execution_log（只插不改，按 TraceId+Sequence）</text>
+<line x1="1230" y1="576" x2="300" y2="576" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="765.0" y="565" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑥ POST /jobs/logs：后续分片（攒批 20 片 / 2s 窗口合并）</text>
+<line x1="1230" y1="618" x2="300" y2="618" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="765.0" y="607" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑦ POST /jobs/result（失败退避 3 次；带 Message + 日志尾部摘要）</text>
+<line x1="300" y1="660" x2="740" y2="660" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="520.0" y="649" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑧ CAS 终结（重复回调只有一条成功）+ 写 Message / JobLog 摘要</text>
+<line x1="300" y1="702" x2="740" y2="702" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="520.0" y="691" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">成功：TryCount 归零 · LastRunTime 更新 · NextRunTime 推进</text>
+<line x1="300" y1="744" x2="740" y2="744" stroke="#b45309" stroke-width="2" marker-end="url(#ah)"/>
+<text x="520.0" y="733" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">失败：写 RetryAtTime 退避；用尽 → 任务 Dead（待人工 release）</text>
+<path d="M300,782 L510,782 L510,800 L300,800" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#ah)"/>
+<text x="405.0" y="771" font-size="11.5" fill="#334155" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">兜底每轮扫表：Claimed 30s / Dispatched 10min → Failed</text>
+<rect x="66" y="842" width="470" height="52" rx="10" fill="#fcfdfe" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="80" y="866" font-size="12.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">观察点 1</text>
+<text x="80" y="881" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">scheduler_execution.State / Message / JobLog</text>
+<rect x="560" y="842" width="470" height="52" rx="10" fill="#fcfdfe" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="574" y="866" font-size="12.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">观察点 2</text>
+<text x="574" y="881" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">scheduler_execution_log.Sequence 连续、IsFinal</text>
+<rect x="1054" y="842" width="470" height="52" rx="10" fill="#fcfdfe" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1068" y="866" font-size="12.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">观察点 3</text>
+<text x="1068" y="881" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">scheduler_worker.Capabilities 决定投给谁</text>
+</svg>
+      </figure>
+      <figcaption>图 3 · 三条泳道（调度端 / MySQL / 执行端）的完整时序；虚箭头为返回与读操作 · <a href="images/分布式调度时序.png">原尺寸 PNG</a></figcaption>
+      <p>注意顺序：<b>先插入执行行再投递</b>（否则投递成功却无处记账）；<b>结果回调前先补发最后一片日志</b>（否则明细可能缺尾）；<b>CAS 终结先于重试决策</b>（否则重复回调会重复退避）。</p>
+    </section>
+
+    <section id="states">
+      <h2><span class="num">4</span>执行状态机</h2>
+      <p class="sub">执行行 5 个状态 + 任务行 3 个状态；超时、kill、重试与死信都在图里</p>
+      <figure class="figure">
+        <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="910" viewBox="0 0 1600 910" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<defs>
+<marker id="arrowhead" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/></marker>
+<marker id="arrowheadgray" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/></marker>
+</defs>
+<text x="60" y="54" font-size="30" fill="#0f172a" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Findx 分布式调度 · 执行状态机与重试 / 死信</text>
+<text x="60" y="84" font-size="14" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">一次执行从领取到终结的所有迁移路径；任务侧退避重试、死信隔离与人工放行</text>
+<rect x="44" y="112" width="956" height="524" rx="14" fill="none" stroke="#0f766e" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="60" y="136" font-size="13.5" fill="#0f766e" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">一次执行的状态机（scheduler_execution.State）</text>
+<rect x="1024" y="112" width="532" height="524" rx="14" fill="none" stroke="#b45309" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="1040" y="136" font-size="13.5" fill="#b45309" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">任务行与重试（ScheduledJob / JobStatus）</text>
+<rect x="44" y="656" width="1512" height="206" rx="14" fill="none" stroke="#334155" stroke-width="1.2" stroke-dasharray="6 5"/>
+<text x="60" y="680" font-size="13.5" fill="#334155" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">关键不变量（正确性由什么保证）</text>
+<rect x="66" y="300" width="140" height="64" rx="10" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.3"/>
+<text x="136.0" y="337.0" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">周期到期 / 手动触发</text>
+<rect x="256" y="300" width="150" height="64" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.3"/>
+<text x="331.0" y="330" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Claimed · 领取</text>
+<text x="331.0" y="352" font-size="11.5" fill="#64748b" font-weight="normal" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">执行行已插入</text>
+<rect x="470" y="300" width="150" height="64" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.3"/>
+<text x="545.0" y="330" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Dispatched · 受理</text>
+<text x="545.0" y="352" font-size="11.5" fill="#64748b" font-weight="normal" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Worker 已确认入队</text>
+<rect x="700" y="196" width="220" height="64" rx="10" fill="#e7f8ec" stroke="#16a34a" stroke-width="1.3"/>
+<text x="810.0" y="226" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Succeeded · 成功</text>
+<text x="810.0" y="248" font-size="11.5" fill="#64748b" font-weight="normal" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">回调 IsSuccess=true</text>
+<rect x="700" y="300" width="220" height="64" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.3"/>
+<text x="810.0" y="330" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Failed · 失败</text>
+<text x="810.0" y="352" font-size="11.5" fill="#64748b" font-weight="normal" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">异常 / 超时 / 不可达</text>
+<rect x="700" y="444" width="220" height="64" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="1.3"/>
+<text x="810.0" y="474" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Cancelled · 人工终止</text>
+<text x="810.0" y="496" font-size="11.5" fill="#64748b" font-weight="normal" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">kill：先终结再通知取消</text>
+<line x1="206" y1="332" x2="254" y2="332" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<line x1="406" y1="332" x2="468" y2="332" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="437" y="322" font-size="10.8" fill="#475569" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">受理确认</text>
+<line x1="620" y1="318" x2="698" y2="246" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="648" y="238" font-size="10.8" fill="#475569" font-weight="600" text-anchor="end" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">回调成功</text>
+<line x1="620" y1="340" x2="698" y2="332" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<path d="M306,364 C 420,430 560,420 698,350" fill="none" stroke="#dc2626" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowhead)"/>
+<text x="505" y="432" font-size="10.8" fill="#475569" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">30s 超时（视为未送达）</text>
+<path d="M560,364 C 560,470 640,474 698,474" fill="none" stroke="#475569" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowhead)"/>
+<text x="604" y="510" font-size="10.8" fill="#475569" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">kill 先终结再通知</text>
+<path d="M700,340 C 540,600 420,600 366,364" fill="none" stroke="#d97706" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowhead)"/>
+<text x="470" y="624" font-size="10.8" fill="#475569" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">失败退避：新建执行行 attempt+1（最多 5 次）</text>
+<text x="704" y="392" font-size="10.8" fill="#b45309" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">重试耗尽 → 任务 Dead（见右图）</text>
+<rect x="1080" y="180" width="170" height="60" rx="10" fill="#ecfdf5" stroke="#0f766e" stroke-width="1.3"/>
+<text x="1165.0" y="215.0" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Normal · 正常</text>
+<rect x="1330" y="180" width="170" height="60" rx="10" fill="#f1f5f9" stroke="#475569" stroke-width="1.3"/>
+<text x="1415.0" y="215.0" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Paused · 暂停</text>
+<rect x="1330" y="340" width="170" height="60" rx="10" fill="#fef2f2" stroke="#dc2626" stroke-width="1.3"/>
+<text x="1415.0" y="375.0" font-size="15.5" fill="#0f172a" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Dead · 死信隔离</text>
+<line x1="1252" y1="194" x2="1328" y2="194" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="1290" y="186" font-size="10.8" fill="#475569" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">pause</text>
+<line x1="1328" y1="226" x2="1252" y2="226" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="1290" y="244" font-size="10.8" fill="#475569" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">resume</text>
+<path d="M1165,240 C 1180,312 1270,360 1328,368" fill="none" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="1240" y="320" font-size="10.8" fill="#475569" font-weight="600" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">重试耗尽（最多 5 次）</text>
+<path d="M1330,372 C 1150,478 1040,320 1086,244" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowhead)"/>
+<text x="1110" y="440" font-size="10.8" fill="#475569" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">release 人工放行</text>
+<text x="1064" y="494" font-size="12" fill="#475569" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">退避阶梯：1s → 2s → 4s → 8s → 16s → 60s 封顶</text>
+<text x="1064" y="518" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">失败最多 MaxRetryCount=5 次，用尽后任务转 Dead，不再自动触发</text>
+<text x="1064" y="542" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Dead 只能 release 放行：TryCount 归零、NextRunTime 重排</text>
+<text x="1064" y="564" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">无节点不建执行行：DeferCycleAsync 只推周期锚点，不计重试</text>
+<text x="1064" y="590" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">成功：TryCount 归零、LastRunTime 更新、NextRunTime 推向下周期</text>
+<text x="1064" y="614" font-size="12" fill="#b45309" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">超时兜底：Claimed 30s → Failed；Dispatched 10min → Failed（读表接管）</text>
+<rect x="66" y="686" width="350" height="156" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="82" y="714" font-size="14.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">唯一键</text>
+<text x="82" y="744" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">ExecutionKey = jobId:period:attempt</text>
+<text x="82" y="768" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">同一周期同一次尝试只有一行执行记录</text>
+<text x="82" y="796" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">崩溃/重复投递也不会多出一行</text>
+<rect x="440" y="686" width="350" height="156" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="456" y="714" font-size="14.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">CAS 终结</text>
+<text x="456" y="744" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">回调按“当前状态”条件更新</text>
+<text x="456" y="768" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">重复回调只有一条成功，其余直接忽略</text>
+<text x="456" y="796" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">“已终结”的行不会被二次覆盖</text>
+<rect x="814" y="686" width="350" height="156" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="830" y="714" font-size="14.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">租约不承载正确性</text>
+<text x="830" y="744" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">scheduler_master 只减少无效扫描</text>
+<text x="830" y="768" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">重复扫描不会重复触发，靠 CAS + 唯一键</text>
+<text x="830" y="796" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">租约抖动只多一轮空扫描</text>
+<rect x="1188" y="686" width="350" height="156" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+<text x="1204" y="714" font-size="14.5" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">账本接管</text>
+<text x="1204" y="744" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">超时兜底扫的是执行表</text>
+<text x="1204" y="768" font-size="12" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">换主 / 重启后在途执行有人接手</text>
+<text x="1204" y="796" font-size="11" fill="#94a3b8" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">不再依赖进程内存</text>
+<text x="60" y="886" font-size="12" fill="#64748b" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">取值：ExecutionState 1..5（Claimed / Dispatched / Succeeded / Failed / Cancelled）· JobStatus Normal=0 / Paused=1 / Dead=3</text>
+</svg>
+      </figure>
+      <figcaption>图 4 · 执行状态迁移与任务侧退避 / 死信（琥珀虚线为退避重试，灰虚线为 kill 与人工放行） · <a href="images/分布式调度状态机.png">原尺寸 PNG</a></figcaption>
+
+      <table class="small">
+        <thead><tr><th style="width:140px">迁移</th><th style="width:220px">触发</th><th>条件与结果</th></tr></thead>
+        <tbody>
+        <tr><td><code>Claimed → Dispatched</code></td><td>执行端受理成功</td><td>条件更新 <code>State = Claimed</code>；影响 0 行说明已被别人处理</td></tr>
+        <tr><td><code>Claimed → Failed</code></td><td>超过 <code>ClaimTimeoutSeconds</code>（30s）</td><td>视为未送达；不重试本次，走任务级退避</td></tr>
+        <tr><td><code>Dispatched → Succeeded</code></td><td>回调 <code>IsSuccess=true</code></td><td>CAS 终结；写 <code>Message</code>/<code>JobLog</code>/耗时</td></tr>
+        <tr><td><code>Dispatched → Failed</code></td><td>回调失败 / 超过 <code>ExecutionTimeoutMinutes</code>（10min）</td><td>超时由兜底扫描读表发现，不依赖执行端在线</td></tr>
+        <tr><td><code>→ Cancelled</code></td><td>管理面 <code>executions/kill</code></td><td>先终结再通知执行端取消；后续回调全部被 CAS 挡掉</td></tr>
+        <tr><td><code>Failed → 新执行行</code></td><td>任务退避到期</td><td><code>attempt+1</code>、新建 <code>TraceId</code>，最多 <code>MaxRetryCount</code>=5 次</td></tr>
+        <tr><td><code>任务 → Dead</code></td><td>重试次数用尽</td><td>不再自动触发；只能 <code>release</code> 人工放行</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="model">
+      <h2><span class="num">5</span>数据模型</h2>
+      <p class="sub">四张表 = 租约、节点能力、执行账本、日志明细；唯一键与索引必须显式建</p>
+
+      <div class="grid two">
+        <div class="card teal"><h4>scheduler_master · 租约</h4><p><code>LockKey</code> / <code>Owner</code> / <code>LeaseUntil</code>。抢租约与续期是同一条条件 <code>UPDATE</code>：持有者是我，或原租约已过期。</p></div>
+        <div class="card teal"><h4>scheduler_worker · 节点 + 能力</h4><p><code>NodeName</code> / <code>Address</code> / <code>Capabilities</code>(JSON 任务清单) / <code>LastHeartbeat</code>。心跳带清单，TTL 45s 判活。</p></div>
+        <div class="card teal"><h4>scheduler_execution · 账本</h4><p><code>TraceId</code>(uk) / <code>ExecutionKey</code>(uk) / <code>State</code> / <code>WorkerAddress</code> / <code>DispatchAt</code> / <code>FinishAt</code> / <code>ElapsedMs</code> / <code>Error</code> / <code>Message</code> / <code>JobLog</code>摘要。</p></div>
+        <div class="card teal"><h4>scheduler_execution_log · 日志明细</h4><p><code>TraceId</code> + <code>Sequence</code> 分片追加；<code>Content</code>(mediumtext) / <code>IsFinal</code>；<code>idx(TraceId, id)</code> 游标分页。</p></div>
+      </div>
+
+      <h3>必备索引（不做自动建，必须执行 DDL）</h3>
+      <table class="small">
+        <thead><tr><th style="width:300px">索引</th><th>用途</th></tr></thead>
+        <tbody>
+        <tr><td><code>uk_exec_trace (TraceId)</code></td><td>回调幂等定位（按 TraceId 精确取一次执行）</td></tr>
+        <tr><td><code>uk_exec_key (ExecutionKey)</code></td><td>同周期同尝试唯一，重复领取插入直接失败</td></tr>
+        <tr><td><code>idx_exec_state_dispatch (State, DispatchAt)</code></td><td>超时兜底扫描（Claimed / Dispatched 两段）</td></tr>
+        <tr><td><code>uk_worker_id (WorkerId)</code></td><td>心跳 upsert</td></tr>
+        <tr><td><code>idx_log_trace (TraceId, id)</code></td><td>执行日志明细分页</td></tr>
+        </tbody>
+      </table>
+      <p>建表脚本：<code>docs/sql/scheduler_v2.sql</code>；组件首次运行会按实体自动建表，但唯一键/索引不会自动建。</p>
+    </section>
+
+    <section id="protocol">
+      <h2><span class="num">6</span>机器间协议</h2>
+      <p class="sub">全部 HTTP + JSON；共享令牌 <code>X-Scheduler-Token</code>（<code>ClusterToken</code>）必填</p>
+      <table class="small">
+        <thead><tr><th style="width:52px">方法</th><th style="width:290px">路径</th><th>说明</th></tr></thead>
+        <tbody>
+        <tr><td><span class="pill teal">POST</span></td><td><code>/api/scheduler/jobs/execute</code></td><td>调度端 → 执行端投递；入队即 202，队列满 503，纯调度节点 503</td></tr>
+        <tr><td><span class="pill teal">POST</span></td><td><code>/api/scheduler/jobs/kill</code></td><td>取消在跑执行（管理面先终结执行行，再调用本接口）</td></tr>
+        <tr><td><span class="pill teal">POST</span></td><td><code>/api/scheduler/jobs/result</code></td><td>执行端 → 调度端回调；含成功标志、<code>Message</code>、耗时、日志尾部摘要</td></tr>
+        <tr><td><span class="pill teal">POST</span></td><td><code>/api/scheduler/jobs/results</code></td><td>执行端 → 调度端批量回调；多条合并成一次请求，调度端逐条按 <code>TraceId</code> 幂等终结</td></tr>
+        <tr><td><span class="pill teal">POST</span></td><td><code>/api/scheduler/jobs/logs</code></td><td>执行日志分片（≤64 片/请求，需 <code>SchedulerEnabled</code>）</td></tr>
+        <tr><td><span class="pill teal">POST</span></td><td><code>/api/scheduler/workers/beat</code></td><td>心跳 + 节点地址 + <code>Capabilities</code> 任务清单（60s 重扫）</td></tr>
+        <tr><td><span class="pill teal">POST</span></td><td><code>/api/scheduler/workers/offline</code></td><td>优雅下线：主动摘除能力，不再接受投递</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>鉴权是硬要求：</strong><code>ClusterToken</code> 为空时组件直接启动失败。否则 <code>execute</code> 等于"内网任意客户端可触发任意 IJob"。</div>
+    </section>
+
+    <section id="admin">
+      <h2><span class="num">7</span>管理面 API</h2>
+      <p class="sub">统一前缀 <code>/api/scheduler/admin</code>，共享同一套令牌校验</p>
+      <table class="small">
+        <thead><tr><th style="width:70px">方法</th><th style="width:340px">路径</th><th>说明</th></tr></thead>
+        <tbody>
+        <tr><td>GET</td><td><code>jobs</code></td><td>任务列表（含暂停 / 死信状态）</td></tr>
+        <tr><td>POST</td><td><code>jobs/save</code> · <code>jobs/remove</code></td><td>任务定义维护（Cron / 参数 / HandlerType / 策略）</td></tr>
+        <tr><td>POST</td><td><code>jobs/pause</code> · <code>jobs/resume</code> · <code>jobs/release</code></td><td>暂停 / 恢复 / 死信放行（<code>TryCount</code> 归零）</td></tr>
+        <tr><td>POST</td><td><code>jobs/trigger</code></td><td>手动触发一次（建执行行、走正常投递）</td></tr>
+        <tr><td>GET</td><td><code>executions?jobId=&amp;limit=&amp;includeLogs=</code></td><td>执行记录（默认不返回日志）</td></tr>
+        <tr><td>GET</td><td><code>executions/{traceId}</code></td><td>单次执行详情（含日志尾部摘要）</td></tr>
+        <tr><td>GET</td><td><code>executions/{traceId}/logs?afterId=&amp;limit=</code></td><td>过程日志明细分页（≤500/页）</td></tr>
+        <tr><td>POST</td><td><code>executions/kill</code></td><td>人工终止：先终结执行行，再通知执行端</td></tr>
+        <tr><td>GET</td><td><code>workers</code> · <code>capabilities</code> · <code>master</code></td><td>节点列表 / 任务覆盖矩阵（含无人承载的任务）/ 当前主</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="logs">
+      <h2><span class="num">8</span>执行日志</h2>
+      <p class="sub">Job 主动记录 + ILogger 旁路采集；量大走队列，不占结果回调</p>
+
+      <div class="grid two">
+        <div class="card teal"><h4>两个写入入口</h4><p><code>context.LogRecorder.Info/Warn/Error</code>（业务语义，不依赖日志级别）；以及组件注册的 <code>ExecutionLogProvider</code> 对 <code>ILogger</code> 旁路采集（不替换 NLog/控制台）。</p></div>
+        <div class="card amber"><h4>为什么走队列</h4><p>一次执行可能上千行日志：不能塞进结果回调（体积/延迟不可控），也不能同步等 HTTP（拖慢任务）。队列 + 攒批把网络抖动挡在执行路径外。</p></div>
+      </div>
+
+      <table class="small">
+        <thead><tr><th style="width:230px">参数</th><th style="width:110px">值</th><th>含义</th></tr></thead>
+        <tbody>
+        <tr><td>环形缓冲</td><td>300 条</td><td>供结果回调携带尾部摘要，内存有界</td></tr>
+        <tr><td>单条上限</td><td>800 字符</td><td>超长截断，避免单行爆炸</td></tr>
+        <tr><td>分片阈值 / 单片上限</td><td>50 条 / 8000 字符</td><td>长任务日志边跑边可见</td></tr>
+        <tr><td><code>LogShipQueueCapacity</code></td><td>4096</td><td>有界队列，满时丢最旧，不反压执行</td></tr>
+        <tr><td><code>LogShipBatchSize</code> / <code>LogShipIntervalMs</code></td><td>20 片 / 2000ms</td><td>同一次执行的多片合并成尽量少的请求</td></tr>
+        <tr><td><code>MaxExecutionLogChars</code></td><td>20000</td><td>结果回调里的摘要上限；明细表保存全量</td></tr>
+        <tr><td><code>LogMaskingEnabled</code> / <code>LogMaskPatterns</code></td><td>false / 空</td><td>可选脱敏（密码/令牌/Bearer/手机号/身份证 + 自定义正则）</td></tr>
+        </tbody>
+      </table>
+
+      <p>失败处理：单地址重试 2 次后丢弃并计数，<b>不回灌队列、不影响任务结果</b>。进程崩溃时未发送的分片丢失（已落库的保留）。`new Thread` / 外部队列里的日志不在 <code>AsyncLocal</code> 作用域内，不会被采集。</p>
+    </section>
+
+    <section id="retry">
+      <h2><span class="num">9</span>重试 · 死信 · 超时兜底</h2>
+      <p class="sub">三者都不是"进程内存里的定时器"，全部是可被任何节点读表接管的持久状态；两段超时兜底由独立的 <code>TimeoutSweepService</code> 按 30s 节拍跑，不占用 5s 调度扫描</p>
+      <table class="small">
+        <thead><tr><th style="width:180px">机制</th><th style="width:210px">参数</th><th>行为</th></tr></thead>
+        <tbody>
+        <tr><td>失败退避</td><td><code>RetryBaseDelayMs</code>=1000、<code>RetryMaxDelayMs</code>=60000、<code>MaxRetryCount</code>=5</td><td>1s→2s→4s→8s→16s→60s 封顶；写 <code>RetryAtTime</code>，到期由扫描重新领取</td></tr>
+        <tr><td>死信隔离</td><td><code>DeadLetterEnabled</code>=true</td><td>重试用尽转 <code>JobStatus.Dead</code>，停止自动触发；只能 <code>release</code> 人工放行</td></tr>
+        <tr><td>无节点延后</td><td><code>DeferCycleAsync</code></td><td>只推 <code>NextRunTime</code> 锚点 + <code>LastRunTime</code>，不建执行行、不计重试（避免同一周期执行两次）</td></tr>
+        <tr><td>领取超时</td><td><code>ClaimTimeoutSeconds</code>=30</td><td>兜底扫表把 <code>Claimed</code> 转 <code>Failed</code>，再走退避</td></tr>
+        <tr><td>执行超时</td><td><code>ExecutionTimeoutMinutes</code>=10</td><td>兜底扫表把 <code>Dispatched</code> 转 <code>Failed</code>；执行端离线也能收敛</td></tr>
+        <tr><td>回调重试</td><td>3 次退避</td><td>回调全失败时由超时兜底接管（该次日志可能缺失）</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="config">
+      <h2><span class="num">10</span>配置项</h2>
+      <p class="sub">前缀 <code>Findx:Scheduler</code>；下面是最常用的一组，完整表见 <code>docs/Findx.Extensions.Scheduler.md</code></p>
+      <table class="small">
+        <thead><tr><th style="width:300px">键</th><th style="width:150px">默认</th><th>说明</th></tr></thead>
+        <tbody>
+        <tr><td><code>ClusterToken</code></td><td>必填</td><td>机器间接口共享令牌，空值直接启动失败</td></tr>
+        <tr><td><code>SchedulerEnabled</code> / <code>WorkerEnabled</code></td><td>true / true</td><td>两个角色开关，可同进程也可分离</td></tr>
+        <tr><td><code>NodeName</code> / <code>NodeAddress</code></td><td>- / http://localhost:5000</td><td>节点标识与回调地址</td></tr>
+        <tr><td><code>MasterLockTtlSeconds</code></td><td>15</td><td>租约 TTL，续期间隔为其 1/3；也是主备切换空窗的主要来源</td></tr>
+        <tr><td><code>WorkerHeartbeatIntervalSeconds</code> / <code>WorkerHeartbeatTtlSeconds</code></td><td>10 / 45</td><td>心跳频率与判活阈值</td></tr>
+        <tr><td><code>CapabilityRefreshSeconds</code></td><td>60</td><td>任务清单重扫周期（热加载能力变化）</td></tr>
+        <tr><td><code>SchedulerScanIntervalSeconds</code></td><td>1</td><td>到期扫描周期，按时间栅格对齐（扫描线程纯内存，不做 DB/HTTP）；误差上限 = 一个间隔</td></tr>
+        <tr><td><code>SweepIntervalSeconds</code> / <code>SweepBatchSize</code> / <code>SweepBatchDelayMs</code></td><td>30 / 100 / 50</td><td>超时兜底独立节拍与批内让出</td></tr>
+        <tr><td><code>LookaheadWindowSeconds</code> / <code>LookaheadRefreshSeconds</code></td><td>60 / 30</td><td>预取窗口与刷新</td></tr>
+        <tr><td><code>MaxRetryCount</code> / <code>RetryBaseDelayMs</code> / <code>RetryMaxDelayMs</code></td><td>5 / 1000 / 60000</td><td>退避策略</td></tr>
+        <tr><td><code>ClaimTimeoutSeconds</code> / <code>ExecutionTimeoutMinutes</code></td><td>30 / 30</td><td>两段超时兜底；后者是「已受理但 Worker 崩溃」的重投时限，建议按业务 SLA 调到 5 分钟</td></tr>
+        <tr><td><code>DispatchQueueCapacity</code> ★</td><td>0 → 16384</td><td>分发队列容量，须大于单波到期任务数</td></tr>
+        <tr><td><code>DispatchWorkerCount</code> ★ / <code>DispatchHttpTimeoutSeconds</code></td><td>0 → CPU(2~16) / 2</td><td>分发线程数与投递超时</td></tr>
+        <tr><td><code>DispatchMaxInFlight</code> ★</td><td>0 → 分发线程 × 8</td><td>全局在飞请求上限：组内并发投递，吞吐 ≈ 该值 / 单次往返耗时，与线程数解耦</td></tr>
+        <tr><td><code>DispatchClaimBatchSize</code></td><td>50</td><td>批量领取条数：同波次任务合成一条多行 CAS + 一次提交；写入前按 <code>ExecutionKey</code> 查重，冲突降级为单条</td></tr>
+        <tr><td><code>ExecutionQueueCapacity</code> ★ / <code>ExecutionWorkerCount</code> ★</td><td>0 → max(2048, 线程×256) / 0 → 2×CPU(4~32)</td><td>执行端受理队列（突发缓冲）与并发线程数</td></tr>
+        <tr><td><code>MaxExecutionLogChars</code></td><td>20000</td><td>日志摘要上限</td></tr>
+        <tr><td><code>LogShipQueueCapacity</code> / <code>LogShipBatchSize</code> / <code>LogShipIntervalMs</code></td><td>4096 / 20 / 2000</td><td>日志上报队列与攒批窗口</td></tr>
+        <tr><td><code>ResultShipQueueCapacity</code> ★ / <code>ResultShipBatchSize</code> / <code>ResultShipIntervalMs</code></td><td>0 → 执行队列×2 / 20 / 1000</td><td>结果上报队列与攒批窗口；<code>BatchSize=1</code> 回落逐条回调</td></tr>
+        <tr><td><code>ResultShipConcurrency</code> ★</td><td>0 → 线程数/4 (2~8)</td><td>结果批量上报的并发批次数：串行时上行吞吐被单批往返时延锁死</td></tr>
+        <tr><td><code>LogMaskingEnabled</code> / <code>LogMaskPatterns</code></td><td>false / 空</td><td>可选日志脱敏</td></tr>
+        <tr><td><code>RetentionDays</code> / <code>RetentionSweepIntervalMinutes</code> / <code>RetentionBatchSize</code></td><td>30 / 1440 / 500</td><td>历史清理（物理删除，<code>&lt;=0</code> 关闭）</td></tr>
+        </tbody>
+      </table>
+      <div class="calm"><strong>★ 容量类参数 <code>0</code> = 按机器自动推导，不用手填：</strong>
+        <code>ExecutionWorkerCount = clamp(2×CPU, 4, 32)</code>、<code>ExecutionQueueCapacity = max(2048, 线程×256)</code>、
+        <code>ResultShipConcurrency = clamp(线程/4, 2, 8)</code>、<code>ResultShipQueueCapacity = 执行队列×2</code>、
+        <code>DispatchWorkerCount = clamp(CPU, 2, 16)</code>、<code>DispatchMaxInFlight = 分发线程×8</code>。
+        推导是读时计算（<code>SchedulerOptions.Effective*</code>），不依赖 <code>PostConfigure</code>，手工 <code>new</code> 也不会拿到 0。
+        依据：8 线程时执行端队列满 9527 次、32 线程为 0 次；在飞 64 与 128 无差异、256 反而劣化。</div>
+    </section>
+
+    <section id="perf">
+      <h2><span class="num">11</span>性能与容量（实测）</h2>
+      <p class="sub">1 调度端 + 4 执行端 + 8 分发线程 + 领取批量 50 + 在飞 64 + 采样 40s；容量参数全部走自动推导（8 核）。</p>
+
+      <div class="grid three">
+        <div class="card teal"><h4>下发不是瓶颈</h4><p>5000 条/波，下发延迟 p50 0.375s / p95 0.631s，分发队列饱和 0 次，波次完整 4×5000。</p></div>
+        <div class="card teal"><h4>执行端是物理上限</h4><p>吞吐 ≈ 线程数 × (1 / 单条耗时)。16 线程 4096 队列在 0ms 档零拒收；50ms 档开始出现容量边界（720 次）。</p></div>
+        <div class="card teal"><h4>回写曾是最后一环</h4><p>结果上报串行时一批 20 条要 342~660ms；改成 4 路并发后，5000 档完成率从 64.9% 升到 93%+。</p></div>
+      </div>
+
+      <table class="small">
+        <thead><tr><th>档位</th><th>波内任务</th><th>业务耗时</th><th>完成率</th><th>下发 lag p50 / p95</th><th>队列满</th><th>整批回滚</th></tr></thead>
+        <tbody>
+        <tr><td>低负载</td><td>500</td><td>0ms</td><td><b>100%</b></td><td>0.071s / 0.161s</td><td>0</td><td>0</td></tr>
+        <tr><td>中负载</td><td>2000</td><td>0ms</td><td>91.8%</td><td>0.202s / 0.341s</td><td>0</td><td>0</td></tr>
+        <tr><td>高负载</td><td>5000</td><td>0ms</td><td><b>98.3%</b></td><td>0.375s / 0.631s</td><td>0</td><td>0</td></tr>
+        <tr><td>真实耗时</td><td>5000</td><td>50ms</td><td>86.9%</td><td>0.350s / 0.640s</td><td>720</td><td>0</td></tr>
+        </tbody>
+      </table>
+      <p class="sub">完成率缺口基本来自采样窗尾部（窗口在最后一波中途结束，那部分行仍是 <code>Dispatched</code>），不是失败。</p>
+
+      <h3>执行端配置与吞吐的关系</h3>
+      <p class="sub">固定「5000 条/波、单条 50ms」，只改执行端配置。吞吐 ≈ 线程数 × (1 / 单条耗时)，是物理上限。</p>
+      <table class="small">
+        <thead><tr><th>执行端配置</th><th>队列满拒收</th><th>完成率</th><th>下发 lag p95</th></tr></thead>
+        <tbody>
+        <tr><td>8 线程 / 1024 队列（旧默认）</td><td>9527</td><td>57.2%</td><td>17.0s</td></tr>
+        <tr><td>16 线程 / 4096 队列</td><td>841</td><td>60.0%</td><td>0.56s</td></tr>
+        <tr><td>32 线程 / 8192 队列</td><td><b>0</b></td><td>64.9%</td><td>0.59s</td></tr>
+        <tr><td><b>32 线程 / 8192 + 上报并发 4</b></td><td><b>0</b></td><td><b>93.3%</b></td><td>0.59s</td></tr>
+        <tr><td>8 线程 / 1024 + 上报并发 4</td><td>10779</td><td>78.2%</td><td>13.9s</td></tr>
+        </tbody>
+      </table>
+      <p class="sub">队列不够会向调度端反馈失败，反过来把下发从 0.6s 拖到 17s；队列够了只是不反馈失败，
+      结果回写才是闭环最后一环——串行上报时一批 20 条要 342~660ms（约 40 条/s/端），撑不住 500 条/s 的下发速率。</p>
+
+      <h3>唯一键冲突降级的收益</h3>
+      <table class="small">
+        <thead><tr><th style="width:300px">指标（5000/10s/50ms）</th><th>直接批量 INSERT</th><th>写入前查重</th></tr></thead>
+        <tbody>
+        <tr><td>整批回滚（50 条一起废）</td><td>814 次</td><td><b>0 次</b></td></tr>
+        <tr><td>DB 语句 / 每任务</td><td>13.32</td><td><b>8.60</b></td></tr>
+        <tr><td>下发 lag p95</td><td>13.58s</td><td><b>2.31s</b></td></tr>
+        <tr><td>分发队列饱和</td><td>665 次</td><td><b>0 次</b></td></tr>
+        </tbody>
+      </table>
+      <p class="sub">查重成本：每批（50 条）多一次 <code>ExecutionKey IN (...)</code> 索引查询，p50 0.65ms，摊到每条 0.013ms；
+      换掉的是整批回滚，DB 语句总量反而下降 35%。</p>
+
+      <h3>故障演练结果</h3>
+      <table class="small">
+        <thead><tr><th style="width:230px">场景</th><th>结果</th></tr></thead>
+        <tbody>
+        <tr><td><code>kill -9</code> 当前 Master</td><td>接管 15~20s（TTL 15s + 扫描 1s）；丢 1 个 10s 周期；1800 行全部成功、零重复</td></tr>
+        <tr><td><code>kill -9</code> 一个 Worker</td><td>派给它的任务连接拒绝 → 退避重投成功；重试产生的 400 行也全部成功，零重复</td></tr>
+        <tr><td><code>SIGSTOP</code> 冻结 Worker</td><td>HTTP 2s 超时判失败 → 重投到其它节点；零重复</td></tr>
+        <tr><td><code>docker restart</code> MySQL（停 10s）</td><td>约 10s 自愈，进程不崩、<code>Failed 0</code>、不留脏状态</td></tr>
+        </tbody>
+      </table>
+
+      <h3>秒级任务（10 秒级）</h3>
+      <p class="sub">压测本身就是 10 秒周期任务：5000 个任务 × 每 10 秒 = 持续 500 次/秒。</p>
+      <table class="small">
+        <thead><tr><th style="width:200px">要素</th><th>现状</th></tr></thead>
+        <tbody>
+        <tr><td>cron 字段</td><td><b>6 字段</b>（<code>秒 分 时 日 月 周</code>）才带秒；5 字段只能是分钟级。<code>*/10 * * * * ?</code> = 每 10 秒</td></tr>
+        <tr><td>扫描节拍</td><td><code>SchedulerScanIntervalSeconds = 1</code>，按整秒栅格对齐；<code>:00</code> 到期正好落在栅格点，相位偏差为零</td></tr>
+        <tr><td>最小粒度</td><td>1 秒（受扫描节拍约束）。扫描间隔不要调大，否则 <code>*/3</code> 这类会跨栅格丢波</td></tr>
+        <tr><td>实测节奏</td><td>500 次/秒：完成率 98.3%、下发 lag p50 0.375s / p95 0.631s、整批回滚 0</td></tr>
+        <tr><td>切换空窗</td><td>默认 <code>CatchUpWithinWindow=false</code> 只补当前一次，Master 接管 15~20s ≈ 丢 1~2 个 10 秒波</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><strong>真正的约束是在途量，不是周期：</strong>
+      <code>每秒下发量 × 单条业务耗时 ≤ 执行端总线程数</code>。500/s × 50ms = 25 并发（4 端 × 16 线程 = 64，宽裕）；
+      同样 500/s 配 200ms 业务就是 100 并发，开始排队靠队列缓冲，lag 抬到 0.6s 量级——这是「50ms 档完成率落到 86.9%」的机制，不是调度能力不足。
+      <br /><br />要容忍切换丢波：打开 <code>CatchUpWithinWindow=true</code>，上限 <code>CatchUpMaxCount=30</code>（10 秒任务最多补 5 分钟）。
+      想做到 1 秒一发：扫描栅格本身是 1 秒，边界内可行，但 5000 任务 × 1 秒 = 5000/s 是已验证 500/s 的 10 倍，属于<b>未测区</b>，正式使用前需按同一口径重跑。</div>
+
+      <div class="calm"><strong>容量定位：</strong>目标是「单波 5000、保有量 5 万」。超过这个量级需重新评估，
+      容量预案见压测报告第十五节（多主分片：暂不实施，因为分片只能扩调度端、扩不了共享的 MySQL）。</div>
+    </section>
+
+    <section id="guarantees">
+      <h2><span class="num">12</span>不变量与边界</h2>
+      <p class="sub">哪些是承诺，哪些是明确不承诺</p>
+
+      <h3>不变量</h3>
+      <ul>
+        <li><b>同周期同尝试只有一行执行记录</b>：<code>ExecutionKey</code> 唯一键是最后防线。</li>
+        <li><b>重复回调只有一条能终结</b>：CAS 更新 <code>WHERE State NOT IN (terminal)</code>。</li>
+        <li><b>租约不承载正确性</b>：租约抖动最多多一轮空扫描，不会重复触发。</li>
+        <li><b>换主不丢在途</b>：兜底扫描读执行表，任何节点都能接管。</li>
+        <li><b>死信真停机</b>：<code>Dead</code> 不会自动恢复，需人工 release。</li>
+        <li><b>单条键冲突不连坐</b>：领取写入前按 <code>ExecutionKey</code> 查重，命中的只剔除该条，其余同批照常提交。</li>
+      </ul>
+
+      <h3>明确不承诺</h3>
+      <ul>
+        <li>不做"恰好一次"：投递为至少一次，业务幂等请用 <code>ExecutionKey</code>。</li>
+        <li>不做长连接 RPC、调度端与执行端双进程强绑定、广播分片。</li>
+        <li>不做多主分片：当前是一主一备，单 Master 调度；超过容量目标再启用预案。</li>
+        <li>主备切换有 15~20s 空窗，空窗内到期的触发默认不补（<code>CatchUpWithinWindow=false</code>）。</li>
+        <li>不做可视化前端与 DAG 依赖编排（管理面只提供 API）。</li>
+        <li>不做执行日志全量归档：超过 <code>RetentionDays</code> 与账本一并物理删除。</li>
+        <li>进程崩溃时，尚未发送的日志分片会丢失；已落库的分片保留。</li>
+        <li>Job 自行 <code>new Thread</code> 或投递到外部队列后执行的日志不在采集作用域内。</li>
+      </ul>
+
+      <div class="calm"><strong>扩展方向：</strong>实现 <code>IMasterLease</code> / <code>IWorkerDirectory</code> 等接口即可把协调介质换成 Redis / etcd / ZK，调度链路与业务 <code>IJob</code> 无需改动；日志与账本也可按同样方式替换存储。</div>
+    </section>
+  </main>
+</div>
+
+<footer>
+  <span>Findx.Extensions.Scheduler · 架构说明（DB + HTTP 轻量版）</span>
+  <span>组件源码 components/Findx.Extensions.Scheduler · 建表 docs/sql/scheduler_v2.sql · 变更记录 缺陷审查与修复记录.md</span>
+</footer>
+<button id="toTop" title="回到顶部">↑</button>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('nav.toc a'));
+  var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  function setActive(id){
+    links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#' + id); });
+  }
+  if ('IntersectionObserver' in window) {
+    var visible = {};
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ visible[e.target.id] = e.isIntersecting ? e.intersectionRatio : 0; });
+      var best = null, bestRatio = 0;
+      Object.keys(visible).forEach(function(k){ if (visible[k] > bestRatio) { bestRatio = visible[k]; best = k; } });
+      if (best) setActive(best);
+    }, { rootMargin: '-15% 0px -65% 0px', threshold: [0, .2, .5, 1] });
+    targets.forEach(function(t){ io.observe(t); });
+  }
+  var toTop = document.getElementById('toTop');
+  window.addEventListener('scroll', function(){
+    toTop.style.display = window.scrollY > 600 ? 'block' : 'none';
+  });
+  toTop.addEventListener('click', function(){ window.scrollTo({ top: 0, behavior: 'smooth' }); });
+})();
+</script>
+
+</body>
+</html>

@@ -20,8 +20,10 @@ public class WeComNotifyChannel : INotifyChannel
     /// <summary>
     ///     Ctor
     /// </summary>
-    public WeComNotifyChannel(IOptions<NotifyOptions> options, IHttpClientFactory httpClientFactory,
-        ILogger<WeComNotifyChannel> logger)
+    /// <param name="options"></param>
+    /// <param name="httpClientFactory"></param>
+    /// <param name="logger"></param>
+    public WeComNotifyChannel(IOptions<NotifyOptions> options, IHttpClientFactory httpClientFactory, ILogger<WeComNotifyChannel> logger)
     {
         _options = options.Value;
         _httpClientFactory = httpClientFactory;
@@ -34,8 +36,11 @@ public class WeComNotifyChannel : INotifyChannel
     public NotifyChannel Channel => NotifyChannel.WeCom;
 
     /// <summary>
-    ///     发送
+    ///     发送消息
     /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<NotifyResult> SendAsync(NotifyMessage message, CancellationToken cancellationToken = default)
     {
         if (message == null) return NotifyResult.Fail(Channel, "消息不能为空");
@@ -45,17 +50,18 @@ public class WeComNotifyChannel : INotifyChannel
             return await SendByWebhookAsync(message, cancellationToken);
 
         //  应用消息：需要 corpId + secret + agentId，可发给指定成员
-        if (!string.IsNullOrWhiteSpace(_options.WeCom.CorpId) && !string.IsNullOrWhiteSpace(_options.WeCom.Secret) &&
-            _options.WeCom.AgentId > 0)
+        if (!string.IsNullOrWhiteSpace(_options.WeCom.CorpId) && !string.IsNullOrWhiteSpace(_options.WeCom.Secret) && _options.WeCom.AgentId > 0)
             return await SendByAgentAsync(message, cancellationToken);
 
-        return NotifyResult.Fail(Channel,
-            "未配置企业微信参数：请设置 Findx:Notify:WeCom:WebhookUrl（群机器人），或 CorpId/Secret/AgentId（应用消息）");
+        return NotifyResult.Fail(Channel, "未配置企业微信参数：请设置 Findx:Notify:WeCom:WebhookUrl（群机器人），或 CorpId/Secret/AgentId（应用消息）");
     }
 
     /// <summary>
     ///     群机器人发送
     /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     private Task<NotifyResult> SendByWebhookAsync(NotifyMessage message, CancellationToken cancellationToken)
     {
         var msgType = message.IsMarkdown ? "markdown" : "text";
@@ -70,20 +76,23 @@ public class WeComNotifyChannel : INotifyChannel
     /// <summary>
     ///     应用消息发送
     /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
     private async Task<NotifyResult> SendByAgentAsync(NotifyMessage message, CancellationToken cancellationToken)
     {
         try
         {
             var token = await _tokenProvider.GetAsync(async ct =>
             {
-                var client = CreateClient();
+                using var client = CreateClient();
                 var url = $"{TokenUrl}?corpid={Uri.EscapeDataString(_options.WeCom.CorpId)}&corpsecret={Uri.EscapeDataString(_options.WeCom.Secret)}";
                 var response = await client.GetAsync(url, ct);
-                var text = await response.Content.ReadAsStringAsync();
+                var text = await response.Content.ReadAsStringAsync(ct);
                 var api = text.ToObject<ApiResponse>();
                 if (api == null || !api.IsOk() || string.IsNullOrWhiteSpace(api.AccessToken))
-                    throw new InvalidOperationException(
-                        $"企业微信获取令牌失败：{(api == null ? "响应解析为空" : $"({api.Errcode}) {api.Errmsg}")}");
+                    throw new InvalidOperationException($"企业微信获取令牌失败：{(api == null ? "响应解析为空" : $"({api.Errcode}) {api.Errmsg}")}");
                 return (api.AccessToken, api.ExpiresIn <= 0 ? 7200 : api.ExpiresIn);
             }, cancellationToken);
 
@@ -108,13 +117,17 @@ public class WeComNotifyChannel : INotifyChannel
     /// <summary>
     ///     POST JSON 并解析 errcode
     /// </summary>
+    /// <param name="url"></param>
+    /// <param name="body"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     private async Task<NotifyResult> SendCoreAsync(string url, Dictionary<string, object> body, CancellationToken cancellationToken)
     {
         try
         {
-            var client = CreateClient();
+            using var client = CreateClient();
             var response = await client.PostAsJsonAsync(url, body, null, cancellationToken);
-            var text = await response.Content.ReadAsStringAsync();
+            var text = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)
                 return NotifyResult.Fail(Channel, $"HTTP {(int)response.StatusCode}：{text}");
 
@@ -144,11 +157,11 @@ public class WeComNotifyChannel : INotifyChannel
     /// <summary>
     ///     标题 + 正文拼接（markdown 用三级标题）
     /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
     private static string BuildContent(NotifyMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.Title)) return message.Content ?? string.Empty;
-        return message.IsMarkdown
-            ? $"### {message.Title}\n{message.Content}"
-            : $"{message.Title}\n{message.Content}";
+        return message.IsMarkdown ? $"### {message.Title}\n{message.Content}" : $"{message.Title}\n{message.Content}";
     }
 }

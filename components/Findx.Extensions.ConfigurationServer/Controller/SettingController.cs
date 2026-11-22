@@ -31,7 +31,7 @@ public class SettingController : AreaApiControllerBase
     private readonly IPrincipal _principal;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="unitOfWorkManager"></param>
     /// <param name="historyRepo"></param>
@@ -51,9 +51,10 @@ public class SettingController : AreaApiControllerBase
     ///     分页查询
     /// </summary>
     /// <param name="req">查询条件信息</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     [HttpGet("page"), Description("分页")]
-    public async Task<CommonResult> PageAsync([FromQuery] QueryConfigDataDto req)
+    public async Task<CommonResult> PageAsync([FromQuery] QueryConfigDataDto req, CancellationToken cancellationToken)
     {
         var whereExp = PredicateBuilder.New<ConfigDataInfo>()
                                        .AndIf(!req.DataId.IsNullOrWhiteSpace(), x => x.DataId.Contains(req.DataId))
@@ -61,7 +62,7 @@ public class SettingController : AreaApiControllerBase
                                        .AndIf(!req.Environment.IsNullOrWhiteSpace(), x => x.Environment == req.Environment)
                                        .Build();
 
-        var rows = await _configDataRepo.PagedAsync<ConfigDataSimpleDto>(req.PageNo, req.PageSize, whereExp);
+        var rows = await _configDataRepo.PagedAsync<ConfigDataSimplifyDto>(req.PageNo, req.PageSize, whereExp, cancellationToken: cancellationToken);
 
         return CommonResult.Success(rows);
     }
@@ -70,11 +71,12 @@ public class SettingController : AreaApiControllerBase
     ///     获取配置信息
     /// </summary>
     /// <param name="id"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpGet("getConfig"), Description("详情")]
-    public async Task<CommonResult> GetConfigAsync(long id)
+    [HttpGet("detail"), Description("详情")]
+    public async Task<CommonResult> DetailAsync(long id, CancellationToken cancellationToken)
     {
-        var model = await _configDataRepo.GetAsync(id);
+        var model = await _configDataRepo.GetAsync(id, cancellationToken);
         return CommonResult.Success(model);
     }
 
@@ -134,8 +136,8 @@ public class SettingController : AreaApiControllerBase
     /// <param name="req">配置信息</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    [HttpPost("publishConfig"), Description("发布")]
-    public async Task<CommonResult> PublishConfigAsync([FromBody] PublishConfigDto req, CancellationToken cancellationToken)
+    [HttpPost("publish"), Description("发布")]
+    public async Task<CommonResult> PublishAsync([FromBody] PublishConfigDto req, CancellationToken cancellationToken)
     {
         var dbConfig = await _configDataRepo.FirstAsync(x => x.DataId == req.DataId, cancellationToken);
         if (dbConfig == null)

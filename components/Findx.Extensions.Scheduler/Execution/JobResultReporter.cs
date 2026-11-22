@@ -1,51 +1,50 @@
-using System.Collections.Generic;
-using Findx.Extensions;
+using Findx.Extensions.Scheduler.Abstractions;
 using Findx.Extensions.Scheduler.Models;
 using Findx.Extensions.Scheduler.Options;
-using Findx.Redis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Extensions.Scheduler.Execution;
 
 /// <summary>
-///     执行结果上报器：解析当前 Master 地址并把 JobResultReport 回传。
-///     <para>从 Controller 抽出，供执行线程（而非 HTTP 请求线程）异步调用。</para>
+///     执行结果上报器：把 JobResultReport 回传给调度端。
+///     <para>只依赖上行协议通道 <see cref="ISchedulerMasterChannel" />，不感知 HTTP / RPC 差异，
+///     也不持有任何数据库原语。地址优先用分发包携带的 MasterAddress，失败再尝试配置的 MasterEndpoints；
+///     两者都不可用时放弃上报，由调度端的执行账本超时兜底接管。</para>
 /// </summary>
 public class JobResultReporter
 {
     private readonly IOptions<SchedulerOptions> _options;
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IRedisClientProvider _redisClientProvider;
+    private readonly ISchedulerMasterChannel _channel;
+    private readonly JobResultShipper _shipper;
     private readonly ILogger<JobResultReporter> _logger;
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    public JobResultReporter(IOptions<SchedulerOptions> options, IHttpClientFactory httpClientFactory,
-        IRedisClientProvider redisClientProvider, ILogger<JobResultReporter> logger)
+    public JobResultReporter(IOptions<SchedulerOptions> options, ISchedulerMasterChannel channel,
+        JobResultShipper shipper, ILogger<JobResultReporter> logger)
     {
         _options = options;
-        _httpClientFactory = httpClientFactory;
-        _redisClientProvider = redisClientProvider;
+        _channel = channel;
+        _shipper = shipper;
         _logger = logger;
     }
 
     /// <summary>
-    ///     上报一次执行结果（含 Master 地址解析与有限重试）
+    ///     上报一次执行结果
     /// </summary>
-    public async Task ReportAsync(DispatchRequest request, bool success, string error, string message,
-        long elapsedMs, CancellationToken cancellationToken = default)
+    /// <param name="request"></param>
+    /// <param name="success"></param>
+    /// <param name="error"></param>
+    /// <param name="message"></param>
+    /// <param name="elapsedMs"></param>
+    /// <param name="logs">执行过程日志（执行端采集，调度端截断后落库）</param>
+    /// <param name="cancellationToken"></param>
+    public async Task ReportAsync(DispatchRequest request, bool success, string error, string message, long elapsedMs,
+        string logs = null, CancellationToken cancellationToken = default)
     {
         if (request == null) return;
-
-        var masterAddress = await ResolveMasterAddressAsync(request.MasterAddress, cancellationToken);
-        if (string.IsNullOrWhiteSpace(masterAddress))
-        {
-            _logger.LogError("任务 [{JobName}] TraceId={TraceId} 无可用 Master 回调地址（MasterInfo 读取失败且分发地址为空）",
-                request.JobName, request.TraceId);
-            return;
-        }
 
         var report = new JobResultReport
         {
@@ -56,67 +55,29 @@ public class JobResultReporter
             Error = error,
             Message = message,
             ElapsedMs = elapsedMs,
+            Logs = logs,
             WorkerAddress = _options.Value.NodeAddress
         };
 
-        // 回调失败有限重试（500ms/1s/2s），避免单次网络抖动直接丢结果；最终失败由 Master 侧超时兜底接管
-        await PostResultWithRetryAsync(masterAddress, report, cancellationToken);
+        //  批量上报：入队即返回，由 JobResultShipper 按窗口合并成一次上行请求
+        //  关闭批量或队列已满时回落逐条上报，结果不能丢
+        if (_shipper.TryShip(report, request.MasterAddress)) return;
+
+        await ReportDirectAsync(report, request.MasterAddress, cancellationToken);
     }
 
     /// <summary>
-    ///     解析当前 Master 回调地址：读 Redis MasterInfoKey 拿最新 Master（故障转移后旧分发包地址已失效），失败回退分发地址
+    ///     逐条上报（批量关闭 / 结果队列满时的回退路径）
     /// </summary>
-    private async Task<string> ResolveMasterAddressAsync(string fallback, CancellationToken cancellationToken)
+    /// <param name="report"></param>
+    /// <param name="masterAddress"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task ReportDirectAsync(JobResultReport report, string masterAddress, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var redis = _redisClientProvider.CreateClient();
-            var json = await redis.StringGetAsync(_options.Value.MasterInfoKey, cancellationToken);
-            if (!string.IsNullOrWhiteSpace(json))
-            {
-                var info = json.ToObject<SchedulerMasterInfo>();
-                if (info != null && !string.IsNullOrWhiteSpace(info.Address))
-                    return info.Address.TrimEnd('/');
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "读取 MasterInfo 失败，回退使用分发时携带的 Master 地址");
-        }
+        if (await _channel.ReportResultAsync(report, masterAddress, cancellationToken)) return;
 
-        return fallback?.TrimEnd('/');
-    }
-
-    /// <summary>
-    ///     结果回调：最多 3 次（指数退避 500ms/1s/2s），仍失败则记错误（Master 侧 ExecutionTimeoutMinutes 超时兜底会接管）
-    /// </summary>
-    private async Task PostResultWithRetryAsync(string masterAddress, JobResultReport report, CancellationToken cancellationToken)
-    {
-        var opts = _options.Value;
-        for (var attempt = 0; attempt < 3; attempt++)
-        {
-            try
-            {
-                Dictionary<string, string> headers = null;
-                if (!string.IsNullOrWhiteSpace(opts.ClusterToken))
-                    headers = new Dictionary<string, string> { ["X-Scheduler-Token"] = opts.ClusterToken };
-
-                var httpClient = _httpClientFactory.CreateClient();
-                httpClient.Timeout = TimeSpan.FromSeconds(Math.Max(1, opts.DispatchHttpTimeoutSeconds));
-                var response = await httpClient.PostAsJsonAsync($"{masterAddress}/api/scheduler/jobs/result", report, headers, cancellationToken);
-                if (response.IsSuccessStatusCode) return;
-
-                _logger.LogWarning("回调 Master {Address} HTTP {Status}，第 {Attempt}/3 次重试", masterAddress, (int)response.StatusCode, attempt + 1);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "回调 Master {Address} 异常，第 {Attempt}/3 次重试", masterAddress, attempt + 1);
-            }
-
-            if (attempt < 2) await Task.Delay(TimeSpan.FromMilliseconds(500 * (attempt + 1)), cancellationToken);
-        }
-
-        _logger.LogError("任务 [{JobName}] TraceId={TraceId} 回调 Master 失败，已重试 3 次放弃（Master 侧超时兜底将按失败处理）",
-            report.JobName, report.TraceId);
+        _logger.LogError("任务 [{JobName}] TraceId={TraceId} 回调调度端失败（协议 {Protocol}），交由执行账本超时兜底",
+            report.JobName, report.TraceId, _channel.Protocol);
     }
 }

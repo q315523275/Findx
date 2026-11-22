@@ -40,14 +40,18 @@ public class JobExecutionController : AreaApiControllerBase
     [Description("受理任务执行")]
     public CommonResult ExecuteAsync([FromBody] DispatchRequest request, CancellationToken cancellationToken)
     {
+        //  纯调度节点不承担执行：直接拒绝，避免受理成功却没人执行（任务被吞，账本只能等超时兜底）
+        if (!_options.Value.WorkerEnabled)
+            return CommonResult.Fail("503", "本节点未启用执行端（Findx:Scheduler:WorkerEnabled=false）");
+
         //  机器间接口共享令牌校验（配置 ClusterToken 后启用）
         if (!TryAuthorize(out var authResult)) return authResult;
 
         if (request == null || string.IsNullOrWhiteSpace(request.HandlerType))
             return CommonResult.Fail("400", "请求参数缺失");
 
-        // 受理即返回：执行放到内存队列的消费线程，结果回调也由消费线程发出。
-        // 这样 Master 侧分发等待时长 ≈ 一次轻量 HTTP，而不是整个 Job 的执行时长
+        //  受理即返回：执行放到内存队列的消费线程，结果回调也由消费线程发出。
+        //  这样 Master 侧分发等待时长 ≈ 一次轻量 HTTP，而不是整个 Job 的执行时长
         if (!_executionQueue.TryEnqueue(request))
         {
             Logger.LogWarning("任务 [{JobName}] 执行队列已满，拒绝受理，交由 Master 侧重试", request.JobName);
@@ -59,21 +63,36 @@ public class JobExecutionController : AreaApiControllerBase
     }
 
     /// <summary>
+    ///     终止执行：按 TraceId 取消本节点上正在运行的任务
+    ///     <para>调度端会先把执行行终结为 Cancelled，因此即便这里取消晚了一步，后续回调也不会触发重试。</para>
+    /// </summary>
+    [HttpPost("kill")]
+    [Description("终止执行")]
+    public CommonResult Kill([FromBody] KillRequest request)
+    {
+        if (!_options.Value.WorkerEnabled)
+            return CommonResult.Fail("503", "本节点未启用执行端（Findx:Scheduler:WorkerEnabled=false）");
+
+        if (!TryAuthorize(out var authResult)) return authResult;
+
+        if (request == null || string.IsNullOrWhiteSpace(request.TraceId))
+            return CommonResult.Fail("400", "请求参数缺失");
+
+        var killed = _executionQueue.Kill(request.TraceId);
+        return killed
+            ? CommonResult.Success()
+            : CommonResult.Fail("404", "该执行不在本节点运行（可能已结束或投递到其他节点）");
+    }
+
+    /// <summary>
     ///     共享令牌校验
     /// </summary>
     private bool TryAuthorize(out CommonResult result)
     {
         result = null;
-        var token = _options.Value.ClusterToken;
-        if (string.IsNullOrWhiteSpace(token)) return true;
+        if (SchedulerTokenValidator.Validate(HttpContext, _options.Value.ClusterToken)) return true;
 
-        var headerToken = HttpContext.Request.Headers["X-Scheduler-Token"].FirstOrDefault();
-        if (!string.Equals(headerToken, token, StringComparison.Ordinal))
-        {
-            result = CommonResult.Fail("auth.fail", "调度令牌无效");
-            return false;
-        }
-
-        return true;
+        result = CommonResult.Fail("auth.fail", "调度令牌无效");
+        return false;
     }
 }

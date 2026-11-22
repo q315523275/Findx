@@ -13,7 +13,6 @@ public class JobDeadLetter : FullAuditedBase<long, long>
     ///     记录编号
     /// </summary>
     [Key]
-    [Column(name: "id")]
     public override long Id { get; set; }
 
     /// <summary>

@@ -6,15 +6,15 @@ namespace Findx.Extensions.Scheduler.Models;
 /// <summary>
 ///     调度任务定义表（持久化落库，Master 统一读取与推进）
 /// </summary>
-[Table("scheduler_job")]
+[Table("scheduler_jobs")]
 [EntityExtension(DataSource = "jobs")]
 public class ScheduledJob : FullAuditedBase<long, long>
 {
     /// <summary>
-    ///     记录编号
+    ///     记录编号（由 <c>ScheduledJobStorage.AddAsync</c> 用雪花算法赋值；该表由自动建结构生成，
+    ///     <c>id</c> 列不带 AUTO_INCREMENT，Id 留空会导致所有任务都以 0 落库并主键冲突）
     /// </summary>
     [Key]
-    [Column(name: "id")]
     public override long Id { get; set; }
 
     /// <summary>

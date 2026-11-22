@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Findx.Extensions.ConfigurationServer.Client;
 using Findx.Extensions.ConfigurationServer.Handling;
-using Findx.Extensions.ConfigurationServer.Services;
+using Findx.Extensions.ConfigurationServer.ServiceDefaults;
 using Findx.Messaging;
 using Findx.Modularity;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,7 +40,7 @@ public class ConfigServerModule : StartupModule
 
         var configuration = services.GetConfiguration();
 
-        // 应用基础
+        //  应用基础
         services.Configure<ConfigServerOptions>(configuration.GetSection("Findx:Config"));
 
         return base.ConfigureServices(services);

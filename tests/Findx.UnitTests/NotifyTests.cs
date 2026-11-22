@@ -6,9 +6,10 @@ using Findx.Extensions.Notify.Enums;
 using Findx.Extensions.Notify.Models;
 using Findx.Extensions.Notify.Options;
 using Findx.Extensions.Notify.Scheduling;
-using Findx.Extensions.Notify.Services;
+using Findx.Extensions.Notify.ServiceDefaults;
 using Findx.Extensions.Notify.Storage;
 using Findx.Extensions.Notify.Support;
+using Findx.NewId;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -46,14 +47,26 @@ public class NotifyTests
         }
     }
 
+    /// <summary>
+    ///     测试用递增主键生成器：值可控可预测，比雪花更适合断言
+    /// </summary>
+    private sealed class SequentialKeyGenerator : IKeyGenerator<long>
+    {
+        private long _current;
+
+        public long Create() => Interlocked.Increment(ref _current);
+    }
+
+    private static readonly IKeyGenerator<long> KeyGenerator = new SequentialKeyGenerator();
+
     private static NotifySender BuildSender(NotifyOptions options, params INotifyChannel[] channels)
     {
         var dispatcher = new NotifyChannelDispatcher(Options.Create(options), channels,
             NullLogger<NotifyChannelDispatcher>.Instance);
-        var logStore = new NotifyLogStore(new EmptyServiceProvider(), NullLogger<NotifyLogStore>.Instance);
+        var logStore = new NotifyLogStore(new EmptyServiceProvider(), KeyGenerator, NullLogger<NotifyLogStore>.Instance);
         var queue = new NotifyDispatchQueue(Options.Create(options), dispatcher, logStore,
             NullLogger<NotifyDispatchQueue>.Instance);
-        return new NotifySender(Options.Create(options), dispatcher, queue, logStore,
+        return new NotifySender(Options.Create(options), dispatcher, queue, logStore, KeyGenerator,
             NullLogger<NotifySender>.Instance);
     }
 
@@ -65,10 +78,10 @@ public class NotifyTests
         var channel = new FakeChannel(NotifyChannel.WeCom);
         var dispatcher = new NotifyChannelDispatcher(Options.Create(options), new[] { channel },
             NullLogger<NotifyChannelDispatcher>.Instance);
-        var logStore = new NotifyLogStore(new EmptyServiceProvider(), NullLogger<NotifyLogStore>.Instance);
+        var logStore = new NotifyLogStore(new EmptyServiceProvider(), KeyGenerator, NullLogger<NotifyLogStore>.Instance);
         var queue = new NotifyDispatchQueue(Options.Create(options), dispatcher, logStore,
             NullLogger<NotifyDispatchQueue>.Instance);
-        var sender = new NotifySender(Options.Create(options), dispatcher, queue, logStore,
+        var sender = new NotifySender(Options.Create(options), dispatcher, queue, logStore, KeyGenerator,
             NullLogger<NotifySender>.Instance);
         return (sender, channel, queue);
     }
@@ -351,7 +364,7 @@ public class NotifyTests
         var (sender, channel, queue) = BuildQueuedSender(options);
 
         //  先把容量为 1 的队列塞满
-        Assert.True(queue.TryEnqueue(NotifyLog.From(NotifyMessage.Create(NotifyChannel.WeCom, "占位", "先塞满"))));
+        Assert.True(queue.TryEnqueue(NotifyLog.From(NotifyMessage.Create(NotifyChannel.WeCom, "占位", "先塞满"), null, KeyGenerator.Create())));
 
         var logId = await sender.QueueAsync(NotifyMessage.Create(NotifyChannel.WeCom, "标题", "正文"));
 
@@ -375,7 +388,7 @@ public class NotifyTests
             BusinessKey = "SO20261112001"
         };
 
-        var log = NotifyLog.From(message, "node-1");
+        var log = NotifyLog.From(message, "node-1", KeyGenerator.Create());
 
         Assert.True(log.Id > 0);
         Assert.Equal("openid-1", log.Receivers);
@@ -394,7 +407,7 @@ public class NotifyTests
     [Fact]
     public void NotifyLog_Apply_ShouldSetStatus()
     {
-        var log = NotifyLog.From(NotifyMessage.Create(NotifyChannel.DingTalk, "标题", "正文"));
+        var log = NotifyLog.From(NotifyMessage.Create(NotifyChannel.DingTalk, "标题", "正文"), null, KeyGenerator.Create());
 
         log.Apply(NotifyResult.Ok(NotifyChannel.DingTalk), DateTime.Now, 12);
         Assert.True(log.Success);

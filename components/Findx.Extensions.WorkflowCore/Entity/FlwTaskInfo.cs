@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
+using FsIndex = FreeSql.DataAnnotations.IndexAttribute;
 using Findx.Extensions.WorkflowCore.Enums;
 
 namespace Findx.Extensions.WorkflowCore.Entity;
@@ -9,6 +10,8 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 ///     任务表（活动任务）
 /// </summary>
 [Table("flw_task")]
+[FsIndex("idx_flw_task_created", "CreatedTime,Id")]
+[FsIndex("idx_flw_task_instance", "InstanceId")]
 [Description("任务表")]
 public class FlwTaskInfo: EntityBase, ITenant
 {

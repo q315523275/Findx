@@ -30,10 +30,10 @@ public class TaskController: FlwControllerBase
     ///     我的待办
     /// </summary>
     [HttpGet("todo")]
-    public async Task<CommonResult> TodoAsync([FromQuery] int top = 100, CancellationToken cancellationToken = default)
+    public async Task<CommonResult> TodoAsync([FromQuery] int skip = 0, [FromQuery] int top = 100, CancellationToken cancellationToken = default)
     {
         var engine = GetRequiredService<IFlowLongEngine>();
-        var tasks = await engine.GetTodoTasksAsync(CurrentActor, top, cancellationToken);
+        var tasks = await engine.GetTodoTasksAsync(CurrentActor, skip, top, cancellationToken);
         return CommonResult.Success(tasks);
     }
 
@@ -41,10 +41,10 @@ public class TaskController: FlwControllerBase
     ///     我的已办
     /// </summary>
     [HttpGet("done")]
-    public async Task<CommonResult> DoneAsync([FromQuery] int top = 100, CancellationToken cancellationToken = default)
+    public async Task<CommonResult> DoneAsync([FromQuery] int skip = 0, [FromQuery] int top = 100, CancellationToken cancellationToken = default)
     {
         var engine = GetRequiredService<IFlowLongEngine>();
-        var tasks = await engine.GetDoneTasksAsync(CurrentActor, top, cancellationToken);
+        var tasks = await engine.GetDoneTasksAsync(CurrentActor, skip, top, cancellationToken);
         return CommonResult.Success(tasks);
     }
 

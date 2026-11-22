@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Extensions.ConfigurationServer.Controller;
 
 /// <summary>
-/// 配置服务-度量信息
+///     配置服务-度量信息
 /// </summary>
 [Area("findx")]
 [Route("api/config/metrics")]
@@ -20,7 +20,7 @@ public class MetricsController: AreaApiControllerBase
     private readonly IClientCallBack _clientCallBack;
 
     /// <summary>
-    /// Ctor
+    ///     Ctor
     /// </summary>
     /// <param name="clientCallBack"></param>
     public MetricsController(IClientCallBack clientCallBack)

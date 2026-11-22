@@ -11,13 +11,6 @@ namespace Findx.Extensions.ConfigurationServer.Models;
 public class AppInfo : FullAuditedBase<long, long>, ISoftDeletable, IResponse
 {
     /// <summary>
-    ///     记录编号
-    /// </summary>
-    [Key]
-    [Column(name: "id")]
-    public override long Id { get; set; }
-    
-    /// <summary>
     ///     应用名称
     /// </summary>
     public string Name { get; set; }

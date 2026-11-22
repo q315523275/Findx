@@ -1,7 +1,7 @@
 namespace Findx.Extensions.Scheduler.Models;
 
 /// <summary>
-///     Worker 节点心跳信息（写入 Redis，Master 侧按 Capabilities 反查可执行节点）
+///     Worker 节点心跳信息（落库到 scheduler_worker，Master 侧按 Capabilities 反查可执行节点）
 /// </summary>
 public class WorkerNodeInfo
 {

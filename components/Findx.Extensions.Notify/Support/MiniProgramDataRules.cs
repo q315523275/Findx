@@ -26,6 +26,8 @@ public static class MiniProgramDataRules
     /// <summary>
     ///     取字段最大值，未知类型返回 0（不限制）
     /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
     public static int GetLimit(string key)
     {
         if (string.IsNullOrWhiteSpace(key)) return 0;
@@ -37,6 +39,10 @@ public static class MiniProgramDataRules
     /// <summary>
     ///     按字段类型截断超长值。时间/日期类不限制长度，原样返回
     /// </summary>
+    /// <param name="key"></param>
+    /// <param name="value"></param>
+    /// <param name="truncated"></param>
+    /// <returns></returns>
     public static string Truncate(string key, string value, out bool truncated)
     {
         truncated = false;

@@ -31,13 +31,34 @@ public class JobExecutor: IJobExecutor
     public async Task ExecuteAsync(JobExecuteContext context, CancellationToken cancellationToken = default)
     {
         if (!_jobWorkSet.TryGetValue(context.JobExecuteInfo.FullName, out var jobType))
+        {
+            //  未注册的实现必须显式失败：上下文默认结果是成功，静默返回会把"没执行"上报成"执行成功"，
+            //  分布式调度侧因此会清零重试计数并认为该周期已完成
+            _logger.LogWarning("作业 {Name} 的实现类型 {Type} 未在本节点注册，拒绝执行", context.JobExecuteInfo.Name, context.JobExecuteInfo.FullName);
+            context.JobResult = new JobResult
+            {
+                IsSuccess = false,
+                Message = $"执行节点未注册该作业实现：{context.JobExecuteInfo.FullName}"
+            };
             return;
+        }
+
         var job = context.ServiceProvider.GetRequiredService(jobType) as IJob;
+        if (job == null)
+        {
+            _logger.LogWarning("作业 {Name} 的类型 {Type} 未实现 IJob，拒绝执行", context.JobExecuteInfo.Name, context.JobExecuteInfo.FullName);
+            context.JobResult = new JobResult
+            {
+                IsSuccess = false,
+                Message = $"作业实现类型无法解析为 IJob：{context.JobExecuteInfo.FullName}"
+            };
+            return;
+        }
+
         _logger.LogDebug("作业 {Name} 记录 {Id} 规定 {RunTime} 实际 {Now}", context.JobExecuteInfo.Name, context.JobExecuteInfo.Id, context.JobExecuteInfo.RunTime, DateTimeOffset.Now);
         try
         {
-            if (job != null)
-                context.JobResult = await job.RunAsync(context, cancellationToken);
+            context.JobResult = await job.RunAsync(context, cancellationToken);
         }
         catch (Exception ex)
         {

@@ -1,4 +1,5 @@
 ﻿using Findx.Data;
+using FreeSql;
 using Findx.Extensions.WorkflowCore.Entity;
 using Findx.Extensions.WorkflowCore.Enums;
 using Findx.Extensions.WorkflowCore.Models;
@@ -213,40 +214,150 @@ public partial class FlwStore
 
     /// <summary>
     ///     待办任务查询（按用户、角色、部门匹配参与者）
+    ///     参与者匹配下推为 EXISTS 子查询，一条 SQL 完成过滤 + 排序 + 分页，
+    ///     不再全表拉取任务后逐条查参与者（数据量大时是主要瓶颈）。
     /// </summary>
-    public async Task<List<FlwTaskInfo>> QueryTodoAsync(FlwCreator actor, int top = 100, CancellationToken cancellationToken = default)
+    public Task<List<FlwTaskInfo>> QueryTodoAsync(FlwCreator actor, int skip = 0, int top = 100, CancellationToken cancellationToken = default)
     {
-        var result = new List<FlwTaskInfo>();
-        if (actor == null) return result;
-
-        var tasks = await Repo<FlwTaskInfo>().SelectAsync(cancellationToken: cancellationToken);
-        foreach (var task in tasks.OrderByDescending(x => x.CreatedTime).ThenByDescending(x => x.Id))
-        {
-            var actors = await GetActorsAsync(task.Id, cancellationToken);
-            if (!actors.Any(x => MatchActor(x, actor))) continue;
-
-            result.Add(task);
-            if (result.Count >= top) break;
-        }
-        return result;
+        return BuildTodoQuery(actor)
+            .OrderByDescending(t => t.CreatedTime)
+            .OrderByDescending(t => t.Id)
+            .Skip(skip)
+            .Take(top)
+            .ToListAsync(cancellationToken);
     }
 
     /// <summary>
-    ///     已办任务查询（从历史参与者与历史任务表匹配）
+    ///     待办数量（角标用，COUNT 查询）
     /// </summary>
-    public async Task<List<FlwHisTaskInfo>> QueryDoneAsync(FlwCreator actor, int top = 100, CancellationToken cancellationToken = default)
+    public Task<long> CountTodoAsync(FlwCreator actor, CancellationToken cancellationToken = default)
     {
-        var result = new List<FlwHisTaskInfo>();
-        if (actor == null) return result;
-
-        var hisActors = await Repo<FlwHisTaskActorInfo>()
-            .SelectAsync(x => x.ActorId == actor.Id && x.ActorType == FlwActorType.User, cancellationToken: cancellationToken);
-        var taskIds = hisActors.Select(x => x.TaskId).Distinct().Take(top * 3).ToList();
-        if (taskIds.Count == 0) return result;
-
-        var hisTasks = await Repo<FlwHisTaskInfo>().SelectAsync(x => taskIds.Contains(x.Id), cancellationToken: cancellationToken);
-        return hisTasks.OrderByDescending(x => x.FinishTime).Take(top).ToList();
+        return BuildTodoQuery(actor).CountAsync(cancellationToken);
     }
+
+    /// <summary>
+    ///     指定实例下「我的」待办任务（审批面板判断可执行动作用，避免拉全量再筛）
+    /// </summary>
+    public Task<FlwTaskInfo> FindTodoTaskAsync(long instanceId, FlwCreator actor, CancellationToken cancellationToken = default)
+    {
+        return BuildTodoQuery(actor).Where(t => t.InstanceId == instanceId).FirstAsync(cancellationToken);
+    }
+
+    /// <summary>
+    ///     已办任务查询（历史参与者匹配 + 历史任务）
+    /// </summary>
+    public Task<List<FlwHisTaskInfo>> QueryDoneAsync(FlwCreator actor, int skip = 0, int top = 100, CancellationToken cancellationToken = default)
+    {
+        return BuildDoneQuery(actor)
+            .OrderByDescending(t => t.FinishTime)
+            .OrderByDescending(t => t.Id)
+            .Skip(skip)
+            .Take(top)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    ///     已办数量（角标用，COUNT 查询）
+    /// </summary>
+    public Task<long> CountDoneAsync(FlwCreator actor, CancellationToken cancellationToken = default)
+    {
+        return BuildDoneQuery(actor).CountAsync(cancellationToken);
+    }
+
+    /// <summary>
+    ///     我发起的实例（SQL 分页）
+    /// </summary>
+    public Task<List<FlwInstanceInfo>> QueryAppliedInstancesAsync(long creatorId, int skip = 0, int top = 100, CancellationToken cancellationToken = default)
+    {
+        return BuildAppliedQuery(creatorId)
+            .OrderByDescending(i => i.Id)
+            .Skip(skip)
+            .Take(top)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    ///     我发起的实例数量
+    /// </summary>
+    public Task<long> CountAppliedAsync(long creatorId, CancellationToken cancellationToken = default)
+    {
+        return BuildAppliedQuery(creatorId).CountAsync(cancellationToken);
+    }
+
+    /// <summary>
+    ///     我收到的实例：我参与过（活动/历史参与者）且发起人不是我（SQL 分页）
+    /// </summary>
+    public Task<List<FlwInstanceInfo>> QueryReceivedInstancesAsync(FlwCreator actor, long userId, int skip = 0, int top = 100, CancellationToken cancellationToken = default)
+    {
+        return BuildReceivedQuery(actor, userId)
+            .OrderByDescending(i => i.Id)
+            .Skip(skip)
+            .Take(top)
+            .ToListAsync(cancellationToken);
+    }
+
+    /// <summary>
+    ///     我收到的实例数量
+    /// </summary>
+    public Task<long> CountReceivedAsync(FlwCreator actor, long userId, CancellationToken cancellationToken = default)
+    {
+        return BuildReceivedQuery(actor, userId).CountAsync(cancellationToken);
+    }
+
+    /* ---------- 查询条件构造：列表、计数、单条定位共用同一套条件 ---------- */
+
+    private ISelect<FlwTaskInfo> BuildTodoQuery(FlwCreator actor)
+    {
+        //  匹配条件用「不可能命中的占位值」兜底，保证 = / IN 子句始终合法
+        var userId = actor == null || string.IsNullOrWhiteSpace(actor.Id) ? NoMatch : actor.Id;
+        var deptId = actor == null || string.IsNullOrWhiteSpace(actor.DeptId) ? NoMatch : actor.DeptId;
+        var roleIds = (actor?.RoleIds ?? new List<string>())
+            .Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+        if (roleIds.Count == 0) roleIds.Add(NoMatch);
+
+        return Fsql.Select<FlwTaskInfo>()
+            //  实例已删除的任务不参与列表与计数，避免角标数量与列表条数不一致
+            .Where(t => Fsql.Select<FlwInstanceInfo>().Where(i => i.Id == t.InstanceId).Any())
+            .Where(t => Fsql.Select<FlwTaskActorInfo>()
+                .Where(a => a.TaskId == t.Id
+                            && ((a.ActorType == FlwActorType.User && a.ActorId == userId)
+                                || (a.ActorType == FlwActorType.Department && a.ActorId == deptId)
+                                || (a.ActorType == FlwActorType.Role && roleIds.Contains(a.ActorId))))
+                .Any());
+    }
+
+    private ISelect<FlwHisTaskInfo> BuildDoneQuery(FlwCreator actor)
+    {
+        var userId = actor == null || string.IsNullOrWhiteSpace(actor.Id) ? NoMatch : actor.Id;
+        return Fsql.Select<FlwHisTaskInfo>()
+            //  同待办：实例已删除的历史任务不计入
+            .Where(t => Fsql.Select<FlwInstanceInfo>().Where(i => i.Id == t.InstanceId).Any())
+            .Where(t => Fsql.Select<FlwHisTaskActorInfo>()
+                .Where(a => a.TaskId == t.Id && a.ActorType == FlwActorType.User && a.ActorId == userId)
+                .Any());
+    }
+
+    private ISelect<FlwInstanceInfo> BuildAppliedQuery(long creatorId)
+    {
+        return Fsql.Select<FlwInstanceInfo>().Where(i => i.CreatorId == creatorId);
+    }
+
+    private ISelect<FlwInstanceInfo> BuildReceivedQuery(FlwCreator actor, long userId)
+    {
+        var actorId = actor == null || string.IsNullOrWhiteSpace(actor.Id) ? NoMatch : actor.Id;
+        return Fsql.Select<FlwInstanceInfo>()
+            //  发起人为空的实例（系统创建）按原逻辑视为「不是我发起的」
+            .Where(i => i.CreatorId == null || i.CreatorId != userId)
+            .Where(i => Fsql.Select<FlwTaskActorInfo>()
+                            .Where(a => a.InstanceId == i.Id && a.ActorId == actorId).Any()
+                        || Fsql.Select<FlwHisTaskActorInfo>()
+                            .Where(a => a.InstanceId == i.Id && a.ActorId == actorId).Any());
+    }
+
+    /// <summary>
+    ///     参与者匹配的条件占位值：确保生成的条件不可能命中任何真实数据
+    /// </summary>
+    private const string NoMatch = "__flw_no_match__";
 
     /// <summary>
     ///     参与者匹配：用户直配、角色、部门

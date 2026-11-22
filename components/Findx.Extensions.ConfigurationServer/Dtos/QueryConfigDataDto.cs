@@ -3,7 +3,7 @@ using Findx.Data;
 namespace Findx.Extensions.ConfigurationServer.Dtos;
 
 /// <summary>
-///     查询配置模型
+///     查询配置模型Dto
 /// </summary>
 public class QueryConfigDataDto : PageBase
 {

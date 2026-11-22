@@ -76,6 +76,11 @@ public class FlwProcessInfo: FullEntityBase, ICloneable<FlwProcessInfo>, ISort, 
     public int Sort { get; set; }
     
     /// <summary>
+    ///     分组名称（发起审批页按分组展示，空值归入「未分组」）
+    /// </summary>
+    public string GroupName { get; set; }
+    
+    /// <summary>
     ///     备注说明
     /// </summary>
     public string Comments { get; set; }

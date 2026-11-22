@@ -30,6 +30,9 @@ public class EmailNotifyChannel : INotifyChannel
     /// <summary>
     ///     发送
     /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<NotifyResult> SendAsync(NotifyMessage message, CancellationToken cancellationToken = default)
     {
         if (message == null) return NotifyResult.Fail(Channel, "消息不能为空");

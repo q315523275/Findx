@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Findx.Caching;
 using Findx.Data;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.AspNetCore.Mvc;
 
@@ -19,23 +21,24 @@ namespace Findx.AspNetCore.Mvc;
 /// </summary>
 public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
 {
-    private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly ICacheFactory _cacheFactory;
     private readonly IKeyGenerator<long> _keyGenerator;
+
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     ///     Ctor
     /// </summary>
     /// <param name="logger"></param>
     /// <param name="store"></param>
-    /// <param name="actionDescriptorCollectionProvider"></param>
     /// <param name="cacheFactory"></param>
     /// <param name="keyGenerator"></param>
-    public MvcFunctionHandler(StartupLogger logger, IFunctionStore<MvcFunction> store, IActionDescriptorCollectionProvider actionDescriptorCollectionProvider, ICacheFactory cacheFactory, IKeyGenerator<long> keyGenerator) : base(store, logger)
+    /// <param name="serviceProvider"></param>
+    public MvcFunctionHandler(StartupLogger logger, IFunctionStore<MvcFunction> store, ICacheFactory cacheFactory, IKeyGenerator<long> keyGenerator, IServiceProvider serviceProvider) : base(store, logger)
     {
-        _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
         _cacheFactory = cacheFactory;
         _keyGenerator = keyGenerator;
+        _serviceProvider = serviceProvider;
     }
 
     /// <summary>
@@ -51,9 +54,12 @@ public sealed class MvcFunctionHandler : FunctionHandlerBase<MvcFunction>
             if (functions is { Count: > 0 }) return functions;
         }
 
+        var actionDescriptorCollectionProvider = _serviceProvider.GetService<IActionDescriptorCollectionProvider>();
+        if (actionDescriptorCollectionProvider == null) return [];
+
         //  耗时大致20毫秒左右
         var result = new List<MvcFunction>();
-        var controllerActionList = _actionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>();
+        var controllerActionList = actionDescriptorCollectionProvider.ActionDescriptors.Items.Cast<ControllerActionDescriptor>();
         
         //  Controller循环
         foreach (var item in controllerActionList)

@@ -27,6 +27,11 @@ internal class FlwExecution
     ///     当前操作人
     /// </summary>
     public FlwCreator Operator { get; set; }
+
+    /// <summary>
+    ///     本次动作的审批意见：终态回调时透传给业务适配器，写入单据操作记录
+    /// </summary>
+    public string LastComment { get; set; }
 }
 
 /// <summary>

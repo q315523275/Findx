@@ -1,7 +1,6 @@
-using Findx.Extensions.WorkflowCore.Services;
+using Findx.Extensions.WorkflowCore.ServiceDefaults;
 using Findx.Jobs.Client;
 using Findx.Jobs.Common;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.Extensions.WorkflowCore.Jobs;
 
@@ -12,14 +11,23 @@ namespace Findx.Extensions.WorkflowCore.Jobs;
 [Job(Cron = "0 * * * * ?", Name = "工作流任务超时扫描", Description = "扫描审批任务的临近提醒与到期处理")]
 public class FlwTaskTimeoutJob : IJob
 {
+    private readonly FlwTimeoutHandler _handler;
+
+    /// <summary>
+    ///     Ctor
+    /// </summary>
+    /// <param name="handler"></param>
+    public FlwTaskTimeoutJob(FlwTimeoutHandler handler)
+    {
+        _handler = handler;
+    }
+
     /// <summary>
     ///     执行
     /// </summary>
     public async Task<JobResult> RunAsync(JobExecuteContext context, CancellationToken cancellationToken = default)
     {
-        using var scope = context.ServiceProvider.CreateScope();
-        var handler = scope.ServiceProvider.GetRequiredService<FlwTimeoutHandler>();
-        var result = await handler.HandleAsync(cancellationToken);
+        var result = await _handler.HandleAsync(cancellationToken);
         return new JobResult { IsSuccess = true, Message = result.ToString() };
     }
 }

@@ -37,6 +37,10 @@ public class InstanceController: FlwControllerBase
     public async Task<CommonResult> StartAsync([FromBody] InstanceStartDto req, CancellationToken cancellationToken)
     {
         var engine = GetRequiredService<IFlowLongEngine>();
+        //  业务单据字段并入变量，条件分支才能按业务字段求值（显式传入的同名变量优先）
+        var variables = req.Variables ?? new Dictionary<string, object>();
+        await MergeBusinessVariablesAsync(variables, req.BusinessType, req.BusinessId, cancellationToken);
+
         var instance = await engine.StartAsync(new FlwStartArgs
         {
             ProcessKey = req.ProcessKey,
@@ -44,7 +48,7 @@ public class InstanceController: FlwControllerBase
             BusinessKey = req.BusinessKey,
             BusinessType = req.BusinessType,
             BusinessId = req.BusinessId,
-            Variables = req.Variables,
+            Variables = variables,
             InstanceNo = req.InstanceNo,
             Priority = req.Priority,
             ExpireTime = req.ExpireTime,

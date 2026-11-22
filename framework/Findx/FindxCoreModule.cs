@@ -12,6 +12,7 @@ using Findx.Messaging;
 using Findx.Modularity;
 using Findx.Net.IP;
 using Findx.NewId;
+using Findx.Notifications;
 using Findx.Reflection;
 using Findx.RulesEngine;
 using Findx.Security;
@@ -108,6 +109,9 @@ public class FindxCoreModule : StartupModule
 
         // 短信
         services.AddSingleton<ISmsSender, NullSmsSender>();
+
+        // 用户通知（通道实现由扩展包替换，未接入时落到空实现）
+        services.AddSingleton<IUserNotifier, NullUserNotifier>();
 
         // 存储
         services.AddSingleton<IFileStorage, FileSystemStorage>();

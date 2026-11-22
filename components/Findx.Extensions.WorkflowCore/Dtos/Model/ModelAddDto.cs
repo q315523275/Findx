@@ -72,4 +72,9 @@ public class ModelAddDto: IRequest
     ///     备注说明
     /// </summary>
     public string Comments { get; set; }
+
+    /// <summary>
+    ///     分组名称（发起审批页按分组展示）
+    /// </summary>
+    public string GroupName { get; set; }
 }

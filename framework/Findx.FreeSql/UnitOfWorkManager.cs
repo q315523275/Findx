@@ -44,10 +44,10 @@ public class UnitOfWorkManager : UnitOfWorkManagerBase
     }
 
     /// <summary>
-    ///     获取默认数据库链接标识
+    ///     获取默认数据源标识
     /// </summary>
     /// <returns></returns>
-    protected override string GetDataSourcePrimary()
+    protected override string GetDefaultPrimary()
     {
         return _options.CurrentValue.Primary;
     }
@@ -55,21 +55,12 @@ public class UnitOfWorkManager : UnitOfWorkManagerBase
     /// <summary>
     ///     归一化数据源标识
     ///     <para>DataSourceSharing 会让多个键指向同一个 IFreeSql，此时必须归到实际数据源键，否则会各建一个工作单元（各开连接、各开事务），跨数据源的写入就不是原子的</para>
+    ///     <para>别名->主数据源名 的映射在数据源构建期就已登记，此处只做一次字典查询，不再遍历配置、不再访问 IOptionsMonitor</para>
     /// </summary>
     /// <param name="primary"></param>
     /// <returns></returns>
     protected override string NormalizePrimary(string primary)
     {
-        if (string.IsNullOrWhiteSpace(primary)) return GetDataSourcePrimary();
-        if (!_clients.TryGetValue(primary, out var fsql)) return primary;
-
-        //  以配置里的真实数据源为基准，共享同一实例的别名归一到它
-        foreach (var item in _options.CurrentValue.DataSource)
-        {
-            if (_clients.TryGetValue(item.Key, out var candidate) && ReferenceEquals(candidate, fsql))
-                return item.Key;
-        }
-
-        return primary;
+        return string.IsNullOrWhiteSpace(primary) ? GetDefaultPrimary() : _clients.GetPrimaryName(primary);
     }
 }

@@ -1,5 +1,5 @@
 using Findx.Extensions.Notify.Entity;
-using Findx.Extensions.Notify.Services;
+using Findx.Extensions.Notify.ServiceDefaults;
 using Findx.Extensions.Notify.Storage;
 using Microsoft.Extensions.Hosting;
 
@@ -20,8 +20,11 @@ public class NotifyDispatchQueue : BackgroundService
     /// <summary>
     ///     Ctor
     /// </summary>
-    public NotifyDispatchQueue(IOptions<NotifyOptions> options, NotifyChannelDispatcher dispatcher,
-        NotifyLogStore logStore, ILogger<NotifyDispatchQueue> logger)
+    /// <param name="options"></param>
+    /// <param name="dispatcher"></param>
+    /// <param name="logStore"></param>
+    /// <param name="logger"></param>
+    public NotifyDispatchQueue(IOptions<NotifyOptions> options, NotifyChannelDispatcher dispatcher, NotifyLogStore logStore, ILogger<NotifyDispatchQueue> logger)
     {
         _options = options.Value;
         _dispatcher = dispatcher;
@@ -40,6 +43,8 @@ public class NotifyDispatchQueue : BackgroundService
     /// <summary>
     ///     入队（非阻塞）。返回 false 表示队列已满
     /// </summary>
+    /// <param name="log"></param>
+    /// <returns></returns>
     public bool TryEnqueue(NotifyLog log)
     {
         return log != null && _channel.Writer.TryWrite(log);
@@ -48,6 +53,7 @@ public class NotifyDispatchQueue : BackgroundService
     /// <summary>
     ///     启动消费线程
     /// </summary>
+    /// <param name="stoppingToken"></param>
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var workerCount = Math.Max(1, _options.DispatchWorkerCount);
@@ -58,6 +64,7 @@ public class NotifyDispatchQueue : BackgroundService
     /// <summary>
     ///     消费循环：发送 -> 回填结果 -> 落日志
     /// </summary>
+    /// <param name="cancellationToken"></param>
     private async Task ConsumeAsync(CancellationToken cancellationToken)
     {
         try
@@ -65,7 +72,7 @@ public class NotifyDispatchQueue : BackgroundService
             await foreach (var log in _channel.Reader.ReadAllAsync(cancellationToken))
             {
                 var started = DateTime.Now;
-                var result = NotifyResult.Fail(log.Channel, "unknown");
+                NotifyResult result;
 
                 try
                 {

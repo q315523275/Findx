@@ -14,8 +14,10 @@ public class DingTalkNotifyChannel : INotifyChannel
     /// <summary>
     ///     Ctor
     /// </summary>
-    public DingTalkNotifyChannel(IOptions<NotifyOptions> options, IHttpClientFactory httpClientFactory,
-        ILogger<DingTalkNotifyChannel> logger)
+    /// <param name="options"></param>
+    /// <param name="httpClientFactory"></param>
+    /// <param name="logger"></param>
+    public DingTalkNotifyChannel(IOptions<NotifyOptions> options, IHttpClientFactory httpClientFactory, ILogger<DingTalkNotifyChannel> logger)
     {
         _options = options.Value;
         _httpClientFactory = httpClientFactory;
@@ -30,6 +32,9 @@ public class DingTalkNotifyChannel : INotifyChannel
     /// <summary>
     ///     发送
     /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<NotifyResult> SendAsync(NotifyMessage message, CancellationToken cancellationToken = default)
     {
         if (message == null) return NotifyResult.Fail(Channel, "消息不能为空");
@@ -58,10 +63,10 @@ public class DingTalkNotifyChannel : INotifyChannel
 
         try
         {
-            var client = _httpClientFactory.CreateClient();
+            using var client = _httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromSeconds(Math.Max(1, _options.TimeoutSeconds));
             var response = await client.PostAsJsonAsync(url, body, null, cancellationToken);
-            var text = await response.Content.ReadAsStringAsync();
+            var text = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)
                 return NotifyResult.Fail(Channel, $"HTTP {(int)response.StatusCode}：{text}");
 
@@ -81,6 +86,9 @@ public class DingTalkNotifyChannel : INotifyChannel
     /// <summary>
     ///     加签：Base64(HMACSHA256(timestamp + "\n" + secret, secret)) 后 URL 编码
     /// </summary>
+    /// <param name="timestamp"></param>
+    /// <param name="secret"></param>
+    /// <returns></returns>
     public static string ComputeSign(long timestamp, string secret)
     {
         var stringToSign = $"{timestamp}\n{secret}";
@@ -92,11 +100,11 @@ public class DingTalkNotifyChannel : INotifyChannel
     /// <summary>
     ///     标题 + 正文拼接
     /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
     private static string BuildContent(NotifyMessage message)
     {
         if (string.IsNullOrWhiteSpace(message.Title)) return message.Content ?? string.Empty;
-        return message.IsMarkdown
-            ? $"### {message.Title}\n{message.Content}"
-            : $"{message.Title}\n{message.Content}";
+        return message.IsMarkdown ? $"### {message.Title}\n{message.Content}" : $"{message.Title}\n{message.Content}";
     }
 }

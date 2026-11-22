@@ -21,8 +21,7 @@ public class WeChatMiniProgramNotifyChannel : INotifyChannel
     /// <summary>
     ///     Ctor
     /// </summary>
-    public WeChatMiniProgramNotifyChannel(IOptions<NotifyOptions> options, IHttpClientFactory httpClientFactory,
-        ILogger<WeChatMiniProgramNotifyChannel> logger)
+    public WeChatMiniProgramNotifyChannel(IOptions<NotifyOptions> options, IHttpClientFactory httpClientFactory, ILogger<WeChatMiniProgramNotifyChannel> logger)
     {
         _options = options.Value;
         _httpClientFactory = httpClientFactory;
@@ -35,8 +34,11 @@ public class WeChatMiniProgramNotifyChannel : INotifyChannel
     public NotifyChannel Channel => NotifyChannel.WeChatMiniProgram;
 
     /// <summary>
-    ///     发送
+    ///     发送订阅消息
     /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<NotifyResult> SendAsync(NotifyMessage message, CancellationToken cancellationToken = default)
     {
         if (message == null) return NotifyResult.Fail(Channel, "消息不能为空");
@@ -47,8 +49,7 @@ public class WeChatMiniProgramNotifyChannel : INotifyChannel
 
         var templateId = string.IsNullOrWhiteSpace(message.TemplateId) ? mini.TemplateId : message.TemplateId;
         if (string.IsNullOrWhiteSpace(templateId))
-            return NotifyResult.Fail(Channel,
-                "未指定模板：NotifyMessage.TemplateId 或 Findx:Notify:WeChatMiniProgram:TemplateId 必填");
+            return NotifyResult.Fail(Channel, "未指定模板：NotifyMessage.TemplateId 或 Findx:Notify:WeChatMiniProgram:TemplateId 必填");
 
         var openIds = message.To?.Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
         if (openIds == null || openIds.Length == 0)
@@ -56,9 +57,7 @@ public class WeChatMiniProgramNotifyChannel : INotifyChannel
 
         try
         {
-            var token = await _tokenProvider.GetAsync(
-                ct => WeChatTokenFetcher.FetchAsync(CreateClient(), mini.AppId, mini.AppSecret, ct),
-                cancellationToken);
+            var token = await _tokenProvider.GetAsync(ct => WeChatTokenFetcher.FetchAsync(CreateClient(), mini.AppId, mini.AppSecret, ct), cancellationToken);
 
             var state = string.IsNullOrWhiteSpace(mini.MiniProgramState) ? "formal" : mini.MiniProgramState;
             var lang = string.IsNullOrWhiteSpace(mini.Lang) ? "zh_CN" : mini.Lang;
@@ -98,14 +97,12 @@ public class WeChatMiniProgramNotifyChannel : INotifyChannel
     /// <summary>
     ///     发送单条订阅消息
     /// </summary>
-    private async Task<NotifyResult> SendOneAsync(string token, Dictionary<string, object> body,
-        CancellationToken cancellationToken)
+    private async Task<NotifyResult> SendOneAsync(string token, Dictionary<string, object> body, CancellationToken cancellationToken)
     {
         try
         {
-            var client = CreateClient();
-            var response = await client.PostAsJsonAsync($"{SendUrl}?access_token={Uri.EscapeDataString(token)}",
-                body, null, cancellationToken);
+            using var client = CreateClient();
+            var response = await client.PostAsJsonAsync($"{SendUrl}?access_token={Uri.EscapeDataString(token)}", body, null, cancellationToken);
             var text = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)
                 return NotifyResult.Fail(Channel, $"HTTP {(int)response.StatusCode}：{text}");
@@ -126,6 +123,8 @@ public class WeChatMiniProgramNotifyChannel : INotifyChannel
     /// <summary>
     ///     错误码转人话：订阅消息的失败原因多数是订阅额度或参数问题，直接给排查方向
     /// </summary>
+    /// <param name="api"></param>
+    /// <returns></returns>
     private static string DescribeError(ApiResponse api)
     {
         var code = api?.Errcode ?? 0;
@@ -147,6 +146,9 @@ public class WeChatMiniProgramNotifyChannel : INotifyChannel
     /// <summary>
     ///     Data 转订阅消息 data 结构：{ key: { value: "x" } }，按字段类型截断超长值
     /// </summary>
+    /// <param name="message"></param>
+    /// <param name="truncate"></param>
+    /// <returns></returns>
     private Dictionary<string, object> BuildData(NotifyMessage message, bool truncate)
     {
         var data = new Dictionary<string, object>();
@@ -159,8 +161,7 @@ public class WeChatMiniProgramNotifyChannel : INotifyChannel
             {
                 value = MiniProgramDataRules.Truncate(kv.Key, value, out var truncated);
                 if (truncated)
-                    _logger.LogWarning("小程序订阅消息字段 {Key} 超出长度限制，已截断为 {Limit} 字符", kv.Key,
-                        MiniProgramDataRules.GetLimit(kv.Key));
+                    _logger.LogWarning("小程序订阅消息字段 {Key} 超出长度限制，已截断为 {Limit} 字符", kv.Key, MiniProgramDataRules.GetLimit(kv.Key));
             }
 
             data[kv.Key] = new Dictionary<string, object> { ["value"] = value };

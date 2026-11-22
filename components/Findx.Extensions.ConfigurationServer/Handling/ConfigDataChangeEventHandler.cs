@@ -1,5 +1,5 @@
 using Findx.Extensions.ConfigurationServer.Dtos;
-using Findx.Extensions.ConfigurationServer.Services;
+using Findx.Extensions.ConfigurationServer.ServiceDefaults;
 using Findx.Messaging;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,6 +19,10 @@ public class ConfigDataChangeEventHandler : IApplicationEventHandler<ConfigDataC
     /// <summary>
     ///     Ctor
     /// </summary>
+    /// <param name="options"></param>
+    /// <param name="dumpService"></param>
+    /// <param name="clusterService"></param>
+    /// <param name="logger"></param>
     public ConfigDataChangeEventHandler(IOptions<ConfigServerOptions> options, IDumpService dumpService, IClusterService clusterService, ILogger<ConfigDataChangeEventHandler> logger)
     {
         _options = options;
@@ -60,6 +64,12 @@ public class ConfigDataChangeEventHandler : IApplicationEventHandler<ConfigDataC
         await Task.WhenAll(notifyTasks);
     }
 
+    /// <summary>
+    ///     通知集群节点
+    /// </summary>
+    /// <param name="node"></param>
+    /// <param name="changeDataDto"></param>
+    /// <param name="cancellationToken"></param>
     private async Task NotifyNodeAsync(string node, ConfigDataChangeDto changeDataDto, CancellationToken cancellationToken)
     {
         try

@@ -18,6 +18,7 @@ public partial class FlowLongEngine
         {
             var context = await LoadTaskContextAsync(taskId, actor, cancellationToken);
             var execution = context.Execution;
+            execution.LastComment = comment;
 
             if (variables is { Count: > 0 })
             {
@@ -62,6 +63,7 @@ public partial class FlowLongEngine
         {
             var context = await LoadTaskContextAsync(taskId, actor, cancellationToken);
             var execution = context.Execution;
+            execution.LastComment = comment;
             var task = context.Task;
 
             await _store.ArchiveNodeTasksAsync(execution.Instance.Id, task.TaskKey, FlwTaskState.Rejected, FlwTaskAction.Reject, actor, comment, cancellationToken);
@@ -100,6 +102,7 @@ public partial class FlowLongEngine
             if (actor == null || instance.CreatorId?.ToString() != actor.Id) throw new FlwEngineException("仅发起人可撤销流程");
 
             var execution = await BuildExecutionAsync(instance, actor, cancellationToken);
+            execution.LastComment = comment;
             await CompleteInstanceAsync(execution, FlwInstanceState.Revoked, cancellationToken);
             await _store.SaveInstanceAsync(execution.Instance, cancellationToken);
         }, cancellationToken);
@@ -116,6 +119,7 @@ public partial class FlowLongEngine
 
             //  强制终止：管理员/业务作废等场景，不要求发起人身份
             var execution = await BuildExecutionAsync(instance, actor, cancellationToken);
+            execution.LastComment = comment;
             if (actor != null) execution.Operator = actor;
             execution.Instance.LastUpdater = actor?.Name;
             await CompleteInstanceAsync(execution, FlwInstanceState.Terminated, cancellationToken);
@@ -188,6 +192,37 @@ public partial class FlowLongEngine
             await ExecuteNodeAsync(execution, target, cancellationToken);
             await _store.SaveInstanceAsync(execution.Instance, cancellationToken);
         }, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RevokeFinishedByBusinessAsync(string businessType, long businessId, FlwCreator actor, string comment = null, CancellationToken cancellationToken = default)
+    {
+        var instance = await _store.GetInstanceByBusinessAsync(businessType, businessId, cancellationToken);
+        if (instance == null) return false;
+        if (instance.InstanceState == FlwInstanceState.Running)
+            throw new FlwEngineException("流程仍在审批中，请使用「撤回」而不是反审核");
+        if (instance.InstanceState == FlwInstanceState.Revoked) return true;
+        if (instance.InstanceState != FlwInstanceState.Approved) return false;
+
+        await using var uow = await _unitOfWorkManager.GetEntityUnitOfWorkAsync<FlwInstanceInfo>(true, cancellationToken);
+        _store.AttachUnitOfWork(uow);
+        try
+        {
+            instance.LastUpdater = actor?.Name;
+            if (long.TryParse(actor?.Id, out var operatorId)) instance.LastUpdaterId = operatorId;
+            //  归档的历史实例状态一并改掉，列表里才不会继续显示「已通过」
+            await _store.FinishInstanceAsync(instance, FlwInstanceState.Revoked, cancellationToken);
+            await uow.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await uow.RollbackAsync(cancellationToken);
+            throw;
+        }
+
+        //  刻意不调用 NotifyInstanceStateChangedAsync：反审核的单据回写由业务侧负责，
+        //  再回调一次适配器会把单据重新推到草稿/已作废等状态
+        return true;
     }
 
     /// <inheritdoc />

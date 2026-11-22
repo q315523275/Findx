@@ -61,4 +61,40 @@ public class ModelSimplifyDto
     ///     备注说明
     /// </summary>
     public string Comments { get; set; }
+
+    /// <summary>
+    ///     分组名称
+    /// </summary>
+    public string GroupName { get; set; }
+
+    /// <summary>
+    ///     绑定的业务类型（如 pms.order）
+    /// </summary>
+    public string BusinessType { get; set; }
+
+    /// <summary>
+    ///     是否已配置动态表单
+    ///     <para>列表只关心有没有配，不传整段 FormSchema，避免列表接口返回体积过大</para>
+    /// </summary>
+    public bool HasForm { get; set; }
+
+    /// <summary>
+    ///     创建时间（版本历史里用来标时间）
+    /// </summary>
+    public DateTime? CreatedTime { get; set; }
+
+    /// <summary>
+    ///     创建人
+    /// </summary>
+    public string Creator { get; set; }
+
+    /// <summary>
+    ///     最后更新时间
+    /// </summary>
+    public DateTime? LastUpdatedTime { get; set; }
+
+    /// <summary>
+    ///     最后更新人
+    /// </summary>
+    public string LastUpdater { get; set; }
 }

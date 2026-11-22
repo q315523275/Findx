@@ -1,5 +1,5 @@
 using Findx.Extensions.Notify.Entity;
-using Findx.Utilities;
+using Findx.NewId;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Findx.Extensions.Notify.Storage;
@@ -10,29 +10,36 @@ namespace Findx.Extensions.Notify.Storage;
 public class NotifyLogStore
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IKeyGenerator<long> _keyGenerator;
     private readonly ILogger<NotifyLogStore> _logger;
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    public NotifyLogStore(IServiceProvider serviceProvider, ILogger<NotifyLogStore> logger)
+    public NotifyLogStore(IServiceProvider serviceProvider, IKeyGenerator<long> keyGenerator, ILogger<NotifyLogStore> logger)
     {
         _serviceProvider = serviceProvider;
+        _keyGenerator = keyGenerator;
         _logger = logger;
     }
 
     /// <summary>
     ///     写入一条发送日志（调用方保证已填好最终状态）
     /// </summary>
+    /// <param name="log"></param>
+    /// <param name="cancellationToken"></param>
     public async Task PersistAsync(NotifyLog log, CancellationToken cancellationToken = default)
     {
         if (log == null) return;
 
         try
         {
-            var repository = _serviceProvider.GetRequiredService<IRepository<NotifyLog, long>>();
-            if (log.Id == default) log.Id = SnowflakeIdUtility.Default().NextId();
-            await repository.InsertAsync(log, cancellationToken);
+            await _serviceProvider.ExecuteScopedWorkAsync(async sp =>
+            {
+                var repository = sp.GetRequiredService<IRepository<NotifyLog, long>>();
+                if (log.Id == 0) log.Id = _keyGenerator.Create();
+                await repository.InsertAsync(log, cancellationToken);
+            });
         }
         catch (Exception ex)
         {

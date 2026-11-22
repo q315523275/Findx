@@ -11,13 +11,6 @@ namespace Findx.Extensions.ConfigurationServer.Models;
 public class ConfigDataInfo : FullAuditedBase<long, long>
 {
     /// <summary>
-    ///     记录编号
-    /// </summary>
-    [Key]
-    [Column(name: "id")]
-    public override long Id { get; set; }
-    
-    /// <summary>
     ///     应用编号
     /// </summary>
     public string AppId { get; set; }

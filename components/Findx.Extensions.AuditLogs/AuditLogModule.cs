@@ -26,7 +26,6 @@ public class AuditLogModule: StartupModule
     /// </summary>
     public override int Order => 120;
     
-    
     /// <summary>
     ///     配置服务
     /// </summary>

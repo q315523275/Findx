@@ -1,3 +1,4 @@
+using Findx.Extensions.Scheduler.Abstractions;
 using Findx.Extensions.Scheduler.Models;
 using Findx.Extensions.Scheduler.Options;
 using Findx.Extensions.Scheduler.Storage;
@@ -23,10 +24,11 @@ public class SchedulerJobBuffer
 
     private readonly ScheduledJobStorage _storage;
     private readonly IOptions<SchedulerOptions> _options;
+    private readonly IClusterClock _clock;
     private readonly ILogger<SchedulerJobBuffer> _logger;
 
     private readonly Dictionary<long, ScheduledJob> _jobs = new();
-    private readonly object _sync = new object();
+    private readonly object _sync = new();
 
     private DateTime _lastLoadedAt;
     private DateTime _lastAttemptAt;
@@ -36,10 +38,12 @@ public class SchedulerJobBuffer
     /// <summary>
     ///     Ctor
     /// </summary>
-    public SchedulerJobBuffer(ScheduledJobStorage storage, IOptions<SchedulerOptions> options, ILogger<SchedulerJobBuffer> logger)
+    public SchedulerJobBuffer(ScheduledJobStorage storage, IOptions<SchedulerOptions> options, IClusterClock clock,
+        ILogger<SchedulerJobBuffer> logger)
     {
         _storage = storage;
         _options = options;
+        _clock = clock;
         _logger = logger;
 
         //  任务定义变更（增删改、失败退避、死信推进）后标脏，下轮调度触发后台重查
@@ -54,6 +58,7 @@ public class SchedulerJobBuffer
     /// <summary>
     ///     剔除一个任务（CAS 抢占失败时调用：本实例的推进未被落库，说明周期已被其他实例处理）
     /// </summary>
+    /// <param name="jobId"></param>
     public void Remove(long jobId)
     {
         lock (_sync)
@@ -64,8 +69,35 @@ public class SchedulerJobBuffer
     }
 
     /// <summary>
+    ///     预热窗口：Master 当选后立刻在后台把窗口拉进内存，避免「首轮扫描同步打库」把第一个周期顶偏。
+    ///     <para>重复调用/并发调用安全：已有刷新在跑时直接返回；失败只记日志，首轮扫描会退化为同步加载。</para>
+    /// </summary>
+    public async Task WarmUpAsync(CancellationToken cancellationToken = default)
+    {
+        if (_lastLoadedAt != default) return;
+        if (Interlocked.CompareExchange(ref _refreshing, 1, 0) != 0) return;
+
+        try
+        {
+            await LoadAsync(_clock.Now, cancellationToken);
+            _logger.LogDebug("Master 当选预热完成（窗口加载耗时已计入本次调用）");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Master 当选预热调度窗口失败，首轮扫描将同步加载");
+        }
+        finally
+        {
+            Interlocked.Exchange(ref _refreshing, 0);
+        }
+    }
+
+    /// <summary>
     ///     取当前已到期的分发条目（纯内存操作；首次调用会同步加载一次窗口）
     /// </summary>
+    /// <param name="now"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<List<DispatchItem>> ScanDueAsync(DateTime now, CancellationToken cancellationToken = default)
     {
         if (_lastLoadedAt == default)
@@ -98,8 +130,7 @@ public class SchedulerJobBuffer
             {
                 var expectedRetry = job.RetryAtTime.Value;
                 job.RetryAtTime = null; // 内存先清，真实清库由 CAS 完成
-                items.Add(new DispatchItem(job, new[] { "R:" + expectedRetry.ToString("O") }, job.TryCount,
-                    DispatchKind.Retry, expectedRetry));
+                items.Add(new DispatchItem(job, ["R:" + ToPeriodString(expectedRetry)], job.TryCount, DispatchKind.Retry, expectedRetry));
                 continue;
             }
 
@@ -124,8 +155,7 @@ public class SchedulerJobBuffer
 
                 job.NextRunTime = skipNext;
                 job.LastRunTime = now;
-                _logger.LogWarning("任务 [{JobName}] 迟到 {Late} 秒超过窗口 {Window} 秒，按 DoNothing 策略只推进不触发",
-                    job.JobName, (int)(now - expectedNext).TotalSeconds, windowSeconds);
+                _logger.LogWarning("任务 [{JobName}] 迟到 {Late} 秒超过窗口 {Window} 秒，按 DoNothing 策略只推进不触发", job.JobName, (int)(now - expectedNext).TotalSeconds, windowSeconds);
                 continue;
             }
 
@@ -147,7 +177,7 @@ public class SchedulerJobBuffer
             }
 
             //  待投递的触发点：默认只补当前这一次
-            var periods = new List<string> { expectedNext.ToString("O") };
+            var periods = new List<string> { ToPeriodString(expectedNext) };
 
             //  补齐 now 之前错过的多个触发点（对齐内存版 Server 的 while 入环语义，受 CatchUpMaxCount 限制）
             if (opts.CatchUpWithinWindow)
@@ -158,7 +188,7 @@ public class SchedulerJobBuffer
                 {
                     var nextAfterCursor = TryGetNextOccurrence(job, cursor);
                     if (nextAfterCursor == default || nextAfterCursor > now) break;
-                    periods.Add(nextAfterCursor.ToString("O"));
+                    periods.Add(ToPeriodString(nextAfterCursor));
                     cursor = nextAfterCursor;
                 }
             }
@@ -177,8 +207,27 @@ public class SchedulerJobBuffer
     }
 
     /// <summary>
+    ///     周期字符串归一化。
+    ///     <para>到期时刻有两个来源且 <see cref="DateTimeKind" /> 不同：数据库读回的是 Unspecified，
+    ///     cron 计算出的是 Local（<c>CronUtility</c> 返回 <c>LocalDateTime</c>）。直接 ToString("O")
+    ///     会输出「无偏移」与「+08:00」两种形态，而 Period 参与 ExecutionKey 唯一键
+    ///     （<c>{jobId}:{period}:{attempt}</c>）——同一触发点因此被当成两个周期，建出两行执行行，
+    ///     统计上表现为「行数超过任务数 × 波次」「按周期分组的波次被切碎」。
+    ///     <para>归一规则：UTC 先转本地，再统一按 Unspecified 输出（数据库存的就是本地时间值），
+    ///     保证同一触发点在任何来源下都只有一种字符串形态。</para>
+    /// </summary>
+    /// <param name="value">到期时刻</param>
+    /// <returns>归一后的周期字符串</returns>
+    private static string ToPeriodString(DateTime value)
+    {
+        var local = value.Kind == DateTimeKind.Utc ? value.ToLocalTime() : value;
+        return DateTime.SpecifyKind(local, DateTimeKind.Unspecified).ToString("O");
+    }
+
+    /// <summary>
     ///     是否需要在后台刷新窗口
     /// </summary>
+    /// <param name="now"></param>
     private void EnsureRefresh(DateTime now)
     {
         if (!NeedRefresh(now)) return;
@@ -205,6 +254,8 @@ public class SchedulerJobBuffer
     /// <summary>
     ///     是否需要刷新：标脏 / 超过刷新间隔 / 窗口耗尽（按窗口的一半节奏提前扩窗）
     /// </summary>
+    /// <param name="now"></param>
+    /// <returns></returns>
     private bool NeedRefresh(DateTime now)
     {
         var opts = _options.Value;
@@ -229,6 +280,8 @@ public class SchedulerJobBuffer
     /// <summary>
     ///     加载窗口内任务（一次性拉取，整体替换内存快照）
     /// </summary>
+    /// <param name="now"></param>
+    /// <param name="cancellationToken"></param>
     private async Task LoadAsync(DateTime now, CancellationToken cancellationToken)
     {
         _lastAttemptAt = now;
@@ -258,6 +311,9 @@ public class SchedulerJobBuffer
     /// <summary>
     ///     安全计算下一次触发时刻（Cron 非法时返回 default）
     /// </summary>
+    /// <param name="job"></param>
+    /// <param name="from"></param>
+    /// <returns></returns>
     private DateTime TryGetNextOccurrence(ScheduledJob job, DateTime from)
     {
         try
@@ -292,6 +348,8 @@ public class SchedulerJobBuffer
     /// <summary>
     ///     任务的最近动作时间（重试与周期取小）
     /// </summary>
+    /// <param name="job"></param>
+    /// <returns></returns>
     private static DateTime? ActionTime(ScheduledJob job)
     {
         var retry = job.RetryAtTime;
@@ -304,6 +362,9 @@ public class SchedulerJobBuffer
     /// <summary>
     ///     可空时间比较（null 排最后）
     /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
     private static int NullableCompare(DateTime? a, DateTime? b)
     {
         if (a == null && b == null) return 0;

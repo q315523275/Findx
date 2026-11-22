@@ -13,5 +13,10 @@ public enum JobStatus
 	/// <summary>
 	///     停止
 	/// </summary>
-	Stop = 2
+	Stop = 2,
+
+	/// <summary>
+	///     死信隔离：连续失败达到上限后停止调度，等待人工放行
+	/// </summary>
+	Dead = 3
 }

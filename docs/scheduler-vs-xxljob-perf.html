@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分布式调度服务端性能对照 · xxl-job vs Findx Scheduler</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#0d1117; --bg2:#131922; --card:#151c26; --border:#232c3a;
+  --ink:#e6edf3; --ink2:#9fb0c4; --ink3:#6b7c92;
+  --teal:#2dd4bf; --teal-dim:#0f766e;
+  --amber:#fbbf24; --amber-dim:#78350f;
+  --rose:#f87171; --rose-dim:#7f1d1d;
+  --blue:#60a5fa;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(1100px 500px at 12% -8%, rgba(45,212,191,.10), transparent 60%),
+    radial-gradient(900px 460px at 92% 4%, rgba(96,165,250,.08), transparent 60%),
+    var(--bg);
+  color:var(--ink);
+  font-family:"Noto Sans SC",-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:56px 26px 80px}
+
+/* ---------- 头部 ---------- */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--teal);font-weight:500;
+  border:1px solid rgba(45,212,191,.28);background:rgba(45,212,191,.06);
+  padding:5px 12px;border-radius:100px;
+}
+h1{font-size:38px;line-height:1.28;font-weight:700;margin:20px 0 12px;letter-spacing:-.01em}
+h1 .thin{color:var(--ink2);font-weight:300}
+.lede{color:var(--ink2);max-width:760px;font-size:15px}
+.meta{
+  margin-top:26px;display:flex;flex-wrap:wrap;gap:10px 26px;
+  font-family:var(--mono);font-size:12px;color:var(--ink3);
+}
+.meta b{color:var(--ink2);font-weight:500}
+
+/* ---------- 结论 ---------- */
+.verdict{
+  margin-top:36px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+}
+.vcard{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:20px 20px 18px;position:relative;overflow:hidden;
+}
+.vcard::before{content:"";position:absolute;inset:0 0 auto 0;height:2px;background:var(--teal);opacity:.55}
+.vcard.warn::before{background:var(--amber)}
+.vcard.bad::before{background:var(--rose)}
+.vt{font-size:12.5px;color:var(--ink3);letter-spacing:.04em}
+.vn{font-family:var(--mono);font-size:26px;font-weight:600;margin:8px 0 2px;letter-spacing:-.02em}
+.vn.small{font-size:19px;line-height:1.45}
+.vd{font-size:13px;color:var(--ink2);line-height:1.6}
+.vn.teal{color:var(--teal)} .vn.amber{color:var(--amber)} .vn.rose{color:var(--rose)}
+
+/* ---------- 通用区块 ---------- */
+section{margin-top:56px}
+h2{font-size:20px;font-weight:600;letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px}
+h2 .num{font-family:var(--mono);font-size:12px;color:var(--ink3);font-weight:400}
+h2 .hint{font-size:12.5px;color:var(--ink3);font-weight:400}
+.sub{color:var(--ink2);font-size:13.5px;margin-top:8px;max-width:820px}
+
+/* ---------- 图例 ---------- */
+.legend{display:flex;gap:20px;margin:18px 0 4px;font-size:12.5px;color:var(--ink2);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:7px;vertical-align:middle}
+.li-xxl{background:var(--amber)} .li-xxl3{background:var(--blue)} .li-us{background:var(--teal)}
+
+/* ---------- 条形对比 ---------- */
+.chart{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 24px 20px}
+.row{margin-bottom:22px}
+.row:last-child{margin-bottom:2px}
+.rowhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;flex-wrap:wrap;gap:6px}
+.rl{font-size:14px;font-weight:500}
+.rl em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--ink3);margin-left:9px;font-weight:400}
+.bar{position:relative;height:20px;background:#0b1017;border-radius:6px;overflow:hidden;border:1px solid #1b2330}
+.bar .fill{position:absolute;inset:0 auto 0 0;border-radius:6px 0 0 6px}
+.bar .txt{position:absolute;right:9px;top:0;line-height:20px;font-family:var(--mono);font-size:11.5px;color:var(--ink2)}
+
+/* ---------- 标尺 ---------- */
+.ruler{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px 26px 30px;margin-top:14px}
+.scale{position:relative;height:64px;margin-top:12px}
+.axis{position:absolute;left:0;right:0;top:40px;height:1px;background:#2a3444}
+.tick{position:absolute;top:34px;width:1px;height:13px;background:#2a3444}
+.ticklabel{position:absolute;top:50px;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--ink3)}
+.zone{position:absolute;height:26px;top:2px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11.5px;font-family:var(--mono)}
+.zone.xxl{background:rgba(251,191,36,.16);border:1px solid rgba(251,191,36,.45);color:var(--amber)}
+.dot{position:absolute;width:12px;height:12px;border-radius:50%;top:40px;transform:translate(-50%,-50%)}
+.dot.us{background:var(--teal);box-shadow:0 0 0 4px rgba(45,212,191,.16)}
+.zone-note{margin-top:44px;font-size:12.5px;color:var(--ink2)}
+
+/* ---------- 表格 ---------- */
+.tbl{margin-top:14px;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{padding:13px 16px;text-align:left;border-bottom:1px solid #1c2431}
+th{font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);font-weight:500;background:#111823}
+td{color:var(--ink)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#121a24}
+.num-cell{font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+.pill{display:inline-block;padding:2px 9px;border-radius:100px;font-size:11.5px;font-family:var(--mono)}
+.pill.ok{background:rgba(45,212,191,.14);color:var(--teal);border:1px solid rgba(45,212,191,.35)}
+.pill.mid{background:rgba(251,191,36,.14);color:var(--amber);border:1px solid rgba(251,191,36,.35)}
+.pill.fail{background:rgba(248,113,113,.14);color:var(--rose);border:1px solid rgba(248,113,113,.35)}
+.pill.neutral{background:#1a2330;color:var(--ink2);border:1px solid #2a3444}
+
+/* ---------- 机制 ---------- */
+.mech{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.mbox{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 22px}
+.mbox h3{font-size:14px;font-weight:600;display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.mbox h3 i{width:8px;height:8px;border-radius:50%;display:block}
+.mbox.them h3 i{background:var(--amber)} .mbox.us h3 i{background:var(--teal)}
+.steps{font-size:13px;color:var(--ink2);line-height:2}
+.steps code{font-family:var(--mono);font-size:12px;background:#0e141d;border:1px solid #1e2734;border-radius:4px;padding:1px 6px;color:var(--ink)}
+ol.steps{padding-left:18px} ol.steps li{margin-bottom:4px}
+.cons{font-size:12.5px;color:var(--ink3);border-top:1px dashed #232c3a;margin-top:14px;padding-top:12px}
+
+/* ---------- 边界 ------------------ */
+.bounds{background:linear-gradient(180deg,rgba(248,113,113,.05),transparent 70%);border:1px solid rgba(248,113,113,.24);border-radius:14px;padding:22px 24px;margin-top:14px}
+.bounds ol{padding-left:20px}
+.bounds li{margin-bottom:9px;font-size:13.5px;color:var(--ink2)}
+.bounds li b{color:var(--ink)}
+.bounds li:last-child{margin-bottom:0}
+
+/* ---------- 来源 ---------- */
+footer{margin-top:52px;border-top:1px solid var(--border);padding-top:22px;font-size:12.5px;color:var(--ink3)}
+footer a{color:var(--ink2);text-decoration:none;border-bottom:1px solid #2a3444}
+footer a:hover{color:var(--teal);border-color:var(--teal-dim)}
+footer ul{padding-left:18px;margin-top:8px}
+footer li{margin-bottom:5px}
+
+@media(max-width:860px){
+  .wrap{padding:40px 18px 60px}
+  h1{font-size:28px}
+  .verdict{grid-template-columns:1fr}
+  .mech{grid-template-columns:1fr}
+  .tbl{overflow-x:auto} table{min-width:720px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <span class="eyebrow">Benchmark · 同机同库 · 2026.11</span>
+  <h1>分布式调度服务端性能对照<br><span class="thin">xxl-job 2.4.1 · 3.0.0（官方口径 + 官方镜像实测） vs Findx Scheduler</span></h1>
+  <p class="lede">
+    同一台机器、同一个 MySQL 8 实例、同一种「到期即下发、执行端接收即返回」的负载，
+    把 xxl-job 官方 docker 调度中心（2.4.1 与 3.0.0 各起一套）真跑起来，再和我们的 <code style="font-family:var(--mono)">Findx.Extensions.Scheduler</code> 对拍。
+    结论不是"谁快多少倍"，而是两种调度模型在不同压力下的分界点在哪。
+  </p>
+
+  <div class="meta">
+    <span><b>负载形态</b> 全部任务同相位，每 10s 一波全到期</span>
+    <span><b>对照版本</b> 2.4.1 / 3.0.0</span>
+    <span><b>指标</b> 执行端收到请求的毫秒 − 周期起点</span>
+    <span><b>采样</b> 每档 40s，预热 30s</span>
+    <span><b>库</b> mysql:8.4 单实例</span>
+  </div>
+
+  <!-- ========== 结论 ========== -->
+  <div class="verdict">
+    <div class="vcard">
+      <div class="vt">500 任务 / 10s（50 次/s）</div>
+      <div class="vn teal">双双达标</div>
+      <div class="vd">xxl-job 500 条全到位，单波跨度 1.21~1.75s；我们 p50 0.105s / p95 1.25s。这个量级两边都不吃力。</div>
+    </div>
+    <div class="vcard warn">
+      <div class="vt">2000 任务 / 10s（200 次/s）</div>
+      <div class="vn amber">2.4.1 丢一半，<br>3.0 补上了</div>
+      <div class="vd">2.4.1 的 8015 条理论只到 3347（42%）；3.0 到 8000（99.8%），单波 4 秒发完。我们 100%，p95 0.53s。</div>
+    </div>
+    <div class="vcard bad">
+      <div class="vt">5000 任务 / 10s（500 次/s）</div>
+      <div class="vn rose">两个版本都不够</div>
+      <div class="vd">2.4.1 连续 3 轮 0 到达；3.0 也只到 598~2206（3%~11%），并伴随 2794 次队列拒绝。我们 100%，p95 0.73s。</div>
+    </div>
+  </div>
+
+  <!-- ========== 1. 到位率 ========== -->
+  <section>
+    <h2><span class="num">01</span> 同一负载下的实际到位率 <span class="hint">到不了的，是被静默丢掉的</span></h2>
+    <p class="sub">"到位率" = 执行端实际收到的触发数 / 该时段应触发数。xxl-job 的丢调度不会写进业务日志表，只会以 <code style="font-family:var(--mono)">schedule misfire</code> 警告出现，很容易在线上被忽略。</p>
+
+    <div class="legend"><span><i class="li-xxl"></i>xxl-job 2.4.1</span><span><i class="li-xxl3"></i>xxl-job 3.0.0</span><span><i class="li-us"></i>Findx Scheduler</span></div>
+
+    <div class="chart">
+      <div class="row">
+        <div class="rowhead"><span class="rl">500 任务 / 10s<em>50 次/s</em></span></div>
+        <div class="bar"><div class="fill" style="width:99.9%;background:linear-gradient(90deg,#78350f,#fbbf24)"></div><span class="txt">2.4.1 · 99.9%</span></div>
+        <div class="bar" style="margin-top:5px"><div class="fill" style="width:99.8%;background:linear-gradient(90deg,#1e3a5f,#60a5fa)"></div><span class="txt">3.0 · 99.8%</span></div>
+        <div class="bar" style="margin-top:5px"><div class="fill" style="width:100%;background:linear-gradient(90deg,#0f766e,#2dd4bf)"></div><span class="txt">我们 · 100%</span></div>
+      </div>
+
+      <div class="row">
+        <div class="rowhead"><span class="rl">2000 任务 / 10s<em>200 次/s</em></span></div>
+        <div class="bar"><div class="fill" style="width:42%;background:linear-gradient(90deg,#78350f,#fbbf24)"></div><span class="txt">2.4.1 · 42%</span></div>
+        <div class="bar" style="margin-top:5px"><div class="fill" style="width:99.8%;background:linear-gradient(90deg,#1e3a5f,#60a5fa)"></div><span class="txt">3.0 · 99.8%</span></div>
+        <div class="bar" style="margin-top:5px"><div class="fill" style="width:100%;background:linear-gradient(90deg,#0f766e,#2dd4bf)"></div><span class="txt">我们 · 100%</span></div>
+      </div>
+
+      <div class="row">
+        <div class="rowhead"><span class="rl">5000 任务 / 10s<em>500 次/s</em></span></div>
+        <div class="bar"><div class="fill" style="width:0.6%;background:linear-gradient(90deg,#7f1d1d,#f87171)"></div><span class="txt">2.4.1 · 0%</span></div>
+        <div class="bar" style="margin-top:5px"><div class="fill" style="width:11%;background:linear-gradient(90deg,#1e3a5f,#60a5fa)"></div><span class="txt">3.0 · 3~11%</span></div>
+        <div class="bar" style="margin-top:5px"><div class="fill" style="width:100%;background:linear-gradient(90deg,#0f766e,#2dd4bf)"></div><span class="txt">我们 · 100%</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 2. 延迟 ========== -->
+  <section>
+    <h2><span class="num">02</span> 下发延迟 <span class="hint">xxl-job 用"单波跨度"，我们用 p95</span></h2>
+    <p class="sub">xxl-job 的 <code style="font-family:var(--mono)">trigger_time</code> 只有秒精度，所以取执行端收到请求的毫秒时刻算"这一波全部下发完"的跨度；我们的数据来自分位统计。两者都在衡量同一件事：从周期起点到最后一个任务被送出。</p>
+
+    <div class="tbl">
+      <table>
+        <thead>
+          <tr><th>负载</th><th>2.4.1</th><th>3.0.0</th><th>Findx Scheduler</th><th>判定</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>500 / 10s</td>
+            <td class="num-cell">跨度 1.35~1.66s</td>
+            <td class="num-cell">跨度 1.06~1.71s</td>
+            <td class="num-cell">p50 0.105s · p95 1.25s</td>
+            <td><span class="pill ok">三方持平</span></td>
+          </tr>
+          <tr>
+            <td>2000 / 10s</td>
+            <td class="num-cell">1.32~2.73s（仅 42% 到位）</td>
+            <td class="num-cell">3.53~4.22s（99.8%）</td>
+            <td class="num-cell">p50 0.202s · p95 0.53s</td>
+            <td><span class="pill ok">3.0 已合格</span></td>
+          </tr>
+          <tr>
+            <td>5000 / 10s</td>
+            <td class="num-cell">未产出（0 条下发）</td>
+            <td class="num-cell">3.6~7.2s（3~11%）</td>
+            <td class="num-cell">p50 0.37s · p95 0.73s</td>
+            <td><span class="pill fail">都不到位</span></td>
+          </tr>
+          <tr>
+            <td>5000 / 30s 周期</td>
+            <td class="num-cell">6502 / 6667（97.5%）</td>
+            <td class="num-cell">6547 / 6667（98.2%）</td>
+            <td class="num-cell">未测</td>
+            <td><span class="pill ok">两版都稳</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ========== 3. 可持续速率 ========== -->
+  <section>
+    <h2><span class="num">03</span> 可持续触发速率 <span class="hint">这条线决定了它适合多大的集群</span></h2>
+    <p class="sub">把周期放宽、相位摊开，只改"每秒到期多少个"，就能测出各自能长期扛住的位置。xxl-job 在本机的分界线落在 167~200 次/s 之间。</p>
+
+    <div class="ruler">
+      <div class="scale">
+        <div class="axis"></div>
+
+        <div class="tick" style="left:0%"></div><span class="ticklabel" style="left:0%">0</span>
+        <div class="tick" style="left:20%"></div><span class="ticklabel" style="left:20%">100</span>
+        <div class="tick" style="left:40%"></div><span class="ticklabel" style="left:40%">200</span>
+        <div class="tick" style="left:60%"></div><span class="ticklabel" style="left:60%">300</span>
+        <div class="tick" style="left:80%"></div><span class="ticklabel" style="left:80%">400</span>
+        <div class="tick" style="left:99.5%"></div><span class="ticklabel" style="left:99.5%">500+</span>
+
+        <div class="zone xxl" style="left:33.4%;width:6.8%">167~200</div>
+        <div class="dot us" style="left:99.5%"></div>
+      </div>
+
+      <p class="zone-note">
+        琥珀区间 = xxl-job 本机可持续上限（2000/10s 分散相位 98.4%，5000/30s 97.5% 到位）。
+        越过这条线：5000/10s 分散相位 0 到达，同相位同样 0 到达。
+        青色点 = 我们在 500 次/s 的实测位置，仍在稳定区（p95 0.73s）。
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== 4. 三份数据来源 ========== -->
+  <section>
+    <h2><span class="num">04</span> 三份数据：官方说法 / 官方镜像实测 / 我们</h2>
+    <p class="sub">官方文档给的是"理论单机 5000 任务稳定"；阿里云给的托管版基准是每秒 100~1800 次；我们实测的是开源镜像在 arm64 机器上的真实表现。三者口径不同，放在一起才能看清落差在哪。</p>
+
+    <div class="tbl">
+      <table>
+        <thead>
+          <tr><th style="width:22%">来源</th><th>关键数字</th><th style="width:30%">口径说明</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>官方文档</b><br><span style="color:var(--ink3);font-size:12px">Gitee XXL-JOB 官方文档</span></td>
+            <td>单 JOB 一次运行平均 <b>&lt;10ms</b>；"理论上默认配置单机可支撑 <b>5000 任务</b>并发稳定运行"</td>
+            <td>任务周期分散的前提；官方自己补了一句：实际受 ping、DB 读写、密集度影响会上下波动</td>
+          </tr>
+          <tr>
+            <td><b>阿里云 MSE</b><br><span style="color:var(--ink3);font-size:12px">托管版性能基准</span></td>
+            <td>Small×1：100 任务/秒（6000/min，CPU 40%）<br>Small×2：300 任务/秒（18000/min）<br>Medium×1：900 任务/秒 · Medium×2：1800 任务/秒</td>
+            <td>托管版自研引擎；原文明确"开源版调度吞吐约为其一半，因为开源引擎重度依赖 DB，扩机器不提升吞吐"</td>
+          </tr>
+          <tr>
+            <td><b>我们实测</b><br><span style="color:var(--ink3);font-size:12px">xxl-job 2.4.1 官方镜像</span></td>
+            <td>可持续 <b>167~200 次/s</b>；500 次/s 时 <b>0 到达</b>，misfire 全量</td>
+            <td>amd64 镜像跑在 arm64 模拟层上，硬件对它不利；单调度中心、单执行端</td>
+          </tr>
+          <tr>
+            <td><b>我们实测</b><br><span style="color:var(--ink3);font-size:12px">xxl-job 3.0.0 官方镜像</span></td>
+            <td>2000 档 <b>99.8%</b> 到位（2.4.1 是 42%）；5000 档 <b>3~11%</b>；可持续仍约 <b>200 次/s</b></td>
+            <td>JDK 21 + Spring Boot 3.4.2，同一台 arm64 模拟层，其余条件与 2.4.1 完全一致</td>
+          </tr>
+          <tr>
+            <td><b>我们实测</b><br><span style="color:var(--ink3);font-size:12px">Findx Scheduler</span></td>
+            <td><b>500 次/s</b> 时 p50 0.37s / p95 0.73s，4×5000 波完整、零饱和</td>
+            <td>原生 arm64，4 个执行端，并发投递 64 在飞 + 受理后批量记账</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="sub" style="margin-top:14px">
+      交叉验证很有意思：阿里云说"开源版约为托管版一半"，托管版 Small×1 是 100 次/s —— 我们实测开源版 167~200 次/s，
+      比这个折算还高一些。<b>说明本机这个数字并不算给 xxl-job 抹黑，它的单机量级本来就在百次/秒到两百次/秒这个区间</b>，
+      而不是官方"5000 任务"给人的"每秒几千次"的直觉。
+    </p>
+  </section>
+
+  <!-- ========== 5. 机制 ========== -->
+  <section>
+    <h2><span class="num">05</span> 差距不在代码量，在模型</h2>
+    <div class="mech">
+      <div class="mbox them">
+        <h3><i></i>xxl-job：调度与记账串在同一条线程</h3>
+        <ol class="steps">
+          <li>单个 <code>scheduleThread</code> 每轮预读 ≤6000 条到期任务</li>
+          <li>对每条：<code>insert</code> 一行日志 + <code>update trigger_next_time</code></li>
+          <li>把任务塞进秒级时间轮，由 <code>ringThread</code> 到点取</li>
+          <li>投递到 fast/slow 线程池（200/100 线程，队列 1000/2000）</li>
+          <li>队列满 → <code>RejectedExecutionException</code>；过期 &gt;5s → <code>misfire</code> 直接跳过</li>
+        </ol>
+        <div class="cons">500 条耗时约 1.5s ⇒ <b>约 3ms/条</b>，与并发度无关。这条串行链就是它的吞吐上限。</div>
+      </div>
+      <div class="mbox us">
+        <h3><i></i>Findx：投递并发，记账批量</h3>
+        <ol class="steps">
+          <li>内存窗口比对到期，<b>没有逐 job 的 update</b></li>
+          <li>节点目录走倒排字典，O(1) 选点、零分配</li>
+          <li>投递并发执行，受全局在飞闸门（默认 64）约束</li>
+          <li>HttpClient 单例复用，单次往返降到毫秒级</li>
+          <li>受理项收齐后 <code>MarkDispatchedBatchAsync</code> 一次批量记账</li>
+        </ol>
+        <div class="cons">代价是 DB 写更多（约 10.5 SQL/执行，5000 档 ≈5200 QPS，是它的 1.7~2 倍），换来账本与幂等。</div>
+      </div>
+    </div>
+    <div class="bounds" style="border-color:rgba(96,165,250,.26);background:linear-gradient(180deg,rgba(96,165,250,.05),transparent 70%);margin-top:14px">
+      <p style="font-size:13.5px;color:var(--ink2)">
+        <b style="color:var(--ink)">3.0 把这条串行链拧紧了一档</b>：官方 changelog 里对应的是时间轮单刻度去重 + 转动时校验临近刻度、
+        快慢线程池默认配置上调、预读任务数计算系数下调（降低事务颗粒度）、锁逻辑与事务 SQL 下沉。
+        结果是 200 次/s 从"丢一半"变成"几乎全发"，但 <span style="font-family:var(--mono)">scheduleThread</span>
+        仍然要一个人干完「预读 + 逐条记账 + 推时间轮」，所以 500 次/s 的持续负载上，队列一满就是
+        <span style="font-family:var(--mono)">execute too fast</span>（我们这轮采到 2794 次），过期一超就是
+        <span style="font-family:var(--mono)">misfire</span>（5000 条/轮）。<b style="color:var(--ink)">缓冲池解决不了并行源的问题。</b>
+      </p>
+    </div>
+  </section>
+
+  <!-- ========== 6. 边界 ========== -->
+  <section>
+    <h2><span class="num">06</span> 读这组数据前必须知道的五件事</h2>
+    <div class="bounds">
+      <ol>
+        <li><b>硬件不对等。</b>xxl-job 官方镜像只有 <span style="font-family:var(--mono)">linux/amd64</span>，本机是 arm64，它跑在模拟层上；我们是原生 arm64。按 3ms/条 折回原生 x86，它的上限大概能到 500~800 次/s，这个差距会明显收窄。</li>
+        <li><b>执行端数量不对等。</b>它接 1 个假执行端，我们接 4 个 worker。这只影响执行侧，不影响"调度线程能否跟上到期速率"这个判断。</li>
+        <li><b>它只起了一个调度中心。</b>xxl-job 支持多实例靠 <span style="font-family:var(--mono)">xxl_job_lock</span> 行锁分摊，本实验没开多实例——这是它真实的水平扩展手段。</li>
+        <li><b>负载形态是故意选的极端。</b>全部任务同一秒到期，是它最不擅长的形态；官方"5000 任务"的口径是混合周期。所以 2000/5000 两档说明的是"扛不住同相位全量一波"，不能读成"只能带 2000 个任务"。</li>
+        <li><b>它的丢调度是静默的。</b>不写业务日志表、不报失败，只打 <span style="font-family:var(--mono)">schedule misfire</span> 警告。这在线上比"慢"危险得多。</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer>
+    <div>数据来源</div>
+    <ul>
+      <li>XXL-JOB 官方文档（单机 5000 任务 / 单 JOB &lt;10ms）：gitee.com/xuxueli0323/xxl-job/blob/master/doc/XXL-JOB官方文档.md</li>
+      <li>阿里云 MSE XXL-JOB 性能基准（100/300/900/1800 次每秒）：help.aliyun.com/en/mse/use-cases/xxl-job</li>
+      <li>阿里云 MSE 压测方法（300 个每秒任务 = 18000 次/分钟）：help.aliyun.com/en/mse/use-cases/task-scheduling/</li>
+      <li>实测脚本与假执行器：samples/SchedulerDemo/benchmark/xxl-job/（tier.sh / fake_executor.py / tables_xxl_job.sql / tables_xxl_job_3.sql）</li>
+      <li>3.0 建表结构取自 GitHub tag 3.0.0 的 doc/db/tables_xxl_job.sql</li>
+      <li>完整对比与压测报告：docs/xxl-job-服务端调度对比分析.md、docs/分布式调度压测报告.md</li>
+    </ul>
+  </footer>
+
+</div>
+</body>
+</html>

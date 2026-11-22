@@ -1,158 +1,253 @@
-using Findx.Common;
-using Findx.Extensions;
+using Findx.Extensions.Scheduler.Abstractions;
 using Findx.Extensions.Scheduler.Models;
 using Findx.Extensions.Scheduler.Options;
 using Findx.Extensions.Scheduler.Storage;
-using Findx.Redis;
+using Findx.Jobs.Common;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Findx.Extensions.Scheduler.Scheduling;
 
 /// <summary>
-///     调度端结果处理器：Worker 回报成功/失败后更新 Job 状态，失败按指数退避重试，超限写死信。
-///     <para>故障转移安全：无在途记录的回调（旧 Master 内存已丢）按 DB 状态落库决策，不再静默丢弃。</para>
+///     调度端结果处理器：根据执行行的状态迁移驱动成功归零 / 指数退避重试 / 死信隔离。
+///     <para>幂等来源从 Redis SETNX 改为执行行状态 CAS：重复回调只有一次能把行从 Claimed/Dispatched 终结，
+///     没有 TTL 窗口，也不存在"Redis 不可用就退化为不幂等"的路径。</para>
 /// </summary>
 public class JobResultHandler
 {
     /// <summary>
-    ///     结果幂等标记 key 前缀（同一 TraceId 只处理一次，防 Worker 重发/重复回调重复消耗重试预算）
+    ///     结果消息/错误落库的最大字符数
     /// </summary>
-    private const string ResultProcessedKeyPrefix = "findx:scheduler:result:";
+    private const int MaxResultMessageChars = 5000;
 
     private readonly IOptions<SchedulerOptions> _options;
     private readonly ScheduledJobStorage _storage;
-    private readonly InFlightExecutionRegistry _inFlightRegistry;
-    private readonly IRedisClientProvider _redisClientProvider;
+    private readonly IExecutionLedger _ledger;
+    private readonly IClusterClock _clock;
     private readonly ILogger<JobResultHandler> _logger;
-
-    private IRedisClient _redisClient;
 
     /// <summary>
     ///     Ctor
     /// </summary>
-    public JobResultHandler(IOptions<SchedulerOptions> options, ScheduledJobStorage storage,
-        InFlightExecutionRegistry inFlightRegistry, IRedisClientProvider redisClientProvider,
-        ILogger<JobResultHandler> logger)
+    /// <param name="options"></param>
+    /// <param name="storage"></param>
+    /// <param name="ledger"></param>
+    /// <param name="clock"></param>
+    /// <param name="logger"></param>
+    public JobResultHandler(IOptions<SchedulerOptions> options, ScheduledJobStorage storage, IExecutionLedger ledger, IClusterClock clock, ILogger<JobResultHandler> logger)
     {
         _options = options;
         _storage = storage;
-        _inFlightRegistry = inFlightRegistry;
-        _redisClientProvider = redisClientProvider;
+        _ledger = ledger;
+        _clock = clock;
         _logger = logger;
     }
 
     /// <summary>
     ///     处理 Worker 回报的执行结果
     /// </summary>
+    /// <param name="report"></param>
+    /// <param name="cancellationToken"></param>
     public async Task HandleAsync(JobResultReport report, CancellationToken cancellationToken = default)
     {
         if (report == null || string.IsNullOrWhiteSpace(report.TraceId)) return;
 
-        // 幂等守卫：同一 TraceId 只处理一次（SETNX，TTL 10 分钟覆盖重试/回调时间窗）
-        if (!await MarkResultProcessedAsync(report.TraceId, cancellationToken))
+        var execution = await _ledger.GetByTraceAsync(report.TraceId, cancellationToken);
+        if (execution == null)
         {
-            _logger.LogDebug("TraceId={TraceId} 的结果回报已处理过，跳过重复回调", report.TraceId);
+            //  执行行不存在：任务可能已被删除，或执行行被运维清理。退化为按任务当前状态处理
+            await RecoverOrphanAsync(report, cancellationToken);
             return;
         }
 
-        if (!_inFlightRegistry.TryRemove(report.TraceId, out var flight))
+        if (ExecutionStateHelper.IsTerminal(execution.State))
         {
-            // 在途记录不存在：可能 Master 刚发生故障转移，旧 Master 内存状态已丢。
-            // 不再直接忽略——按 DB 当前状态落库决策（成功幂等落库；失败按 TryCount 推进重试或进死信）
-            _logger.LogWarning("收到 TraceId={TraceId} 的结果回报，但无对应在途记录（可能 Master 已切换），按 DB 状态恢复决策", report.TraceId);
-            if (report.IsSuccess)
-            {
-                await _storage.ResetSuccessAsync(report.JobId, cancellationToken);
-                _logger.LogInformation("任务 [{JobName}] 孤儿成功回报已幂等落库（成功状态恢复）", report.JobName);
-                return;
-            }
-
-            await RecoverOrphanFailureAsync(report, cancellationToken);
+            _logger.LogDebug("TraceId={TraceId} 已是终态 {State}，忽略重复回调", report.TraceId, execution.State);
             return;
         }
 
-        // 释放执行权锁
-        if (flight.ExecutionLock != null) await flight.ExecutionLock.DisposeAsync();
+        var now = _clock.Now;
+        var message = Clamp(report.Message, MaxResultMessageChars);
+        var logs = Clamp(report.Logs, _options.Value.MaxExecutionLogChars);
 
         if (report.IsSuccess)
         {
-            await _storage.ResetSuccessAsync(flight.JobId, cancellationToken);
-            _logger.LogInformation("任务 [{JobName}] TraceId={TraceId} 执行成功，耗时 {Elapsed}ms", flight.JobName, report.TraceId, report.ElapsedMs);
+            if (!await _ledger.TryFinalizeAsync(report.TraceId, ExecutionState.Succeeded, null, now, report.ElapsedMs, message, logs, cancellationToken))
+            {
+                _logger.LogDebug("TraceId={TraceId} 成功回调未获得终结权（已被其他流程处理），忽略", report.TraceId);
+                return;
+            }
+
+            await _storage.ResetSuccessAsync(execution.JobId, cancellationToken);
+            _logger.LogInformation("任务 [{JobName}] TraceId={TraceId} 执行成功，耗时 {Elapsed}ms", execution.JobName, report.TraceId, report.ElapsedMs);
             return;
         }
 
-        await HandleFailureAsync(flight, report.Error ?? report.Message ?? "unknown error", cancellationToken);
+        var error = Clamp(report.Error ?? report.Message, MaxResultMessageChars) ?? "unknown error";
+        if (!await _ledger.TryFinalizeAsync(report.TraceId, ExecutionState.Failed, error, now, report.ElapsedMs, message, logs, cancellationToken))
+        {
+            _logger.LogDebug("TraceId={TraceId} 失败回调未获得终结权（已被其他流程处理），忽略", report.TraceId);
+            return;
+        }
+
+        await HandleFailureAsync(execution, error, cancellationToken);
     }
 
     /// <summary>
-    ///     统一失败处理（Worker 回报失败 / 超时兜底无回调）：指数退避重试或写死信
+    ///     统一失败处理（回调失败 / 分发失败 / 超时兜底）：指数退避重试，或达到上限后死信隔离
     /// </summary>
-    public async Task HandleFailureAsync(InFlightExecution flight, string error, CancellationToken cancellationToken = default)
+    /// <param name="execution"></param>
+    /// <param name="error"></param>
+    /// <param name="cancellationToken"></param>
+    public async Task HandleFailureAsync(SchedulerExecution execution, string error, CancellationToken cancellationToken = default)
     {
+        if (execution == null) return;
+
         var opts = _options.Value;
-        var nextAttempt = flight.Attempt + 1;
+        var nextAttempt = execution.Attempt + 1;
 
-        if (flight.ExecutionLock != null)
-        {
-            await flight.ExecutionLock.DisposeAsync();
-            flight.ExecutionLock = null;
-        }
+        _logger.LogError("任务 [{JobName}] TraceId={TraceId} 第 {Attempt} 次尝试失败（节点 {Worker}）：{Error}", execution.JobName, execution.TraceId, nextAttempt, execution.WorkerAddress, error);
 
-        _logger.LogError("任务 [{JobName}] TraceId={TraceId} 第 {Attempt} 次尝试失败（节点 {Worker}）：{Error}",
-            flight.JobName, flight.TraceId, nextAttempt, flight.WorkerAddress, error);
-
-        // 超过最大重试次数：写死信表 + 告警日志，并推进下一周期、归零 TryCount
-        // （MaxRetryCount 表示允许的重试次数上限，达到该值后仍失败才进死信）
         if (RetryPolicy.IsRetryExhausted(nextAttempt, opts.MaxRetryCount))
         {
             if (opts.DeadLetterEnabled)
             {
+                //  死信记录只在隔离时写一次，补查任务定义以填充 Cron，便于人工放行时核对
+                var job = await _storage.GetAsync(execution.JobId, cancellationToken);
+
                 await _storage.WriteDeadLetterAsync(new JobDeadLetter
                 {
-                    JobId = flight.JobId,
-                    JobName = flight.JobName,
-                    HandlerType = flight.HandlerType,
-                    Parameter = flight.Parameter,
-                    CronExpression = flight.CronExpression,
+                    JobId = execution.JobId,
+                    JobName = execution.JobName,
+                    HandlerType = execution.HandlerType,
+                    Parameter = execution.Parameter,
+                    CronExpression = job?.CronExpression,
                     TryCount = nextAttempt,
                     LastError = error,
-                    WorkerAddress = flight.WorkerAddress,
-                    FiredTime = DateTime.Now,
-                    TraceId = flight.TraceId
+                    WorkerAddress = execution.WorkerAddress,
+                    FiredTime = _clock.Now,
+                    TraceId = execution.TraceId
                 }, cancellationToken);
             }
 
-            // 无论是否写死信表，都推进 NextRunTime 并归零 TryCount、清空重试标记：
-            // 否则 NextRunTime 停留在过去的退避时刻会被下轮扫描立即提前触发，且 TryCount 跨周期累积耗尽重试预算
-            await _storage.ApplyDeadLetterAsync(flight.JobId, flight.CronExpression, DateTime.Now, cancellationToken);
-
-            _logger.LogWarning("任务 [{JobName}] 重试次数已达上限 {MaxRetry}，进入死信流程，需人工介入！", flight.JobName, opts.MaxRetryCount);
+            //  真正的死信隔离：任务置为 Dead 并清空时间锚点，扫描不再取到，只能人工放行
+            var isolated = await _storage.IsolateAsync(execution.JobId, cancellationToken);
+            if (isolated > 0)
+                _logger.LogWarning("任务 [{JobName}] 重试次数已达上限 {MaxRetry}，已死信隔离，等待人工放行", execution.JobName, opts.MaxRetryCount);
+            else
+                _logger.LogWarning("任务 [{JobName}] 重试次数已达上限，但隔离未生效（任务可能已删除）", execution.JobName);
             return;
         }
 
-        // 未超最大次数：指数退避后重新分发（由后续扫描轮次拾取，天然支持 Master 故障转移续跑）
-        // 重试时刻写入 RetryAtTime，不动 NextRunTime——周期锚点不偏移
-        // 首次重试退避 = RetryBaseDelayMs（第 1 次重试 1s→2s→4s→8s…，上限 RetryMaxDelayMs）
-        var retryRunTime = RetryPolicy.CalculateRetryAt(DateTime.Now, nextAttempt, opts.RetryBaseDelayMs, opts.RetryMaxDelayMs);
-        await _storage.ApplyFailureAsync(flight.JobId, nextAttempt, retryRunTime, cancellationToken);
-        _logger.LogWarning("任务 [{JobName}] 将在 {Delay}ms 后（{Time:yyyy-MM-dd HH:mm:ss}）第 {RetryNo} 次重试",
-            flight.JobName, (retryRunTime - DateTime.Now).TotalMilliseconds, retryRunTime, nextAttempt);
+        //  未超上限：写退避时刻，不动周期锚点；扫描下一轮自然拾取
+        var retryAt = RetryPolicy.CalculateRetryAt(_clock.Now, nextAttempt, opts.RetryBaseDelayMs, opts.RetryMaxDelayMs);
+        var affected = await _storage.ApplyFailureAsync(execution.JobId, nextAttempt, retryAt, cancellationToken);
+        if (affected == 0)
+        {
+            _logger.LogWarning("任务 [{JobName}] 退避时刻写入失败（任务可能已删除或已隔离）", execution.JobName);
+            return;
+        }
+
+        _logger.LogWarning("任务 [{JobName}] 将在 {Delay}ms 后（{Time:yyyy-MM-dd HH:mm:ss}）第 {RetryNo} 次重试", execution.JobName, (retryAt - _clock.Now).TotalMilliseconds, retryAt, nextAttempt);
     }
 
     /// <summary>
-    ///     孤儿失败回报恢复：读 DB 当前 TryCount 决定退避重试或进死信（无在途上下文也能续跑）
+    ///     文本裁剪：超长保留尾部，避免异常堆栈把账本行撑爆
     /// </summary>
-    private async Task RecoverOrphanFailureAsync(JobResultReport report, CancellationToken cancellationToken)
+    /// <param name="text"></param>
+    /// <param name="maxChars"></param>
+    /// <returns></returns>
+    private static string Clamp(string text, int maxChars)
     {
+        if (string.IsNullOrEmpty(text)) return text;
+        if (maxChars <= 0 || text.Length <= maxChars) return text;
+        return "…" + text[^maxChars..];
+    }
+
+    /// <summary>
+    ///     无可用执行节点（领取前预检命中）：不建执行行，只把重试时刻推到下一轮。
+    ///     <para>周期条目必须同时推进周期锚点：只写退避时刻会把「该周期仍到期未领取」留在库里，
+    ///     等这次后移的重试分发完成后，同一周期又会被周期分支领走，造成同一触发点被执行两次。</para>
+    /// </summary>
+    /// <param name="item"></param>
+    /// <param name="reason"></param>
+    /// <param name="cancellationToken"></param>
+    public async Task DeferNoWorkerAsync(DispatchItem item, string reason = null, CancellationToken cancellationToken = default)
+    {
+        if (item?.Job == null) return;
+
+        var job = item.Job;
         var opts = _options.Value;
-        var job = await _storage.GetAsync(report.JobId, cancellationToken);
-        if (job == null)
+        var seconds = Math.Max(5, opts.SchedulerScanIntervalSeconds);
+        var retryAt = _clock.Now.AddSeconds(seconds);
+
+        if (item.Kind == DispatchKind.Retry)
         {
-            _logger.LogWarning("孤儿失败回报：任务 {JobId} 不存在，忽略", report.JobId);
+            //  重试条目：周期锚点已在首次领取时推进过，这里只顺延退避时刻，TryCount 保持原值
+            await _storage.ApplyFailureAsync(job.Id, job.TryCount, retryAt, cancellationToken);
+            _logger.LogWarning("任务 [{JobName}] {Reason}，重试顺延 {Seconds}s（不消耗重试次数、不产生执行流水）", job.JobName, reason ?? "当前没有可执行节点", seconds);
             return;
         }
 
+        //  周期条目：CAS 推进锚点 + 写退避时刻，一步把「到期未领取」状态清掉
+        var affected = await _storage.DeferCycleAsync(job.Id, item.ExpectedTime, item.NewNextRunTime, item.LastRunTime, retryAt, cancellationToken);
+        if (affected == 0)
+        {
+            _logger.LogDebug("任务 [{JobName}] 周期 {Period} 无节点延后时锚点已被其他节点推进，本次放弃", job.JobName, item.Period);
+            return;
+        }
+
+        _logger.LogWarning("任务 [{JobName}] {Reason}，已跳过本周期并在 {Seconds}s 后重试（不消耗重试次数）", job.JobName, reason ?? "当前没有可执行节点", seconds);
+    }
+
+    /// <summary>
+    ///     无可用执行节点：不消耗重试预算，只把重试时刻推到下一轮扫描，等节点恢复后继续。
+    ///     <para>与"执行失败"区别在于语义：没有任何 Worker 能接单并不是任务的失败，
+    ///     若按失败计次，节点短暂下线（滚动重启、扩缩容）就会把任务直接推进死信。</para>
+    /// </summary>
+    /// <param name="execution"></param>
+    /// <param name="cancellationToken"></param>
+    public async Task HandleNoWorkerAsync(SchedulerExecution execution, CancellationToken cancellationToken = default)
+    {
+        if (execution == null) return;
+
+        var opts = _options.Value;
+        var retryAt = _clock.Now.AddSeconds(Math.Max(5, opts.SchedulerScanIntervalSeconds));
+
+        //  TryCount 保持原值（传 execution.Attempt 即当前计数），只写重试时刻
+        await _storage.ApplyFailureAsync(execution.JobId, execution.Attempt, retryAt, cancellationToken);
+
+        _logger.LogWarning("任务 [{JobName}] 当前没有可执行节点，{Seconds}s 后重新尝试（不消耗重试次数）", execution.JobName, Math.Max(5, opts.SchedulerScanIntervalSeconds));
+    }
+
+    /// <summary>
+    ///     孤儿回调恢复：执行行已不存在时，按任务当前状态做最后一次决策（成功幂等、失败续跑）
+    /// </summary>
+    /// <param name="report"></param>
+    /// <param name="cancellationToken"></param>
+    private async Task RecoverOrphanAsync(JobResultReport report, CancellationToken cancellationToken)
+    {
+        var job = await _storage.GetAsync(report.JobId, cancellationToken);
+        if (job == null)
+        {
+            _logger.LogWarning("回调 TraceId={TraceId} 无对应执行行且任务 {JobId} 不存在，忽略", report.TraceId, report.JobId);
+            return;
+        }
+
+        if (job.Status != JobStatus.Normal)
+        {
+            _logger.LogInformation("回调 TraceId={TraceId} 对应任务 [{JobName}] 当前状态 {Status}，忽略结果", report.TraceId, job.JobName, job.Status);
+            return;
+        }
+
+        if (report.IsSuccess)
+        {
+            await _storage.ResetSuccessAsync(job.Id, cancellationToken);
+            _logger.LogInformation("孤儿成功回调已幂等落库：任务 [{JobName}]", job.JobName);
+            return;
+        }
+
+        var opts = _options.Value;
         var nextAttempt = job.TryCount + 1;
         var error = report.Error ?? report.Message ?? "unknown error";
 
@@ -170,38 +265,18 @@ public class JobResultHandler
                     TryCount = nextAttempt,
                     LastError = error,
                     WorkerAddress = report.WorkerAddress,
-                    FiredTime = DateTime.Now,
+                    FiredTime = _clock.Now,
                     TraceId = report.TraceId
                 }, cancellationToken);
             }
 
-            await _storage.ApplyDeadLetterAsync(job.Id, job.CronExpression, DateTime.Now, cancellationToken);
-            _logger.LogWarning("任务 [{JobName}] 孤儿失败回报已达重试上限，进入死信流程，需人工介入！", job.JobName);
+            await _storage.IsolateAsync(job.Id, cancellationToken);
+            _logger.LogWarning("任务 [{JobName}] 孤儿失败回调已达重试上限，已死信隔离", job.JobName);
             return;
         }
 
-        var retryAt = RetryPolicy.CalculateRetryAt(DateTime.Now, nextAttempt, opts.RetryBaseDelayMs, opts.RetryMaxDelayMs);
+        var retryAt = RetryPolicy.CalculateRetryAt(_clock.Now, nextAttempt, opts.RetryBaseDelayMs, opts.RetryMaxDelayMs);
         await _storage.ApplyFailureAsync(job.Id, nextAttempt, retryAt, cancellationToken);
-        _logger.LogWarning("任务 [{JobName}] 孤儿失败回报（可能 Master 切换），{Delay}ms 后第 {RetryNo} 次重试",
-            job.JobName, (retryAt - DateTime.Now).TotalMilliseconds, nextAttempt);
-    }
-
-    /// <summary>
-    ///     Redis SETNX 幂等标记：首次置位返回 true；已存在返回 false（该 TraceId 已处理过）
-    /// </summary>
-    private async Task<bool> MarkResultProcessedAsync(string traceId, CancellationToken cancellationToken)
-    {
-        try
-        {
-            _redisClient ??= _redisClientProvider.CreateClient();
-            return await _redisClient.StringSetAsync(ResultProcessedKeyPrefix + traceId, "1",
-                TimeSpan.FromMinutes(10), When.NotExists, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            // Redis 不可用时降级为不幂等（主流程仍可用；极端重复回调可能重复计数，但不会丢结果）
-            _logger.LogWarning(ex, "结果幂等标记写入失败（Redis 不可用），降级处理");
-            return true;
-        }
+        _logger.LogWarning("任务 [{JobName}] 孤儿失败回调（执行行缺失），{Delay}ms 后第 {RetryNo} 次重试", job.JobName, (retryAt - _clock.Now).TotalMilliseconds, nextAttempt);
     }
 }

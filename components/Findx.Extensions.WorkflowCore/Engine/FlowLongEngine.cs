@@ -245,7 +245,8 @@ public partial class FlowLongEngine: IFlowLongEngine
             Instance = execution.Instance,
             Business = business,
             UnitOfWork = _store.CurrentUnitOfWork,
-            Operator = execution.Operator
+            Operator = execution.Operator,
+            Comment = execution.LastComment
         };
         await adapter.OnInstanceStateChangedAsync(context, state, cancellationToken);
     }

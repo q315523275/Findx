@@ -42,4 +42,9 @@ public class FlwBusinessAdapterRegistry
     ///     已注册的业务类型集合
     /// </summary>
     public IReadOnlyCollection<string> BusinessTypes => _adapters.Keys;
+
+    /// <summary>
+    ///     已注册的适配器集合（审批管理选择业务模块时枚举）
+    /// </summary>
+    public IReadOnlyCollection<IFlwBusinessAdapter> Adapters => _adapters.Values;
 }

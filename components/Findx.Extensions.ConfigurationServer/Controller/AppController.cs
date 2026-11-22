@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace Findx.Extensions.ConfigurationServer.Controller;
 
 /// <summary>
-/// 配置服务App
+///     配置服务-应用
 /// </summary>
 [Area("findx")]
 [Route("api/config/app")]
 [Authorize]
-[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-App"), Description("配置服务App")]
+[ApiExplorerSettings(GroupName = "config"), Tags("配置服务-应用"), Description("配置服务-应用")]
 public class AppController: CrudControllerBase<AppInfo, AppInfo, CreateAppDto, UpdateAppDto, QueryAppDto, long, long>;

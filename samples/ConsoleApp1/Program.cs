@@ -39,6 +39,7 @@ using Yitter.IdGenerator;
 
 Console.Title = "Findx 控制台测试";
 Console.WriteLine("Hello, World!");
+Console.WriteLine(Environment.MachineName);
 
 // 一致哈希
 // var nodes = new ConsistentHash<string>();
@@ -121,32 +122,31 @@ Console.WriteLine("Hello, World!");
 // #endregion
 
 // webSocketClient测试
-var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:10021/ws?userName=开发").WithAutomaticReconnection().Build();
-await hubConnection.StartAsync();
-hubConnection.On(async (message, token) =>  
-{
-    var txt = await message.AsTextAsync(token);
-    Console.WriteLine($"Received {txt}");
-});
-hubConnection.Closed += (error) =>
-{
-    Console.WriteLine(error?.Message);
-    return Task.FromResult(Task.CompletedTask);
-};
-while (true)
-{
-    Console.WriteLine($"请输入websocket发送内容;exit则退出");
-    var msg = Console.ReadLine();
-    if (msg == "exit")
-    {
-        await hubConnection.StopAsync();
-    }
-    else
-    {
-        await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
-    }
-}
-
+// var hubConnection = new HubConnectionBuilder().WithUrl("ws://127.0.0.1:10021/ws?userName=开发").WithAutomaticReconnection().Build();
+// await hubConnection.StartAsync();
+// hubConnection.On(async (message, token) =>  
+// {
+//     var txt = await message.AsTextAsync(token);
+//     Console.WriteLine($"Received {txt}");
+// });
+// hubConnection.Closed += (error) =>
+// {
+//     Console.WriteLine(error?.Message);
+//     return Task.FromResult(Task.CompletedTask);
+// };
+// while (true)
+// {
+//     Console.WriteLine($"请输入websocket发送内容;exit则退出");
+//     var msg = Console.ReadLine();
+//     if (msg == "exit")
+//     {
+//         await hubConnection.StopAsync();
+//     }
+//     else
+//     {
+//         await hubConnection.SendAsync(new RequestTextMessage(msg), WebSocketMessageType.Text, true);
+//     }
+// }
 
 // 配置中心测试
 // var client = new ConfigClient("1", "2", "dev", "http://localhost:9010", isRecovery: true);

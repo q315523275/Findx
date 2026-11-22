@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
+using FsIndex = FreeSql.DataAnnotations.IndexAttribute;
 using Findx.Extensions.WorkflowCore.Enums;
 
 namespace Findx.Extensions.WorkflowCore.Entity;
@@ -9,6 +10,7 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 ///     流程实例表
 /// </summary>
 [Table("flw_instance")]
+[FsIndex("idx_flw_instance_creator", "CreatorId,Id")]
 [Description("流程实例表")]
 public class FlwInstanceInfo: FullEntityBase
 {

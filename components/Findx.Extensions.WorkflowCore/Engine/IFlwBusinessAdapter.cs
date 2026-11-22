@@ -60,6 +60,32 @@ public class FlwBusinessContext
     ///     当前操作人
     /// </summary>
     public FlwCreator Operator { get; set; }
+
+    /// <summary>
+    ///     本次操作的审批意见（发起或终态动作时由引擎透传，可能为空）
+    /// </summary>
+    public string Comment { get; set; }
+}
+
+/// <summary>
+///     业务单据字段（供条件分支设计器选择，以及发起审批时写入流程变量）
+/// </summary>
+public class FlwBusinessField
+{
+    /// <summary>
+    ///     字段标识：写入流程变量时使用的 key（小驼峰，与前端表单字段口径一致）
+    /// </summary>
+    public string Prop { get; set; }
+
+    /// <summary>
+    ///     字段名称（设计器下拉展示）
+    /// </summary>
+    public string Label { get; set; }
+
+    /// <summary>
+    ///     值类型：number / string / date / bool，设计器可据此推荐运算符
+    /// </summary>
+    public string Type { get; set; }
 }
 
 /// <summary>
@@ -75,6 +101,11 @@ public interface IFlwBusinessAdapter
     string BusinessType { get; }
 
     /// <summary>
+    ///     业务模块显示名，审批管理「基础信息」选择业务模块时展示；不实现则回退为 <see cref="BusinessType" />
+    /// </summary>
+    string DisplayName => BusinessType;
+
+    /// <summary>
     ///     读取业务单据锚点（单号/标题/详情地址），返回 null 表示单据不存在
     /// </summary>
     Task<FlwBusinessInfo> LoadAsync(long businessId, CancellationToken cancellationToken = default);
@@ -85,8 +116,45 @@ public interface IFlwBusinessAdapter
     Task<bool> OnBeforeStartAsync(FlwBusinessContext context, CancellationToken cancellationToken = default);
 
     /// <summary>
+    ///     当前单据是否处于"可发起"状态（审批面板据此决定要不要给发起入口）。
+    ///     <para>与 <see cref="OnBeforeStartAsync" /> 的区别：这里只做只读判断、不带工作单元，
+    ///     供面板预览使用；默认返回 true，即由 <see cref="OnBeforeStartAsync" /> 在真正发起时兜底</para>
+    /// </summary>
+    Task<bool> CanStartAsync(long businessId, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(true);
+    }
+
+    /// <summary>
     ///     实例状态变化：审批中（发起/推进）、通过、拒绝、撤销、超时、终止。
     ///     <para>业务单据状态回写写在这里，与流程推进同一事务</para>
     /// </summary>
     Task OnInstanceStateChangedAsync(FlwBusinessContext context, FlwInstanceState state, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     可发起的业务单据（发起审批页选择用）。
+    ///     <para>默认返回空，表示该业务类型不支持在审批中心直接发起，需要到业务模块内发起</para>
+    /// </summary>
+    Task<List<FlwBusinessInfo>> GetStartCandidatesAsync(string keyword, int top, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(new List<FlwBusinessInfo>());
+    }
+
+    /// <summary>
+    ///     业务单据可用的条件字段清单（流程设计器条件分支下拉用）。
+    ///     <para>默认返回空：业务类型未声明字段时，设计器仍可手工填写字段名</para>
+    /// </summary>
+    IReadOnlyList<FlwBusinessField> GetFields()
+    {
+        return Array.Empty<FlwBusinessField>();
+    }
+
+    /// <summary>
+    ///     读取业务单据当前字段值，发起审批时并入流程实例变量，供条件分支求值。
+    ///     <para>默认返回空字典；key 必须与 <see cref="GetFields" /> 的 Prop 一致</para>
+    /// </summary>
+    Task<Dictionary<string, object>> GetVariablesAsync(long businessId, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(new Dictionary<string, object>());
+    }
 }

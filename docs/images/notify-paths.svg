@@ -1,0 +1,138 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="960" viewBox="0 0 1600 960" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<defs><marker id="arrowhead" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/></marker><marker id="arrowheadgray" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/></marker></defs>
+<text x="60" y="54" font-size="29" fill="#0f172a" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">两条发送路径与全部分支（同步 / 异步 / 降级）</text>
+<text x="60" y="86" font-size="13" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">同一份内容、同一套路由与日志；差别只在「谁承担网络耗时」与「结果何时可知」</text>
+<line x1="1280" y1="48" x2="1322" y2="48" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="1332" y="52" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">调用 / 发送</text>
+<line x1="1280" y1="74" x2="1322" y2="74" stroke="#475569" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrowheadgray)"/>
+<text x="1332" y="78" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">返回 / 落库 / 后台</text>
+<text x="60" y="138" font-size="12.5" fill="#0f766e" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">A 同步路径 SendAsync —— 调用方承担一次网络往返，能立刻知道成败</text>
+<rect x="60" y="156" width="208" height="118" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.3"/>
+<rect x="60" y="156" width="4" height="118" rx="2" fill="#0f766e"/>
+<text x="76" y="180" font-size="12.5" fill="#0f766e" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">① 业务线程</text>
+<text x="76" y="202.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">SendAsync(message)</text>
+<text x="76" y="221.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">阻塞等待结果</text>
+<rect x="298" y="156" width="208" height="118" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.3"/>
+<rect x="298" y="156" width="4" height="118" rx="2" fill="#0f766e"/>
+<text x="314" y="180" font-size="12.5" fill="#0f766e" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">② Dispatcher</text>
+<text x="314" y="202.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">总开关 / 通道查表</text>
+<text x="314" y="221.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">TimeoutSeconds 取消</text>
+<rect x="536" y="156" width="208" height="118" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.3"/>
+<rect x="536" y="156" width="4" height="118" rx="2" fill="#0f766e"/>
+<text x="552" y="180" font-size="12.5" fill="#0f766e" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">③ 通道实现</text>
+<text x="552" y="202.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">HTTP 或 SMTP</text>
+<text x="552" y="221.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">异常 → Fail 结果</text>
+<rect x="774" y="156" width="208" height="118" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="774" y="156" width="4" height="118" rx="2" fill="#475569"/>
+<text x="790" y="180" font-size="12.5" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">④ 回填结果</text>
+<text x="790" y="202.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">NotifyLog.Apply</text>
+<text x="790" y="221.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Success / Failed</text>
+<rect x="1012" y="156" width="208" height="118" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="1012" y="156" width="4" height="118" rx="2" fill="#475569"/>
+<text x="1028" y="180" font-size="12.5" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑤ 落库</text>
+<text x="1028" y="202.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">INSERT notify_logs</text>
+<text x="1028" y="221.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">一次写入（终态）</text>
+<rect x="1250" y="156" width="208" height="118" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="1250" y="156" width="4" height="118" rx="2" fill="#475569"/>
+<text x="1266" y="180" font-size="12.5" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑥ 返回</text>
+<text x="1266" y="202.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">NotifyResult 给业务</text>
+<text x="1266" y="221.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Success + Message</text>
+<line x1="268" y1="213" x2="296" y2="213" stroke="#0f766e" stroke-width="1.9" marker-end="url(#arrowhead)"/>
+<line x1="506" y1="213" x2="534" y2="213" stroke="#0f766e" stroke-width="1.9" marker-end="url(#arrowhead)"/>
+<line x1="744" y1="213" x2="772" y2="213" stroke="#0f766e" stroke-width="1.9" marker-end="url(#arrowhead)"/>
+<line x1="982" y1="213" x2="1010" y2="213" stroke="#0f766e" stroke-width="1.9" marker-end="url(#arrowhead)"/>
+<line x1="1220" y1="213" x2="1248" y2="213" stroke="#0f766e" stroke-width="1.9" marker-end="url(#arrowhead)"/>
+<text x="60" y="298" font-size="11" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">调用线程耗时 = 通道往返（≤ TimeoutSeconds）+ 一次 INSERT；通道抛异常已被 dispatcher 收敛为 NotifyResult.Fail，不向业务抛出</text>
+<text x="60" y="348" font-size="12.5" fill="#1d4ed8" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">B 异步路径 QueueAsync —— 业务线程只做对象构造 + 一次 TryWrite，发送与落库在后台</text>
+<rect x="60" y="362" width="208" height="118" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<rect x="60" y="362" width="4" height="118" rx="2" fill="#1d4ed8"/>
+<text x="76" y="386" font-size="12.5" fill="#1d4ed8" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">① 业务线程</text>
+<text x="76" y="408.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">QueueAsync(message)</text>
+<text x="76" y="427.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">NotifyLog.From + Payload</text>
+<rect x="298" y="362" width="208" height="118" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<rect x="298" y="362" width="4" height="118" rx="2" fill="#1d4ed8"/>
+<text x="314" y="386" font-size="12.5" fill="#1d4ed8" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">② TryEnqueue</text>
+<text x="314" y="408.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Channel.TryWrite</text>
+<text x="314" y="427.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">非阻塞，返回 bool</text>
+<rect x="536" y="362" width="208" height="118" rx="10" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.3"/>
+<rect x="536" y="362" width="4" height="118" rx="2" fill="#1d4ed8"/>
+<text x="552" y="386" font-size="12.5" fill="#1d4ed8" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">③ 立即返回</text>
+<text x="552" y="408.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">return log.Id</text>
+<text x="552" y="427.5" font-size="11.5" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">主键已生成，零 IO</text>
+<line x1="268" y1="419" x2="296" y2="419" stroke="#1d4ed8" stroke-width="1.9" marker-end="url(#arrowheadgray)"/>
+<line x1="506" y1="419" x2="534" y2="419" stroke="#1d4ed8" stroke-width="1.9" marker-end="url(#arrowheadgray)"/>
+<line x1="60" y1="522" x2="1540" y2="522" stroke="#475569" stroke-width="1" stroke-dasharray="9 6"/>
+<text x="62" y="512" font-size="11" fill="#475569" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">线程边界：以上在业务线程（毫秒级以内）／以下在后台消费线程（网络与数据库耗时都在这里）</text>
+<rect x="536" y="540" width="184" height="118" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<rect x="536" y="540" width="4" height="118" rx="2" fill="#b45309"/>
+<text x="552" y="564" font-size="12" fill="#b45309" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">④ 消费线程</text>
+<text x="552" y="586" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">ReadAllAsync</text>
+<text x="552" y="605" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">× DispatchWorkerCount</text>
+<rect x="740" y="540" width="184" height="118" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<rect x="740" y="540" width="4" height="118" rx="2" fill="#b45309"/>
+<text x="756" y="564" font-size="12" fill="#b45309" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑤ 还原消息</text>
+<text x="756" y="586" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">log.ToMessage()</text>
+<text x="756" y="605" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">优先 Payload 快照</text>
+<rect x="944" y="540" width="184" height="118" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<rect x="944" y="540" width="4" height="118" rx="2" fill="#b45309"/>
+<text x="960" y="564" font-size="12" fill="#b45309" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑥ 通道路由</text>
+<text x="960" y="586" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">dispatcher.SendAsync</text>
+<text x="960" y="605" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">与同步路径同一份</text>
+<rect x="1148" y="540" width="184" height="118" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<rect x="1148" y="540" width="4" height="118" rx="2" fill="#b45309"/>
+<text x="1164" y="564" font-size="12" fill="#b45309" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑦ 回填 + 落库</text>
+<text x="1164" y="586" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Apply → INSERT</text>
+<text x="1164" y="605" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">LogEnabled 才写</text>
+<rect x="1352" y="540" width="184" height="118" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<rect x="1352" y="540" width="4" height="118" rx="2" fill="#b45309"/>
+<text x="1368" y="564" font-size="12" fill="#b45309" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">⑧ 失败仅告警</text>
+<text x="1368" y="586" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">LogWarning</text>
+<text x="1368" y="605" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">不重试、不回写</text>
+<line x1="720" y1="597" x2="738" y2="597" stroke="#b45309" stroke-width="1.9" marker-end="url(#arrowheadgray)"/>
+<line x1="924" y1="597" x2="942" y2="597" stroke="#b45309" stroke-width="1.9" marker-end="url(#arrowheadgray)"/>
+<line x1="1128" y1="597" x2="1146" y2="597" stroke="#b45309" stroke-width="1.9" marker-end="url(#arrowheadgray)"/>
+<line x1="1332" y1="597" x2="1350" y2="597" stroke="#b45309" stroke-width="1.9" marker-end="url(#arrowheadgray)"/>
+<line x1="628" y1="480" x2="628" y2="538" stroke="#475569" stroke-width="1.9" stroke-dasharray="7 5" marker-end="url(#arrowheadgray)"/>
+<text x="638" y="506" font-size="10" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">队列（内存）</text>
+<rect x="60" y="540" width="452" height="118" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="60" y="540" width="4" height="118" rx="2" fill="#475569"/>
+<text x="76" y="564" font-size="12" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">后台消费段（ServerDefaults 边界）</text>
+<text x="76" y="586" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">队列 = 进程内有界 Channel（QueueCapacity 2048）</text>
+<text x="76" y="604" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">满了 TryWrite=false，由调用方降级，不阻塞生产者</text>
+<text x="76" y="622" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">消费线程 2 个，发送 + 落库都在这里</text>
+<text x="60" y="688" font-size="11" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">后台发送失败不改变业务已返回的 Id：日志行落成 Failed（ErrorMessage + ElapsedMs），业务可据此反查，但目前没有自动重试或补偿</text>
+<text x="60" y="734" font-size="12.5" fill="#1e293b" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">C 分支矩阵 —— 每个分支都有确定结果，不存在「静默丢弃」</text>
+<rect x="60" y="752" width="288" height="122" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<rect x="60" y="752" width="4" height="122" rx="2" fill="#b45309"/>
+<text x="76" y="776" font-size="11.8" fill="#b45309" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">队列满（TryWrite=false）</text>
+<text x="76" y="797.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">降级为同步发送（回到调用线程）</text>
+<text x="76" y="818.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">仍返回同一个 log.Id</text>
+<text x="76" y="839.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">消息不丢，代价是本次耗时</text>
+<rect x="366" y="752" width="288" height="122" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="366" y="752" width="4" height="122" rx="2" fill="#475569"/>
+<text x="382" y="776" font-size="11.8" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">组件总开关关闭</text>
+<text x="382" y="797.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Fail：通知组件未启用</text>
+<text x="382" y="818.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">提示 Findx:Notify:Enabled</text>
+<text x="382" y="839.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">不抛异常</text>
+<rect x="672" y="752" width="288" height="122" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="672" y="752" width="4" height="122" rx="2" fill="#475569"/>
+<text x="688" y="776" font-size="11.8" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">通道未启用</text>
+<text x="688" y="797.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Fail：通道 X 未启用</text>
+<text x="688" y="818.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">提示配 Findx:Notify:X:Enabled</text>
+<text x="688" y="839.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">未注册即无半可用态</text>
+<rect x="978" y="752" width="288" height="122" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="978" y="752" width="4" height="122" rx="2" fill="#475569"/>
+<text x="994" y="776" font-size="11.8" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">超时 / 通道异常</text>
+<text x="994" y="797.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">linked CTS 到点取消 → Fail</text>
+<text x="994" y="818.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">异常也收敛成 Fail</text>
+<text x="994" y="839.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">业务只看到结果，不看到栈</text>
+<rect x="1284" y="752" width="288" height="122" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="1284" y="752" width="4" height="122" rx="2" fill="#475569"/>
+<text x="1300" y="776" font-size="11.8" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">进程停机</text>
+<text x="1300" y="797.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">队列残留随进程结束丢弃</text>
+<text x="1300" y="818.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">已发出的日志行保留</text>
+<text x="1300" y="839.8" font-size="11" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">属日志级数据，可接受</text>
+<text x="60" y="910" font-size="11" fill="#b45309" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">★ 唯一「会丢」的窗口：异步路径已入队但未发送 + 进程崩溃（无持久化队列、无重试）。若业务要求不丢，请用同步 SendAsync 或自行落库后补偿</text>
+<text x="60" y="942" font-size="11" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">★ 两条路径日志语义一致（结果 + 耗时），差异在 CreatedTime：异步是入队时刻，可据此算出排队延迟</text>
+</svg>

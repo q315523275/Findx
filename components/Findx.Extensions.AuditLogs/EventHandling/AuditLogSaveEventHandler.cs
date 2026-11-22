@@ -15,7 +15,7 @@ namespace Findx.Extensions.AuditLogs.EventHandling;
 /// </summary>
 public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEvent>
 {
-    // 哈希链写入必须串行：并发行若拿到同一链尾则链条断裂（仅 EnableIntegrity 时使用）
+    //  哈希链写入必须串行：并发行若拿到同一链尾则链条断裂（仅 EnableIntegrity 时使用）
     private static readonly SemaphoreSlim ChainLock = new(1, 1);
 
     private readonly IRepository<AuditLogInfo, long> _auditLogRepo;
@@ -29,6 +29,13 @@ public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEven
     /// <summary>
     ///     Ctor
     /// </summary>
+    /// <param name="auditLogRepo"></param>
+    /// <param name="auditEntityRepo"></param>
+    /// <param name="auditEntityPropertyRepo"></param>
+    /// <param name="auditSqlRawRepo"></param>
+    /// <param name="auditSqlRawParameterRepo"></param>
+    /// <param name="options"></param>
+    /// <param name="logger"></param>
     public AuditLogSaveEventHandler(IRepository<AuditLogInfo, long> auditLogRepo, IRepository<AuditEntityInfo, long> auditEntityRepo, IRepository<AuditEntityPropertyInfo, long> auditEntityPropertyRepo, IRepository<AuditSqlRawInfo, long> auditSqlRawRepo, IRepository<AuditSqlRawParameterInfo, long> auditSqlRawParameterRepo, IOptions<AuditLogOptions> options, ILogger<AuditLogSaveEventHandler> logger)
     {
         _auditLogRepo = auditLogRepo;
@@ -41,8 +48,10 @@ public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEven
     }
 
     /// <summary>
-    ///     do
+    ///     do handle
     /// </summary>
+    /// <param name="eventData"></param>
+    /// <param name="cancellationToken"></param>
     public async Task HandleAsync(AuditLogSaveEvent eventData, CancellationToken cancellationToken = default)
     {
         if (eventData?.AuditLogInfo == null)
@@ -77,38 +86,39 @@ public class AuditLogSaveEventHandler: IApplicationEventHandler<AuditLogSaveEven
     /// <summary>
     ///     查询链尾哈希并计算本记录哈希（须在临界区内调用）
     /// </summary>
+    /// <param name="auditLogInfo"></param>
+    /// <param name="cancellationToken"></param>
     private async Task AttachIntegrityHashAsync(AuditLogInfo auditLogInfo, CancellationToken cancellationToken)
     {
-        var last = await _auditLogRepo.TopAsync(1, x => x.AuditHash != null,
-            new[] { new SortCondition<AuditLogInfo>("Id", ListSortDirection.Descending) }, cancellationToken);
+        var last = await _auditLogRepo.TopAsync(1, x => !string.IsNullOrWhiteSpace(x.AuditHash), [new SortCondition<AuditLogInfo>("Id", ListSortDirection.Descending)], cancellationToken);
         var prevHash = last.FirstOrDefault()?.AuditHash;
 
         auditLogInfo.PrevAuditHash = prevHash;
-        auditLogInfo.AuditHash = AuditLogIntegrityService.Compute(
-            AuditLogIntegrityService.HeadFields(auditLogInfo),
-            AuditLogIntegrityService.EntityRows(auditLogInfo.EntityEntries),
-            AuditLogIntegrityService.SqlRows(auditLogInfo.SqlRawEntries),
-            prevHash);
+        auditLogInfo.AuditHash = AuditLogIntegrityService.Compute(AuditLogIntegrityService.HeadFields(auditLogInfo), AuditLogIntegrityService.EntityRows(auditLogInfo.EntityEntries)
+            , AuditLogIntegrityService.SqlRows(auditLogInfo.SqlRawEntries), prevHash);
         auditLogInfo.HashAlgorithm = _options.HashAlgorithm;
     }
 
+    /// <summary>
+    ///     批量插入
+    /// </summary>
+    /// <param name="auditLogInfo"></param>
+    /// <param name="cancellationToken"></param>
     private async Task InsertAllAsync(AuditLogInfo auditLogInfo, CancellationToken cancellationToken)
     {
         await _auditLogRepo.InsertAsync(auditLogInfo, cancellationToken);
-        if (auditLogInfo.EntityEntries.Any())
+        if (auditLogInfo.EntityEntries.Count > 0)
         {
             await _auditEntityRepo.InsertAsync(auditLogInfo.EntityEntries, cancellationToken);
-            var changeList = auditLogInfo.EntityEntries.SelectMany(x => x.PropertyEntries);
-            if (changeList.Any())
-                await _auditEntityPropertyRepo.InsertAsync(changeList, cancellationToken);
+            var changeList = auditLogInfo.EntityEntries.SelectMany(x => x.PropertyEntries).ToList();
+            if (changeList.Count > 0) await _auditEntityPropertyRepo.InsertAsync(changeList, cancellationToken);
         }
 
-        if (auditLogInfo.SqlRawEntries.Any())
+        if (auditLogInfo.SqlRawEntries.Count > 0)
         {
             await _auditSqlRawRepo.InsertAsync(auditLogInfo.SqlRawEntries, cancellationToken);
-            var paramList = auditLogInfo.SqlRawEntries.SelectMany(x => x.DbParameters);
-            if (paramList.Any())
-                await _auditSqlRawParameterRepo.InsertAsync(paramList, cancellationToken);
+            var paramList = auditLogInfo.SqlRawEntries.SelectMany(x => x.DbParameters).ToList();
+            if (paramList.Count > 0) await _auditSqlRawParameterRepo.InsertAsync(paramList, cancellationToken);
         }
     }
 }

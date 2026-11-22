@@ -13,9 +13,14 @@ public static class AuditLogIntegrityService
     /// <summary>
     ///     计算审计记录哈希：SHA256(头部规范化内容 + 实体变更摘要 + Sql摘要 + 上一条哈希)
     /// </summary>
+    /// <param name="headFields"></param>
+    /// <param name="entityRows"></param>
+    /// <param name="sqlRows"></param>
+    /// <param name="prevHash"></param>
+    /// <returns></returns>
     public static string Compute(IEnumerable<string> headFields, IEnumerable<string> entityRows, IEnumerable<string> sqlRows, string prevHash)
     {
-        var head = string.Join("\n", (headFields ?? Array.Empty<string>()).Select(Normalize));
+        var head = (headFields ?? []).Select(Normalize).ExpandAndToString("\n"); //string.Join("\n", (headFields ?? Array.Empty<string>()).Select(Normalize));
         var entitySummary = ComputeSummary(entityRows);
         var sqlSummary = ComputeSummary(sqlRows);
         var canonical = head + "\n" + entitySummary + "\n" + sqlSummary;
@@ -36,9 +41,11 @@ public static class AuditLogIntegrityService
     /// </summary>
     public static string ComputeSummary(IEnumerable<string> rows)
     {
-        var joined = string.Join("\n", (rows ?? Array.Empty<string>())
-            .Where(r => !string.IsNullOrEmpty(r))
-            .OrderBy(r => r, StringComparer.Ordinal));
+        var joined = (rows ?? []).Where(r => !string.IsNullOrEmpty(r)).OrderBy(r => r, StringComparer.Ordinal).ExpandAndToString("\n");
+            
+            // string.Join("\n", (rows ?? Array.Empty<string>())
+            // .Where(r => !string.IsNullOrEmpty(r))
+            // .OrderBy(r => r, StringComparer.Ordinal));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(joined)));
     }
 
@@ -47,13 +54,13 @@ public static class AuditLogIntegrityService
     /// </summary>
     public static string[] HeadFields(AuditLogInfo log)
     {
-        return new[]
-        {
+        return
+        [
             log.ApplicationName, log.UserId, log.Username, log.Nickname, log.TenantId, log.TenantName,
             log.ExecutionTime.ToString("o"), log.ExecutionDuration.ToString(),
             log.ClientIpAddress, log.ClientName, log.ClientId, log.CorrelationId, log.BrowserInfo,
             log.HttpMethod, log.Url, log.Exceptions, log.HttpStatusCode.ToString(), log.FunctionName, log.Comments
-        };
+        ];
     }
 
     /// <summary>
@@ -69,9 +76,7 @@ public static class AuditLogIntegrityService
     /// </summary>
     public static IEnumerable<string> EntityRows(IEnumerable<AuditEntityInfo> entities, IEnumerable<AuditEntityPropertyInfo> properties)
     {
-        var propertyByEntity = properties
-            .GroupBy(p => p.EntityChangeId)
-            .ToDictionary(g => g.Key, g => g.ToArray());
+        var propertyByEntity = properties.GroupBy(p => p.EntityChangeId).ToDictionary(g => g.Key, g => g.ToArray());
 
         foreach (var entity in entities)
         {

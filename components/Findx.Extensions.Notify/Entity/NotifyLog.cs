@@ -1,15 +1,11 @@
-using Findx.Extensions;
-using Findx.Utilities;
-using FsTable = global::FreeSql.DataAnnotations.TableAttribute;
-using FsColumn = global::FreeSql.DataAnnotations.ColumnAttribute;
-
 namespace Findx.Extensions.Notify.Entity;
 
 /// <summary>
 ///     通知发送日志表。异步入队时在业务线程零 IO，由消费线程发送完成后一次性落库
 /// </summary>
-[FsTable(Name = "notify_log")]
+[Table(Name = "notify_logs")]
 [Description("通知发送日志")]
+[EntityExtension(DataSource = "Notify", DisableAuditing = true)]
 public class NotifyLog : FullAuditedBase<long, long>
 {
     /// <summary>
@@ -20,25 +16,24 @@ public class NotifyLog : FullAuditedBase<long, long>
     /// <summary>
     ///     标题
     /// </summary>
-    [FsColumn(StringLength = 200)]
     public string Title { get; set; }
 
     /// <summary>
     ///     正文（展示用，过长截断；完整内容见 Payload）
     /// </summary>
-    [FsColumn(StringLength = 2000)]
+    [Column(StringLength = 2000)]
     public string Content { get; set; }
 
     /// <summary>
     ///     接收方（多个逗号拼接）
     /// </summary>
-    [FsColumn(StringLength = 500)]
+    [Column(StringLength = 500)]
     public string Receivers { get; set; }
 
     /// <summary>
     ///     模板编号
     /// </summary>
-    [FsColumn(StringLength = 100)]
+    [Column(StringLength = 100)]
     public string TemplateId { get; set; }
 
     /// <summary>
@@ -54,25 +49,25 @@ public class NotifyLog : FullAuditedBase<long, long>
     /// <summary>
     ///     失败原因
     /// </summary>
-    [FsColumn(StringLength = 500)]
+    [Column(StringLength = 500)]
     public string ErrorMessage { get; set; }
 
     /// <summary>
     ///     业务关联键（如单据号、流程实例号），便于按业务查通知
     /// </summary>
-    [FsColumn(StringLength = 100)]
+    [Column(StringLength = 100)]
     public string BusinessKey { get; set; }
 
     /// <summary>
     ///     发送节点名（多实例部署时定位是哪个节点发的）
     /// </summary>
-    [FsColumn(StringLength = 100)]
+    [Column(StringLength = 100)]
     public string NodeName { get; set; }
 
     /// <summary>
     ///     完整消息快照（JSON，可据此重放）
     /// </summary>
-    [FsColumn(StringLength = -1)]
+    [Column(StringLength = -1)]
     public string Payload { get; set; }
 
     /// <summary>
@@ -86,9 +81,13 @@ public class NotifyLog : FullAuditedBase<long, long>
     public long ElapsedMs { get; set; }
 
     /// <summary>
-    ///     由消息构造日志（分配雪花主键，不做任何 IO）
+    ///     由消息构造日志
+    ///     <para>主键由调用方用 IKeyGenerator 生成后传入，本方法不做任何 IO</para>
     /// </summary>
-    public static NotifyLog From(NotifyMessage message, string nodeName = null)
+    /// <param name="message">通知消息</param>
+    /// <param name="nodeName">发送节点名</param>
+    /// <param name="id">主键</param>
+    public static NotifyLog From(NotifyMessage message, string nodeName, long id)
     {
         var log = new NotifyLog
         {
@@ -101,10 +100,10 @@ public class NotifyLog : FullAuditedBase<long, long>
             NodeName = Truncate(nodeName, 100),
             Payload = message.ToJson(),
             Status = NotifyLogStatus.Queued,
-            CreatedTime = DateTime.Now
+            CreatedTime = DateTime.Now,
+            //  入队即带主键：QueueAsync 直接把 Id 返回给业务用于后续反查，无需等落库
+            Id = id
         };
-        //  入队即分配主键：QueueAsync 直接把 Id 返回给业务用于后续反查，无需等落库
-        log.Id = SnowflakeIdUtility.Default().NextId();
         return log;
     }
 
@@ -152,6 +151,6 @@ public class NotifyLog : FullAuditedBase<long, long>
     private static string Truncate(string value, int maxLength)
     {
         if (string.IsNullOrEmpty(value) || value.Length <= maxLength) return value;
-        return value.Substring(0, maxLength);
+        return value[..maxLength];
     }
 }

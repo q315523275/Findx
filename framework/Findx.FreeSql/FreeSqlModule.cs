@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using Findx.Common;
 using Findx.Data;
 using Findx.DependencyInjection;
@@ -113,13 +112,8 @@ public class FreeSqlModule : StartupModule
             fsql.Aop.CurdAfter += (_, e) => Aop_CurdAfter(e, item.Value);
             fsql.Aop.AuditValue += (_, e) => Aop_AuditValue(e, item.Value, fsql);
 
-            // 注入
-            freeSqlClient.TryAdd(item.Key, fsql);
-
-            // 数据源共享
-            if (item.Value.DataSourceSharing is { Count: > 0 }) 
-                foreach (var sourceKey in item.Value.DataSourceSharing) 
-                    freeSqlClient.TryAdd(sourceKey, fsql);
+            // 注入（同时登记别名归属，运行期取主连接名走字典查询）
+            freeSqlClient.RegisterSource(item.Key, fsql, item.Value.DataSourceSharing);
 
             // 注册单独主IFreeSql
             if (item.Key == FreeSqlOptions.Primary)
@@ -210,7 +204,7 @@ public class FreeSqlModule : StartupModule
         if (!option.OutageDetection || e.ElapsedMilliseconds <= option.OutageDetectionInterval * 1000) return;
         // 推送慢sql事件
         var eventbus = ServiceLocator.GetService<IApplicationContext>();
-        eventbus?.PublishEvent(new SqlExecutionSlowEvent { ElapsedMilliseconds = e.ElapsedMilliseconds, SqlRaw = e.Sql });
+        eventbus?.PublishEvent(new SqlSlowQueryEvent { ElapsedMilliseconds = e.ElapsedMilliseconds, SqlRaw = e.Sql });
     }
 
     /// <summary>

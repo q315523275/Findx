@@ -202,6 +202,32 @@ services.TryAddScoped<IFlwTaskNotifier, DefaultFlwTaskNotifier>();    // 通知�
 - 路由分支（带 `expression` 的）必须配置 `targetNodeKey`，且目标节点必须存在于模型中
 - `type = 8` 的子流程节点必须配置 `callProcessKey`
 
+### 设计器节点配置（`props.extend`）
+
+`FlwNodeProps.Extend` 是留给前端设计器的扩展属性，随 `modelContent` 原样保存，引擎默认忽略。
+ERP 的审批流程设计器把以下配置放在这里：
+
+| 键 | 含义 | 运行期是否生效 |
+|---|---|---|
+| `approverType` / `isHandler` | 审批人员类型 / 仅办理不做决策 | 否（设计意图） |
+| `formPermissions` | 字段级 可编辑/只读/隐藏 | 否（需宿主渲染表单时消费） |
+| `timeoutAction` / `remindEnabled` | 节点级超时动作与提醒 | 超时动作由全局 `FlwTimeoutHandler` 决定 |
+| `operations.transfer / addSign / rejectBack / cc` | 允许转交 / 加签减签 / 回退 / 抄送 | **是**，`panel.actions` 会据此过滤 |
+| `rejectPolicy` | `prev` 上一节点 / `creator` 发起人 / `specified` 指定节点 / `terminate` 终止 | **是**，`panel.rejectPolicy` 下发给前端 |
+| `rejectTargetKey` | `specified` 时的目标节点 key | **是** |
+
+`FlwPanelService.ApplyNodeSettings` 在填充面板时按当前任务 `taskKey` 找到节点，把设计态配置变成运行期行为。
+驳回不再是全局二选一：默认 `prev`（退回上一节点），也可按节点配置直接终止流程，
+前端 `doAction` 相应传 `endProcess` / `targetNodeKey`。
+
+条件分支的条件组保存在分支节点 `props.extend.groups`（组内 `&&`、组间 `||`），
+同时生成 `props.expression` 供 `FlwConditionEvaluator` 求值，例如 `${amount} > 1000`。
+标准审批提交 `formData` 时，除写入 `Variables["__form__"]` 外，还会把表单字段平铺到顶层变量，
+否则 `${字段}` 取不到值。
+
+> 并行分支的每个分支必须至少有一个子节点；设计器对空分支自动补一个
+> `assignee: [] + autoApprove: true` 的占位节点，避免引擎执行 `branch.childNode` 时空指针。
+
 ### 完整示例
 
 `Samples/leave-flow.json`：
@@ -430,6 +456,45 @@ StartAsync
 
 处理完会清空 `ExpireTime` / `RemindTime` / `RemindRepeat`，避免下一轮重复触发；实例已结束但任务残留的，直接清时限不再处理。
 
+### 通知下发：走核心包 IUserNotifier 契约
+
+`IFlwTaskNotifier` 是审批侧的通知扩展点，默认实现 `DefaultFlwTaskNotifier` 写运行时日志后，
+把通知转成框架核心包的 `IUserNotifier` 契约下发：
+
+| 场景 | 行为 |
+|---|---|
+| 宿主未接入任何通知通道 | 容器里是 `NullUserNotifier`，只记 Debug 日志，不抛异常 |
+| 接入 `Findx.Extensions.Notify` | 由 `NotifySender` 实现，按 `Findx:Notify:DefaultChannels` 广播到企微/钉钉/邮件/微信 |
+| 需要自定义文案或渠道 | 注册自己的 `IFlwTaskNotifier` 覆盖默认实现 |
+
+核心包只放三个类型，不依赖任何厂商 SDK，所以审批组件不必引用通知组件：
+
+```csharp
+public interface IUserNotifier
+{
+    Task SendAsync(UserNotification notification, CancellationToken cancellationToken = default);
+}
+
+public class UserNotification
+{
+    public string[] Receivers { get; set; }        // 用户标识，语义由实现解释
+    public string Title { get; set; }
+    public string Content { get; set; }
+    public bool IsMarkdown { get; set; }
+    public BusinessAnchor Business { get; set; }   // 关联单据，接收方据此跳转
+    public IDictionary<string, object> Data { get; set; }
+}
+
+public class BusinessAnchor
+{
+    public string BusinessType { get; set; }       // pms.order
+    public string BusinessId { get; set; }
+    public string BusinessCode { get; set; }       // CGDD2611150001
+    public string Title { get; set; }
+    public string Url { get; set; }
+}
+```
+
 > 安全默认
 
 - `TimeoutEnabled` 默认 `false`，不配就只注册不动作
@@ -649,11 +714,35 @@ services.AddScoped<IFlwBusinessAdapter, PurchaseOrderFlowAdapter>();   //  宿�
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | GET | `/api/flw/component/panel?businessType=&businessId=` | 状态 + 时间轴 + 可用动作 + 我的待办 |
-| GET | `/api/flw/component/count` | 待办 / 已办角标 |
-| POST | `/api/flw/component/submit` | 发起（`processKey` 可省，按业务类型匹配已发布流程） |
+| GET | `/api/flw/component/instance-panel?instanceId=` | 按实例取同一结构（待办/已办/我的申请页用，标准审批无业务锚点也能看） |
+| GET | `/api/flw/component/count` | 待办 / 已办 / 我发起 / 我收到 角标 |
+| GET | `/api/flw/component/todo?top=` | 我的待办（带业务锚点） |
+| GET | `/api/flw/component/done?top=` | 我的已办（带业务锚点 + 处理动作/意见） |
+| GET | `/api/flw/component/applied?top=` | 我发起的实例 |
+| GET | `/api/flw/component/received?top=` | 我收到的：我参与过但非我发起的实例 |
+| GET | `/api/flw/component/start-page` | 发起页：统计 + 最近使用 + 按分组的流程（**排除子流程**） |
+| GET | `/api/flw/component/start-candidates?businessType=&keyword=` | 可发起的业务单据（走适配器） |
+| POST | `/api/flw/component/submit` | 发起（业务审批按业务类型匹配；标准审批传 `processKey` + `formData`） |
 | POST | `/api/flw/component/action` | `approve / reject / transfer / addSign / jump` |
 | POST | `/api/flw/component/revoke` | 撤销（仅发起人） |
+| POST | `/api/flw/component/urge` | 催办：给在途节点的其他审批人下发提醒，返回 `{count}` |
 | POST | `/api/flw/instance/terminate` | 强制终止（管理员/业务作废） |
+
+> 发起页要列出「可发起的业务单据」时，由适配器实现 `IFlwBusinessAdapter.GetStartCandidatesAsync`（接口带默认实现，返回空即表示该业务类型只能到业务模块内发起）。
+
+**业务审批 / 标准审批**：用 `FlwProcessInfo.BusinessType` 有没有值区分，不要用 `ProcessType`（那是 Business/Child/Main 拓扑类型）。
+
+| | 标识 | 动态表单 | 发起入口 |
+|---|---|---|---|
+| 业务审批 | `BusinessType` 有值 | 不需要，表单由业务单据页提供 | 业务单据页 / 发起页选草稿单 |
+| 标准审批 | `BusinessType` 为空 | 需要，`FormSchema` 由 EleAdminPlus `ProFormBuilder` 产出 | 发起页填表后提交 |
+
+标准审批提交时把表单数据放在 `submit.formData`，后端写进实例变量 `Variables["__form__"]`，
+随 `flw_instance.Variable` 一起落库；`panel` / `instance-panel` 用 `formData` 字段原样返回。
+列表（`todo` / `done` / `applied` / `received`）的 `Title` 在没有业务适配器时取表单第一个非空字段作为标题。
+
+**催办**走核心包 `Findx.Notifications.IUserNotifier` 契约，排除催办人自己；未接入任何通知通道时落到
+`NullUserNotifier`，只记日志并返回 `{count: 0}`，不会影响业务线程。
 
 `panel` 返回结构（节选）：
 

@@ -37,7 +37,7 @@ public class AuditLogIntegrityValidator
     /// </summary>
     public async Task<AuditLogIntegrityValidationResult> ValidateAsync(CancellationToken cancellationToken = default)
     {
-        var logs = await _auditLogRepo.SelectAsync(null, new[] { new SortCondition<AuditLogInfo>("Id") }, cancellationToken);
+        var logs = await _auditLogRepo.SelectAsync(null, [new SortCondition<AuditLogInfo>("Id")], cancellationToken);
 
         var result = new AuditLogIntegrityValidationResult { IsValid = true, TotalCount = logs.Count, Message = "校验通过" };
         string prevHash = null;

@@ -4,6 +4,13 @@
 
 **业务线程默认零 IO**：`QueueAsync` 只构造消息并入内存队列（`TryWrite` 一次），实际发送与日志落库都在后台消费线程完成。只有需要立即知道成败时才用 `SendAsync`。
 
+> 图文说明
+
+- 完整图文说明页（含目录、3 张内联图）：[`docs/notify-architecture.html`](notify-architecture.html)
+- 组件架构与装配：![通知组件架构](images/通知组件架构.png)
+- 两条发送路径与分支：![通知发送路径](images/通知发送路径.png)
+- 通道矩阵与日志模型：![通知通道与日志](images/通知通道与日志.png)
+
 > Nuget 包引用
 
 ```

@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations.Schema;
 using Findx.Data;
+using FsIndex = FreeSql.DataAnnotations.IndexAttribute;
 using Findx.Extensions.WorkflowCore.Enums;
 
 namespace Findx.Extensions.WorkflowCore.Entity;
@@ -9,6 +10,8 @@ namespace Findx.Extensions.WorkflowCore.Entity;
 ///     任务参与者表（活动任务的办理人/候选人）
 /// </summary>
 [Table("flw_task_actor")]
+[FsIndex("idx_flw_actor_task", "TaskId")]
+[FsIndex("idx_flw_actor_actor", "ActorId,InstanceId")]
 [Description("任务参与者表")]
 public class FlwTaskActorInfo: EntityBase, ITenant
 {

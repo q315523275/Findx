@@ -28,7 +28,7 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     /// <returns></returns>
     public async Task<IUnitOfWork> GetUnitOfWorkAsync(string primary, bool enableTransaction, bool beginTransaction, CancellationToken cancellationToken = default)
     {
-        var primaryKey = NormalizePrimary(primary ?? GetDataSourcePrimary());
+        var primaryKey = NormalizePrimary(primary ?? GetDefaultPrimary());
         var unitOfWork = _scopedDictionary.GetUnitOfWork(primaryKey);
         if (unitOfWork != null)
         {
@@ -90,10 +90,11 @@ public abstract class UnitOfWorkManagerBase : IUnitOfWorkManager
     protected abstract IUnitOfWork CreateConnUnitOfWork(string dbPrimary);
     
     /// <summary>
-    ///     获取默认数据库链接标识
+    ///     获取默认数据源标识
+    ///     <para>调用方未指定数据源时使用，与选项里的 Primary 同义</para>
     /// </summary>
     /// <returns></returns>
-    protected abstract string GetDataSourcePrimary();
+    protected abstract string GetDefaultPrimary();
 
     /// <summary>
     ///     归一化数据源标识

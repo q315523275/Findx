@@ -31,7 +31,7 @@ public class DispatchRequest
     public string TraceId { get; set; }
 
     /// <summary>
-    ///     本次触发周期标识（到期时刻，执行权锁分组键）
+    ///     本次触发周期标识（周期为到期时刻，重试为 R: 前缀；作为执行账本幂等键的组成部分）
     /// </summary>
     public string Period { get; set; }
 

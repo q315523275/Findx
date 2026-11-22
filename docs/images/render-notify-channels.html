@@ -1,0 +1,89 @@
+<!doctype html><html><head><meta charset="utf-8"><style>*{margin:0;padding:0}body{background:#fff}svg{display:block}</style></head><body><svg xmlns="http://www.w3.org/2000/svg" width="1600" height="780" viewBox="0 0 1600 780" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">
+<rect width="100%" height="100%" fill="#FFFFFF"/>
+<defs><marker id="arrowhead" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0f766e"/></marker><marker id="arrowheadgray" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#64748b"/></marker></defs>
+<text x="60" y="54" font-size="29" fill="#0f172a" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">五个通道的差异、notify_logs 数据模型与配置速查</text>
+<text x="60" y="86" font-size="13" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">每条通道自身只做「协议组装 + 平台返回码翻译」；路由、超时、日志都在上层收敛</text>
+<line x1="1280" y1="48" x2="1322" y2="48" stroke="#0f766e" stroke-width="2" marker-end="url(#arrowhead)"/>
+<text x="1332" y="52" font-size="11.5" fill="#475569" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">调用 / 发送</text>
+<rect x="60" y="132" width="950" height="276" rx="10" fill="#ffffff" stroke="#475569" stroke-width="1.2"/>
+<rect x="60" y="132" width="950" height="44" fill="#f1f5f9"/>
+<text x="72" y="159" font-size="11.3" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">通道 / 枚举</text>
+<text x="247" y="159" font-size="11.3" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">发送方式与依赖</text>
+<text x="495" y="159" font-size="11.3" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">关键配置（Findx:Notify）</text>
+<text x="767" y="159" font-size="11.3" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">目标账号语义（To）</text>
+<line x1="60" y1="176" x2="1010" y2="176" stroke="#e2e8f0" stroke-width="1"/>
+<text x="72" y="198" font-size="10.4" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">WeCom（0）</text>
+<text x="247" y="198" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Webhook 群机器人，或应用消息（WebhookUrl</text>
+<text x="247" y="214" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">优先）</text>
+<text x="495" y="198" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">WeCom:WebhookUrl；或 CorpId/Secret/AgentId</text>
+<text x="767" y="198" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">群机器人忽略 To；应用消息为成员账号，空则</text>
+<text x="767" y="214" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">@all</text>
+<line x1="60" y1="232" x2="1010" y2="232" stroke="#e2e8f0" stroke-width="1"/>
+<text x="72" y="254" font-size="10.4" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">DingTalk（1）</text>
+<text x="247" y="254" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">群机器人 Webhook，可选加签</text>
+<text x="495" y="254" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">DingTalk:WebhookUrl / Secret</text>
+<text x="767" y="254" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">标题正文 + AtMobiles / AtAll</text>
+<line x1="60" y1="272" x2="1010" y2="272" stroke="#e2e8f0" stroke-width="1"/>
+<text x="72" y="294" font-size="10.4" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Email（2）</text>
+<text x="247" y="294" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">SMTP，复用框架 Findx:Email 配置</text>
+<text x="495" y="294" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Email:Enabled / IsBodyHtml</text>
+<text x="767" y="294" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">邮箱地址，多个逗号拼接</text>
+<line x1="60" y1="312" x2="1010" y2="312" stroke="#e2e8f0" stroke-width="1"/>
+<text x="72" y="334" font-size="10.4" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">WeChat（3）</text>
+<text x="247" y="334" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">公众号模板消息，按 openid 逐条发</text>
+<text x="495" y="334" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">WeChat:AppId / AppSecret / TemplateId</text>
+<text x="767" y="334" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">openid，须配 TemplateId + Data</text>
+<line x1="60" y1="352" x2="1010" y2="352" stroke="#e2e8f0" stroke-width="1"/>
+<text x="72" y="374" font-size="10.4" fill="#0f172a" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">WeChatMiniProgram（4）</text>
+<text x="247" y="374" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">小程序订阅消息，按 openid 逐条发</text>
+<text x="495" y="374" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">AppId / AppSecret / TemplateId / Page / 版</text>
+<text x="495" y="390" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">本与语言</text>
+<text x="767" y="374" font-size="10.4" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">openid，超长字段按规则截断（默认开）</text>
+<text x="60" y="434" font-size="10.8" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">★ 逐条发送：公众号 / 小程序不支持批量 touser，To 有 N 个 openid 时是 N 次 HTTP（单条失败只影响该条）</text>
+<text x="60" y="456" font-size="10.8" fill="#64748b" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">★ 通道自检：参数缺失时通道直接返回 Fail 可读原因；未启用则不会被注册到 dispatcher 字典（不会发到平台才报错）</text>
+<rect x="1040" y="132" width="500" height="182" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<rect x="1040" y="132" width="4" height="182" rx="2" fill="#b45309"/>
+<text x="1056" y="156" font-size="13.5" fill="#b45309" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">notify_logs（四组字段）</text>
+<text x="1056" y="179.5" font-size="10.8" fill="#1e293b" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">身份：Id（雪花，入队即生成）+ Channel</text>
+<text x="1056" y="201.5" font-size="10.8" fill="#1e293b" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">内容：Title / Content(2000) / Receivers(500) / TemplateId</text>
+<text x="1056" y="223.5" font-size="10.8" fill="#1e293b" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">结果：Status / Success / ErrorMessage(500) / SendTime / ElapsedMs</text>
+<text x="1056" y="245.5" font-size="10.8" fill="#1e293b" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">追溯：BusinessKey / NodeName / Payload(JSON 全长)</text>
+<text x="1056" y="267.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">审计：FullAuditedBase 且 DisableAuditing（只记发送事实）</text>
+<rect x="1040" y="334" width="500" height="182" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="1040" y="334" width="4" height="182" rx="2" fill="#475569"/>
+<text x="1056" y="358" font-size="13.5" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">状态口径（Queued 只存在于进程内）</text>
+<text x="1056" y="381.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Queued=0 → 入队初值，从未落库</text>
+<text x="1056" y="403.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Success=1 / Failed=2 → 落库即终态</text>
+<text x="1056" y="425.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">所以表里只有两种行：成功、失败</text>
+<text x="1056" y="447.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">无「发送中」行 → 在途消息不可从库观测</text>
+<rect x="1040" y="536" width="500" height="196" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.3"/>
+<rect x="1040" y="536" width="4" height="196" rx="2" fill="#0f766e"/>
+<text x="1056" y="560" font-size="13.5" fill="#0f766e" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">配置速查（Findx:Notify）</text>
+<text x="1056" y="583.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Enabled=true / DefaultChannels=[WeCom]</text>
+<text x="1056" y="605.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">TimeoutSeconds=10 → 单次发送上限</text>
+<text x="1056" y="627.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">LogEnabled=true → 关闭后两条路径都不写库</text>
+<text x="1056" y="649.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">NodeName → 多实例定位发送节点</text>
+<text x="1056" y="671.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">QueueCapacity=2048 / DispatchWorkerCount=2</text>
+<text x="1056" y="693.5" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">各通道 Enabled 默认 false（不启用不注册）</text>
+<text x="60" y="552" font-size="12.5" fill="#1e293b" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">日志行的生命周期（落库是一次 INSERT，不是状态更新）</text>
+<rect x="60" y="566" width="200" height="112" rx="10" fill="#f8fafc" stroke="#475569" stroke-width="1.3"/>
+<rect x="60" y="566" width="4" height="112" rx="2" fill="#475569"/>
+<text x="76" y="590" font-size="12.2" fill="#475569" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Queued=0</text>
+<text x="76" y="612.2" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">内存中的 NotifyLog</text>
+<text x="76" y="632.2" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">业务线程零 IO</text>
+<rect x="380" y="566" width="200" height="112" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.3"/>
+<rect x="380" y="566" width="4" height="112" rx="2" fill="#0f766e"/>
+<text x="396" y="590" font-size="12.2" fill="#0f766e" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Success=1</text>
+<text x="396" y="612.2" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">平台返回成功</text>
+<text x="396" y="632.2" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Success=true</text>
+<rect x="700" y="566" width="200" height="112" rx="10" fill="#fffbeb" stroke="#b45309" stroke-width="1.3"/>
+<rect x="700" y="566" width="4" height="112" rx="2" fill="#b45309"/>
+<text x="716" y="590" font-size="12.2" fill="#b45309" font-weight="700" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">Failed=2</text>
+<text x="716" y="612.2" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">超时 / 异常 / 平台码</text>
+<text x="716" y="632.2" font-size="10.8" fill="#334155" font-weight="normal" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">ErrorMessage 记原因</text>
+<line x1="260" y1="618" x2="376" y2="618" stroke="#0f766e" stroke-width="1.9" marker-end="url(#arrowhead)"/>
+<text x="318" y="608" font-size="10" fill="#64748b" font-weight="normal" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">成功</text>
+<line x1="580" y1="618" x2="696" y2="618" stroke="#b45309" stroke-width="1.9" marker-end="url(#arrowheadgray)"/>
+<text x="638" y="608" font-size="10" fill="#64748b" font-weight="normal" text-anchor="middle" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">失败</text>
+<text x="60" y="714" font-size="10.8" fill="#b45309" font-weight="600" text-anchor="start" font-family="PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif">★ 结论：日志表是「发送事实账本」，不是「状态机账本」；要看在途与重试，需要额外的队列 / 执行记录表</text>
+</svg></body></html>

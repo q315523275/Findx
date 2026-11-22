@@ -3,7 +3,7 @@ using Findx.Extensions.Scheduler.Models;
 namespace Findx.Extensions.Scheduler.Scheduling;
 
 /// <summary>
-///     分发种类：周期到期 / 重试到期（两者抢占语义不同）
+///     分发种类：周期到期 / 重试到期（两者领取语义不同）
 /// </summary>
 public enum DispatchKind
 {
@@ -20,7 +20,7 @@ public enum DispatchKind
 
 /// <summary>
 ///     待分发条目：调度线程从内存窗口算出的「某任务某周期的一次触发」。
-///     <para>只在内存中流转；数据库 CAS 抢占由分发线程执行，调度线程不被任何 I/O 阻塞。</para>
+///     <para>只在内存中流转；任务行 CAS 与执行行写入由分发线程的同一个事务完成，调度线程不被任何 I/O 阻塞。</para>
 /// </summary>
 public class DispatchItem
 {
@@ -47,7 +47,7 @@ public class DispatchItem
     public IReadOnlyList<string> Periods { get; }
 
     /// <summary>
-    ///     主周期标识（首个，失败处理/日志使用）
+    ///     主周期标识（首个，日志使用）
     /// </summary>
     public string Period => Periods.Count > 0 ? Periods[0] : string.Empty;
 
@@ -75,25 +75,4 @@ public class DispatchItem
     ///     本次触发时刻（写入 LastRunTime，仅 Cycle 有效）
     /// </summary>
     public DateTime LastRunTime { get; set; }
-
-    /// <summary>
-    ///     构造「分发失败」时使用的在途记录（用于进入重试/死信流程）
-    /// </summary>
-    public InFlightExecution ToFailedFlight()
-    {
-        var job = Job;
-        return new InFlightExecution
-        {
-            TraceId = Guid.NewGuid().ToString("N"),
-            JobId = job.Id,
-            JobName = job.JobName,
-            HandlerType = job.HandlerType,
-            Parameter = job.Parameter,
-            Period = Period,
-            Attempt = Attempt,
-            WorkerAddress = string.Empty,
-            StartTime = DateTime.Now,
-            CronExpression = job.CronExpression
-        };
-    }
 }

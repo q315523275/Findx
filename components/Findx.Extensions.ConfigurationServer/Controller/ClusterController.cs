@@ -3,7 +3,7 @@ using Findx.AspNetCore.Mvc;
 using Findx.AspNetCore.Mvc.Filters;
 using Findx.Data;
 using Findx.Extensions.ConfigurationServer.Dtos;
-using Findx.Extensions.ConfigurationServer.Services;
+using Findx.Extensions.ConfigurationServer.ServiceDefaults;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -24,6 +24,8 @@ public class ClusterController : AreaApiControllerBase
     /// <summary>
     ///     Ctor
     /// </summary>
+    /// <param name="dumpService"></param>
+    /// <param name="options"></param>
     public ClusterController(IDumpService dumpService, IOptions<ConfigServerOptions> options)
     {
         _dumpService = dumpService;
@@ -31,9 +33,12 @@ public class ClusterController : AreaApiControllerBase
     }
 
     /// <summary>
-    ///     变更通知接收
+    ///     变更通知
     /// </summary>
-    [HttpPost("change-notify"), Description("变更通知接收")]
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    [HttpPost("change-notify"), Description("变更通知")]
     [InternalNetworkLimiter]
     public async Task<CommonResult> ChangeNotifyAsync([FromBody] ConfigDataChangeDto req, CancellationToken cancellationToken)
     {

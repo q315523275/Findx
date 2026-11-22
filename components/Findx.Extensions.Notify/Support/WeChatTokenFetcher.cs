@@ -1,5 +1,3 @@
-using Findx.Extensions;
-
 namespace Findx.Extensions.Notify.Support;
 
 /// <summary>
@@ -17,8 +15,7 @@ public static class WeChatTokenFetcher
     /// <param name="appSecret">AppSecret</param>
     /// <param name="cancellationToken">取消令牌</param>
     /// <returns>(令牌, 有效期秒)</returns>
-    public static async Task<(string Token, int ExpiresIn)> FetchAsync(HttpClient client, string appId,
-        string appSecret, CancellationToken cancellationToken = default)
+    public static async Task<(string Token, int ExpiresIn)> FetchAsync(HttpClient client, string appId, string appSecret, CancellationToken cancellationToken = default)
     {
         var url = $"{TokenUrl}?grant_type=client_credential&appid={Uri.EscapeDataString(appId)}&secret={Uri.EscapeDataString(appSecret)}";
         var response = await client.GetAsync(url, cancellationToken);

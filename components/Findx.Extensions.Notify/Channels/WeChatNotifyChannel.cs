@@ -1,5 +1,3 @@
-using Findx.Extensions;
-
 namespace Findx.Extensions.Notify.Channels;
 
 /// <summary>
@@ -17,8 +15,7 @@ public class WeChatNotifyChannel : INotifyChannel
     /// <summary>
     ///     Ctor
     /// </summary>
-    public WeChatNotifyChannel(IOptions<NotifyOptions> options, IHttpClientFactory httpClientFactory,
-        ILogger<WeChatNotifyChannel> logger)
+    public WeChatNotifyChannel(IOptions<NotifyOptions> options, IHttpClientFactory httpClientFactory, ILogger<WeChatNotifyChannel> logger)
     {
         _options = options.Value;
         _httpClientFactory = httpClientFactory;
@@ -31,8 +28,11 @@ public class WeChatNotifyChannel : INotifyChannel
     public NotifyChannel Channel => NotifyChannel.WeChat;
 
     /// <summary>
-    ///     发送
+    ///     发送消息
     /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     public async Task<NotifyResult> SendAsync(NotifyMessage message, CancellationToken cancellationToken = default)
     {
         if (message == null) return NotifyResult.Fail(Channel, "消息不能为空");
@@ -51,9 +51,7 @@ public class WeChatNotifyChannel : INotifyChannel
 
         try
         {
-            var token = await _tokenProvider.GetAsync(
-                ct => WeChatTokenFetcher.FetchAsync(CreateClient(), weChat.AppId, weChat.AppSecret, ct),
-                cancellationToken);
+            var token = await _tokenProvider.GetAsync(ct => WeChatTokenFetcher.FetchAsync(CreateClient(), weChat.AppId, weChat.AppSecret, ct), cancellationToken);
 
             //  逐条发送，单条失败不影响其它接收人，最后汇总
             var errors = new List<string>();
@@ -84,13 +82,17 @@ public class WeChatNotifyChannel : INotifyChannel
     /// <summary>
     ///     发送单条模板消息
     /// </summary>
+    /// <param name="token"></param>
+    /// <param name="body"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     private async Task<NotifyResult> SendOneAsync(string token, Dictionary<string, object> body, CancellationToken cancellationToken)
     {
         try
         {
-            var client = CreateClient();
+            using var client = CreateClient();
             var response = await client.PostAsJsonAsync($"{SendUrl}?access_token={Uri.EscapeDataString(token)}", body, null, cancellationToken);
-            var text = await response.Content.ReadAsStringAsync();
+            var text = await response.Content.ReadAsStringAsync(cancellationToken);
             if (!response.IsSuccessStatusCode)
                 return NotifyResult.Fail(Channel, $"HTTP {(int)response.StatusCode}：{text}");
 
@@ -110,6 +112,8 @@ public class WeChatNotifyChannel : INotifyChannel
     /// <summary>
     ///     Data 转微信模板 data 结构：{ key: { value: "x" } }
     /// </summary>
+    /// <param name="message"></param>
+    /// <returns></returns>
     private static Dictionary<string, object> BuildData(NotifyMessage message)
     {
         var data = new Dictionary<string, object>();

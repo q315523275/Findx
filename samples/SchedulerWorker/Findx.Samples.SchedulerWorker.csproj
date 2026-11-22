@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>default</LangVersion>
+        <RootNamespace>Findx.Samples.SchedulerWorker</RootNamespace>
+        <AssemblyName>Findx.Samples.SchedulerWorker</AssemblyName>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 执行端只引用组件与 AspNetCore；刻意不引用 FreeSql 提供程序，也没有数据库连接串 -->
+        <ProjectReference Include="..\..\components\Findx.Extensions.Scheduler\Findx.Extensions.Scheduler.csproj" />
+        <ProjectReference Include="..\..\framework\Findx.AspNetCore\Findx.AspNetCore.csproj" />
+    </ItemGroup>
+
+</Project>

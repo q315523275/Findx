@@ -1,4 +1,5 @@
 ﻿using Findx.Data;
+using FreeSql;
 using Findx.NewId;
 using Findx.Extensions.WorkflowCore.Entity;
 using Findx.Extensions.WorkflowCore.Enums;
@@ -37,6 +38,11 @@ public partial class FlwStore
     ///     当前绑定的工作单元（业务适配器回写单据时复用，保证同事务）
     /// </summary>
     public IUnitOfWork CurrentUnitOfWork => _unitOfWork;
+
+    /// <summary>
+    ///     FreeSql 实例：列表分页、参与者匹配这类需要在数据库完成的查询直接用（全局过滤器含租户条件）
+    /// </summary>
+    private IFreeSql Fsql => _serviceProvider.GetRequiredService<IFreeSql>();
 
     private IRepository<TEntity, long> Repo<TEntity>() where TEntity : class, IEntity<long>
     {
@@ -99,6 +105,22 @@ public partial class FlwStore
     public Task<FlwInstanceInfo> GetInstanceAsync(long instanceId, CancellationToken cancellationToken = default)
     {
         return Repo<FlwInstanceInfo>().GetAsync(instanceId, cancellationToken);
+    }
+
+    /// <summary>
+    ///     按业务锚点取最近一条实例（在途优先，其次取最新的）
+    /// </summary>
+    /// <param name="businessType">业务类型标识</param>
+    /// <param name="businessId">业务主键</param>
+    /// <param name="cancellationToken">取消标记</param>
+    public async Task<FlwInstanceInfo> GetInstanceByBusinessAsync(string businessType, long businessId, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(businessType) || businessId <= 0) return null;
+        var list = await Repo<FlwInstanceInfo>()
+                          .SelectAsync(x => x.BusinessType == businessType && x.BusinessId == businessId, cancellationToken: cancellationToken);
+        return list?.OrderByDescending(x => x.InstanceState == FlwInstanceState.Running)
+                    .ThenByDescending(x => x.Id)
+                    .FirstOrDefault();
     }
 
     /// <summary>

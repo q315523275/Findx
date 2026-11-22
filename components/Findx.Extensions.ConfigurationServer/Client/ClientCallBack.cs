@@ -29,8 +29,8 @@ public class ClientCallBack : IClientCallBack
 
         var clients = _callBacks.GetOrAdd(appId, _ => new ConcurrentDictionary<string, ClientCallBackInfo<ConfigDataChangeDto>>());
 
-        // RunContinuationsAsynchronously：SetResult/Canceled 时续体投递到线程池，
-        // 变更广播线程（DumpService 调用方）不会被长轮询响应序列化+IO 同步阻塞
+        //  RunContinuationsAsynchronously：SetResult/Canceled 时续体投递到线程池，
+        //  变更广播线程（DumpService 调用方）不会被长轮询响应序列化+IO 同步阻塞
         var source = new TaskCompletionSource<ConfigDataChangeDto>(TaskCreationOptions.RunContinuationsAsynchronously);
         var tokenSource = new CancellationTokenSource();
         var info = new ClientCallBackInfo<ConfigDataChangeDto>
@@ -38,20 +38,19 @@ public class ClientCallBack : IClientCallBack
             Task = source,
             TraceIdentifier = traceIdentifier,
             ClientIpAddress = clientIpAddress,
-            CancellationTokenSource = tokenSource
-        };
-
-        //  顺序：先完成清理回调注册与超时计时，最后原子登记——
-        //  保证 CallBack 摘组只能发生在登记完成后，不会出现"登记后继续触碰已被 Dispose 的 CTS"（ObjectDisposedException → 500）
-        info.CancellationTokenRegistration = tokenSource.Token.Register(() =>
-        {
-            if (clients.TryRemove(traceIdentifier, out _) && !source.Task.IsCompleted)
+            CancellationTokenSource = tokenSource,
+            //  顺序：先完成清理回调注册与超时计时，最后原子登记——
+            //  保证 CallBack 摘组只能发生在登记完成后，不会出现"登记后继续触碰已被 Dispose 的 CTS"（ObjectDisposedException → 500）
+            CancellationTokenRegistration = tokenSource.Token.Register(() =>
             {
-                source.TrySetException(new TimeoutException($"Call {appId} client {traceIdentifier} timeout."));
-            }
-            // 回调内 Dispose CTS 安全（.NET 4.6+ 明确允许），消除超时路径的资源滞留
-            tokenSource.Dispose();
-        });
+                if (clients.TryRemove(traceIdentifier, out _) && !source.Task.IsCompleted)
+                {
+                    source.TrySetException(new TimeoutException($"Call {appId} client {traceIdentifier} timeout."));
+                }
+                //  回调内 Dispose CTS 安全（.NET 4.6+ 明确允许），消除超时路径的资源滞留
+                //  tokenSource?.Dispose();
+            })
+        };
 
         //  客户端请求中断清理
         if (requestAborted.CanBeCanceled)
@@ -62,7 +61,7 @@ public class ClientCallBack : IClientCallBack
                 {
                     source.TrySetCanceled();
                 }
-                tokenSource.Dispose();
+                //  tokenSource.Dispose();
             });
         }
 

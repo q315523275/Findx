@@ -24,7 +24,7 @@ namespace Findx.Extensions.ConfigurationServer.Controller;
 [ApiExplorerSettings(GroupName = "config"), Tags("配置服务-客户端服务"), Description("配置服务-客户端服务")]
 public class ConfigController : AreaApiControllerBase
 {
-    // 防重放 nonce 缓存（进程级；多节点部署如需跨节点防重放可换 Redis，时间窗口已收窄风险）
+    //  防重放 nonce 缓存（进程级；多节点部署如需跨节点防重放可换 Redis，时间窗口已收窄风险）
     private static readonly ConcurrentDictionary<string, DateTime> NonceCache = new();
 
     private readonly IRepository<AppInfo, long> _appRepo;
@@ -36,6 +36,11 @@ public class ConfigController : AreaApiControllerBase
     /// <summary>
     ///     Ctor
     /// </summary>
+    /// <param name="clientCallBack"></param>
+    /// <param name="appRepo"></param>
+    /// <param name="configRepo"></param>
+    /// <param name="serializer"></param>
+    /// <param name="options"></param>
     public ConfigController(IClientCallBack clientCallBack, IRepository<AppInfo, long> appRepo, IRepository<ConfigDataInfo, long> configRepo, IObjectSerializer serializer, IOptions<ConfigServerOptions> options)
     {
         _clientCallBack = clientCallBack;
@@ -55,10 +60,12 @@ public class ConfigController : AreaApiControllerBase
     /// <param name="load"></param>
     /// <param name="timestamp">时间戳（新签名协议，防重放）</param>
     /// <param name="nonce">随机数（新签名协议，防重放）</param>
+    /// <param name="cancellationToken"></param>
     [HttpGet, Description("获取配置")]
-    public async Task GetAsync([Required] string appId, [Required] string sign, [Required] string environment, [Required] long version = 0, bool load = false, string timestamp = null, string nonce = null)
+    public async Task GetAsync([Required] string appId, [Required] string sign, [Required] string environment, [Required] long version = 0
+        , bool load = false, string timestamp = null, string nonce = null, CancellationToken cancellationToken = default)
     {
-        var model = await _appRepo.FirstAsync(x => x.AppId == appId);
+        var model = await _appRepo.FirstAsync(x => x.AppId == appId, cancellationToken);
         Check.NotNull(model, nameof(model));
 
         //  签名验证：新协议 HMAC-SHA256 + 时间戳 + nonce 防重放；旧协议 MD5 兼容（告警）
@@ -71,10 +78,10 @@ public class ConfigController : AreaApiControllerBase
         //  是否初次加载或指定加载
         if (version == 0 || load)
         {
-            var rows = await _configRepo.SelectAsync(x => x.AppId == appId && x.Environment == environment && x.Version > version, x => new { x.DataId, x.DataType, x.Content, x.Version });
+            var rows = await _configRepo.SelectAsync(x => x.AppId == appId && x.Environment == environment && x.Version > version, x => new { x.DataId, x.DataType, x.Content, x.Version }, cancellationToken: cancellationToken);
             //  返回监听结果
             Response.ContentType = "application/json; charset=utf-8";
-            await Response.Body.WriteAsync(_serializer.Serialize(rows));
+            await Response.Body.WriteAsync(_serializer.Serialize(rows), cancellationToken);
             return;
         }
 
@@ -86,7 +93,7 @@ public class ConfigController : AreaApiControllerBase
             var rows = new List<ConfigDataChangeDto> { res };
             //  返回监听结果
             Response.ContentType = "application/json; charset=utf-8";
-            await Response.Body.WriteAsync(_serializer.Serialize(rows));
+            await Response.Body.WriteAsync(_serializer.Serialize(rows), cancellationToken);
         }
         catch (TimeoutException)
         {
@@ -99,6 +106,17 @@ public class ConfigController : AreaApiControllerBase
         }
     }
 
+    /// <summary>
+    ///     签名验证
+    /// </summary>
+    /// <param name="appId"></param>
+    /// <param name="secret"></param>
+    /// <param name="environment"></param>
+    /// <param name="version"></param>
+    /// <param name="sign"></param>
+    /// <param name="timestamp"></param>
+    /// <param name="nonce"></param>
+    /// <returns></returns>
     private bool VerifySign(string appId, string secret, string environment, long version, string sign, string timestamp, string nonce)
     {
         //  兼容旧客户端（无 timestamp/nonce）：MD5 静态拼接（无防重放，仅提示升级）
@@ -127,6 +145,9 @@ public class ConfigController : AreaApiControllerBase
         return string.Equals(expected, sign, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    ///     清理 nonce 缓存
+    /// </summary>
     private void CleanupNonceCache()
     {
         var expireBefore = DateTime.UtcNow.AddMinutes(-_options.Value.ReplayWindowMinutes);
