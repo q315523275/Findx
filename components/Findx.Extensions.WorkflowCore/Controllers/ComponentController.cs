@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Findx.AspNetCore.Mvc;
 using Findx.Data;
 using Findx.Extensions.WorkflowCore.Dtos.Component;
 using Findx.Extensions.WorkflowCore.Dtos.Instance;
@@ -32,6 +31,10 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     审批面板：按业务单据一次性返回状态、时间轴、可用动作、当前待办
     /// </summary>
+    /// <param name="businessType"></param>
+    /// <param name="businessId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("panel")]
     [Description("审批面板")]
     public async Task<CommonResult> PanelAsync([FromQuery] string businessType, [FromQuery] long businessId, CancellationToken cancellationToken)
@@ -46,6 +49,9 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     按实例获取审批面板（待办/已办页用，标准审批无业务锚点也能看）
     /// </summary>
+    /// <param name="instanceId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("instance-panel")]
     [Description("审批面板-按实例")]
     public async Task<CommonResult> InstancePanelAsync([FromQuery] long instanceId, CancellationToken cancellationToken)
@@ -59,6 +65,9 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     催办：给当前在途节点的其他审批人下发提醒
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("urge")]
     [Description("催办")]
     public async Task<CommonResult> UrgeAsync([FromBody] ComponentUrgeDto req, CancellationToken cancellationToken)
@@ -73,6 +82,9 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     评论：不产生审批任务，只追加到实例变量
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("comment")]
     [Description("评论")]
     public async Task<CommonResult> CommentAsync([FromBody] ComponentCommentDto req, CancellationToken cancellationToken)
@@ -88,6 +100,10 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     我的待办（带业务锚点）
     /// </summary>
+    /// <param name="skip"></param>
+    /// <param name="top"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("todo")]
     [Description("我的待办")]
     public async Task<CommonResult> TodoAsync([FromQuery] int skip = 0, [FromQuery] int top = 100, CancellationToken cancellationToken = default)
@@ -99,6 +115,10 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     我的已办（带业务锚点）
     /// </summary>
+    /// <param name="skip"></param>
+    /// <param name="top"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("done")]
     [Description("我的已办")]
     public async Task<CommonResult> DoneAsync([FromQuery] int skip = 0, [FromQuery] int top = 100, CancellationToken cancellationToken = default)
@@ -110,6 +130,8 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     发起审批页数据：统计 + 最近使用 + 分组流程
     /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("start-page")]
     [Description("发起审批页")]
     public async Task<CommonResult> StartPageAsync(CancellationToken cancellationToken)
@@ -121,6 +143,10 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     我发起的实例
     /// </summary>
+    /// <param name="skip"></param>
+    /// <param name="top"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("applied")]
     [Description("我发起的")]
     public async Task<CommonResult> AppliedAsync([FromQuery] int skip = 0, [FromQuery] int top = 100, CancellationToken cancellationToken = default)
@@ -132,6 +158,10 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     我收到的实例（我参与但非我发起）
     /// </summary>
+    /// <param name="skip"></param>
+    /// <param name="top"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("received")]
     [Description("我收到的")]
     public async Task<CommonResult> ReceivedAsync([FromQuery] int skip = 0, [FromQuery] int top = 100, CancellationToken cancellationToken = default)
@@ -143,10 +173,14 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     可发起的业务单据候选
     /// </summary>
+    /// <param name="businessType"></param>
+    /// <param name="keyword"></param>
+    /// <param name="top"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("start-candidates")]
     [Description("可发起业务单据")]
-    public async Task<CommonResult> StartCandidatesAsync([FromQuery] string businessType, [FromQuery] string keyword,
-        [FromQuery] int top = 20, CancellationToken cancellationToken = default)
+    public async Task<CommonResult> StartCandidatesAsync([FromQuery] string businessType, [FromQuery] string keyword, [FromQuery] int top = 20, CancellationToken cancellationToken = default)
     {
         var service = GetRequiredService<FlwPanelService>();
         return CommonResult.Success(await service.GetStartCandidatesAsync(businessType, keyword, top, cancellationToken));
@@ -155,6 +189,8 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     待办与已办数量（角标用）
     /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("count")]
     [Description("待办角标")]
     public async Task<CommonResult> CountAsync(CancellationToken cancellationToken)
@@ -166,6 +202,9 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     发起审批：业务审批按"业务类型 + 业务主键"匹配流程；标准审批按 processKey 发起并携带动态表单数据
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("submit")]
     [Description("发起审批")]
     public async Task<CommonResult> SubmitAsync([FromBody] ComponentStartDto req, CancellationToken cancellationToken)
@@ -173,7 +212,7 @@ public class ComponentController: FlwControllerBase
         if (req == null) return CommonResult.Fail("400", "请求参数不能为空");
 
         var service = GetRequiredService<FlwPanelService>();
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         var isStandard = string.IsNullOrWhiteSpace(req.BusinessType);
         if (isStandard && string.IsNullOrWhiteSpace(req.ProcessKey))
             return CommonResult.Fail("400", "标准审批必须指定流程编码 processKey");
@@ -230,13 +269,16 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     执行审批动作：approve / reject / transfer / addSign / jump
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("action")]
     [Description("审批动作")]
     public async Task<CommonResult> ActionAsync([FromBody] ComponentActionDto req, CancellationToken cancellationToken)
     {
         if (req == null || req.TaskId <= 0) return CommonResult.Fail("400", "taskId 不能为空");
 
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         var action = (req.Action ?? string.Empty).Trim().ToLowerInvariant();
         try
         {
@@ -274,13 +316,16 @@ public class ComponentController: FlwControllerBase
     /// <summary>
     ///     撤销审批：仅发起人，审批中的单据可撤销
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("revoke")]
     [Description("撤销审批")]
     public async Task<CommonResult> RevokeAsync([FromBody] InstanceRevokeDto req, CancellationToken cancellationToken)
     {
         if (req == null || req.InstanceId <= 0) return CommonResult.Fail("400", "instanceId 不能为空");
 
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         try
         {
             await engine.RevokeAsync(req.InstanceId, CurrentActor, req.Comment, cancellationToken);

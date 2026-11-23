@@ -1,7 +1,7 @@
 namespace Findx.Extensions.WorkflowCore.Enums;
 
 /// <summary>
-///     流程节点类型（与 FlowLong 节点模型 type 取值保持一致）
+///     流程节点类型（与 Flow 节点模型 type 取值保持一致）
 /// </summary>
 public enum FlwNodeType
 {

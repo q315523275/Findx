@@ -311,7 +311,7 @@ public partial class FlwStore
         //  匹配条件用「不可能命中的占位值」兜底，保证 = / IN 子句始终合法
         var userId = actor == null || string.IsNullOrWhiteSpace(actor.Id) ? NoMatch : actor.Id;
         var deptId = actor == null || string.IsNullOrWhiteSpace(actor.DeptId) ? NoMatch : actor.DeptId;
-        var roleIds = (actor?.RoleIds ?? new List<string>())
+        var roleIds = (actor?.RoleIds ?? [])
             .Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
         if (roleIds.Count == 0) roleIds.Add(NoMatch);
 

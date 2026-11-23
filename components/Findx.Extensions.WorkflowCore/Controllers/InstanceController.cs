@@ -33,10 +33,13 @@ public class InstanceController: FlwControllerBase
     /// <summary>
     ///     发起流程
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("start")]
     public async Task<CommonResult> StartAsync([FromBody] InstanceStartDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         //  业务单据字段并入变量，条件分支才能按业务字段求值（显式传入的同名变量优先）
         var variables = req.Variables ?? new Dictionary<string, object>();
         await MergeBusinessVariablesAsync(variables, req.BusinessType, req.BusinessId, cancellationToken);
@@ -61,10 +64,13 @@ public class InstanceController: FlwControllerBase
     /// <summary>
     ///     撤销流程（仅发起人）
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("revoke")]
     public async Task<CommonResult> RevokeAsync([FromBody] InstanceRevokeDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         await engine.RevokeAsync(req.InstanceId, CurrentActor, req.Comment, cancellationToken);
         return CommonResult.Success();
     }
@@ -72,10 +78,13 @@ public class InstanceController: FlwControllerBase
     /// <summary>
     ///     强制终止（管理员 / 业务作废场景，不校验发起人）
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpPost("terminate")]
     public async Task<CommonResult> TerminateAsync([FromBody] InstanceRevokeDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         await engine.TerminateAsync(req.InstanceId, CurrentActor, req.Comment, cancellationToken);
         return CommonResult.Success();
     }
@@ -83,10 +92,13 @@ public class InstanceController: FlwControllerBase
     /// <summary>
     ///     实例详情（活动任务 + 历史任务）
     /// </summary>
+    /// <param name="instanceId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("detail")]
     public async Task<CommonResult> DetailAsync([FromQuery] long instanceId, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         var detail = await engine.GetInstanceDetailAsync(instanceId, cancellationToken);
         return CommonResult.Success(detail);
     }
@@ -94,15 +106,18 @@ public class InstanceController: FlwControllerBase
     /// <summary>
     ///     实例分页
     /// </summary>
+    /// <param name="req"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     [HttpGet("page")]
     public async Task<CommonResult> PageAsync([FromQuery] InstancePageQueryDto req, CancellationToken cancellationToken)
     {
         var repo = GetRepository<FlwInstanceInfo, long>();
         var whereExpression = PredicateBuilder.New<FlwInstanceInfo>()
-            .AndIf(req.ProcessKey.IsNotNullOrWhiteSpace(), x => x.ProcessKey == req.ProcessKey)
-            .AndIf(req.BusinessCode.IsNotNullOrWhiteSpace(), x => x.BusinessCode == req.BusinessCode)
-            .AndIf(req.InstanceState.HasValue, x => x.InstanceState == (FlwInstanceState)req.InstanceState.Value)
-            .Build();
+                                            .AndIf(req.ProcessKey.IsNotNullOrWhiteSpace(), x => x.ProcessKey == req.ProcessKey)
+                                            .AndIf(req.BusinessCode.IsNotNullOrWhiteSpace(), x => x.BusinessCode == req.BusinessCode)
+                                            .AndIf(req.InstanceState.HasValue, x => x.InstanceState == (FlwInstanceState)req.InstanceState.Value)
+                                            .Build();
 
         var result = await repo.PagedAsync<FlwInstanceInfo>(req.PageNo, req.PageSize, whereExpression, cancellationToken: cancellationToken);
         return CommonResult.Success(result);

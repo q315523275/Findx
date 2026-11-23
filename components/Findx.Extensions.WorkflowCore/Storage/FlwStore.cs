@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Findx.Extensions.WorkflowCore.Storage;
 
 /// <summary>
-///     工作流存储（FlowLong 8 张表的读写封装）
+///     工作流存储（Flow 8 张表的读写封装）
 /// </summary>
 public partial class FlwStore
 {
@@ -61,7 +61,7 @@ public partial class FlwStore
     /// </summary>
     private async Task InsertAsync<TEntity>(TEntity entity, CancellationToken cancellationToken) where TEntity : class, IEntity<long>
     {
-        if (entity.Id.Equals(default(long))) entity.Id = NewKey();
+        if (entity.Id.Equals(0)) entity.Id = NewKey();
         await Repo<TEntity>().InsertAsync(entity, cancellationToken);
     }
 
@@ -70,11 +70,11 @@ public partial class FlwStore
     /// </summary>
     private async Task InsertAsync<TEntity>(IEnumerable<TEntity> entities, CancellationToken cancellationToken) where TEntity : class, IEntity<long>
     {
-        var list = entities?.ToList() ?? new List<TEntity>();
+        var list = entities?.ToList() ?? [];
         if (list.Count == 0) return;
         foreach (var entity in list)
         {
-            if (entity.Id.Equals(default(long))) entity.Id = NewKey();
+            if (entity.Id.Equals(0)) entity.Id = NewKey();
         }
         await Repo<TEntity>().InsertAsync(list, cancellationToken);
     }

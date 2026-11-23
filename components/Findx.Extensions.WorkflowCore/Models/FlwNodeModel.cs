@@ -3,7 +3,7 @@ using Findx.Extensions.WorkflowCore.Enums;
 namespace Findx.Extensions.WorkflowCore.Models;
 
 /// <summary>
-///     流程节点模型（FlowLong 风格 JSON 树的节点）
+///     流程节点模型（Flow 风格 JSON 树的节点）
 /// </summary>
 public class FlwNodeModel
 {

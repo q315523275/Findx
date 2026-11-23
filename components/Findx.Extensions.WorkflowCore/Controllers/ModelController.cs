@@ -71,15 +71,12 @@ public class ModelController: AreaApiControllerBase
     public CommonResult BusinessTypes()
     {
         var adapters = _adapters?.Adapters ?? Array.Empty<IFlwBusinessAdapter>();
-        var rows = adapters
-                   .Where(x => x != null && !string.IsNullOrWhiteSpace(x.BusinessType))
-                   .Select(x => new BusinessTypeVo
-                   {
-                       BusinessType = x.BusinessType,
-                       DisplayName = string.IsNullOrWhiteSpace(x.DisplayName) ? x.BusinessType : x.DisplayName
-                   })
-                   .OrderBy(x => x.DisplayName)
-                   .ToList();
+        var rows = adapters.Where(x => x != null && !string.IsNullOrWhiteSpace(x.BusinessType))
+                           .Select(x => new BusinessTypeVo
+                           {
+                               BusinessType = x.BusinessType,
+                               DisplayName = string.IsNullOrWhiteSpace(x.DisplayName) ? x.BusinessType : x.DisplayName
+                           }).OrderBy(x => x.DisplayName).ToList();
         return CommonResult.Success(rows);
     }
 
@@ -91,7 +88,7 @@ public class ModelController: AreaApiControllerBase
     public CommonResult BusinessFields([FromQuery] string businessType)
     {
         var adapter = _adapters?.Get(businessType);
-        var rows = adapter?.GetFields() ?? Array.Empty<FlwBusinessField>();
+        var rows = adapter?.GetFields() ?? [];
         return CommonResult.Success(rows);
     }
 
@@ -260,9 +257,7 @@ public class ModelController: AreaApiControllerBase
         //  等于悄悄抢占，发起时会用错流程。要切换请先停用旧流程。
         if (!string.IsNullOrWhiteSpace(model.BusinessType))
         {
-            var conflicts = await repo.SelectAsync(
-                x => x.BusinessType == model.BusinessType && x.Code != model.Code && x.Status == 1,
-                cancellationToken: cancellationToken);
+            var conflicts = await repo.SelectAsync(x => x.BusinessType == model.BusinessType && x.Code != model.Code && x.Status == 1, cancellationToken: cancellationToken);
             if (conflicts is { Count: > 0 })
             {
                 return CommonResult.Fail("flow.business.occupied",

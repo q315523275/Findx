@@ -2,14 +2,13 @@ using Findx.Extensions.WorkflowCore.Entity;
 using Findx.Extensions.WorkflowCore.Enums;
 using Findx.Extensions.WorkflowCore.Models;
 using Findx.Extensions.WorkflowCore.Storage;
-using Microsoft.Extensions.Logging;
 
 namespace Findx.Extensions.WorkflowCore.Engine;
 
 /// <summary>
 ///     引擎 - 分支汇聚、实例收尾与节点解析
 /// </summary>
-public partial class FlowLongEngine
+public partial class FlowEngine
 {
     /// <summary>
     ///     节点流转到后继：分支末端做汇聚判定，流程末端结束实例
@@ -32,7 +31,7 @@ public partial class FlowLongEngine
         if (!string.IsNullOrWhiteSpace(node.BranchParentKey) && !string.IsNullOrWhiteSpace(node.BranchRootKey))
         {
             var parent = FindNode(execution.Model, node.BranchParentKey);
-            if (parent != null && parent.Type == FlwNodeType.Condition)
+            if (parent is { Type: FlwNodeType.Condition })
             {
                 await ExecuteNodeAsync(execution, parent.ChildNode, cancellationToken);
                 return;

@@ -4,48 +4,90 @@ using Findx.Extensions.WorkflowCore.Models;
 namespace Findx.Extensions.WorkflowCore.Engine;
 
 /// <summary>
-///     FlowLong 风格工作流引擎
+///     工作流引擎
 /// </summary>
-public interface IFlowLongEngine
+public interface IFlowEngine
 {
     /// <summary>
     ///     发起流程
     /// </summary>
+    /// <param name="args"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<FlwInstanceInfo> StartAsync(FlwStartArgs args, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     同意（会签/或签按参与类型自动判定是否推进）
     /// </summary>
+    /// <param name="taskId"></param>
+    /// <param name="actor"></param>
+    /// <param name="comment"></param>
+    /// <param name="variables"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task ApproveAsync(long taskId, FlwCreator actor, string comment = null, Dictionary<string, object> variables = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     拒绝（targetNodeKey 指定回退节点；endProcess=true 直接结束流程）
     /// </summary>
+    /// <param name="taskId"></param>
+    /// <param name="actor"></param>
+    /// <param name="comment"></param>
+    /// <param name="targetNodeKey"></param>
+    /// <param name="endProcess"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task RejectAsync(long taskId, FlwCreator actor, string comment = null, string targetNodeKey = null, bool endProcess = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     撤销（发起人撤回审批中的流程）
     /// </summary>
+    /// <param name="instanceId"></param>
+    /// <param name="actor"></param>
+    /// <param name="comment"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task RevokeAsync(long instanceId, FlwCreator actor, string comment = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     转办
     /// </summary>
+    /// <param name="taskId"></param>
+    /// <param name="actor"></param>
+    /// <param name="target"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task TransferAsync(long taskId, FlwCreator actor, FlwCreator target, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     加签
     /// </summary>
+    /// <param name="taskId"></param>
+    /// <param name="actor"></param>
+    /// <param name="actors"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task AddSignAsync(long taskId, FlwCreator actor, List<FlwActorModel> actors, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     跳转（任意节点跳转到目标节点）
     /// </summary>
+    /// <param name="taskId"></param>
+    /// <param name="actor"></param>
+    /// <param name="targetNodeKey"></param>
+    /// <param name="comment"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task JumpAsync(long taskId, FlwCreator actor, string targetNodeKey, string comment = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     强制终止（管理员/业务作废场景，不校验发起人）
     /// </summary>
+    /// <param name="instanceId"></param>
+    /// <param name="actor"></param>
+    /// <param name="comment"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task TerminateAsync(long instanceId, FlwCreator actor, string comment = null, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -63,6 +105,11 @@ public interface IFlowLongEngine
     /// <summary>
     ///     完成触发器/子流程挂起任务
     /// </summary>
+    /// <param name="taskId"></param>
+    /// <param name="actor"></param>
+    /// <param name="comment"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task CompleteTriggerAsync(long taskId, FlwCreator actor, string comment = null, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -86,11 +133,17 @@ public interface IFlowLongEngine
     /// <summary>
     ///     获取实例
     /// </summary>
+    /// <param name="instanceId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<FlwInstanceInfo> GetInstanceAsync(long instanceId, CancellationToken cancellationToken = default);
 
     /// <summary>
     ///     获取实例详情（活动任务 + 历史任务）
     /// </summary>
+    /// <param name="instanceId"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task<FlwInstanceDetail> GetInstanceDetailAsync(long instanceId, CancellationToken cancellationToken = default);
 }
 

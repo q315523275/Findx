@@ -10,7 +10,7 @@ namespace Findx.Extensions.WorkflowCore.Engine;
 /// </summary>
 internal sealed class FlwPostCommitQueue
 {
-    private readonly List<Func<CancellationToken, Task>> _actions = new();
+    private readonly List<Func<CancellationToken, Task>> _actions = [];
 
     /// <summary>
     ///     入队

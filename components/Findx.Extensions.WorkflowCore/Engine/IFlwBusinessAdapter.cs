@@ -128,8 +128,25 @@ public interface IFlwBusinessAdapter
     /// <summary>
     ///     实例状态变化：审批中（发起/推进）、通过、拒绝、撤销、超时、终止。
     ///     <para>业务单据状态回写写在这里，与流程推进同一事务</para>
+    ///     <para>注意：只在「发起」与「实例终结」两个时刻各回调一次，中间节点审批不会触发</para>
     /// </summary>
     Task OnInstanceStateChangedAsync(FlwBusinessContext context, FlwInstanceState state, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     任务办理完成：办理人「同意」或「拒绝」后回调一次，实例可能仍在审批中。
+    ///     <para>与 <see cref="OnInstanceStateChangedAsync" /> 的区别：这是节点级钩子，每办完一个人就触发，
+    ///     适合以后接节点级通知（抄送、催办、节点耗时统计、外部消息推送）；单据状态回写仍走实例级回调</para>
+    ///     <para>或签时其余任务被自动归档、实例结束时批量归档的任务都不回调，避免一个人同意推出多条通知</para>
+    ///     <para>默认空实现：业务侧暂不需要节点级处理时可以不实现，后续要接通知模块再覆盖即可</para>
+    /// </summary>
+    /// <param name="context">业务上下文（含实例、单据锚点、工作单元、操作人、本次审批意见）</param>
+    /// <param name="task">刚办理完成的任务（含节点标识 TaskKey 与节点名 TaskName）</param>
+    /// <param name="action">办理动作：同意 / 拒绝</param>
+    /// <param name="cancellationToken">取消标记</param>
+    Task OnTaskCompletedAsync(FlwBusinessContext context, FlwTaskInfo task, FlwTaskAction action, CancellationToken cancellationToken = default)
+    {
+        return Task.CompletedTask;
+    }
 
     /// <summary>
     ///     可发起的业务单据（发起审批页选择用）。

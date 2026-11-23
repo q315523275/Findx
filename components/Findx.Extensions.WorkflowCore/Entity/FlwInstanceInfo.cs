@@ -30,7 +30,7 @@ public class FlwInstanceInfo: FullEntityBase
     public string ProcessName { get; set; }
 
     /// <summary>
-    ///     实例状态（FlowLong 原生只在历史实例表记录状态，这里冗余一份以便运行中查询）
+    ///     实例状态（Flow 原生只在历史实例表记录状态，这里冗余一份以便运行中查询）
     /// </summary>
     public FlwInstanceState InstanceState { get; set; }
 

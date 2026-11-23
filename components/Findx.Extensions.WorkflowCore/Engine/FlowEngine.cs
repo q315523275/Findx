@@ -8,13 +8,13 @@ using Microsoft.Extensions.Logging;
 namespace Findx.Extensions.WorkflowCore.Engine;
 
 /// <summary>
-///     FlowLong 风格工作流引擎（树形节点驱动，无回溯线；回溯靠驳回/跳转/路由分支）
+///     Flow 风格工作流引擎（树形节点驱动，无回溯线；回溯靠驳回/跳转/路由分支）
 /// </summary>
-public partial class FlowLongEngine: IFlowLongEngine
+public partial class FlowEngine: IFlowEngine
 {
     private readonly FlwStore _store;
     private readonly IUnitOfWorkManager _unitOfWorkManager;
-    private readonly ILogger<FlowLongEngine> _logger;
+    private readonly ILogger<FlowEngine> _logger;
     private readonly IFlwActorProvider _actorProvider;
     private readonly FlwBusinessAdapterRegistry _adapterRegistry;
     private readonly IEnumerable<IFlwInstanceListener> _instanceListeners;
@@ -26,7 +26,7 @@ public partial class FlowLongEngine: IFlowLongEngine
     /// <summary>
     ///     Ctor
     /// </summary>
-    public FlowLongEngine(FlwStore store, IUnitOfWorkManager unitOfWorkManager, ILogger<FlowLongEngine> logger,
+    public FlowEngine(FlwStore store, IUnitOfWorkManager unitOfWorkManager, ILogger<FlowEngine> logger,
         IFlwActorProvider actorProvider = null, FlwBusinessAdapterRegistry adapterRegistry = null,
         IEnumerable<IFlwInstanceListener> instanceListeners = null, IFlwTaskNotifier taskNotifier = null)
     {
@@ -249,6 +249,27 @@ public partial class FlowLongEngine: IFlowLongEngine
             Comment = execution.LastComment
         };
         await adapter.OnInstanceStateChangedAsync(context, state, cancellationToken);
+    }
+
+    /// <summary>
+    ///     任务办理完成：同步回调业务适配器（引擎事务内）。
+    ///     <para>每个办理人「同意 / 拒绝」后各触发一次；或签自动归档、实例结束批量归档的任务不触发</para>
+    /// </summary>
+    private async Task NotifyTaskCompletedAsync(FlwExecution execution, FlwTaskInfo task, FlwTaskAction action, CancellationToken cancellationToken)
+    {
+        var adapter = _adapterRegistry?.Get(execution.Instance?.BusinessType);
+        if (adapter == null) return;
+
+        var business = await adapter.LoadAsync(execution.Instance.BusinessId, cancellationToken);
+        var context = new FlwBusinessContext
+        {
+            Instance = execution.Instance,
+            Business = business,
+            UnitOfWork = _store.CurrentUnitOfWork,
+            Operator = execution.Operator,
+            Comment = execution.LastComment
+        };
+        await adapter.OnTaskCompletedAsync(context, task, action, cancellationToken);
     }
 
     /// <summary>

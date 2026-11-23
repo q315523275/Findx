@@ -19,7 +19,7 @@ public class FlwPanelService
     private readonly IRepository<FlwProcessInfo, long> _processRepo;
     private readonly IRepository<FlwInstanceInfo, long> _instanceRepo;
     private readonly FlwStore _store;
-    private readonly IFlowLongEngine _engine;
+    private readonly IFlowEngine _engine;
     private readonly FlwBusinessAdapterRegistry _adapters;
     private readonly IUserNotifier _notifier;
 
@@ -27,7 +27,7 @@ public class FlwPanelService
     ///     Ctor
     /// </summary>
     public FlwPanelService(IRepository<FlwProcessInfo, long> processRepo, IRepository<FlwInstanceInfo, long> instanceRepo,
-        FlwStore store, IFlowLongEngine engine, FlwBusinessAdapterRegistry adapters = null, IUserNotifier notifier = null)
+        FlwStore store, IFlowEngine engine, FlwBusinessAdapterRegistry adapters = null, IUserNotifier notifier = null)
     {
         _processRepo = processRepo;
         _instanceRepo = instanceRepo;
@@ -420,7 +420,7 @@ public class FlwPanelService
     public async Task<List<FlwInstanceItemDto>> GetAppliedListAsync(FlwCreator actor, int skip = 0, int top = 100, CancellationToken cancellationToken = default)
     {
         var userId = ToUserId(actor);
-        if (userId <= 0) return new List<FlwInstanceItemDto>();
+        if (userId <= 0) return [];
 
         var rows = await _store.QueryAppliedInstancesAsync(userId, skip, top, cancellationToken);
         return await MapInstancesAsync(rows, userId, cancellationToken);
@@ -432,7 +432,7 @@ public class FlwPanelService
     public async Task<List<FlwInstanceItemDto>> GetReceivedListAsync(FlwCreator actor, int skip = 0, int top = 100, CancellationToken cancellationToken = default)
     {
         var userId = ToUserId(actor);
-        if (userId <= 0) return new List<FlwInstanceItemDto>();
+        if (userId <= 0) return [];
 
         var rows = await _store.QueryReceivedInstancesAsync(actor, userId, skip, top, cancellationToken);
         return await MapInstancesAsync(rows, userId, cancellationToken);

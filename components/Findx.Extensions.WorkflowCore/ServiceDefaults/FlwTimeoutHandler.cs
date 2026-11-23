@@ -15,7 +15,7 @@ namespace Findx.Extensions.WorkflowCore.ServiceDefaults;
 public class FlwTimeoutHandler
 {
     private readonly FlwStore _store;
-    private readonly IFlowLongEngine _engine;
+    private readonly IFlowEngine _engine;
     private readonly IFlwTaskNotifier _notifier;
     private readonly WorkflowCoreOptions _options;
     private readonly ILogger<FlwTimeoutHandler> _logger;
@@ -23,7 +23,7 @@ public class FlwTimeoutHandler
     /// <summary>
     ///     Ctor
     /// </summary>
-    public FlwTimeoutHandler(FlwStore store, IFlowLongEngine engine, IFlwTaskNotifier notifier,
+    public FlwTimeoutHandler(FlwStore store, IFlowEngine engine, IFlwTaskNotifier notifier,
         IOptions<WorkflowCoreOptions> options, ILogger<FlwTimeoutHandler> logger)
     {
         _store = store;

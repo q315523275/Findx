@@ -4,7 +4,7 @@ using System.Text;
 namespace Findx.Extensions.WorkflowCore.Engine;
 
 /// <summary>
-///     条件表达式求值器（FlowLong 模型中的 condition 表达式）
+///     条件表达式求值器（Flow 模型中的 condition 表达式）
 ///     <para>支持：&amp;&amp; / || / 括号 / == != &gt;= &lt;= &gt; &lt; / contains / not contains / empty() / notEmpty() / 布尔字面量 / 变量取值</para>
 /// </summary>
 public static class FlwConditionEvaluator

@@ -32,7 +32,7 @@ public class TaskController: FlwControllerBase
     [HttpGet("todo")]
     public async Task<CommonResult> TodoAsync([FromQuery] int skip = 0, [FromQuery] int top = 100, CancellationToken cancellationToken = default)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         var tasks = await engine.GetTodoTasksAsync(CurrentActor, skip, top, cancellationToken);
         return CommonResult.Success(tasks);
     }
@@ -43,7 +43,7 @@ public class TaskController: FlwControllerBase
     [HttpGet("done")]
     public async Task<CommonResult> DoneAsync([FromQuery] int skip = 0, [FromQuery] int top = 100, CancellationToken cancellationToken = default)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         var tasks = await engine.GetDoneTasksAsync(CurrentActor, skip, top, cancellationToken);
         return CommonResult.Success(tasks);
     }
@@ -54,7 +54,7 @@ public class TaskController: FlwControllerBase
     [HttpPost("approve")]
     public async Task<CommonResult> ApproveAsync([FromBody] TaskApproveDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         await engine.ApproveAsync(req.TaskId, CurrentActor, req.Comment, req.Variables, cancellationToken);
         return CommonResult.Success();
     }
@@ -65,7 +65,7 @@ public class TaskController: FlwControllerBase
     [HttpPost("reject")]
     public async Task<CommonResult> RejectAsync([FromBody] TaskRejectDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         await engine.RejectAsync(req.TaskId, CurrentActor, req.Comment, req.TargetNodeKey, req.EndProcess, cancellationToken);
         return CommonResult.Success();
     }
@@ -76,7 +76,7 @@ public class TaskController: FlwControllerBase
     [HttpPost("transfer")]
     public async Task<CommonResult> TransferAsync([FromBody] TaskTransferDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         await engine.TransferAsync(req.TaskId, CurrentActor, new FlwCreator(req.TargetActorId, req.TargetActorName), cancellationToken);
         return CommonResult.Success();
     }
@@ -87,7 +87,7 @@ public class TaskController: FlwControllerBase
     [HttpPost("addSign")]
     public async Task<CommonResult> AddSignAsync([FromBody] TaskAddSignDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         await engine.AddSignAsync(req.TaskId, CurrentActor, req.Actors, cancellationToken);
         return CommonResult.Success();
     }
@@ -98,7 +98,7 @@ public class TaskController: FlwControllerBase
     [HttpPost("jump")]
     public async Task<CommonResult> JumpAsync([FromBody] TaskJumpDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         await engine.JumpAsync(req.TaskId, CurrentActor, req.TargetNodeKey, req.Comment, cancellationToken);
         return CommonResult.Success();
     }
@@ -109,7 +109,7 @@ public class TaskController: FlwControllerBase
     [HttpPost("completeTrigger")]
     public async Task<CommonResult> CompleteTriggerAsync([FromBody] TaskTriggerCompleteDto req, CancellationToken cancellationToken)
     {
-        var engine = GetRequiredService<IFlowLongEngine>();
+        var engine = GetRequiredService<IFlowEngine>();
         await engine.CompleteTriggerAsync(req.TaskId, CurrentActor, req.Comment, cancellationToken);
         return CommonResult.Success();
     }

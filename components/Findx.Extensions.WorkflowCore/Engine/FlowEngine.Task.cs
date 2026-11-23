@@ -9,7 +9,7 @@ namespace Findx.Extensions.WorkflowCore.Engine;
 /// <summary>
 ///     引擎 - 任务处理（同意/拒绝/撤销/转办/加签/跳转/触发器回调）
 /// </summary>
-public partial class FlowLongEngine
+public partial class FlowEngine
 {
     /// <inheritdoc />
     public Task ApproveAsync(long taskId, FlwCreator actor, string comment = null, Dictionary<string, object> variables = null, CancellationToken cancellationToken = default)
@@ -30,6 +30,9 @@ public partial class FlowLongEngine
             var sequenceRest = FlwStore.GetSequenceActors(task);
             task.Viewed = 1;
             await _store.ArchiveTaskAsync(task, FlwTaskState.Completed, FlwTaskAction.Agree, actor, comment, cancellationToken);
+
+            //  节点级回调：每办完一个人的「同意」都触发一次，此时实例可能仍在审批中
+            await NotifyTaskCompletedAsync(execution, task, FlwTaskAction.Agree, cancellationToken);
 
             var node = FindNode(execution.Model, task.TaskKey);
             var remaining = (await _store.GetNodeTasksAsync(execution.Instance.Id, task.TaskKey, cancellationToken))
@@ -67,6 +70,9 @@ public partial class FlowLongEngine
             var task = context.Task;
 
             await _store.ArchiveNodeTasksAsync(execution.Instance.Id, task.TaskKey, FlwTaskState.Rejected, FlwTaskAction.Reject, actor, comment, cancellationToken);
+
+            //  节点级回调：拒绝也触发（退回上一节点时实例仍是审批中）
+            await NotifyTaskCompletedAsync(execution, task, FlwTaskAction.Reject, cancellationToken);
 
             if (endProcess)
             {

@@ -13,7 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Findx.Extensions.WorkflowCore;
 
 /// <summary>
-///     Findx-工作流组件模块（FlowLong 风格的树形节点驱动审批流）
+///     Findx-工作流组件模块（Flow 风格的树形节点驱动审批流）
 /// </summary>
 [Description("Findx-工作流组件")]
 public class WorkflowCoreModule: StartupModule
@@ -44,7 +44,7 @@ public class WorkflowCoreModule: StartupModule
             ApplyEntityDataSource(dataSource);
 
         services.AddScoped<FlwStore>();
-        services.AddScoped<IFlowLongEngine, FlowLongEngine>();
+        services.AddScoped<IFlowEngine, FlowEngine>();
         services.AddScoped<FlwTimeoutHandler>();
 
         //  办理人解析扩展点：宿主可注册自己的 IFlwActorProvider（如查组织架构取上级），未注册时使用默认实现

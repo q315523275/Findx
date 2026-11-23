@@ -6,7 +6,7 @@ namespace Findx.Extensions.WorkflowCore.Engine;
 /// <summary>
 ///     引擎 - 查询
 /// </summary>
-public partial class FlowLongEngine
+public partial class FlowEngine
 {
     /// <inheritdoc />
     public Task<List<FlwTaskInfo>> GetTodoTasksAsync(FlwCreator actor, int skip = 0, int top = 100, CancellationToken cancellationToken = default)

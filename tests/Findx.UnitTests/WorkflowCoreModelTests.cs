@@ -7,7 +7,7 @@ using Findx.Extensions.WorkflowCore.Storage;
 namespace Findx.UnitTests;
 
 /// <summary>
-///     FlowLong 模型解析与条件求值测试
+///     Flow 模型解析与条件求值测试
 /// </summary>
 public class WorkflowCoreModelTests
 {
